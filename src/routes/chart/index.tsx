@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { SelectTickerButton } from '@/components/buttons/SelectTickerButton'
 import { TickerProvider, useTicker } from '@/contexts/TickerContext'
+import { BasicTickerWidget } from '@/components/widgets/BasicTickerWidget'
 import { Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/chart/')({
@@ -40,11 +41,11 @@ function ChartPageContent() {
         )}
 
         {!loading && !error && chartData.length > 0 && (
-          <div>
-            <p className="text-lg font-semibold mb-2">{selectedTicker}</p>
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Loaded {chartData.length} days of chart data
             </p>
+            <BasicTickerWidget data={chartData[chartData.length - 1]} />
           </div>
         )}
 
