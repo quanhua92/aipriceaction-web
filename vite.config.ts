@@ -14,6 +14,16 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  server: {
+    proxy: {
+      '/aipriceaction-api': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/aipriceaction-api/, ''),
+        secure: false,
+      },
+    },
+  },
 })
 
 export default config
