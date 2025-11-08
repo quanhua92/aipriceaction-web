@@ -14,32 +14,48 @@ import {
   Table,
   X,
 } from 'lucide-react'
+import { useSiteSettings } from '../contexts/SiteSettingsContext'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [groupedExpanded, setGroupedExpanded] = useState<
     Record<string, boolean>
   >({})
+  const { language, setLanguage } = useSiteSettings()
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'vn' : 'en')
+  }
 
   return (
     <>
-      <header className="p-4 flex items-center bg-gray-800 text-white shadow-lg">
+      <header className="p-4 flex items-center justify-between bg-gray-800 text-white shadow-lg">
+        <div className="flex items-center">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={24} />
+          </button>
+          <h1 className="ml-4 text-xl font-semibold">
+            <Link to="/">
+              <img
+                src="/tanstack-word-logo-white.svg"
+                alt="TanStack Logo"
+                className="h-10"
+              />
+            </Link>
+          </h1>
+        </div>
+
         <button
-          onClick={() => setIsOpen(true)}
-          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-          aria-label="Open menu"
+          onClick={toggleLanguage}
+          className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors border border-gray-600"
+          aria-label="Toggle language"
         >
-          <Menu size={24} />
+          <span className="text-sm font-bold tracking-wide">{language === 'en' ? 'EN' : 'VN'}</span>
         </button>
-        <h1 className="ml-4 text-xl font-semibold">
-          <Link to="/">
-            <img
-              src="/tanstack-word-logo-white.svg"
-              alt="TanStack Logo"
-              className="h-10"
-            />
-          </Link>
-        </h1>
       </header>
 
       <aside

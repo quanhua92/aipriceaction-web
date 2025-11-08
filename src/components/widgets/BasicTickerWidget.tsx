@@ -2,12 +2,14 @@ import type { StockData } from '@/lib/api-client'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface BasicTickerWidgetProps {
   data: StockData
 }
 
 export function BasicTickerWidget({ data }: BasicTickerWidgetProps) {
+  const { t } = useTranslation()
   const priceChange = data.close_changed ?? 0
   const volumeChange = data.volume_changed ?? 0
   const isPricePositive = priceChange >= 0
@@ -43,23 +45,23 @@ export function BasicTickerWidget({ data }: BasicTickerWidgetProps) {
       {/* OHLCV Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Open</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.open')}</p>
           <p className="text-sm font-semibold">{formatPrice(data.open)}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">High</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.high')}</p>
           <p className="text-sm font-semibold text-green-600 dark:text-green-500">{formatPrice(data.high)}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Low</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.low')}</p>
           <p className="text-sm font-semibold text-red-600 dark:text-red-500">{formatPrice(data.low)}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Close</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.close')}</p>
           <p className="text-sm font-semibold">{formatPrice(data.close)}</p>
         </div>
         <div className="space-y-1 col-span-2 sm:col-span-2">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Volume</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.volume')}</p>
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold">{formatVolume(data.volume)}</p>
             {data.volume_changed !== null && data.volume_changed !== undefined && (

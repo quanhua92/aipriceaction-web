@@ -12,6 +12,7 @@ import { useAPI } from '@/contexts/APIContext'
 import { MARKET_INDICES } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
+import { useTranslation } from '@/hooks/useTranslation'
 import type { StockData } from '@/lib/api-client'
 
 interface SelectTickerDialogProps {
@@ -26,6 +27,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
   const [search, setSearch] = React.useState('')
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
   const { tickers, loading, error, allTickersData } = useAPI()
+  const { t } = useTranslation()
 
   const getLatestData = (symbol: string): StockData | undefined => {
     const data = allTickersData[symbol]
@@ -95,12 +97,12 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-2xl h-[700px] flex flex-col p-0 gap-0" showCloseButton={false}>
-        <DialogTitle className="sr-only">Select Ticker Symbol</DialogTitle>
+        <DialogTitle className="sr-only">{t('dialogs.selectTicker.title')}</DialogTitle>
         <div className="p-4 shrink-0 border-b space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by symbol..."
+              placeholder={t('dialogs.selectTicker.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-9 text-sm bg-muted/50 border-0 focus-visible:ring-1"
@@ -118,7 +120,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              Volume
+              {t('dialogs.selectTicker.sortBy.volume')}
             </button>
             <button
               onClick={() => setSortBy('gainers')}
@@ -128,7 +130,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              ↑ Gainers
+              {t('dialogs.selectTicker.sortBy.gainers')}
             </button>
             <button
               onClick={() => setSortBy('losers')}
@@ -138,7 +140,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              ↓ Losers
+              {t('dialogs.selectTicker.sortBy.losers')}
             </button>
             <button
               onClick={() => setSortBy('az')}
@@ -148,7 +150,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              A-Z
+              {t('dialogs.selectTicker.sortBy.az')}
             </button>
           </div>
         </div>
@@ -163,7 +165,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
 
             {error && (
               <div className="text-center py-8 text-destructive">
-                {error}
+                {t('dialogs.selectTicker.states.error')}
               </div>
             )}
 
@@ -173,7 +175,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                 {marketIndices.length > 0 && (
                   <div className="mb-2">
                     <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      Market Indices
+                      {t('dialogs.selectTicker.sections.marketIndices')}
                     </div>
                     {marketIndices.map((index) => {
                       const latestData = getLatestData(index)
@@ -185,7 +187,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                         >
                           <div className="flex flex-col min-w-0 flex-shrink">
                             <span className="font-extrabold">{index}</span>
-                            <span className="text-xs text-muted-foreground/70 truncate">Market Index</span>
+                            <span className="text-xs text-muted-foreground/70 truncate">{t('dialogs.selectTicker.labels.marketIndex')}</span>
                           </div>
                           {latestData && (
                             <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
@@ -200,7 +202,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                               </div>
                               {/* Volume Row */}
                               <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-                                <span className="tabular-nums">Vol: {formatVolume(latestData.volume)}</span>
+                                <span className="tabular-nums">{t('dialogs.selectTicker.labels.volume')}: {formatVolume(latestData.volume)}</span>
                                 {latestData.volume_changed !== null && latestData.volume_changed !== undefined && (
                                   <span className={`tabular-nums opacity-70 ${getVolumeChangeColor(latestData.volume_changed)}`}>
                                     {latestData.volume_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.volume_changed)}
@@ -220,7 +222,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                   <div>
                     {marketIndices.length > 0 && (
                       <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        Stocks
+                        {t('dialogs.selectTicker.sections.stocks')}
                       </div>
                     )}
                     {filteredTickers.map((ticker) => {
@@ -248,7 +250,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
                               </div>
                               {/* Volume Row */}
                               <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-                                <span className="tabular-nums">Vol: {formatVolume(latestData.volume)}</span>
+                                <span className="tabular-nums">{t('dialogs.selectTicker.labels.volume')}: {formatVolume(latestData.volume)}</span>
                                 {latestData.volume_changed !== null && latestData.volume_changed !== undefined && (
                                   <span className={`tabular-nums opacity-70 ${getVolumeChangeColor(latestData.volume_changed)}`}>
                                     {latestData.volume_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.volume_changed)}
@@ -265,7 +267,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
 
                 {marketIndices.length === 0 && filteredTickers.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
-                    No tickers found
+                    {t('dialogs.selectTicker.states.noTickersFound')}
                   </div>
                 )}
               </>
