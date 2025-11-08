@@ -1,9 +1,9 @@
-import { useState } from 'react'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { Button } from '@/components/ui/button'
+import { useTicker } from '@/contexts/TickerContext'
 
 export function SelectTickerButton() {
-  const [selectedTicker, setSelectedTicker] = useState('VNINDEX')
+  const { selectedTicker, setSelectedTicker } = useTicker()
 
   return (
     <SelectTickerDialog onSelectTicker={setSelectedTicker}>
