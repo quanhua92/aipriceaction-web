@@ -1,0 +1,573 @@
+import type { StockData } from '@/lib/api-client'
+import {
+	createChart,
+	type IChartApi,
+	type ISeriesApi,
+	ColorType,
+	CrosshairMode,
+	type CandlestickData,
+	type HistogramData,
+	type LineData,
+	type Time,
+	CandlestickSeries,
+	HistogramSeries,
+	LineSeries,
+} from 'lightweight-charts'
+import { useEffect, useRef, useMemo, useState } from 'react'
+import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
+import { useTranslation } from '@/hooks/useTranslation'
+
+interface TradingViewChartProps {
+	data: StockData[]
+	title?: string
+	height?: number
+	showControls?: boolean
+	viewportSizeOverride?: number
+}
+
+export function TradingViewChart({
+	data,
+	title,
+	height = 400,
+	showControls = true,
+	viewportSizeOverride,
+}: TradingViewChartProps) {
+	const { t } = useTranslation()
+	const chartContainerRef = useRef<HTMLDivElement>(null)
+	const chartRef = useRef<IChartApi | null>(null)
+	const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
+	const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null)
+	const ma10SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+	const ma20SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+	const ma50SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+	const ma100SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+	const ma200SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
+
+	// Viewport state tracking
+	const [userViewportSet, setUserViewportSet] = useState(false)
+	const [lastViewportRange, setLastViewportRange] = useState<{
+		from: Time
+		to: Time
+	} | null>(null)
+	const [isDataInitialized, setIsDataInitialized] = useState(false)
+
+	// Reset viewport state when data changes
+	useEffect(() => {
+		setUserViewportSet(false)
+		setLastViewportRange(null)
+		setIsDataInitialized(false)
+	}, [data])
+
+	// Transform data to TradingView format
+	const chartData = useMemo(() => {
+		if (!data || data.length === 0) {
+			return { candlestick: [], volume: [], ma10: [], ma20: [], ma50: [], ma100: [], ma200: [] }
+		}
+
+		const candlestick: CandlestickData[] = []
+		const volume: HistogramData[] = []
+		const ma10: LineData[] = []
+		const ma20: LineData[] = []
+		const ma50: LineData[] = []
+		const ma100: LineData[] = []
+		const ma200: LineData[] = []
+
+		data.forEach((point, index) => {
+			// Convert ISO date string to Unix timestamp
+			const time = Math.floor(new Date(point.time).getTime() / 1000) as Time
+			const prevPoint = index > 0 ? data[index - 1] : null
+			const volumeColor = prevPoint
+				? point.close >= prevPoint.close
+					? '#16a34a'
+					: '#dc2626'
+				: point.close >= point.open
+					? '#16a34a'
+					: '#dc2626'
+
+			candlestick.push({
+				time,
+				open: point.open,
+				high: point.high,
+				low: point.low,
+				close: point.close,
+			})
+
+			volume.push({
+				time,
+				value: point.volume,
+				color: volumeColor + '80', // Add transparency
+			})
+
+			// Add moving averages if available
+			if (point.ma10 !== undefined && point.ma10 !== null) {
+				ma10.push({ time, value: point.ma10 })
+			}
+			if (point.ma20 !== undefined && point.ma20 !== null) {
+				ma20.push({ time, value: point.ma20 })
+			}
+			if (point.ma50 !== undefined && point.ma50 !== null) {
+				ma50.push({ time, value: point.ma50 })
+			}
+			if (point.ma100 !== undefined && point.ma100 !== null) {
+				ma100.push({ time, value: point.ma100 })
+			}
+			if (point.ma200 !== undefined && point.ma200 !== null) {
+				ma200.push({ time, value: point.ma200 })
+			}
+		})
+
+		return { candlestick, volume, ma10, ma20, ma50, ma100, ma200 }
+	}, [data])
+
+	// Initialize chart (only once on mount)
+	useEffect(() => {
+		if (!chartContainerRef.current) {
+			return
+		}
+
+		// Create new chart
+		const chart = createChart(chartContainerRef.current, {
+			width: chartContainerRef.current.clientWidth,
+			height: height,
+			layout: {
+				background: { type: ColorType.Solid, color: 'transparent' },
+				textColor: '#71717a',
+				attributionLogo: false,
+			},
+			grid: {
+				vertLines: { visible: false },
+				horzLines: { visible: false },
+			},
+			crosshair: {
+				mode: CrosshairMode.Normal,
+			},
+			rightPriceScale: {
+				borderColor: '#27272a',
+				scaleMargins: {
+					top: 0.1,
+					bottom: 0.25, // Reserve 25% for volume
+				},
+			},
+			timeScale: {
+				borderColor: '#27272a',
+				timeVisible: true,
+				secondsVisible: false,
+			},
+			handleScroll: {
+				mouseWheel: true,
+				pressedMouseMove: true,
+				horzTouchDrag: true,
+			},
+			handleScale: {
+				axisPressedMouseMove: true,
+				mouseWheel: true,
+				pinch: true,
+			},
+		})
+
+		chartRef.current = chart
+
+		// Add candlestick series
+		const candlestickSeries = chart.addSeries(CandlestickSeries, {
+			upColor: '#16a34a',
+			downColor: '#dc2626',
+			borderVisible: false,
+			wickUpColor: '#16a34a',
+			wickDownColor: '#dc2626',
+		})
+		candlestickSeriesRef.current = candlestickSeries
+
+		// Add volume series on secondary scale
+		const volumeSeries = chart.addSeries(HistogramSeries, {
+			priceFormat: {
+				type: 'volume',
+			},
+			priceScaleId: 'volume', // Use separate scale for volume
+		})
+		volumeSeriesRef.current = volumeSeries
+
+		// Configure volume scale to use bottom 20% of chart
+		volumeSeries.priceScale().applyOptions({
+			scaleMargins: {
+				top: 0.8,
+				bottom: 0,
+			},
+		})
+
+		// Add moving average series (initially empty)
+		const ma10Series = chart.addSeries(LineSeries, {
+			color: '#dc2626',
+			lineWidth: 2,
+			crosshairMarkerVisible: false,
+			lastValueVisible: false,
+			priceLineVisible: false,
+		})
+		ma10SeriesRef.current = ma10Series
+
+		const ma20Series = chart.addSeries(LineSeries, {
+			color: '#16a34a',
+			lineWidth: 2,
+			crosshairMarkerVisible: false,
+			lastValueVisible: false,
+			priceLineVisible: false,
+		})
+		ma20SeriesRef.current = ma20Series
+
+		const ma50Series = chart.addSeries(LineSeries, {
+			color: '#2563eb',
+			lineWidth: 2,
+			crosshairMarkerVisible: false,
+			lastValueVisible: false,
+			priceLineVisible: false,
+		})
+		ma50SeriesRef.current = ma50Series
+
+		const ma100Series = chart.addSeries(LineSeries, {
+			color: '#a1a1aa',
+			lineWidth: 2,
+			crosshairMarkerVisible: false,
+			lastValueVisible: false,
+			priceLineVisible: false,
+		})
+		ma100SeriesRef.current = ma100Series
+
+		const ma200Series = chart.addSeries(LineSeries, {
+			color: '#71717a',
+			lineWidth: 2,
+			crosshairMarkerVisible: false,
+			lastValueVisible: false,
+			priceLineVisible: false,
+		})
+		ma200SeriesRef.current = ma200Series
+
+		// Create tooltip element
+		const tooltipWidth = 200
+		const tooltipHeight = 90
+		const tooltipMargin = 15
+
+		const tooltip = document.createElement('div')
+		tooltip.style.cssText = `
+			width: auto;
+			min-width: 180px;
+			max-width: ${tooltipWidth}px;
+			position: absolute;
+			display: none;
+			padding: 6px 8px;
+			box-sizing: border-box;
+			font-size: 11px;
+			text-align: left;
+			z-index: 1000;
+			pointer-events: none;
+			border: 1px solid #27272a;
+			border-radius: 4px;
+			background: rgba(24, 24, 27, 0.95);
+			color: #fafafa;
+			font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+			backdrop-filter: blur(8px);
+		`
+		chartContainerRef.current.appendChild(tooltip)
+
+		// Track user viewport changes
+		const handleVisibleTimeRangeChange = () => {
+			const visibleRange = chart.timeScale().getVisibleRange()
+			if (visibleRange && isDataInitialized) {
+				if (!userViewportSet) {
+					setUserViewportSet(true)
+					setLastViewportRange({
+						from: visibleRange.from,
+						to: visibleRange.to,
+					})
+				} else {
+					// Update last known viewport
+					setLastViewportRange({
+						from: visibleRange.from,
+						to: visibleRange.to,
+					})
+				}
+			}
+		}
+
+		// Subscribe to viewport changes
+		chart
+			.timeScale()
+			.subscribeVisibleTimeRangeChange(handleVisibleTimeRangeChange)
+
+		// Subscribe to crosshair move events for tooltip
+		chart.subscribeCrosshairMove((param) => {
+			if (
+				!chartContainerRef.current ||
+				param.point === undefined ||
+				!param.time ||
+				param.point.x < 0 ||
+				param.point.x > chartContainerRef.current.clientWidth ||
+				param.point.y < 0 ||
+				param.point.y > chartContainerRef.current.clientHeight
+			) {
+				tooltip.style.display = 'none'
+				return
+			}
+
+			tooltip.style.display = 'block'
+
+			// Get data from all series
+			const candleData = param.seriesData.get(candlestickSeries) as
+				| CandlestickData
+				| undefined
+			const volumeData = param.seriesData.get(volumeSeries) as
+				| HistogramData
+				| undefined
+			const ma10Data = ma10SeriesRef.current
+				? (param.seriesData.get(ma10SeriesRef.current) as LineData | undefined)
+				: undefined
+			const ma20Data = ma20SeriesRef.current
+				? (param.seriesData.get(ma20SeriesRef.current) as LineData | undefined)
+				: undefined
+			const ma50Data = ma50SeriesRef.current
+				? (param.seriesData.get(ma50SeriesRef.current) as LineData | undefined)
+				: undefined
+			const ma100Data = ma100SeriesRef.current
+				? (param.seriesData.get(ma100SeriesRef.current) as LineData | undefined)
+				: undefined
+			const ma200Data = ma200SeriesRef.current
+				? (param.seriesData.get(ma200SeriesRef.current) as LineData | undefined)
+				: undefined
+
+			if (!candleData) {
+				tooltip.style.display = 'none'
+				return
+			}
+
+			// Format date
+			const dateStr = new Date(
+				(param.time as number) * 1000,
+			).toLocaleDateString('en-US', {
+				year: 'numeric',
+				month: 'short',
+				day: 'numeric',
+			})
+
+			// Find current index in original data to get change percentages
+			const currentIndex = chartData.candlestick.findIndex(
+				(d) => d.time === param.time,
+			)
+			const currentDataPoint = currentIndex >= 0 ? data[currentIndex] : null
+
+			// Use close_changed from StockData
+			let priceChangePercent = ''
+			if (currentDataPoint && currentDataPoint.close_changed !== null && currentDataPoint.close_changed !== undefined) {
+				const change = currentDataPoint.close_changed
+				const changeColor = change >= 0 ? '#16a34a' : '#dc2626'
+				priceChangePercent = `<span style="color: ${changeColor}; font-size: 9px;">${formatPercent(change)}</span>`
+			}
+
+			// Use volume_changed from StockData
+			let volumeChangePercent = ''
+			if (currentDataPoint && currentDataPoint.volume_changed !== null && currentDataPoint.volume_changed !== undefined) {
+				const volChange = currentDataPoint.volume_changed
+				const volChangeColor = volChange >= 0 ? '#16a34a' : '#dc2626'
+				volumeChangePercent = `<span style="color: ${volChangeColor}; font-size: 9px;">${formatPercent(volChange)}</span>`
+			}
+
+			// Build tooltip HTML - 2-column grid layout
+			let html = `
+				<div style="color: #a1a1aa; font-size: 10px; margin-bottom: 4px;">${dateStr}</div>
+				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; font-size: 10px;">
+					<div><span style="color: #a1a1aa;">O</span> ${formatPrice(candleData.open)}</div>
+					<div><span style="color: #a1a1aa;">C</span> ${formatPrice(candleData.close)} ${priceChangePercent}</div>
+					<div><span style="color: #a1a1aa;">H</span> <span style="color: #16a34a;">${formatPrice(candleData.high)}</span></div>
+					<div><span style="color: #a1a1aa;">L</span> <span style="color: #dc2626;">${formatPrice(candleData.low)}</span></div>
+			`
+
+			// Add volume if available
+			if (volumeData) {
+				html += `
+					<div style="grid-column: 1 / -1;"><span style="color: #a1a1aa;">Vol</span> ${formatVolume(volumeData.value)} ${volumeChangePercent}</div>
+				`
+			}
+
+			// Add moving averages in 2-column grid
+			if (ma10Data || ma20Data || ma50Data || ma100Data || ma200Data) {
+				if (ma10Data) {
+					html += `<div><span style="color: #dc2626;">MA10</span> ${formatPrice(ma10Data.value)}</div>`
+				}
+				if (ma20Data) {
+					html += `<div><span style="color: #16a34a;">MA20</span> ${formatPrice(ma20Data.value)}</div>`
+				}
+				if (ma50Data) {
+					html += `<div><span style="color: #2563eb;">MA50</span> ${formatPrice(ma50Data.value)}</div>`
+				}
+				if (ma100Data) {
+					html += `<div><span style="color: #a1a1aa;">MA100</span> ${formatPrice(ma100Data.value)}</div>`
+				}
+				if (ma200Data) {
+					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a;">MA200</span> ${formatPrice(ma200Data.value)}</div>`
+				}
+			}
+
+			html += `</div>`
+
+			tooltip.innerHTML = html
+
+			// Position tooltip
+			const y = param.point.y
+			let left = param.point.x + tooltipMargin
+			if (left > chartContainerRef.current.clientWidth - tooltipWidth) {
+				left = param.point.x - tooltipMargin - tooltipWidth
+			}
+
+			let top = y + tooltipMargin
+			if (top > chartContainerRef.current.clientHeight - tooltipHeight) {
+				top = y - tooltipHeight - tooltipMargin
+			}
+
+			tooltip.style.left = `${left}px`
+			tooltip.style.top = `${top}px`
+		})
+
+		// Handle resize
+		const handleResize = () => {
+			if (chartContainerRef.current) {
+				chart.applyOptions({
+					width: chartContainerRef.current.clientWidth,
+				})
+			}
+		}
+
+		window.addEventListener('resize', handleResize)
+
+		return () => {
+			window.removeEventListener('resize', handleResize)
+
+			// Remove tooltip
+			if (
+				chartContainerRef.current &&
+				tooltip.parentNode === chartContainerRef.current
+			) {
+				chartContainerRef.current.removeChild(tooltip)
+			}
+
+			// Clean up chart and series refs
+			chartRef.current = null
+			candlestickSeriesRef.current = null
+			volumeSeriesRef.current = null
+			ma10SeriesRef.current = null
+			ma20SeriesRef.current = null
+			ma50SeriesRef.current = null
+			ma100SeriesRef.current = null
+			ma200SeriesRef.current = null
+
+			try {
+				chart.remove()
+			} catch (error) {
+				// Chart already disposed, ignore error
+			}
+		}
+	}, [height, chartContainerRef.current, userViewportSet, isDataInitialized])
+
+	// Update chart data when chartData changes
+	useEffect(() => {
+		if (!candlestickSeriesRef.current || !volumeSeriesRef.current) {
+			return
+		}
+
+		// Update series data (even if empty - this clears the chart)
+		candlestickSeriesRef.current.setData(chartData.candlestick)
+		volumeSeriesRef.current.setData(chartData.volume)
+
+		if (ma10SeriesRef.current) {
+			ma10SeriesRef.current.setData(chartData.ma10)
+		}
+		if (ma20SeriesRef.current) {
+			ma20SeriesRef.current.setData(chartData.ma20)
+		}
+		if (ma50SeriesRef.current) {
+			ma50SeriesRef.current.setData(chartData.ma50)
+		}
+		if (ma100SeriesRef.current) {
+			ma100SeriesRef.current.setData(chartData.ma100)
+		}
+		if (ma200SeriesRef.current) {
+			ma200SeriesRef.current.setData(chartData.ma200)
+		}
+
+		// Smart viewport management
+		if (chartRef.current && chartData.candlestick.length > 0) {
+			// Mark data as initialized on first successful data load
+			if (!isDataInitialized) {
+				setIsDataInitialized(true)
+			}
+
+			// Only reset viewport if user hasn't manually set it OR this is initial data load
+			if (!userViewportSet || !lastViewportRange) {
+				if (
+					viewportSizeOverride &&
+					chartData.candlestick.length > viewportSizeOverride
+				) {
+					// Show only the last N candles
+					const from =
+						chartData.candlestick[
+							chartData.candlestick.length - viewportSizeOverride
+						].time
+					const to =
+						chartData.candlestick[chartData.candlestick.length - 1].time
+					chartRef.current.timeScale().setVisibleRange({ from, to })
+				} else {
+					// Show last 40 candles by default
+					const candlesToShow = Math.min(40, chartData.candlestick.length)
+					const from = chartData.candlestick[chartData.candlestick.length - candlesToShow].time
+					const to = chartData.candlestick[chartData.candlestick.length - 1].time
+					chartRef.current.timeScale().setVisibleRange({ from, to })
+				}
+			} else {
+				// User has set viewport - preserve it during live data updates
+				try {
+					const currentRange = chartRef.current.timeScale().getVisibleRange()
+					if (
+						!currentRange ||
+						Math.abs(Number(currentRange.from) - Number(lastViewportRange.from)) > 1000
+					) {
+						chartRef.current.timeScale().setVisibleRange(lastViewportRange)
+					}
+				} catch (error) {
+					// Failed to restore viewport, ignore
+				}
+			}
+		}
+	}, [
+		chartData,
+		viewportSizeOverride,
+		userViewportSet,
+		lastViewportRange,
+		isDataInitialized,
+	])
+
+	if (!data || data.length === 0) {
+		return (
+			<div>
+				{title && <h3 className="font-semibold mb-4">{title}</h3>}
+				<div className="flex items-center justify-center h-[400px] text-muted-foreground">
+					{t('common.noDataAvailable')}
+				</div>
+			</div>
+		)
+	}
+
+	return (
+		<div>
+			{showControls && title && (
+				<div className="mb-4">
+					<h3 className="font-semibold">{title}</h3>
+				</div>
+			)}
+
+			{/* Chart Container */}
+			<div
+				ref={chartContainerRef}
+				className="relative"
+				style={{ height: `${height}px` }}
+			/>
+		</div>
+	)
+}
