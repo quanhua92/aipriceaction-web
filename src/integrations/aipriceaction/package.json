@@ -1,0 +1,58 @@
+{
+  "name": "aipriceaction-js",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for AIPriceAction Vietnamese Stock Market API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx watch src/index.ts",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "example": "tsx",
+    "example:basic": "tsx examples/01-basic-tickers.ts",
+    "example:health": "tsx examples/02-health-check.ts",
+    "example:groups": "tsx examples/03-ticker-groups.ts",
+    "example:top": "tsx examples/04-top-performers.ts",
+    "example:ma": "tsx examples/05-ma-scores.ts",
+    "example:csv": "tsx examples/06-csv-export.ts",
+    "example:errors": "tsx examples/07-error-handling.ts",
+    "example:batch": "tsx examples/08-batch-requests.ts",
+    "example:dashboard": "tsx examples/09-analysis-dashboard.ts",
+    "example:all": "for f in examples/*.ts; do echo \"\\n=== Running $f ===\"; tsx \"$f\" || true; done"
+  },
+  "keywords": [
+    "vietnam",
+    "stock",
+    "market",
+    "vci",
+    "api",
+    "typescript",
+    "sdk",
+    "finance",
+    "trading"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

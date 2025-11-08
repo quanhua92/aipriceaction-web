@@ -1,0 +1,24 @@
+# Source files (we ship dist/ only)
+src/
+tsconfig.json
+tsconfig.build.json
+
+# Examples and tests
+examples/
+tests/
+
+# Development files
+.gitignore
+.vscode/
+.idea/
+
+# CI/CD
+.github/
+
+# Documentation (keep README.md and LICENSE)
+*.md
+!README.md
+
+# Misc
+*.log
+.DS_Store
