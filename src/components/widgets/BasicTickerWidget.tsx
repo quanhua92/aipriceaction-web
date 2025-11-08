@@ -1,5 +1,7 @@
 import type { StockData } from '@/lib/api-client'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
+import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
 
 interface BasicTickerWidgetProps {
   data: StockData
@@ -11,23 +13,6 @@ export function BasicTickerWidget({ data }: BasicTickerWidgetProps) {
   const isPricePositive = priceChange >= 0
   const isVolumePositive = volumeChange >= 0
 
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num)
-  }
-
-  const formatVolume = (vol: number) => {
-    if (vol >= 1_000_000) {
-      return `${(vol / 1_000_000).toFixed(2)}M`
-    }
-    if (vol >= 1_000) {
-      return `${(vol / 1_000).toFixed(2)}K`
-    }
-    return vol.toFixed(0)
-  }
-
   return (
     <div className="border rounded-lg p-4 bg-card">
       {/* Header */}
@@ -37,12 +22,10 @@ export function BasicTickerWidget({ data }: BasicTickerWidgetProps) {
           <p className="text-xs text-muted-foreground">{data.time}</p>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold">{formatNumber(data.close)}</div>
+          <div className="text-2xl font-bold">{formatPrice(data.close)}</div>
           {data.close_changed !== null && data.close_changed !== undefined && (
             <div
-              className={`flex items-center justify-end gap-1 text-sm font-medium ${
-                isPricePositive ? 'text-green-600' : 'text-red-600'
-              }`}
+              className={`flex items-center justify-end gap-1 text-sm font-medium ${getPriceChangeColor(priceChange)}`}
             >
               {isPricePositive ? (
                 <TrendingUp className="h-4 w-4" />
@@ -50,8 +33,7 @@ export function BasicTickerWidget({ data }: BasicTickerWidgetProps) {
                 <TrendingDown className="h-4 w-4" />
               )}
               <span>
-                {isPricePositive ? '+' : ''}
-                {priceChange.toFixed(2)}%
+                {formatPercent(priceChange)}
               </span>
             </div>
           )}
@@ -62,32 +44,27 @@ export function BasicTickerWidget({ data }: BasicTickerWidgetProps) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Open</p>
-          <p className="text-sm font-semibold">{formatNumber(data.open)}</p>
+          <p className="text-sm font-semibold">{formatPrice(data.open)}</p>
         </div>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">High</p>
-          <p className="text-sm font-semibold text-green-600">{formatNumber(data.high)}</p>
+          <p className="text-sm font-semibold text-green-600 dark:text-green-500">{formatPrice(data.high)}</p>
         </div>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Low</p>
-          <p className="text-sm font-semibold text-red-600">{formatNumber(data.low)}</p>
+          <p className="text-sm font-semibold text-red-600 dark:text-red-500">{formatPrice(data.low)}</p>
         </div>
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Close</p>
-          <p className="text-sm font-semibold">{formatNumber(data.close)}</p>
+          <p className="text-sm font-semibold">{formatPrice(data.close)}</p>
         </div>
         <div className="space-y-1 col-span-2 sm:col-span-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Volume</p>
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold">{formatVolume(data.volume)}</p>
             {data.volume_changed !== null && data.volume_changed !== undefined && (
-              <span
-                className={`text-xs font-medium ${
-                  isVolumePositive ? 'text-green-600' : 'text-red-600'
-                }`}
-              >
-                {isVolumePositive ? '+' : ''}
-                {volumeChange.toFixed(2)}%
+              <span className={`text-xs font-medium ${getVolumeChangeColor(volumeChange)}`}>
+                {formatPercent(volumeChange)}
               </span>
             )}
           </div>

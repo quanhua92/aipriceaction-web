@@ -1,13 +1,25 @@
 /**
  * Format a price value with comma separators
- * @example formatPrice(145230.5) => "145,230.50"
- * @example formatPrice(1000) => "1,000.00"
+ * @param price - The price value to format
+ * @param useDecimals - If true, formats with 2 decimals. Default false for VND (no decimals)
+ * @example formatPrice(145230.5) => "145,231" (VND)
+ * @example formatPrice(1000) => "1,000" (VND)
+ * @example formatPrice(145230.5, true) => "145,230.50" (with decimals)
+ * @example formatPrice(1000, true) => "1,000.00" (with decimals)
  */
-export function formatPrice(price: number): string {
+export function formatPrice(price: number, useDecimals: boolean = false): string {
+  if (useDecimals) {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price)
+  }
+
+  // VND format - no decimals
   return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price)
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Math.round(price))
 }
 
 /**
