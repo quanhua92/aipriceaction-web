@@ -7,79 +7,40 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { Search, Loader2 } from 'lucide-react'
+import { useAPI } from '@/contexts/APIContext'
+import { MARKET_INDICES } from '@/lib/constants'
 
 interface SelectTickerDialogProps {
   children: React.ReactNode
   onSelectTicker: (ticker: string) => void
 }
 
-interface Ticker {
-  symbol: string
-  name: string
-}
-
-// Generate mock ticker data
-function generateTickers(): Ticker[] {
-  const popularStocks = [
-    { symbol: 'AAPL', name: 'Apple Inc.' },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.' },
-    { symbol: 'MSFT', name: 'Microsoft Corporation' },
-    { symbol: 'AMZN', name: 'Amazon.com Inc.' },
-    { symbol: 'TSLA', name: 'Tesla Inc.' },
-    { symbol: 'META', name: 'Meta Platforms Inc.' },
-    { symbol: 'NVDA', name: 'NVIDIA Corporation' },
-    { symbol: 'NFLX', name: 'Netflix Inc.' },
-    { symbol: 'JPM', name: 'JPMorgan Chase & Co.' },
-    { symbol: 'BAC', name: 'Bank of America Corp.' },
-    { symbol: 'WMT', name: 'Walmart Inc.' },
-    { symbol: 'DIS', name: 'The Walt Disney Company' },
-    { symbol: 'V', name: 'Visa Inc.' },
-    { symbol: 'MA', name: 'Mastercard Inc.' },
-    { symbol: 'PYPL', name: 'PayPal Holdings Inc.' },
-    { symbol: 'INTC', name: 'Intel Corporation' },
-    { symbol: 'AMD', name: 'Advanced Micro Devices Inc.' },
-    { symbol: 'CSCO', name: 'Cisco Systems Inc.' },
-    { symbol: 'ORCL', name: 'Oracle Corporation' },
-    { symbol: 'ADBE', name: 'Adobe Inc.' },
-  ]
-
-  // Generate additional tickers
-  const additionalTickers: Ticker[] = []
-  const usedSymbols = new Set(popularStocks.map(s => s.symbol))
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
-  let counter = 0
-  while (additionalTickers.length < 180 && counter < 1000) {
-    const symbol = `${letters[counter % 26]}${letters[Math.floor(counter / 26) % 26]}${letters[Math.floor(counter / 676) % 26]}`
-
-    if (!usedSymbols.has(symbol) && symbol !== 'AAA') {
-      usedSymbols.add(symbol)
-      additionalTickers.push({
-        symbol,
-        name: `${symbol} Corporation`
-      })
-    }
-    counter++
-  }
-
-  return [...popularStocks, ...additionalTickers]
-}
-
-const TICKERS = generateTickers()
-
 export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
+  const { tickers, loading, error } = useAPI()
 
-  const filteredTickers = React.useMemo(() => {
-    if (!search) return TICKERS
+  const { marketIndices, filteredTickers } = React.useMemo(() => {
     const searchLower = search.toLowerCase()
-    return TICKERS.filter(
+
+    // Filter market indices
+    const indices = MARKET_INDICES.filter(index =>
+      index.toLowerCase().includes(searchLower)
+    )
+
+    // Filter regular tickers (excluding market indices)
+    const regularTickers = tickers.filter(
       (ticker) =>
+        !MARKET_INDICES.includes(ticker.symbol as any) &&
         ticker.symbol.toLowerCase().includes(searchLower)
     )
-  }, [search])
+
+    return {
+      marketIndices: search ? indices : MARKET_INDICES,
+      filteredTickers: regularTickers
+    }
+  }, [search, tickers])
 
   const handleSelectTicker = (symbol: string) => {
     onSelectTicker(symbol)
@@ -91,6 +52,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-2xl h-[500px] flex flex-col p-0 gap-0" showCloseButton={false}>
+        <DialogTitle className="sr-only">Select Ticker Symbol</DialogTitle>
         <div className="p-4 shrink-0 border-b">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -106,22 +68,70 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
 
         <div className="overflow-y-auto flex-1 min-h-0">
           <div className="p-2">
-            {filteredTickers.map((ticker) => (
-              <button
-                key={ticker.symbol}
-                onClick={() => handleSelectTicker(ticker.symbol)}
-                className="w-full flex items-center px-3 py-2.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
-              >
-                <div className="flex flex-col min-w-0">
-                  <span className="font-semibold">{ticker.symbol}</span>
-                  <span className="text-xs text-muted-foreground truncate">{ticker.name}</span>
-                </div>
-              </button>
-            ))}
-            {filteredTickers.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No tickers found
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
+            )}
+
+            {error && (
+              <div className="text-center py-8 text-destructive">
+                {error}
+              </div>
+            )}
+
+            {!loading && !error && (
+              <>
+                {/* Market Indices */}
+                {marketIndices.length > 0 && (
+                  <div className="mb-2">
+                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Market Indices
+                    </div>
+                    {marketIndices.map((index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSelectTicker(index)}
+                        className="w-full flex items-center px-3 py-2.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold">{index}</span>
+                          <span className="text-xs text-muted-foreground truncate">Market Index</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Regular Tickers */}
+                {filteredTickers.length > 0 && (
+                  <div>
+                    {marketIndices.length > 0 && (
+                      <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        Stocks
+                      </div>
+                    )}
+                    {filteredTickers.map((ticker) => (
+                      <button
+                        key={ticker.symbol}
+                        onClick={() => handleSelectTicker(ticker.symbol)}
+                        className="w-full flex items-center px-3 py-2.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold">{ticker.symbol}</span>
+                          <span className="text-xs text-muted-foreground truncate">{ticker.sector}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {marketIndices.length === 0 && filteredTickers.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No tickers found
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
