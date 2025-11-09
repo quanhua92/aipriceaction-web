@@ -1,6 +1,7 @@
 import { Interval } from '@/lib/api-client'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -60,6 +61,25 @@ export function ChartControlBar({
 	mobileVisibleIntervals = DEFAULT_MOBILE_VISIBLE_INTERVALS,
 	className = '',
 }: ChartControlBarProps) {
+	const {
+		interval: globalInterval,
+		setInterval: setGlobalInterval,
+		limit,
+		setLimit,
+		height,
+		setHeight,
+		maVisibility,
+		setMaVisibility,
+		resetMaVisibility,
+		startDate,
+		setStartDate,
+		endDate,
+		setEndDate,
+	} = useChartSettings()
+
+	// Use global interval if no specific interval provided
+	const currentInterval = interval ?? globalInterval
+	const handleIntervalChange = onIntervalChange ?? setGlobalInterval
 	// Calculate hidden intervals for dropdown menu
 	const desktopHiddenIntervals = ALL_INTERVALS.filter(
 		(i) => !visibleIntervals.includes(i),
@@ -73,9 +93,9 @@ export function ChartControlBar({
 			key={int}
 			variant="ghost"
 			size="sm"
-			onClick={() => onIntervalChange(int)}
+			onClick={() => handleIntervalChange(int)}
 			className={`px-2 py-1 h-7 text-xs font-medium transition-colors ${
-				interval === int
+				currentInterval === int
 					? 'bg-primary text-primary-foreground hover:bg-primary/90'
 					: 'text-muted-foreground hover:bg-muted hover:text-foreground'
 			}`}

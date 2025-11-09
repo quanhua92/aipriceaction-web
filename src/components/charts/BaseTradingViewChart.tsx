@@ -16,6 +16,7 @@ import {
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { useTicker } from '@/contexts/TickerContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Loader2 } from 'lucide-react'
 
 interface BaseTradingViewChartProps {
@@ -25,6 +26,13 @@ interface BaseTradingViewChartProps {
 	showControls?: boolean
 	viewportSizeOverride?: number
 	noDataMessage?: string
+	maVisibility?: {
+		ma10: boolean
+		ma20: boolean
+		ma50: boolean
+		ma100: boolean
+		ma200: boolean
+	}
 }
 
 export function BaseTradingViewChart({
@@ -34,20 +42,18 @@ export function BaseTradingViewChart({
 	showControls = true,
 	viewportSizeOverride,
 	noDataMessage = 'No data available',
+	maVisibility: maVisibilityProp,
 }: BaseTradingViewChartProps) {
+	// Get global settings
+	const globalSettings = useChartSettings()
+
 	// If no data prop provided, use context
 	const contextData = dataProp === undefined ? useTicker() : null
 	const loading = contextData?.loading ?? false
 	const error = contextData?.error ?? null
 	const data = dataProp ?? contextData?.chartData ?? []
-	const height = heightProp ?? contextData?.height ?? 400
-	const maVisibility = contextData?.maVisibility ?? {
-		ma10: true,
-		ma20: true,
-		ma50: true,
-		ma100: true,
-		ma200: false,
-	}
+	const height = heightProp ?? globalSettings.height
+	const maVisibility = maVisibilityProp ?? globalSettings.maVisibility
 
 	// Show loading state when using context
 	if (loading) {
@@ -498,7 +504,7 @@ export function BaseTradingViewChart({
 				// Chart already disposed, ignore error
 			}
 		}
-	}, [height, chartContainerRef.current, userViewportSet, isDataInitialized])
+	}, [height, maVisibility, chartContainerRef.current, userViewportSet, isDataInitialized])
 
 	// Update chart data when chartData changes
 	useEffect(() => {

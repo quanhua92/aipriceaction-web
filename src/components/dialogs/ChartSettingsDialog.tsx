@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTicker } from '@/contexts/TickerContext'
+import { useChartSettings, MaVisibility } from '@/contexts/ChartSettingsContext'
 import {
 	Dialog,
 	DialogContent,
@@ -35,24 +35,26 @@ const LIMIT_OPTIONS = [
 	{ value: '30', label: '30 records' },
 	{ value: '90', label: '90 records' },
 	{ value: '180', label: '180 records' },
-	{ value: '365', label: '365 records' },
-	{ value: '730', label: '730 records' },
-	{ value: '1095', label: '1095 records' },
+	{ value: '252', label: '252 records (1 year)' },
+	{ value: '504', label: '504 records (2 years)' },
+	{ value: '756', label: '756 records (3 years)' },
 ]
 
 export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 	const { t } = useTranslation()
 	const {
+		limit,
+		setLimit,
+		height,
+		setHeight,
 		maVisibility,
 		setMaVisibility,
 		resetMaVisibility,
 		startDate,
-		endDate,
-		limit,
 		setStartDate,
+		endDate,
 		setEndDate,
-		setLimit,
-	} = useTicker()
+	} = useChartSettings()
 
 	const [open, setOpen] = React.useState(false)
 
@@ -66,7 +68,7 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 	const handleClearFilters = () => {
 		setStartDate(undefined)
 		setEndDate(undefined)
-		setLimit(365)
+		setLimit(252)
 	}
 
 	// Convert string date to Date object for calendar

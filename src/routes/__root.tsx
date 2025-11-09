@@ -9,6 +9,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import Header from '../components/Header'
 import { APIProvider } from '../contexts/APIContext'
 import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
+import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -67,8 +68,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <SiteSettingsProvider>
           <APIProvider>
-            <Header />
-            {children}
+            <ChartSettingsProvider>
+              <Header />
+              {children}
             <TanStackDevtools
               config={{
                 position: 'bottom-right',
@@ -81,6 +83,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 TanStackQueryDevtools,
               ]}
             />
+            </ChartSettingsProvider>
           </APIProvider>
         </SiteSettingsProvider>
         <Scripts />
