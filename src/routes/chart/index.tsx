@@ -1,8 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { SelectTickerButton } from '@/components/buttons/SelectTickerButton'
 import { TickerProvider, useTicker } from '@/contexts/TickerContext'
 import { BasicTickerWidget } from '@/components/widgets/BasicTickerWidget'
-import { BaseTradingViewChart } from '@/components/charts/BaseTradingViewChart'
 import { TradingViewChart } from '@/components/charts/TradingViewChart'
 
 export const Route = createFileRoute('/chart/')({
@@ -31,9 +29,8 @@ function ChartPageContent() {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4">
         <h1 className="text-2xl font-bold">Chart</h1>
-        <SelectTickerButton />
       </div>
 
       <div className="space-y-4">
@@ -45,7 +42,6 @@ function ChartPageContent() {
             <BasicTickerWidget data={chartData[chartData.length - 1]} />
           </>
         )}
-        <BaseTradingViewChart />
       </div>
     </div>
   )

@@ -1,8 +1,11 @@
 import type { StockData } from '@/lib/api-client'
-import { TrendingUp, TrendingDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, ChevronDown } from 'lucide-react'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
 import { useTranslation } from '@/hooks/useTranslation'
+import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
+import { useTicker } from '@/contexts/TickerContext'
+import { Button } from '@/components/ui/button'
 
 interface BasicTickerWidgetProps {
   data: StockData
@@ -10,6 +13,7 @@ interface BasicTickerWidgetProps {
 
 export function BasicTickerWidget({ data }: BasicTickerWidgetProps) {
   const { t } = useTranslation()
+  const { setSelectedTicker } = useTicker()
   const priceChange = data.close_changed ?? 0
   const volumeChange = data.volume_changed ?? 0
   const isPricePositive = priceChange >= 0
@@ -20,7 +24,12 @@ export function BasicTickerWidget({ data }: BasicTickerWidgetProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-bold">{data.symbol}</h3>
+          <SelectTickerDialog onSelectTicker={setSelectedTicker}>
+            <div className="text-lg font-bold hover:bg-muted/50 transition-colors duration-200 inline-flex items-center cursor-pointer px-1 -ml-1">
+              {data.symbol}
+              <ChevronDown className="ml-1 h-4 w-4 opacity-60" />
+            </div>
+          </SelectTickerDialog>
           <p className="text-xs text-muted-foreground">{data.time}</p>
         </div>
         <div className="text-right">
