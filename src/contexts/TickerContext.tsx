@@ -1,6 +1,14 @@
 import React from 'react'
 import { getTickers, Interval, type StockData } from '@/lib/api-client'
 
+export interface MaVisibility {
+  ma10: boolean
+  ma20: boolean
+  ma50: boolean
+  ma100: boolean
+  ma200: boolean
+}
+
 interface TickerContextValue {
   selectedTicker: string
   setSelectedTicker: (ticker: string) => void
@@ -17,11 +25,38 @@ interface TickerContextValue {
   chartData: StockData[]
   loading: boolean
   error: string | null
+  maVisibility: MaVisibility
+  setMaVisibility: (visibility: MaVisibility) => void
+  resetMaVisibility: () => void
 }
 
 const TickerContext = React.createContext<TickerContextValue | undefined>(
   undefined
 )
+
+/**
+ * Get default MA visibility based on interval
+ * For intervals < 1H: MA10, MA20, MA50 enabled; MA100, MA200 disabled
+ * For intervals >= 1H: All MAs enabled
+ */
+function getDefaultMaVisibility(interval: Interval): MaVisibility {
+  const shortIntervals = [
+    Interval.Minute,
+    Interval.Minutes5,
+    Interval.Minutes15,
+    Interval.Minutes30,
+  ]
+
+  const isShortInterval = shortIntervals.includes(interval)
+
+  return {
+    ma10: true,
+    ma20: true,
+    ma50: true,
+    ma100: !isShortInterval,
+    ma200: !isShortInterval,
+  }
+}
 
 export function TickerProvider({ children }: { children: React.ReactNode }) {
   const [selectedTicker, setSelectedTicker] = React.useState('VNINDEX')
@@ -33,6 +68,18 @@ export function TickerProvider({ children }: { children: React.ReactNode }) {
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [maVisibility, setMaVisibility] = React.useState<MaVisibility>(
+    getDefaultMaVisibility(Interval.Daily)
+  )
+
+  // Reset MA visibility to defaults when interval changes
+  React.useEffect(() => {
+    setMaVisibility(getDefaultMaVisibility(interval))
+  }, [interval])
+
+  const resetMaVisibility = React.useCallback(() => {
+    setMaVisibility(getDefaultMaVisibility(interval))
+  }, [interval])
 
   React.useEffect(() => {
     const fetchChartData = async () => {
@@ -74,7 +121,10 @@ export function TickerProvider({ children }: { children: React.ReactNode }) {
       setHeight,
       chartData,
       loading,
-      error
+      error,
+      maVisibility,
+      setMaVisibility,
+      resetMaVisibility,
     }}>
       {children}
     </TickerContext.Provider>

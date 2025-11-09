@@ -1,5 +1,6 @@
 import { Interval } from '@/lib/api-client'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
+import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -8,7 +9,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical } from 'lucide-react'
+import { MoreVertical, Settings } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -162,6 +163,15 @@ export function ChartControlBar({
 					</DropdownMenu>
 				</div>
 			)}
+
+			{/* Settings Button - Top Right */}
+			<div className="ml-auto">
+				<ChartSettingsDialog>
+					<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+						<Settings className="h-4 w-4" />
+					</Button>
+				</ChartSettingsDialog>
+			</div>
 		</div>
 	)
 }

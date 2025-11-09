@@ -41,6 +41,13 @@ export function BaseTradingViewChart({
 	const error = contextData?.error ?? null
 	const data = dataProp ?? contextData?.chartData ?? []
 	const height = heightProp ?? contextData?.height ?? 400
+	const maVisibility = contextData?.maVisibility ?? {
+		ma10: true,
+		ma20: true,
+		ma50: true,
+		ma100: true,
+		ma200: true,
+	}
 
 	// Show loading state when using context
 	if (loading) {
@@ -414,21 +421,21 @@ export function BaseTradingViewChart({
 				`
 			}
 
-			// Add moving averages in 2-column grid
+			// Add moving averages in 2-column grid (only show visible MAs)
 			if (ma10Data || ma20Data || ma50Data || ma100Data || ma200Data) {
-				if (ma10Data) {
+				if (ma10Data && maVisibility.ma10) {
 					html += `<div><span style="color: #dc2626;">MA10</span> ${formatPrice(ma10Data.value)}</div>`
 				}
-				if (ma20Data) {
+				if (ma20Data && maVisibility.ma20) {
 					html += `<div><span style="color: #16a34a;">MA20</span> ${formatPrice(ma20Data.value)}</div>`
 				}
-				if (ma50Data) {
+				if (ma50Data && maVisibility.ma50) {
 					html += `<div><span style="color: #2563eb;">MA50</span> ${formatPrice(ma50Data.value)}</div>`
 				}
-				if (ma100Data) {
+				if (ma100Data && maVisibility.ma100) {
 					html += `<div><span style="color: #a1a1aa;">MA100</span> ${formatPrice(ma100Data.value)}</div>`
 				}
-				if (ma200Data) {
+				if (ma200Data && maVisibility.ma200) {
 					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a;">MA200</span> ${formatPrice(ma200Data.value)}</div>`
 				}
 			}
@@ -503,20 +510,21 @@ export function BaseTradingViewChart({
 		candlestickSeriesRef.current.setData(chartData.candlestick)
 		volumeSeriesRef.current.setData(chartData.volume)
 
+		// Update MA series data - set to empty array if not visible
 		if (ma10SeriesRef.current) {
-			ma10SeriesRef.current.setData(chartData.ma10)
+			ma10SeriesRef.current.setData(maVisibility.ma10 ? chartData.ma10 : [])
 		}
 		if (ma20SeriesRef.current) {
-			ma20SeriesRef.current.setData(chartData.ma20)
+			ma20SeriesRef.current.setData(maVisibility.ma20 ? chartData.ma20 : [])
 		}
 		if (ma50SeriesRef.current) {
-			ma50SeriesRef.current.setData(chartData.ma50)
+			ma50SeriesRef.current.setData(maVisibility.ma50 ? chartData.ma50 : [])
 		}
 		if (ma100SeriesRef.current) {
-			ma100SeriesRef.current.setData(chartData.ma100)
+			ma100SeriesRef.current.setData(maVisibility.ma100 ? chartData.ma100 : [])
 		}
 		if (ma200SeriesRef.current) {
-			ma200SeriesRef.current.setData(chartData.ma200)
+			ma200SeriesRef.current.setData(maVisibility.ma200 ? chartData.ma200 : [])
 		}
 
 		// Smart viewport management
@@ -568,6 +576,7 @@ export function BaseTradingViewChart({
 		userViewportSet,
 		lastViewportRange,
 		isDataInitialized,
+		maVisibility,
 	])
 
 	if (!data || data.length === 0) {
