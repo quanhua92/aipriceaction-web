@@ -12,6 +12,8 @@ interface TickerContextValue {
   setEndDate: (date: string | undefined) => void
   limit: number
   setLimit: (limit: number) => void
+  height: number
+  setHeight: (height: number) => void
   chartData: StockData[]
   loading: boolean
   error: string | null
@@ -27,6 +29,7 @@ export function TickerProvider({ children }: { children: React.ReactNode }) {
   const [startDate, setStartDate] = React.useState<string | undefined>(undefined)
   const [endDate, setEndDate] = React.useState<string | undefined>(undefined)
   const [limit, setLimit] = React.useState<number>(365)
+  const [height, setHeight] = React.useState<number>(400)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -67,6 +70,8 @@ export function TickerProvider({ children }: { children: React.ReactNode }) {
       setEndDate,
       limit,
       setLimit,
+      height,
+      setHeight,
       chartData,
       loading,
       error

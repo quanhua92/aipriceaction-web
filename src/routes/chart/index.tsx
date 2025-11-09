@@ -2,8 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { SelectTickerButton } from '@/components/buttons/SelectTickerButton'
 import { TickerProvider, useTicker } from '@/contexts/TickerContext'
 import { BasicTickerWidget } from '@/components/widgets/BasicTickerWidget'
+import { BaseTradingViewChart } from '@/components/charts/BaseTradingViewChart'
 import { TradingViewChart } from '@/components/charts/TradingViewChart'
-import { Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/chart/')({
   component: ChartPage,
@@ -11,14 +11,23 @@ export const Route = createFileRoute('/chart/')({
 
 function ChartPage() {
   return (
-    <TickerProvider>
-      <ChartPageContent />
-    </TickerProvider>
+    <div className="space-y-8">
+      {/* Context-based chart */}
+      <TickerProvider>
+        <ChartPageContent />
+      </TickerProvider>
+
+      {/* Standalone TradingViewChart with internal TickerProvider */}
+      <div className="p-4 md:p-6 border-t">
+        <h2 className="text-xl font-bold mb-4">Standalone Chart (VNINDEX)</h2>
+        <TradingViewChart />
+      </div>
+    </div>
   )
 }
 
 function ChartPageContent() {
-  const { selectedTicker, chartData, loading, error } = useTicker()
+  const { chartData } = useTicker()
 
   return (
     <div className="p-4 md:p-6">
@@ -27,34 +36,17 @@ function ChartPageContent() {
         <SelectTickerButton />
       </div>
 
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-muted-foreground">Loading chart data...</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="text-center py-8 text-destructive">
-          {error}
-        </div>
-      )}
-
-      {!loading && !error && chartData.length > 0 && (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Loaded {chartData.length} days of chart data
-          </p>
-          <BasicTickerWidget data={chartData[chartData.length - 1]} />
-          <TradingViewChart data={chartData} height={500} />
-        </div>
-      )}
-
-      {!loading && !error && chartData.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          No chart data available
-        </div>
-      )}
+      <div className="space-y-4">
+        {chartData.length > 0 && (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Loaded {chartData.length} days of chart data
+            </p>
+            <BasicTickerWidget data={chartData[chartData.length - 1]} />
+          </>
+        )}
+        <BaseTradingViewChart />
+      </div>
     </div>
   )
 }
