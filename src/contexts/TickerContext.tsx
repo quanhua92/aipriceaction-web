@@ -4,6 +4,14 @@ import { getTickers, Interval, type StockData } from '@/lib/api-client'
 interface TickerContextValue {
   selectedTicker: string
   setSelectedTicker: (ticker: string) => void
+  interval: Interval
+  setInterval: (interval: Interval) => void
+  startDate: string | undefined
+  setStartDate: (date: string | undefined) => void
+  endDate: string | undefined
+  setEndDate: (date: string | undefined) => void
+  limit: number
+  setLimit: (limit: number) => void
   chartData: StockData[]
   loading: boolean
   error: string | null
@@ -15,6 +23,10 @@ const TickerContext = React.createContext<TickerContextValue | undefined>(
 
 export function TickerProvider({ children }: { children: React.ReactNode }) {
   const [selectedTicker, setSelectedTicker] = React.useState('VNINDEX')
+  const [interval, setInterval] = React.useState<Interval>(Interval.Daily)
+  const [startDate, setStartDate] = React.useState<string | undefined>(undefined)
+  const [endDate, setEndDate] = React.useState<string | undefined>(undefined)
+  const [limit, setLimit] = React.useState<number>(365)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -26,8 +38,10 @@ export function TickerProvider({ children }: { children: React.ReactNode }) {
       try {
         const response = await getTickers({
           symbol: selectedTicker,
-          interval: Interval.Daily,
-          limit: 365,
+          interval: interval,
+          start_date: startDate,
+          end_date: endDate,
+          limit: limit,
         })
         setChartData(response[selectedTicker] || [])
       } catch (err) {
@@ -39,10 +53,24 @@ export function TickerProvider({ children }: { children: React.ReactNode }) {
     }
 
     fetchChartData()
-  }, [selectedTicker])
+  }, [selectedTicker, interval, startDate, endDate, limit])
 
   return (
-    <TickerContext.Provider value={{ selectedTicker, setSelectedTicker, chartData, loading, error }}>
+    <TickerContext.Provider value={{
+      selectedTicker,
+      setSelectedTicker,
+      interval,
+      setInterval,
+      startDate,
+      setStartDate,
+      endDate,
+      setEndDate,
+      limit,
+      setLimit,
+      chartData,
+      loading,
+      error
+    }}>
       {children}
     </TickerContext.Provider>
   )
