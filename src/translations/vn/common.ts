@@ -2,6 +2,7 @@ export default {
   loading: 'Đang tải...',
   error: 'Lỗi',
   noData: 'Không có dữ liệu',
+  noDataAvailable: 'Không có dữ liệu',
   search: 'Tìm kiếm',
   close: 'Đóng',
   cancel: 'Hủy',

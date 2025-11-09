@@ -2,6 +2,7 @@ export default {
   loading: 'Loading...',
   error: 'Error',
   noData: 'No data',
+  noDataAvailable: 'No data available',
   search: 'Search',
   close: 'Close',
   cancel: 'Cancel',

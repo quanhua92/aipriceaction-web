@@ -20,6 +20,18 @@ interface MyRouterContext {
   queryClient: QueryClient
 }
 
+function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+      <h1 className="text-4xl font-bold mb-4">404</h1>
+      <p className="text-xl text-muted-foreground mb-8">Page not found</p>
+      <a href="/" className="text-primary hover:underline">
+        Go back home
+      </a>
+    </div>
+  )
+}
+
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
@@ -42,6 +54,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
 
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 })
 
