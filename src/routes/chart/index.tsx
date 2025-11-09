@@ -12,15 +12,15 @@ export const Route = createFileRoute('/chart/')({
 function ChartPage() {
   return (
     <div className="space-y-8">
-      {/* Context-based chart */}
       <TickerProvider>
         <ChartPageContent />
       </TickerProvider>
 
-      {/* Standalone TradingViewChart with internal TickerProvider */}
       <div className="p-4 md:p-6 border-t">
-        <h2 className="text-xl font-bold mb-4">Standalone Chart (VNINDEX)</h2>
-        <TradingViewChart />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <TradingViewChart ticker="VNINDEX" />
+          <TradingViewChart ticker="STB" />
+        </div>
       </div>
     </div>
   )
