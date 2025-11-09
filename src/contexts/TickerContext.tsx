@@ -37,7 +37,8 @@ const TickerContext = React.createContext<TickerContextValue | undefined>(
 /**
  * Get default MA visibility based on interval
  * For intervals < 1H: MA10, MA20, MA50 enabled; MA100, MA200 disabled
- * For intervals >= 1H: All MAs enabled
+ * For intervals >= 1H: MA10, MA20, MA50, MA100 enabled; MA200 disabled
+ * MA200 is always hidden by default
  */
 function getDefaultMaVisibility(interval: Interval): MaVisibility {
   const shortIntervals = [
@@ -54,7 +55,7 @@ function getDefaultMaVisibility(interval: Interval): MaVisibility {
     ma20: true,
     ma50: true,
     ma100: !isShortInterval,
-    ma200: !isShortInterval,
+    ma200: false, // Always hidden by default
   }
 }
 

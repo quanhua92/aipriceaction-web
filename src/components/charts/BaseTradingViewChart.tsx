@@ -46,7 +46,7 @@ export function BaseTradingViewChart({
 		ma20: true,
 		ma50: true,
 		ma100: true,
-		ma200: true,
+		ma200: false,
 	}
 
 	// Show loading state when using context
