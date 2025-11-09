@@ -32,12 +32,12 @@ interface ChartSettingsDialogProps {
 }
 
 const LIMIT_OPTIONS = [
-	{ value: '30', label: '30 days' },
-	{ value: '90', label: '90 days' },
-	{ value: '180', label: '180 days' },
-	{ value: '365', label: '365 days' },
-	{ value: '730', label: '730 days (2 years)' },
-	{ value: '1095', label: '1095 days (3 years)' },
+	{ value: '30', label: '30 records' },
+	{ value: '90', label: '90 records' },
+	{ value: '180', label: '180 records' },
+	{ value: '365', label: '365 records' },
+	{ value: '730', label: '730 records' },
+	{ value: '1095', label: '1095 records' },
 ]
 
 export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
