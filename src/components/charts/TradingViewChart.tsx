@@ -2,6 +2,7 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { TickerProvider, useTicker } from '@/contexts/TickerContext'
 import { Interval } from '@/lib/api-client'
 import { BaseTradingViewChart } from './BaseTradingViewChart'
+import { ChartControlBar } from './ChartControlBar'
 import { useEffect } from 'react'
 
 interface TradingViewChartProps {
@@ -38,6 +39,8 @@ function TradingViewChartWithContext({
 }: TradingViewChartProps) {
 	const { t } = useTranslation()
 	const {
+		selectedTicker,
+		interval: contextInterval,
 		setSelectedTicker,
 		setInterval: setContextInterval,
 		setStartDate,
@@ -84,9 +87,17 @@ function TradingViewChartWithContext({
 	}, [height, setHeight])
 
 	return (
-		<BaseTradingViewChart
-			{...visualProps}
-			noDataMessage={t('common.noDataAvailable')}
-		/>
+		<div className="space-y-4">
+			<ChartControlBar
+				ticker={selectedTicker}
+				interval={contextInterval}
+				onTickerChange={setSelectedTicker}
+				onIntervalChange={setContextInterval}
+			/>
+			<BaseTradingViewChart
+				{...visualProps}
+				noDataMessage={t('common.noDataAvailable')}
+			/>
+		</div>
 	)
 }
