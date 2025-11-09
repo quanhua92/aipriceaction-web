@@ -51,3 +51,20 @@ export function formatVolume(volume: number): string {
   }
   return volume.toFixed(0)
 }
+
+/**
+ * Convert UTC timestamp string to Vietnam time (UTC+7)
+ * The API returns timestamps in UTC format (e.g., "2025-11-09 14:00:00")
+ * This function parses them as UTC and converts to Vietnam timezone by adding 7 hours
+ * @param utcTimeString - UTC time string in format "YYYY-MM-DD HH:MM:SS" or "YYYY-MM-DD"
+ * @returns Unix timestamp in seconds adjusted for Vietnam timezone (UTC+7)
+ * @example parseUTCToVietnamTime("2025-11-09 14:00:00") => Unix timestamp for 9pm Vietnam time
+ */
+export function parseUTCToVietnamTime(utcTimeString: string): number {
+  // Parse as UTC by appending 'UTC' to force UTC interpretation
+  const utcDate = new Date(utcTimeString + ' UTC')
+  // Add 7 hours for Vietnam (UTC+7)
+  const vietnamTime = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000))
+  // Return Unix timestamp in seconds
+  return Math.floor(vietnamTime.getTime() / 1000)
+}
