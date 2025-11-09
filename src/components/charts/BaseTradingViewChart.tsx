@@ -379,13 +379,16 @@ export function BaseTradingViewChart({
 				return
 			}
 
-			// Format date
+			// Format date with time (UTC to match chart timezone)
 			const dateStr = new Date(
 				(param.time as number) * 1000,
-			).toLocaleDateString('en-US', {
+			).toLocaleString('en-US', {
 				year: 'numeric',
 				month: 'short',
 				day: 'numeric',
+				hour: '2-digit',
+				minute: '2-digit',
+				timeZone: 'UTC'
 			})
 
 			// Find current index in original data to get change percentages
@@ -410,9 +413,15 @@ export function BaseTradingViewChart({
 				volumeChangePercent = `<span style="color: ${volChangeColor}; font-size: 9px;">${formatPercent(volChange)}</span>`
 			}
 
+			// Get ticker symbol from the current chart
+			const tickerSymbol = data.length > 0 ? data[0].symbol : ''
+
 			// Build tooltip HTML - 2-column grid layout
 			let html = `
-				<div style="color: #a1a1aa; font-size: 10px; margin-bottom: 4px;">${dateStr}</div>
+				<div style="display: flex; justify-content: space-between; align-items: center; color: #a1a1aa; font-size: 10px; margin-bottom: 4px;">
+					<span style="font-weight: bold;">${tickerSymbol}</span>
+					<span>${dateStr}</span>
+				</div>
 				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; font-size: 10px;">
 					<div><span style="color: #a1a1aa;">O</span> ${formatPrice(candleData.open)}</div>
 					<div><span style="color: #a1a1aa;">C</span> ${formatPrice(candleData.close)} ${priceChangePercent}</div>
@@ -429,20 +438,31 @@ export function BaseTradingViewChart({
 
 			// Add moving averages in 2-column grid (only show visible MAs)
 			if (ma10Data || ma20Data || ma50Data || ma100Data || ma200Data) {
-				if (ma10Data && maVisibility.ma10) {
-					html += `<div><span style="color: #dc2626;">MA10</span> ${formatPrice(ma10Data.value)}</div>`
+				html += `<div style="grid-column: 1 / -1; margin-top: 4px; padding-top: 4px; border-top: 1px solid #27272a;"></div>`
+
+				if (ma10Data && maVisibility.ma10 && currentDataPoint?.ma10_score !== null && currentDataPoint?.ma10_score !== undefined) {
+					const ma10Color = currentDataPoint.ma10_score >= 0 ? '#16a34a' : '#dc2626'
+					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">MA10</span> ${formatPrice(ma10Data.value)}</div>`
+					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma10Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma10_score)}</span></div>`
 				}
-				if (ma20Data && maVisibility.ma20) {
-					html += `<div><span style="color: #16a34a;">MA20</span> ${formatPrice(ma20Data.value)}</div>`
+				if (ma20Data && maVisibility.ma20 && currentDataPoint?.ma20_score !== null && currentDataPoint?.ma20_score !== undefined) {
+					const ma20Color = currentDataPoint.ma20_score >= 0 ? '#16a34a' : '#dc2626'
+					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">MA20</span> ${formatPrice(ma20Data.value)}</div>`
+					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma20Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma20_score)}</span></div>`
 				}
-				if (ma50Data && maVisibility.ma50) {
-					html += `<div><span style="color: #2563eb;">MA50</span> ${formatPrice(ma50Data.value)}</div>`
+				if (ma50Data && maVisibility.ma50 && currentDataPoint?.ma50_score !== null && currentDataPoint?.ma50_score !== undefined) {
+					const ma50Color = currentDataPoint.ma50_score >= 0 ? '#16a34a' : '#dc2626'
+					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">MA50</span> ${formatPrice(ma50Data.value)}</div>`
+					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma50Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma50_score)}</span></div>`
 				}
-				if (ma100Data && maVisibility.ma100) {
-					html += `<div><span style="color: #a1a1aa;">MA100</span> ${formatPrice(ma100Data.value)}</div>`
+				if (ma100Data && maVisibility.ma100 && currentDataPoint?.ma100_score !== null && currentDataPoint?.ma100_score !== undefined) {
+					const ma100Color = currentDataPoint.ma100_score >= 0 ? '#16a34a' : '#dc2626'
+					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">MA100</span> ${formatPrice(ma100Data.value)}</div>`
+					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma100Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma100_score)}</span></div>`
 				}
-				if (ma200Data && maVisibility.ma200) {
-					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a;">MA200</span> ${formatPrice(ma200Data.value)}</div>`
+				if (ma200Data && maVisibility.ma200 && currentDataPoint?.ma200_score !== null && currentDataPoint?.ma200_score !== undefined) {
+					const ma200Color = currentDataPoint.ma200_score >= 0 ? '#16a34a' : '#dc2626'
+					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a; display: inline-block; width: 40px;">MA200</span> ${formatPrice(ma200Data.value)} <span style="color: #71717a;">Score</span> <span style="color: ${ma200Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma200_score)}</span></div>`
 				}
 			}
 
