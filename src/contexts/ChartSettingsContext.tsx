@@ -57,7 +57,7 @@ function getDefaultMaVisibility(interval: Interval): MaVisibility {
 export function ChartSettingsProvider({ children }: { children: React.ReactNode }) {
 	const [interval, setInterval] = React.useState<Interval>(Interval.Daily)
 	const [limit, setLimit] = React.useState<number>(252)
-	const [height, setHeight] = React.useState<number>(400)
+	const [height, setHeight] = React.useState<number>(300)
 	const [maVisibility, setMaVisibility] = React.useState<MaVisibility>(() =>
 		getDefaultMaVisibility(Interval.Daily)
 	)
