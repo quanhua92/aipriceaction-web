@@ -17,7 +17,9 @@ function ChartPage() {
       <div className="p-4 md:p-6 border-t">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <TradingViewChart ticker="VNINDEX" />
+          <TradingViewChart ticker="VIC" />
           <TradingViewChart ticker="STB" />
+          <TradingViewChart ticker="VIX" />
         </div>
       </div>
     </div>
