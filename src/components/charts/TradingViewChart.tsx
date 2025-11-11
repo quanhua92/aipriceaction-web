@@ -1,6 +1,7 @@
 import { useTranslation } from '@/hooks/useTranslation'
 import { TickerProvider, useTicker } from '@/contexts/TickerContext'
 import { useChartSettings, MaVisibility } from '@/contexts/ChartSettingsContext'
+import * as React from 'react'
 import { Interval } from '@/lib/api-client'
 import { BaseTradingViewChart } from './BaseTradingViewChart'
 import { ChartControlBar } from './ChartControlBar'
@@ -13,7 +14,8 @@ interface TradingViewChartProps {
 	viewportSizeOverride?: number
 
 	// Ticker control
-	ticker?: string
+	initialTicker?: string    // Static setup only
+	ticker?: string          // External control
 	onTickerChange?: (ticker: string) => void
 
 	// Settings control (optional - defaults to global settings)
@@ -33,6 +35,7 @@ interface TradingViewChartProps {
 }
 
 export function TradingViewChart({
+	initialTicker,
 	ticker,
 	onTickerChange,
 	interval,
@@ -51,9 +54,9 @@ export function TradingViewChart({
 	showControls = true,
 	...visualProps
 }: TradingViewChartProps) {
-	const { t } = useTranslation()
+		const { t } = useTranslation()
 	const globalSettings = useChartSettings()
-
+	
 	// Use global settings as defaults, override with props if provided
 	const currentInterval = interval ?? globalSettings.interval
 	const currentLimit = limit ?? globalSettings.limit
@@ -70,26 +73,40 @@ export function TradingViewChart({
 	const handleEndDateChange = setEndDate ?? globalSettings.setEndDate
 
 	return (
-		<TickerProvider ticker={ticker}>
-			{({ selectedTicker, setSelectedTicker }) => (
-				<div className="space-y-4">
-					{showControls && (
-						<ChartControlBar
-							ticker={selectedTicker}
-							interval={currentInterval}
-							onIntervalChange={handleIntervalChange}
-							onTickerChange={setSelectedTicker}
-							showTickerSelect={true}
+		<TickerProvider initialTicker={initialTicker}>
+			{({ selectedTicker, setSelectedTicker, loading, chartData }) => {
+								
+				// Sync with external ticker prop changes
+				React.useEffect(() => {
+										if (ticker !== undefined && ticker !== selectedTicker) {
+												setSelectedTicker(ticker)
+					}
+				}, [ticker, selectedTicker, setSelectedTicker])
+
+				return (
+					<div className="space-y-4">
+						{showControls && (
+							<ChartControlBar
+								ticker={selectedTicker}
+								interval={currentInterval}
+								onIntervalChange={handleIntervalChange}
+								onTickerChange={(newTicker) => {
+																		setSelectedTicker(newTicker)
+									onTickerChange?.(newTicker)
+								}}
+								showTickerSelect={true}
+							/>
+						)}
+						<BaseTradingViewChart
+							{...visualProps}
+							data={chartData}
+							height={currentHeight}
+							maVisibility={currentMaVisibility}
+							noDataMessage={t('common.noDataAvailable')}
 						/>
-					)}
-					<BaseTradingViewChart
-						{...visualProps}
-						height={currentHeight}
-						maVisibility={currentMaVisibility}
-						noDataMessage={t('common.noDataAvailable')}
-					/>
-				</div>
-			)}
+					</div>
+				)
+			}}
 		</TickerProvider>
 	)
 }
