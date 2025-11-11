@@ -12,7 +12,8 @@ interface TickerContextValue {
 
 interface TickerProviderProps {
   children: React.ReactNode | ((context: TickerContextValue) => React.ReactNode)
-  ticker?: string
+  initialTicker?: string
+  limit?: number
   enableFetching?: boolean
 }
 
@@ -22,29 +23,34 @@ const TickerContext = React.createContext<TickerContextValue | undefined>(
 
 export function TickerProvider({
   children,
-  ticker: initialTicker = 'VNINDEX',
+  initialTicker = 'VNINDEX',
+  limit,
   enableFetching = true
 }: TickerProviderProps) {
-  // Get global settings for API calls (only if fetching is enabled)
+    // Get global settings for API calls (only if fetching is enabled)
   const settings = enableFetching ? useChartSettings() : null
   const [selectedTicker, setSelectedTicker] = React.useState(initialTicker)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
-  // Sync internal state with ticker prop changes
+  
+  // Initialize with initial ticker on mount only
   React.useEffect(() => {
-    if (initialTicker && initialTicker !== selectedTicker) {
+        if (initialTicker) {
       setSelectedTicker(initialTicker)
     }
-  }, [initialTicker, selectedTicker])
+  }, []) // Only run once on mount, no dependencies
 
   // Data fetching effect (only if fetching is enabled)
   React.useEffect(() => {
-    if (!enableFetching || !settings) return
+    
+    if (!enableFetching || !settings) {
+            return
+    }
 
     const fetchChartData = async () => {
-      setLoading(true)
+            setLoading(true)
       setError(null)
       try {
         const response = await getTickers({
@@ -52,19 +58,48 @@ export function TickerProvider({
           interval: settings.interval,
           start_date: settings.startDate,
           end_date: settings.endDate,
-          limit: settings.limit,
+          limit: limit ?? settings.limit,
         })
-        setChartData(response[selectedTicker] || [])
+        const data = response[selectedTicker] || []
+        setChartData(data)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch chart data')
+                setError(err instanceof Error ? err.message : 'Failed to fetch chart data')
         setChartData([])
       } finally {
-        setLoading(false)
+                setLoading(false)
       }
     }
 
     fetchChartData()
   }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit])
+
+  // Also trigger initial fetch when settings become available
+  React.useEffect(() => {
+    if (enableFetching && settings && selectedTicker && chartData.length === 0) {
+            const fetchChartData = async () => {
+                setLoading(true)
+        setError(null)
+        try {
+          const response = await getTickers({
+            symbol: selectedTicker,
+            interval: settings.interval,
+            start_date: settings.startDate,
+            end_date: settings.endDate,
+            limit: limit ?? settings.limit,
+          })
+          const data = response[selectedTicker] || []
+          setChartData(data)
+        } catch (err) {
+                    setError(err instanceof Error ? err.message : 'Failed to fetch chart data')
+          setChartData([])
+        } finally {
+                    setLoading(false)
+        }
+      }
+
+      fetchChartData()
+    }
+  }, [enableFetching, settings, selectedTicker])
 
   const contextValue = {
     selectedTicker,
@@ -74,6 +109,7 @@ export function TickerProvider({
     error,
   }
 
+  
   return (
     <TickerContext.Provider value={contextValue}>
       {typeof children === 'function' ? children(contextValue) : children}
