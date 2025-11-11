@@ -21,7 +21,7 @@ export interface BasicWatchListProps {
 
 export function BasicWatchList({
   defaultGroup,
-  maxHeight = '400px',
+  maxHeight = '300px',
   className = '',
   showMarketIndices = false,
   onSelectTicker,
@@ -45,14 +45,14 @@ export function BasicWatchList({
     return sectorGroups.length > 0 ? sectorGroups[0] : ''
   })
 
-  // Update selected group when groups are loaded
+  // Update selected group when groups are loaded or defaultGroup changes
   React.useEffect(() => {
-    if (sectorGroups.length > 0 && !selectedGroup) {
-      setSelectedGroup(sectorGroups[0])
-    } else if (defaultGroup && tickerGroups?.[defaultGroup]) {
+    if (defaultGroup && tickerGroups?.[defaultGroup]) {
       setSelectedGroup(defaultGroup)
+    } else if (sectorGroups.length > 0 && !selectedGroup) {
+      setSelectedGroup(sectorGroups[0])
     }
-  }, [sectorGroups, defaultGroup, tickerGroups, selectedGroup])
+  }, [sectorGroups, defaultGroup, tickerGroups]) // Removed selectedGroup from dependencies
 
   // Transform ticker group data for SortableTickerList
   const tickers: Ticker[] = React.useMemo(() => {

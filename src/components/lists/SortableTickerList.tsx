@@ -150,7 +150,7 @@ export function SortableTickerList({
       </div>
 
       {/* Ticker List */}
-      <div className="overflow-y-auto flex-1 min-h-0">
+      <div className="overflow-y-auto flex-1 min-h-0" style={{ maxHeight }}>
         <div className="p-2">
           {loading && (
             <div className="flex items-center justify-center py-12">
