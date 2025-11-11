@@ -47,7 +47,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 px-5">
+        <div className="flex-1 min-h-0">
           <SortableTickerList
             tickers={tickers}
             allTickersData={allTickersData}
