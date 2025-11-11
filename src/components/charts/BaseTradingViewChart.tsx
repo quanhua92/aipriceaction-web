@@ -22,7 +22,6 @@ import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Loader2 } from 'lucide-react'
 
 interface BaseTradingViewChartProps {
-	data?: StockData[]
 	title?: string
 	height?: number
 	showControls?: boolean
@@ -38,7 +37,6 @@ interface BaseTradingViewChartProps {
 }
 
 export function BaseTradingViewChart({
-	data: dataProp,
 	title,
 	height: heightProp,
 	showControls = true,
@@ -49,11 +47,8 @@ export function BaseTradingViewChart({
 	// Get global settings
 	const globalSettings = useChartSettings()
 
-	// If no data prop provided, use context
-	const contextData = dataProp === undefined ? useTicker() : null
-	const loading = contextData?.loading ?? false
-	const error = contextData?.error ?? null
-	const data = dataProp ?? contextData?.chartData ?? []
+	// Always use context for data
+	const { loading, error, chartData: data } = useTicker()
 	const height = heightProp ?? globalSettings.height
 	const maVisibility = maVisibilityProp ?? globalSettings.maVisibility
 

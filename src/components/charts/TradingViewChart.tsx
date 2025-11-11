@@ -34,8 +34,8 @@ interface TradingViewChartProps {
 	setEndDate?: (date?: string) => void
 }
 
-export function TradingViewChart({
-	initialTicker,
+// TradingViewChart content component - assumes it's wrapped in TickerProvider
+function TradingViewChartContent({
 	ticker,
 	onTickerChange,
 	interval,
@@ -54,9 +54,10 @@ export function TradingViewChart({
 	showControls = true,
 	...visualProps
 }: TradingViewChartProps) {
-		const { t } = useTranslation()
+	const { t } = useTranslation()
 	const globalSettings = useChartSettings()
-	
+	const { selectedTicker, setSelectedTicker } = useTicker()
+
 	// Use global settings as defaults, override with props if provided
 	const currentInterval = interval ?? globalSettings.interval
 	const currentLimit = limit ?? globalSettings.limit
@@ -72,41 +73,42 @@ export function TradingViewChart({
 	const handleStartDateChange = setStartDate ?? globalSettings.setStartDate
 	const handleEndDateChange = setEndDate ?? globalSettings.setEndDate
 
-	return (
-		<TickerProvider initialTicker={initialTicker}>
-			{({ selectedTicker, setSelectedTicker, loading, chartData }) => {
-								
-				// Sync with external ticker prop changes
-				React.useEffect(() => {
-										if (ticker !== undefined && ticker !== selectedTicker) {
-												setSelectedTicker(ticker)
-					}
-				}, [ticker, selectedTicker, setSelectedTicker])
+	// Sync with external ticker prop changes
+	React.useEffect(() => {
+		if (ticker !== undefined && ticker !== selectedTicker) {
+			setSelectedTicker(ticker)
+		}
+	}, [ticker, selectedTicker, setSelectedTicker])
 
-				return (
-					<div className="space-y-4">
-						{showControls && (
-							<ChartControlBar
-								ticker={selectedTicker}
-								interval={currentInterval}
-								onIntervalChange={handleIntervalChange}
-								onTickerChange={(newTicker) => {
-																		setSelectedTicker(newTicker)
-									onTickerChange?.(newTicker)
-								}}
-								showTickerSelect={true}
-							/>
-						)}
-						<BaseTradingViewChart
-							{...visualProps}
-							data={chartData}
-							height={currentHeight}
-							maVisibility={currentMaVisibility}
-							noDataMessage={t('common.noDataAvailable')}
-						/>
-					</div>
-				)
-			}}
+	return (
+		<div className="space-y-4">
+			{showControls && (
+				<ChartControlBar
+					ticker={selectedTicker}
+					interval={currentInterval}
+					onIntervalChange={handleIntervalChange}
+					onTickerChange={(newTicker) => {
+						setSelectedTicker(newTicker)
+						onTickerChange?.(newTicker)
+					}}
+					showTickerSelect={true}
+				/>
+			)}
+			<BaseTradingViewChart
+				{...visualProps}
+				height={currentHeight}
+				maVisibility={currentMaVisibility}
+				noDataMessage={t('common.noDataAvailable')}
+			/>
+		</div>
+	)
+}
+
+// Main export - wrapper component that provides TickerProvider
+export function TradingViewChart(props: TradingViewChartProps) {
+	return (
+		<TickerProvider initialTicker={props.initialTicker}>
+			<TradingViewChartContent {...props} />
 		</TickerProvider>
 	)
 }
