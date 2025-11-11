@@ -132,33 +132,108 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
             </div>
           </div>
 
-          {/* OHLCV Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.open')}</p>
-              <p className="text-sm font-semibold">{formatPrice(data.open)}</p>
+          {/* OHLCV and MA Grid Container */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* OHLCV Grid */}
+            <div className="flex-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.open')}</p>
+                  <p className="text-sm font-semibold">{formatPrice(data.open)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.high')}</p>
+                  <p className="text-sm font-semibold text-green-600 dark:text-green-500">{formatPrice(data.high)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.low')}</p>
+                  <p className="text-sm font-semibold text-red-600 dark:text-red-500">{formatPrice(data.low)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.close')}</p>
+                  <p className="text-sm font-semibold">{formatPrice(data.close)}</p>
+                </div>
+                <div className="space-y-1 col-span-2 sm:col-span-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.volume')}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold">{formatVolume(data.volume)}</p>
+                    {data.volume_changed !== null && data.volume_changed !== undefined && (
+                      <span className={`text-xs font-medium ${getVolumeChangeColor(volumeChange)}`}>
+                        {formatPercent(volumeChange)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.high')}</p>
-              <p className="text-sm font-semibold text-green-600 dark:text-green-500">{formatPrice(data.high)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.low')}</p>
-              <p className="text-sm font-semibold text-red-600 dark:text-red-500">{formatPrice(data.low)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.close')}</p>
-              <p className="text-sm font-semibold">{formatPrice(data.close)}</p>
-            </div>
-            <div className="space-y-1 col-span-2 sm:col-span-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.volume')}</p>
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold">{formatVolume(data.volume)}</p>
-                {data.volume_changed !== null && data.volume_changed !== undefined && (
-                  <span className={`text-xs font-medium ${getVolumeChangeColor(volumeChange)}`}>
-                    {formatPercent(volumeChange)}
-                  </span>
-                )}
+
+            {/* Moving Averages Grid */}
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">{t('common.ticker.movingAverages')}</p>
+              <div className="grid grid-cols-2 gap-3">
+                {/* MA10 */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma10')}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold">
+                      {data.ma10 !== null && data.ma10 !== undefined ? formatPrice(data.ma10) : '-'}
+                    </p>
+                    <span className="text-xs text-muted-foreground/70">
+                      {t('common.ticker.score')}:{' '}
+                      <span className={`font-medium ${data.ma10_score !== null && data.ma10_score !== undefined ? getPriceChangeColor(data.ma10_score) : ''}`}>
+                        {data.ma10_score !== null && data.ma10_score !== undefined ? formatPercent(data.ma10_score) : '-'}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* MA20 */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma20')}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold">
+                      {data.ma20 !== null && data.ma20 !== undefined ? formatPrice(data.ma20) : '-'}
+                    </p>
+                    <span className="text-xs text-muted-foreground/70">
+                      {t('common.ticker.score')}:{' '}
+                      <span className={`font-medium ${data.ma20_score !== null && data.ma20_score !== undefined ? getPriceChangeColor(data.ma20_score) : ''}`}>
+                        {data.ma20_score !== null && data.ma20_score !== undefined ? formatPercent(data.ma20_score) : '-'}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* MA50 */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma50')}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold">
+                      {data.ma50 !== null && data.ma50 !== undefined ? formatPrice(data.ma50) : '-'}
+                    </p>
+                    <span className="text-xs text-muted-foreground/70">
+                      {t('common.ticker.score')}:{' '}
+                      <span className={`font-medium ${data.ma50_score !== null && data.ma50_score !== undefined ? getPriceChangeColor(data.ma50_score) : ''}`}>
+                        {data.ma50_score !== null && data.ma50_score !== undefined ? formatPercent(data.ma50_score) : '-'}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* MA100 */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma100')}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold">
+                      {data.ma100 !== null && data.ma100 !== undefined ? formatPrice(data.ma100) : '-'}
+                    </p>
+                    <span className="text-xs text-muted-foreground/70">
+                      {t('common.ticker.score')}:{' '}
+                      <span className={`font-medium ${data.ma100_score !== null && data.ma100_score !== undefined ? getPriceChangeColor(data.ma100_score) : ''}`}>
+                        {data.ma100_score !== null && data.ma100_score !== undefined ? formatPercent(data.ma100_score) : '-'}
+                      </span>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

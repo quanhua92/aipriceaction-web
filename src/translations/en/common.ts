@@ -29,5 +29,11 @@ export default {
     low: 'Low',
     close: 'Close',
     volume: 'Volume',
+    movingAverages: 'Moving Averages',
+    ma10: 'MA10',
+    ma20: 'MA20',
+    ma50: 'MA50',
+    ma100: 'MA100',
+    score: 'Score',
   },
 }
