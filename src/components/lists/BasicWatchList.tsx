@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import {
   Select,
@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 import { SortableTickerList, type Ticker } from './SortableTickerList'
 
 export interface BasicWatchListProps {
@@ -15,6 +16,7 @@ export interface BasicWatchListProps {
   maxHeight?: string
   className?: string
   showMarketIndices?: boolean
+  showControls?: boolean
   onSelectTicker?: (symbol: string) => void
   onSectorChange?: (sector: string) => void
 }
@@ -24,6 +26,7 @@ export function BasicWatchList({
   maxHeight = '300px',
   className = '',
   showMarketIndices = false,
+  showControls = false,
   onSelectTicker,
   onSectorChange
 }: BasicWatchListProps) {
@@ -66,9 +69,29 @@ export function BasicWatchList({
     }))
   }, [selectedGroup, tickerGroups])
 
+  // Navigation state
+  const [currentSelectedIndex, setCurrentSelectedIndex] = React.useState(0)
+
+  // Auto-select first ticker when controls are enabled and tickers are available
+  React.useEffect(() => {
+    if (showControls && tickers.length > 0 && currentSelectedIndex >= tickers.length) {
+      setCurrentSelectedIndex(0)
+    }
+  }, [showControls, tickers.length, currentSelectedIndex])
+
+  // Reset navigation when group changes
+  React.useEffect(() => {
+    setCurrentSelectedIndex(0)
+  }, [selectedGroup])
+
   const handleSelectTicker = (symbol: string) => {
     if (onSelectTicker) {
       onSelectTicker(symbol)
+    }
+    // Update selected index when user clicks on a ticker
+    const index = tickers.findIndex(t => t.symbol === symbol)
+    if (index !== -1) {
+      setCurrentSelectedIndex(index)
     }
   }
 
@@ -78,6 +101,57 @@ export function BasicWatchList({
       onSectorChange(group)
     }
   }
+
+  // Navigation functions
+  const navigateToPrevious = React.useCallback(() => {
+    if (tickers.length === 0) return
+    const newIndex = currentSelectedIndex === 0 ? tickers.length - 1 : currentSelectedIndex - 1
+    setCurrentSelectedIndex(newIndex)
+    const ticker = tickers[newIndex]
+    if (ticker && onSelectTicker) {
+      onSelectTicker(ticker.symbol)
+    }
+  }, [currentSelectedIndex, tickers, onSelectTicker])
+
+  const navigateToNext = React.useCallback(() => {
+    if (tickers.length === 0) return
+    const newIndex = (currentSelectedIndex + 1) % tickers.length
+    setCurrentSelectedIndex(newIndex)
+    const ticker = tickers[newIndex]
+    if (ticker && onSelectTicker) {
+      onSelectTicker(ticker.symbol)
+    }
+  }, [currentSelectedIndex, tickers, onSelectTicker])
+
+  // Keyboard navigation
+  React.useEffect(() => {
+    if (!showControls || tickers.length === 0) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        navigateToPrevious()
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        navigateToNext()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showControls, tickers.length, navigateToPrevious, navigateToNext])
+
+  // Auto-select first ticker when controls are enabled
+  React.useEffect(() => {
+    if (showControls && tickers.length > 0 && currentSelectedIndex === 0) {
+      const ticker = tickers[0]
+      if (ticker && onSelectTicker) {
+        onSelectTicker(ticker.symbol)
+      }
+    }
+  }, [showControls, tickers, currentSelectedIndex, onSelectTicker])
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -119,6 +193,37 @@ export function BasicWatchList({
         maxHeight={maxHeight}
         className="flex-1"
       />
+
+      {/* Navigation Controls */}
+      {showControls && tickers.length > 0 && (
+        <div className="flex items-center justify-center gap-2 mt-3 p-2 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={navigateToPrevious}
+            disabled={tickers.length <= 1}
+            className="shrink-0 sm:px-4 px-3 h-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="min-w-0 flex-shrink-0 px-2 sm:px-3 py-1 text-center">
+            <span className="font-mono font-bold text-sm">
+              {tickers[currentSelectedIndex]?.symbol || ''}
+            </span>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={navigateToNext}
+            disabled={tickers.length <= 1}
+            className="shrink-0 sm:px-4 px-3 h-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

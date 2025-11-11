@@ -35,6 +35,7 @@ function ChartPage() {
           <div className="lg:col-span-1">
             <BasicWatchList
               defaultGroup="NGAN_HANG"
+              showControls={true}
               onSelectTicker={setSelectedTicker}
               onSectorChange={setSelectedSector}
             />
