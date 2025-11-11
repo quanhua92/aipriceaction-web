@@ -32,9 +32,9 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-2xl h-[700px] flex flex-col p-0 gap-0" showCloseButton={false}>
+      <DialogContent className="sm:max-w-2xl h-[700px] flex flex-col p-6 gap-4" showCloseButton={false}>
         <DialogTitle className="sr-only">{t('dialogs.selectTicker.title')}</DialogTitle>
-        <div className="p-4 shrink-0 border-b">
+        <div className="shrink-0 border-b pb-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -55,7 +55,8 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
           onSelectTicker={handleSelectTicker}
           loading={loading}
           error={error}
-          className="flex-1"
+          maxHeight="none"
+          className="flex-1 min-h-0"
         />
       </DialogContent>
     </Dialog>
