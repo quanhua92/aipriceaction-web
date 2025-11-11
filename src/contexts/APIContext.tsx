@@ -1,5 +1,24 @@
 import * as React from 'react'
 import { getTickerGroups, getTickers, type TickerGroups, type StockData } from '@/lib/api-client'
+import { PRIORITY_GROUPS } from '@/lib/constants'
+
+const sortTickerGroups = (groups: TickerGroups): TickerGroups => {
+  const sortedEntries = Object.entries(groups)
+    .sort(([groupA], [groupB]) => {
+      const priorityA = PRIORITY_GROUPS.indexOf(groupA)
+      const priorityB = PRIORITY_GROUPS.indexOf(groupB)
+
+      if (priorityA !== -1 && priorityB !== -1) {
+        return priorityA - priorityB
+      }
+      if (priorityA !== -1) return -1
+      if (priorityB !== -1) return 1
+
+      return groupA.localeCompare(groupB)
+    })
+
+  return Object.fromEntries(sortedEntries)
+}
 
 interface Ticker {
   symbol: string
@@ -35,12 +54,13 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
         getTickers({})
       ])
 
-      setTickerGroups(groups)
+      const sortedGroups = sortTickerGroups(groups)
+      setTickerGroups(sortedGroups)
       setAllTickersData(tickersData)
 
       // Flatten groups into ticker list with sector info
       const tickerList: Ticker[] = []
-      for (const [sector, symbols] of Object.entries(groups)) {
+      for (const [sector, symbols] of Object.entries(sortedGroups)) {
         for (const symbol of symbols) {
           tickerList.push({ symbol, sector })
         }
