@@ -1,6 +1,9 @@
 import * as React from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
+import { getTickers } from '@/lib/api-client'
+import { BASIC_WATCHLIST_PREFETCH_COUNT } from '@/lib/constants'
 import {
   Select,
   SelectContent,
@@ -31,6 +34,7 @@ export function BasicWatchList({
   onSectorChange
 }: BasicWatchListProps) {
   const { tickerGroups, allTickersData, loading, error } = useAPI()
+  const settings = useChartSettings()
 
   // Get available sector groups (exclude market indices)
   const sectorGroups = React.useMemo(() => {
@@ -126,6 +130,20 @@ export function BasicWatchList({
     }
   }, [currentSelectedIndex, sortedTickers, onSelectTicker])
 
+  // Prefetch function to make fire-and-forget HTTP calls for browser cache
+  const prefetchTickerData = React.useCallback((symbol: string) => {
+    if (!settings || !symbol) return
+
+    // Fire-and-forget HTTP call for browser cache
+    getTickers({
+      symbol,
+      interval: settings.interval,
+      start_date: settings.startDate,
+      end_date: settings.endDate,
+      limit: settings.limit,
+    }).catch(() => {}) // Ignore errors
+  }, [settings])
+
   // Keyboard navigation
   React.useEffect(() => {
     if (!showControls || sortedTickers.length === 0) return
@@ -145,6 +163,19 @@ export function BasicWatchList({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [showControls, sortedTickers.length, navigateToPrevious, navigateToNext])
+
+  // Prefetch next tickers when current index changes
+  React.useEffect(() => {
+    if (!showControls || sortedTickers.length === 0) return
+
+    // Prefetch next N tickers using a loop
+    for (let i = 1; i <= BASIC_WATCHLIST_PREFETCH_COUNT; i++) {
+      const nextIndex = currentSelectedIndex + i
+      if (nextIndex < sortedTickers.length) {
+        prefetchTickerData(sortedTickers[nextIndex].symbol)
+      }
+    }
+  }, [currentSelectedIndex, sortedTickers, showControls, prefetchTickerData])
 
   // Auto-select first ticker when controls are enabled and tickers are available
   // Also reset to first ticker when sorting changes (sortedTickers array changes)
