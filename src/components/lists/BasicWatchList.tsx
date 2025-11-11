@@ -69,27 +69,30 @@ export function BasicWatchList({
     }))
   }, [selectedGroup, tickerGroups])
 
-  // Navigation state
+  // Navigation state - use sorted tickers from SortableTickerList
+  const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
   const [currentSelectedIndex, setCurrentSelectedIndex] = React.useState(0)
 
-  // Auto-select first ticker when controls are enabled and tickers are available
-  React.useEffect(() => {
-    if (showControls && tickers.length > 0 && currentSelectedIndex >= tickers.length) {
-      setCurrentSelectedIndex(0)
-    }
-  }, [showControls, tickers.length, currentSelectedIndex])
+  // Use a ref to store the latest sorted tickers to avoid dependency issues
+  const sortedTickersRef = React.useRef<Ticker[]>([])
+  sortedTickersRef.current = sortedTickers
 
-  // Reset navigation when group changes
-  React.useEffect(() => {
-    setCurrentSelectedIndex(0)
-  }, [selectedGroup])
+  // Handle sorted tickers change from SortableTickerList
+  const handleSortedTickersChange = React.useCallback((newSortedTickers: Ticker[]) => {
+    const current = sortedTickersRef.current
+    // Only update if the sorted tickers have actually changed
+    if (newSortedTickers.length !== current.length ||
+        newSortedTickers.some((ticker, index) => ticker.symbol !== current[index]?.symbol)) {
+      setSortedTickers(newSortedTickers)
+    }
+  }, [])
 
   const handleSelectTicker = (symbol: string) => {
     if (onSelectTicker) {
       onSelectTicker(symbol)
     }
-    // Update selected index when user clicks on a ticker
-    const index = tickers.findIndex(t => t.symbol === symbol)
+    // Update selected index when user clicks on a ticker - use sorted order
+    const index = sortedTickers.findIndex(t => t.symbol === symbol)
     if (index !== -1) {
       setCurrentSelectedIndex(index)
     }
@@ -102,30 +105,30 @@ export function BasicWatchList({
     }
   }
 
-  // Navigation functions
+  // Navigation functions - use sorted tickers
   const navigateToPrevious = React.useCallback(() => {
-    if (tickers.length === 0) return
-    const newIndex = currentSelectedIndex === 0 ? tickers.length - 1 : currentSelectedIndex - 1
+    if (sortedTickers.length === 0) return
+    const newIndex = currentSelectedIndex === 0 ? sortedTickers.length - 1 : currentSelectedIndex - 1
     setCurrentSelectedIndex(newIndex)
-    const ticker = tickers[newIndex]
+    const ticker = sortedTickers[newIndex]
     if (ticker && onSelectTicker) {
       onSelectTicker(ticker.symbol)
     }
-  }, [currentSelectedIndex, tickers, onSelectTicker])
+  }, [currentSelectedIndex, sortedTickers, onSelectTicker])
 
   const navigateToNext = React.useCallback(() => {
-    if (tickers.length === 0) return
-    const newIndex = (currentSelectedIndex + 1) % tickers.length
+    if (sortedTickers.length === 0) return
+    const newIndex = (currentSelectedIndex + 1) % sortedTickers.length
     setCurrentSelectedIndex(newIndex)
-    const ticker = tickers[newIndex]
+    const ticker = sortedTickers[newIndex]
     if (ticker && onSelectTicker) {
       onSelectTicker(ticker.symbol)
     }
-  }, [currentSelectedIndex, tickers, onSelectTicker])
+  }, [currentSelectedIndex, sortedTickers, onSelectTicker])
 
   // Keyboard navigation
   React.useEffect(() => {
-    if (!showControls || tickers.length === 0) return
+    if (!showControls || sortedTickers.length === 0) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft') {
@@ -141,17 +144,19 @@ export function BasicWatchList({
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [showControls, tickers.length, navigateToPrevious, navigateToNext])
+  }, [showControls, sortedTickers.length, navigateToPrevious, navigateToNext])
 
-  // Auto-select first ticker when controls are enabled
+  // Auto-select first ticker when controls are enabled and tickers are available
+  // Also reset to first ticker when sorting changes (sortedTickers array changes)
   React.useEffect(() => {
-    if (showControls && tickers.length > 0 && currentSelectedIndex === 0) {
-      const ticker = tickers[0]
+    if (showControls && sortedTickers.length > 0) {
+      setCurrentSelectedIndex(0)
+      const ticker = sortedTickers[0]
       if (ticker && onSelectTicker) {
         onSelectTicker(ticker.symbol)
       }
     }
-  }, [showControls, tickers, currentSelectedIndex, onSelectTicker])
+  }, [showControls, sortedTickers, onSelectTicker])
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -188,6 +193,7 @@ export function BasicWatchList({
         showMarketIndices={showMarketIndices}
         showSections={false} // Don't show section headers in watchlist
         onSelectTicker={handleSelectTicker}
+        onSortedTickersChange={handleSortedTickersChange}
         loading={loading}
         error={error}
         maxHeight={maxHeight}
@@ -195,13 +201,13 @@ export function BasicWatchList({
       />
 
       {/* Navigation Controls */}
-      {showControls && tickers.length > 0 && (
+      {showControls && sortedTickers.length > 0 && (
         <div className="flex items-center justify-center gap-2 mt-3 p-2 border-t">
           <Button
             variant="outline"
             size="sm"
             onClick={navigateToPrevious}
-            disabled={tickers.length <= 1}
+            disabled={sortedTickers.length <= 1}
             className="shrink-0 sm:px-4 px-3 h-8"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -209,7 +215,7 @@ export function BasicWatchList({
 
           <div className="min-w-0 flex-shrink-0 px-2 sm:px-3 py-1 text-center">
             <span className="font-mono font-bold text-sm">
-              {tickers[currentSelectedIndex]?.symbol || ''}
+              {sortedTickers[currentSelectedIndex]?.symbol || ''}
             </span>
           </div>
 
@@ -217,7 +223,7 @@ export function BasicWatchList({
             variant="outline"
             size="sm"
             onClick={navigateToNext}
-            disabled={tickers.length <= 1}
+            disabled={sortedTickers.length <= 1}
             className="shrink-0 sm:px-4 px-3 h-8"
           >
             <ChevronRight className="h-4 w-4" />

@@ -25,6 +25,7 @@ export interface SortableTickerListProps {
   error?: string | null
   maxHeight?: string
   className?: string
+  onSortedTickersChange?: (tickers: Ticker[]) => void
 }
 
 export function SortableTickerList({
@@ -38,7 +39,8 @@ export function SortableTickerList({
   loading = false,
   error = null,
   maxHeight = '400px',
-  className = ''
+  className = '',
+  onSortedTickersChange
 }: SortableTickerListProps) {
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
   const { t } = useTranslation()
@@ -102,6 +104,13 @@ export function SortableTickerList({
       filteredTickers: sortedTickers
     }
   }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersData])
+
+  // Notify parent component when sorted tickers change
+  React.useEffect(() => {
+    if (onSortedTickersChange) {
+      onSortedTickersChange(filteredTickers)
+    }
+  }, [filteredTickers, onSortedTickersChange])
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
