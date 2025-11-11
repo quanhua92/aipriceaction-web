@@ -55,7 +55,6 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
           onSelectTicker={handleSelectTicker}
           loading={loading}
           error={error}
-          maxHeight="100%"
           className="flex-1"
         />
       </DialogContent>

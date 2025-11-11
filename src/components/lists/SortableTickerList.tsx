@@ -104,9 +104,9 @@ export function SortableTickerList({
   }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersData])
 
   return (
-    <div className={`flex flex-col ${className}`}>
+    <div className={`flex flex-col h-full ${className}`}>
       {/* Sort Buttons */}
-      <div className="flex gap-1.5 mb-3">
+      <div className="flex gap-1.5 mb-3 shrink-0">
         <button
           onClick={() => setSortBy('volume')}
           className={`flex-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
@@ -150,10 +150,7 @@ export function SortableTickerList({
       </div>
 
       {/* Ticker List */}
-      <div
-        className="overflow-y-auto flex-1 min-h-0"
-        style={{ maxHeight }}
-      >
+      <div className="overflow-y-auto flex-1 min-h-0">
         <div className="p-2">
           {loading && (
             <div className="flex items-center justify-center py-12">
