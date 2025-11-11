@@ -658,21 +658,7 @@ export function BaseTradingViewChart({
 						<span className="mx-1"></span>
 						<span className={cn(latestData.volume_changed >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(latestData.volume)}</span> <span className={cn(latestData.volume_changed >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.volume_changed)}</span>
 						<span className="text-zinc-400 ml-2 text-xs">
-							{(() => {
-								const date = new Date(latestData.time)
-								const now = new Date()
-								const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-
-								if (diffDays === 0) {
-									return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-								} else if (diffDays < 7) {
-									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-								} else if (diffDays < 365) {
-									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-								} else {
-									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-								}
-							})()}
+							{new Date(latestData.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
 						</span>
 					</div>
 				)}
