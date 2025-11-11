@@ -48,12 +48,12 @@ function ChartPage() {
 							Watchlist Chart: {selectedTicker}
 						</h3>
 						<div className="grid grid-cols-1 gap-4">
-							<BasicTickerWidget
+							<TradingViewChart
                 initialTicker="MBB"
                 ticker={selectedTicker}
                 onTickerChange={setSelectedTicker}
               />
-							<TradingViewChart
+							<BasicTickerWidget
                 initialTicker="MBB"
                 ticker={selectedTicker}
                 onTickerChange={setSelectedTicker}
