@@ -15,6 +15,7 @@ import {
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Loader2 } from 'lucide-react'
@@ -54,6 +55,9 @@ export function BaseTradingViewChart({
 	const data = dataProp ?? contextData?.chartData ?? []
 	const height = heightProp ?? globalSettings.height
 	const maVisibility = maVisibilityProp ?? globalSettings.maVisibility
+
+	// Get latest data for overlay
+	const latestData = data && data.length > 0 ? data[data.length - 1] : null
 
 	// Show loading state when using context
 	if (loading) {
@@ -625,11 +629,43 @@ export function BaseTradingViewChart({
 			)}
 
 			{/* Chart Container */}
-			<div
-				ref={chartContainerRef}
-				className="relative"
-				style={{ height: `${height}px` }}
-			/>
+			<div className="relative" style={{ height: `${height}px` }}>
+				<div
+					ref={chartContainerRef}
+					className="absolute inset-0"
+				/>
+				{/* Overlay for current data */}
+				{latestData && (
+					<div
+						className="absolute top-3 left-3 text-zinc-100 text-xs z-10 pointer-events-none"
+						style={{
+							WebkitFontSmoothing: 'antialiased',
+							MozOsxFontSmoothing: 'grayscale',
+						}}
+					>
+						<span className={cn("font-semibold", latestData.close_changed >= 0 ? "text-green-400" : "text-red-400")}>{latestData.symbol}</span> <span className={cn(latestData.close_changed >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(latestData.close)}</span> <span className={cn(latestData.close_changed >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.close_changed)}</span>
+						<span className="mx-1"></span>
+						<span className={cn(latestData.volume_changed >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(latestData.volume)}</span> <span className={cn(latestData.volume_changed >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.volume_changed)}</span>
+						<span className="text-zinc-400 ml-2 text-xs">
+							{(() => {
+								const date = new Date(latestData.time)
+								const now = new Date()
+								const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+
+								if (diffDays === 0) {
+									return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+								} else if (diffDays < 7) {
+									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+								} else if (diffDays < 365) {
+									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+								} else {
+									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+								}
+							})()}
+						</span>
+					</div>
+				)}
+			</div>
 		</div>
 	)
 }
