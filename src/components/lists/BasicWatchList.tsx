@@ -154,6 +154,10 @@ export function BasicWatchList({
     // Update custom watchlists state immediately so it's available for selection
     setCustomWatchlists(prev => [...prev, name])
     setSelectedGroup(name)
+    // Notify parent component about the sector/watchlist change
+    if (onSectorChange) {
+      onSectorChange(name)
+    }
   }
 
   const handleWatchlistUpdated = () => {
