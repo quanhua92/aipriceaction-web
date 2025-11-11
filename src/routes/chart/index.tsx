@@ -3,6 +3,7 @@ import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
+import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 
 export const Route = createFileRoute("/chart/")({
 	component: ChartPage,
@@ -10,9 +11,9 @@ export const Route = createFileRoute("/chart/")({
 
 function ChartPage() {
 		// State for selected ticker from watchlist
-	const [selectedTicker, setSelectedTicker] = React.useState("MBB");
+	const [selectedTicker, setSelectedTicker] = React.useState("VNINDEX");
 		// State for selected sector group from watchlist
-	const [selectedSector, setSelectedSector] = React.useState("NGAN_HANG");
+	const [selectedSector, setSelectedSector] = React.useState(ALL_WATCHLIST_NAME);
 
 	return (
 		<div className="space-y-8">
@@ -31,7 +32,7 @@ function ChartPage() {
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					<div className="lg:col-span-1">
 						<BasicWatchList
-							defaultGroup="NGAN_HANG"
+							defaultGroup={ALL_WATCHLIST_NAME}
 							showControls={true}
 							onSelectTicker={setSelectedTicker}
 							onSectorChange={setSelectedSector}
@@ -49,12 +50,12 @@ function ChartPage() {
 						</h3>
 						<div className="grid grid-cols-1 gap-4">
 							<TradingViewChart
-                initialTicker="MBB"
+                initialTicker="VNINDEX"
                 ticker={selectedTicker}
                 onTickerChange={setSelectedTicker}
               />
 							<BasicTickerWidget
-                initialTicker="MBB"
+                initialTicker="VNINDEX"
                 ticker={selectedTicker}
                 onTickerChange={setSelectedTicker}
               />
