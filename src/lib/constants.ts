@@ -21,3 +21,13 @@ export const PRIORITY_GROUPS = [
   'THEP',
   'BAN_LE'
 ] as const
+
+/**
+ * Default tickers for new custom watchlists
+ */
+export const DEFAULT_WATCHLIST_TICKERS = 'VNINDEX,VN30'
+
+/**
+ * LocalStorage key for custom watchlists
+ */
+export const CUSTOM_WATCHLISTS_STORAGE_KEY = 'customWatchlists'

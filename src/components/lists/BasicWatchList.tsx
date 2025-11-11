@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Star, Plus, Edit2 } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { getTickers } from '@/lib/api-client'
@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { SortableTickerList, type Ticker } from './SortableTickerList'
+import { CreateWatchListDialog } from '@/components/dialogs/CreateWatchListDialog'
+import { EditWatchListDialog } from '@/components/dialogs/EditWatchListDialog'
+import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
 
 export interface BasicWatchListProps {
   defaultGroup?: string
@@ -36,6 +39,24 @@ export function BasicWatchList({
   const { tickerGroups, allTickersData, loading, error } = useAPI()
   const settings = useChartSettings()
 
+  // State to track custom watchlists and trigger re-renders
+  const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
+  const [refreshKey, setRefreshKey] = React.useState(0)
+
+  // Load custom watchlists from localStorage
+  React.useEffect(() => {
+    const loadCustomWatchlists = () => {
+      const names = getWatchlistNames()
+      setCustomWatchlists(names)
+    }
+    loadCustomWatchlists()
+  }, [refreshKey])
+
+  // Helper to check if a group is a custom watchlist
+  const isCustomWatchlist = React.useCallback((group: string) => {
+    return customWatchlists.includes(group)
+  }, [customWatchlists])
+
   // Get available sector groups (exclude market indices)
   const sectorGroups = React.useMemo(() => {
     if (!tickerGroups) return []
@@ -44,26 +65,45 @@ export function BasicWatchList({
     )
   }, [tickerGroups])
 
+  // Get all available groups (custom watchlists first, then sectors)
+  const allGroups = React.useMemo(() => {
+    return [...customWatchlists, ...sectorGroups]
+  }, [customWatchlists, sectorGroups])
+
   // Set default selected group
   const [selectedGroup, setSelectedGroup] = React.useState<string>(() => {
-    if (defaultGroup && tickerGroups?.[defaultGroup]) {
+    if (defaultGroup) {
       return defaultGroup
     }
-    return sectorGroups.length > 0 ? sectorGroups[0] : ''
+    return ''
   })
 
   // Update selected group when groups are loaded or defaultGroup changes
   React.useEffect(() => {
-    if (defaultGroup && tickerGroups?.[defaultGroup]) {
+    if (defaultGroup) {
       setSelectedGroup(defaultGroup)
-    } else if (sectorGroups.length > 0 && !selectedGroup) {
-      setSelectedGroup(sectorGroups[0])
+    } else if (allGroups.length > 0 && !selectedGroup) {
+      setSelectedGroup(allGroups[0])
     }
-  }, [sectorGroups, defaultGroup, tickerGroups]) // Removed selectedGroup from dependencies
+  }, [allGroups, defaultGroup]) // Removed selectedGroup from dependencies
 
   // Transform ticker group data for SortableTickerList
   const tickers: Ticker[] = React.useMemo(() => {
-    if (!selectedGroup || !tickerGroups?.[selectedGroup]) {
+    if (!selectedGroup) {
+      return []
+    }
+
+    // Check if this is a custom watchlist
+    if (isCustomWatchlist(selectedGroup)) {
+      const watchlistTickers = getWatchlistTickers(selectedGroup)
+      return watchlistTickers.map(symbol => ({
+        symbol,
+        sector: selectedGroup
+      }))
+    }
+
+    // Otherwise, use regular ticker groups
+    if (!tickerGroups?.[selectedGroup]) {
       return []
     }
 
@@ -71,7 +111,7 @@ export function BasicWatchList({
       symbol,
       sector: selectedGroup
     }))
-  }, [selectedGroup, tickerGroups])
+  }, [selectedGroup, tickerGroups, isCustomWatchlist, refreshKey])
 
   // Navigation state - use sorted tickers from SortableTickerList
   const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
@@ -106,6 +146,30 @@ export function BasicWatchList({
     setSelectedGroup(group)
     if (onSectorChange) {
       onSectorChange(group)
+    }
+  }
+
+  // Handlers for watchlist operations
+  const handleWatchlistCreated = (name: string) => {
+    // Update custom watchlists state immediately so it's available for selection
+    setCustomWatchlists(prev => [...prev, name])
+    setSelectedGroup(name)
+  }
+
+  const handleWatchlistUpdated = () => {
+    // Force re-render to pick up the updated tickers from localStorage
+    setRefreshKey(prev => prev + 1)
+  }
+
+  const handleWatchlistDeleted = () => {
+    // Remove from custom watchlists state
+    setCustomWatchlists(prev => prev.filter(w => w !== selectedGroup))
+    // Select the first available group
+    const remainingGroups = [...customWatchlists.filter(w => w !== selectedGroup), ...sectorGroups]
+    if (remainingGroups.length > 0) {
+      setSelectedGroup(remainingGroups[0])
+    } else {
+      setSelectedGroup('')
     }
   }
 
@@ -202,9 +266,12 @@ export function BasicWatchList({
               <SelectValue placeholder="Select group" />
             </SelectTrigger>
             <SelectContent>
-              {sectorGroups.map((group) => (
+              {allGroups.map((group) => (
                 <SelectItem key={group} value={group}>
                   <div className="flex items-center gap-2">
+                    {isCustomWatchlist(group) && (
+                      <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+                    )}
                     <span>{group}</span>
                   </div>
                 </SelectItem>
@@ -212,7 +279,28 @@ export function BasicWatchList({
             </SelectContent>
           </Select>
         </div>
-        <ChevronDown className="h-4 w-4 opacity-60 text-muted-foreground" />
+        <div className="flex items-center gap-1">
+          {/* Edit button - only show for custom watchlists */}
+          {selectedGroup && isCustomWatchlist(selectedGroup) && (
+            <EditWatchListDialog
+              watchlistName={selectedGroup}
+              onWatchlistUpdated={handleWatchlistUpdated}
+              onWatchlistDeleted={handleWatchlistDeleted}
+            >
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                <Edit2 className="h-3.5 w-3.5" />
+                <span className="sr-only">Edit watchlist</span>
+              </Button>
+            </EditWatchListDialog>
+          )}
+          {/* New button */}
+          <CreateWatchListDialog onWatchlistCreated={handleWatchlistCreated}>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+              <Plus className="h-4 w-4" />
+              <span className="sr-only">Create new watchlist</span>
+            </Button>
+          </CreateWatchListDialog>
+        </div>
       </div>
 
       {/* Ticker List */}
