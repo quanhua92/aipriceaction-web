@@ -31,3 +31,8 @@ export const DEFAULT_WATCHLIST_TICKERS = 'VNINDEX,VN30'
  * LocalStorage key for custom watchlists
  */
 export const CUSTOM_WATCHLISTS_STORAGE_KEY = 'customWatchlists'
+
+/**
+ * Special watchlist name for showing all tickers
+ */
+export const ALL_WATCHLIST_NAME = 'ALL'

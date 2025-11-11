@@ -3,7 +3,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, Star, Plus, Edit2 } from 'lucid
 import { useAPI } from '@/contexts/APIContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { getTickers } from '@/lib/api-client'
-import { BASIC_WATCHLIST_PREFETCH_COUNT } from '@/lib/constants'
+import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
 import {
   Select,
   SelectContent,
@@ -57,6 +57,11 @@ export function BasicWatchList({
     return customWatchlists.includes(group)
   }, [customWatchlists])
 
+  // Helper to check if a group is the ALL watchlist
+  const isAllWatchlist = React.useCallback((group: string) => {
+    return group === ALL_WATCHLIST_NAME
+  }, [])
+
   // Get available sector groups (exclude market indices)
   const sectorGroups = React.useMemo(() => {
     if (!tickerGroups) return []
@@ -65,9 +70,9 @@ export function BasicWatchList({
     )
   }, [tickerGroups])
 
-  // Get all available groups (custom watchlists first, then sectors)
+  // Get all available groups (ALL first, then custom watchlists, then sectors)
   const allGroups = React.useMemo(() => {
-    return [...customWatchlists, ...sectorGroups]
+    return [ALL_WATCHLIST_NAME, ...customWatchlists, ...sectorGroups]
   }, [customWatchlists, sectorGroups])
 
   // Track if user has explicitly changed the group
@@ -102,6 +107,33 @@ export function BasicWatchList({
       return []
     }
 
+    // Check if this is the ALL watchlist
+    if (isAllWatchlist(selectedGroup)) {
+      if (!tickerGroups) return []
+
+      // Start with market indices
+      const marketIndicesTickers: Ticker[] = [...MARKET_INDICES].map(symbol => ({
+        symbol,
+        sector: 'Market Indices'
+      }))
+
+      // Get all tickers from all sector groups
+      const allSectorTickers: Ticker[] = []
+      Object.entries(tickerGroups).forEach(([sector, symbols]) => {
+        // Skip market indices as they're already added
+        if (!MARKET_INDICES.includes(sector as any)) {
+          symbols.forEach(symbol => {
+            allSectorTickers.push({
+              symbol,
+              sector
+            })
+          })
+        }
+      })
+
+      return [...marketIndicesTickers, ...allSectorTickers]
+    }
+
     // Check if this is a custom watchlist
     if (isCustomWatchlist(selectedGroup)) {
       const watchlistTickers = getWatchlistTickers(selectedGroup)
@@ -120,7 +152,7 @@ export function BasicWatchList({
       symbol,
       sector: selectedGroup
     }))
-  }, [selectedGroup, tickerGroups, isCustomWatchlist, refreshKey])
+  }, [selectedGroup, tickerGroups, isCustomWatchlist, isAllWatchlist, refreshKey])
 
   // Navigation state - use sorted tickers from SortableTickerList
   const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
@@ -291,7 +323,9 @@ export function BasicWatchList({
                     {isCustomWatchlist(group) && (
                       <Star className="h-3.5 w-3.5 fill-primary text-primary" />
                     )}
-                    <span>{group}</span>
+                    <span className={isAllWatchlist(group) ? 'font-bold' : ''}>
+                      {group}
+                    </span>
                   </div>
                 </SelectItem>
               ))}
