@@ -16,6 +16,7 @@ export interface BasicWatchListProps {
   className?: string
   showMarketIndices?: boolean
   onSelectTicker?: (symbol: string) => void
+  onSectorChange?: (sector: string) => void
 }
 
 export function BasicWatchList({
@@ -23,7 +24,8 @@ export function BasicWatchList({
   maxHeight = '400px',
   className = '',
   showMarketIndices = false,
-  onSelectTicker
+  onSelectTicker,
+  onSectorChange
 }: BasicWatchListProps) {
   const { tickerGroups, allTickersData, loading, error } = useAPI()
 
@@ -72,6 +74,9 @@ export function BasicWatchList({
 
   const handleGroupChange = (group: string) => {
     setSelectedGroup(group)
+    if (onSectorChange) {
+      onSectorChange(group)
+    }
   }
 
   return (

@@ -11,7 +11,9 @@ export const Route = createFileRoute('/chart/')({
 
 function ChartPage() {
   // State for selected ticker from watchlist
-  const [selectedTicker, setSelectedTicker] = React.useState('FPT')
+  const [selectedTicker, setSelectedTicker] = React.useState('MBB')
+  // State for selected sector group from watchlist
+  const [selectedSector, setSelectedSector] = React.useState('NGAN_HANG')
 
   return (
     <div className="space-y-8">
@@ -33,10 +35,17 @@ function ChartPage() {
           <div className="lg:col-span-1">
             <BasicWatchList
               maxHeight="600px"
+              defaultGroup="NGAN_HANG"
               onSelectTicker={setSelectedTicker}
+              onSectorChange={setSelectedSector}
             />
           </div>
           <div className="lg:col-span-2">
+            <div className="mb-2">
+              <span className="text-sm text-muted-foreground">
+                Current Sector: <span className="font-semibold">{selectedSector}</span>
+              </span>
+            </div>
             <h3 className="text-lg font-semibold mb-4">
               Watchlist Chart: {selectedTicker}
             </h3>
