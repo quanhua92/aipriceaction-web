@@ -31,10 +31,10 @@ export enum SortDirection {
 }
 
 export enum SortMetric {
-  CloseChange = "close_change",
-  CloseChangePercent = "close_change_percent",
+  CloseChanged = "close_changed",
   Volume = "volume",
-  VolumeChange = "volume_change",
+  VolumeChanged = "volume_changed",
+  TotalMoneyChanged = "total_money_changed",
   MA10Score = "ma10_score",
   MA20Score = "ma20_score",
   MA50Score = "ma50_score",
@@ -95,6 +95,8 @@ export interface StockData {
   close_changed?: number | null;
   /** Percentage change from previous volume */
   volume_changed?: number | null;
+  /** Total money changed from previous row in VND (price_change × volume) */
+  total_money_changed?: number | null;
 }
 
 /**
@@ -106,6 +108,7 @@ export interface PerformerData {
   volume: number;
   close_changed?: number | null;
   volume_changed?: number | null;
+  total_money_changed?: number | null;
   ma10?: number | null;
   ma20?: number | null;
   ma50?: number | null;

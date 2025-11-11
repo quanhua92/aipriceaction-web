@@ -108,6 +108,10 @@ async function main() {
     console.log();
 
     console.log("✅ Top performers analysis completed!");
+    console.log();
+    console.log("💡 Tip: Use with_hour: true for hourly breakdown analysis");
+    console.log("   See examples/11-hourly-breakdown.ts for detailed hourly examples");
+
   } catch (error) {
     console.error("❌ Error:", error);
     process.exit(1);
