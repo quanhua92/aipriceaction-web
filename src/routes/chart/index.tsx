@@ -3,12 +3,16 @@ import { TickerProvider, useTicker } from '@/contexts/TickerContext'
 import { BasicTickerWidget } from '@/components/widgets/BasicTickerWidget'
 import { TradingViewChart } from '@/components/charts/TradingViewChart'
 import { BasicWatchList } from '@/components/lists'
+import * as React from 'react'
 
 export const Route = createFileRoute('/chart/')({
   component: ChartPage,
 })
 
 function ChartPage() {
+  // State for selected ticker from watchlist
+  const [selectedTicker, setSelectedTicker] = React.useState('FPT')
+
   return (
     <div className="space-y-8">
       <TickerProvider>
@@ -27,13 +31,17 @@ function ChartPage() {
       <div className="p-4 md:p-6 border-t">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
-            <BasicWatchList maxHeight="600px" />
+            <BasicWatchList
+              maxHeight="600px"
+              onSelectTicker={setSelectedTicker}
+            />
           </div>
           <div className="lg:col-span-2">
-            <h3 className="text-lg font-semibold mb-4">Additional Charts</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TradingViewChart ticker="FPT" />
-              <TradingViewChart ticker="ACB" />
+            <h3 className="text-lg font-semibold mb-4">
+              Watchlist Chart: {selectedTicker}
+            </h3>
+            <div className="grid grid-cols-1 gap-4">
+              <TradingViewChart ticker={selectedTicker} />
             </div>
           </div>
         </div>

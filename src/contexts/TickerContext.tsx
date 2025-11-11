@@ -32,6 +32,13 @@ export function TickerProvider({
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
+  // Sync internal state with ticker prop changes
+  React.useEffect(() => {
+    if (initialTicker && initialTicker !== selectedTicker) {
+      setSelectedTicker(initialTicker)
+    }
+  }, [initialTicker, selectedTicker])
+
   // Data fetching effect (only if fetching is enabled)
   React.useEffect(() => {
     if (!enableFetching || !settings) return
