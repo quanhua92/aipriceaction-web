@@ -98,7 +98,7 @@ export function BasicWatchList({
     // Update selected index when user clicks on a ticker - use sorted order
     const index = sortedTickers.findIndex(t => t.symbol === symbol)
     if (index !== -1) {
-      setCurrentSelectedIndex(index)
+            setCurrentSelectedIndex(index)
     }
   }
 

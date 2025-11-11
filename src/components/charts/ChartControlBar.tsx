@@ -61,7 +61,7 @@ export function ChartControlBar({
 	mobileVisibleIntervals = DEFAULT_MOBILE_VISIBLE_INTERVALS,
 	className = '',
 }: ChartControlBarProps) {
-	const {
+		const {
 		interval: globalInterval,
 		setInterval: setGlobalInterval,
 		limit,

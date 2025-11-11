@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button'
 import { useTicker } from '@/contexts/TickerContext'
 
 export function SelectTickerButton() {
-  const { selectedTicker, setSelectedTicker } = useTicker()
+  const { selectedTicker, setSelectedTicker, loading } = useTicker()
 
   return (
     <SelectTickerDialog onSelectTicker={setSelectedTicker}>
-      <Button variant="outline">{selectedTicker}</Button>
+      <Button variant="outline" disabled={loading}>
+        {loading ? 'Loading...' : selectedTicker}
+      </Button>
     </SelectTickerDialog>
   )
 }
