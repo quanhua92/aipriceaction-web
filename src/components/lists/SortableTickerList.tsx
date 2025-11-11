@@ -11,7 +11,7 @@ export interface Ticker {
   sector: string
 }
 
-export type SortBy = 'az' | 'gainers' | 'losers' | 'volume'
+export type SortBy = 'az' | 'gainers' | 'losers' | 'volume' | 'ma20' | 'ma50'
 
 export interface SortableTickerListProps {
   tickers: Ticker[]
@@ -94,6 +94,18 @@ export function SortableTickerList({
           const bVol = bData?.volume ?? 0
           return bVol - aVol
 
+        case 'ma20':
+          // Sort by MA20 score descending (highest/most bullish first)
+          const aMA20 = aData?.ma20_score ?? -Infinity
+          const bMA20 = bData?.ma20_score ?? -Infinity
+          return bMA20 - aMA20
+
+        case 'ma50':
+          // Sort by MA50 score descending (highest/most bullish first)
+          const aMA50 = aData?.ma50_score ?? -Infinity
+          const bMA50 = bData?.ma50_score ?? -Infinity
+          return bMA50 - aMA50
+
         default:
           return 0
       }
@@ -115,10 +127,11 @@ export function SortableTickerList({
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Sort Buttons */}
-      <div className="flex gap-1.5 mb-3 shrink-0">
+      <div className="grid grid-cols-3 gap-1.5 mb-3 shrink-0">
+        {/* Row 1 */}
         <button
           onClick={() => setSortBy('volume')}
-          className={`flex-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'volume'
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
@@ -128,7 +141,7 @@ export function SortableTickerList({
         </button>
         <button
           onClick={() => setSortBy('gainers')}
-          className={`flex-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'gainers'
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
@@ -138,7 +151,7 @@ export function SortableTickerList({
         </button>
         <button
           onClick={() => setSortBy('losers')}
-          className={`flex-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'losers'
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
@@ -146,9 +159,30 @@ export function SortableTickerList({
         >
           {t('dialogs.selectTicker.sortBy.losers')}
         </button>
+        {/* Row 2 */}
+        <button
+          onClick={() => setSortBy('ma20')}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            sortBy === 'ma20'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          {t('dialogs.selectTicker.sortBy.ma20')}
+        </button>
+        <button
+          onClick={() => setSortBy('ma50')}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            sortBy === 'ma50'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          {t('dialogs.selectTicker.sortBy.ma50')}
+        </button>
         <button
           onClick={() => setSortBy('az')}
-          className={`flex-1 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'az'
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'

@@ -6,6 +6,8 @@ export default {
       volume: 'Volume',
       gainers: '↑ Gainers',
       losers: '↓ Losers',
+      ma20: 'MA20 Score',
+      ma50: 'MA50 Score',
       az: 'A-Z',
     },
     sections: {
