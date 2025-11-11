@@ -1,6 +1,7 @@
 import type { StockData } from '@/lib/api-client'
 import {
 	createChart,
+	createTextWatermark,
 	type IChartApi,
 	type ISeriesApi,
 	ColorType,
@@ -284,6 +285,17 @@ export function BaseTradingViewChart({
 		})
 		ma200SeriesRef.current = ma200Series
 
+		// Create watermark using official API
+		const watermark = createTextWatermark(chart.panes()[0], {
+			horzAlign: 'center',
+			vertAlign: 'center',
+			lines: [{
+				text: 'aipriceaction.com',
+				color: 'rgba(255, 255, 255, 0.12)',
+				fontSize: 20,
+			}],
+		})
+
 		// Create tooltip element
 		const tooltipWidth = 200
 		const tooltipHeight = 90
@@ -512,6 +524,9 @@ export function BaseTradingViewChart({
 				chartContainerRef.current.removeChild(tooltip)
 			}
 
+			// Remove watermark
+			watermark.detach()
+
 			// Clean up chart and series refs
 			chartRef.current = null
 			candlestickSeriesRef.current = null
@@ -634,6 +649,7 @@ export function BaseTradingViewChart({
 					ref={chartContainerRef}
 					className="absolute inset-0"
 				/>
+				
 				{/* Overlay for current data */}
 				{latestData && (
 					<div
