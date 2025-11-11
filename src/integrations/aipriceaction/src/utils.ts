@@ -160,3 +160,67 @@ export function formatDate(date: Date): string {
 export function getUserAgent(): string {
   return "aipriceaction-js/0.1.0";
 }
+
+/**
+ * Parse CSV response from /tickers endpoint into TickersResponse format
+ *
+ * @param csvText - CSV text from the API response
+ * @returns TickersResponse object with parsed StockData arrays grouped by symbol
+ */
+export function parseCSVToTickersResponse(csvText: string): Record<string, any[]> {
+  const lines = csvText.trim().split('\n');
+
+  if (lines.length < 2) {
+    return {};
+  }
+
+  // Parse header
+  const headers = lines[0].split(',');
+  const data: Record<string, any[]> = {};
+
+  // Parse data rows
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    // Handle CSV parsing - split by comma but respect that values don't contain commas in this format
+    const values = line.split(',');
+
+    if (values.length !== headers.length) {
+      continue; // Skip malformed rows
+    }
+
+    // Create stock data object
+    const stockData: any = {
+      symbol: values[0],
+      time: values[1],
+      open: parseFloat(values[2]) || 0,
+      high: parseFloat(values[3]) || 0,
+      low: parseFloat(values[4]) || 0,
+      close: parseFloat(values[5]) || 0,
+      volume: parseInt(values[6]) || 0,
+      ma10: values[7] ? parseFloat(values[7]) : null,
+      ma20: values[8] ? parseFloat(values[8]) : null,
+      ma50: values[9] ? parseFloat(values[9]) : null,
+      ma100: values[10] ? parseFloat(values[10]) : null,
+      ma200: values[11] ? parseFloat(values[11]) : null,
+      ma10_score: values[12] ? parseFloat(values[12]) : null,
+      ma20_score: values[13] ? parseFloat(values[13]) : null,
+      ma50_score: values[14] ? parseFloat(values[14]) : null,
+      ma100_score: values[15] ? parseFloat(values[15]) : null,
+      ma200_score: values[16] ? parseFloat(values[16]) : null,
+      close_changed: values[17] ? parseFloat(values[17]) : null,
+      volume_changed: values[18] ? parseFloat(values[18]) : null,
+      total_money_changed: values[19] ? parseFloat(values[19]) : null,
+    };
+
+    // Group by symbol
+    const symbol = stockData.symbol;
+    if (!data[symbol]) {
+      data[symbol] = [];
+    }
+    data[symbol].push(stockData);
+  }
+
+  return data;
+}

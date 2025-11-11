@@ -23,6 +23,7 @@ import {
   buildQueryString,
   getUserAgent,
   isValidDate,
+  parseCSVToTickersResponse,
   type RetryConfig,
   DEFAULT_RETRY_CONFIG,
   withRetry,
@@ -185,6 +186,9 @@ export class AIPriceActionClient {
    *   start_date: '2025-01-01',
    *   end_date: '2025-12-31'
    * });
+   *
+   * // Force JSON format instead of CSV (default)
+   * const data = await client.getTickers({ symbol: 'VCB', format: 'json' });
    * ```
    */
   async getTickers(params: TickersQueryParams = {}): Promise<TickersResponse> {
@@ -202,8 +206,18 @@ export class AIPriceActionClient {
       );
     }
 
-    const queryString = buildQueryString(params as Record<string, unknown>);
-    return this.request<TickersResponse>(`/tickers${queryString}`);
+    // Default to CSV format for better performance, unless explicitly requested JSON
+    const finalParams = { ...params, format: params.format || 'csv' };
+    const queryString = buildQueryString(finalParams as Record<string, unknown>);
+
+    if (params.format === 'json') {
+      // If JSON format is explicitly requested, use original behavior
+      return this.request<TickersResponse>(`/tickers${queryString}`);
+    } else {
+      // Default: request CSV and parse it to TickersResponse
+      const csvText = await this.request<string>(`/tickers${queryString}`);
+      return parseCSVToTickersResponse(csvText) as TickersResponse;
+    }
   }
 
   /**
