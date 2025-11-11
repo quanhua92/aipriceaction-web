@@ -160,7 +160,6 @@ export function SortableTickerList({
 
       {/* Ticker List */}
       <div className="overflow-y-auto flex-1 min-h-0" style={{ maxHeight }}>
-        <div className="p-2">
           {loading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -179,7 +178,7 @@ export function SortableTickerList({
               {filteredMarketIndices.length > 0 && (
                 <div className="mb-2">
                   {showSections && (
-                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       {t('dialogs.selectTicker.sections.marketIndices')}
                     </div>
                   )}
@@ -189,7 +188,7 @@ export function SortableTickerList({
                       <button
                         key={index}
                         onClick={() => onSelectTicker(index)}
-                        className="w-full flex items-center justify-between gap-4 px-3 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{index}</span>
@@ -227,7 +226,7 @@ export function SortableTickerList({
               {filteredTickers.length > 0 && (
                 <div>
                   {showSections && filteredMarketIndices.length > 0 && (
-                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       {t('dialogs.selectTicker.sections.stocks')}
                     </div>
                   )}
@@ -237,7 +236,7 @@ export function SortableTickerList({
                       <button
                         key={ticker.symbol}
                         onClick={() => onSelectTicker(ticker.symbol)}
-                        className="w-full flex items-center justify-between gap-4 px-3 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
@@ -278,7 +277,6 @@ export function SortableTickerList({
               )}
             </>
           )}
-        </div>
       </div>
     </div>
   )

@@ -47,17 +47,19 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
           </div>
         </div>
 
-        <SortableTickerList
-          tickers={tickers}
-          allTickersData={allTickersData}
-          searchQuery={search}
-          marketIndices={[...MARKET_INDICES]}
-          onSelectTicker={handleSelectTicker}
-          loading={loading}
-          error={error}
-          maxHeight="none"
-          className="flex-1 min-h-0"
-        />
+        <div className="flex-1 min-h-0 px-5">
+          <SortableTickerList
+            tickers={tickers}
+            allTickersData={allTickersData}
+            searchQuery={search}
+            marketIndices={[...MARKET_INDICES]}
+            onSelectTicker={handleSelectTicker}
+            loading={loading}
+            error={error}
+            maxHeight="none"
+            className="h-full"
+          />
+        </div>
       </DialogContent>
     </Dialog>
   )

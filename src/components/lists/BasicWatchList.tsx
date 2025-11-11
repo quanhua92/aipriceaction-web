@@ -216,7 +216,8 @@ export function BasicWatchList({
       </div>
 
       {/* Ticker List */}
-      <SortableTickerList
+      <div className="flex-1 px-3">
+        <SortableTickerList
         tickers={tickers}
         allTickersData={allTickersData}
         searchQuery="" // No search in watchlist
@@ -228,8 +229,9 @@ export function BasicWatchList({
         loading={loading}
         error={error}
         maxHeight={maxHeight}
-        className="flex-1"
+        className="h-full"
       />
+      </div>
 
       {/* Navigation Controls */}
       {showControls && sortedTickers.length > 0 && (
