@@ -70,6 +70,9 @@ export function BasicWatchList({
     return [...customWatchlists, ...sectorGroups]
   }, [customWatchlists, sectorGroups])
 
+  // Track if user has explicitly changed the group
+  const [hasUserChangedGroup, setHasUserChangedGroup] = React.useState(false)
+
   // Set default selected group
   const [selectedGroup, setSelectedGroup] = React.useState<string>(() => {
     if (defaultGroup) {
@@ -79,13 +82,19 @@ export function BasicWatchList({
   })
 
   // Update selected group when groups are loaded or defaultGroup changes
+  // But only if user hasn't explicitly changed it
   React.useEffect(() => {
+    if (hasUserChangedGroup) {
+      // Don't override user's explicit selection
+      return
+    }
+
     if (defaultGroup) {
       setSelectedGroup(defaultGroup)
     } else if (allGroups.length > 0 && !selectedGroup) {
       setSelectedGroup(allGroups[0])
     }
-  }, [allGroups, defaultGroup]) // Removed selectedGroup from dependencies
+  }, [allGroups, defaultGroup, hasUserChangedGroup, selectedGroup])
 
   // Transform ticker group data for SortableTickerList
   const tickers: Ticker[] = React.useMemo(() => {
@@ -143,6 +152,7 @@ export function BasicWatchList({
   }
 
   const handleGroupChange = (group: string) => {
+    setHasUserChangedGroup(true)
     setSelectedGroup(group)
     if (onSectorChange) {
       onSectorChange(group)
@@ -153,6 +163,7 @@ export function BasicWatchList({
   const handleWatchlistCreated = (name: string) => {
     // Update custom watchlists state immediately so it's available for selection
     setCustomWatchlists(prev => [...prev, name])
+    setHasUserChangedGroup(true)
     setSelectedGroup(name)
     // Notify parent component about the sector/watchlist change
     if (onSectorChange) {
@@ -171,7 +182,11 @@ export function BasicWatchList({
     // Select the first available group
     const remainingGroups = [...customWatchlists.filter(w => w !== selectedGroup), ...sectorGroups]
     if (remainingGroups.length > 0) {
+      setHasUserChangedGroup(true)
       setSelectedGroup(remainingGroups[0])
+      if (onSectorChange) {
+        onSectorChange(remainingGroups[0])
+      }
     } else {
       setSelectedGroup('')
     }
