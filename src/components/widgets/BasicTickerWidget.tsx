@@ -1,11 +1,13 @@
 import type { StockData } from '@/lib/api-client'
-import { TrendingUp, TrendingDown, ChevronDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, ChevronDown, Star } from 'lucide-react'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
+import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
 import { TickerProvider } from '@/contexts/TickerContext'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
 import * as React from 'react'
 
 interface BasicTickerWidgetProps {
@@ -111,10 +113,18 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                   <ChevronDown className="ml-1 h-4 w-4 opacity-60" />
                 </div>
               </SelectTickerDialog>
-              <p className="text-xs text-muted-foreground">{data.time}</p>
+              <p className="text-xs text-muted-foreground">{data.time.split(' ')[0]}</p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold">{formatPrice(data.close)}</div>
+              <div className="flex items-center justify-end gap-2">
+                <QuickAddWatchListDialog ticker={selectedTicker}>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted/50">
+                    <Star className="h-3.5 w-3.5" />
+                    <span className="sr-only">Add to watchlist</span>
+                  </Button>
+                </QuickAddWatchListDialog>
+                <div className="text-2xl font-bold">{formatPrice(data.close)}</div>
+              </div>
               {data.close_changed !== null && data.close_changed !== undefined && (
                 <div
                   className={`flex items-center justify-end gap-1 text-sm font-medium ${getPriceChangeColor(priceChange)}`}
