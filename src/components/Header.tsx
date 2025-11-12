@@ -7,12 +7,15 @@ import {
   Menu,
   Table,
   X,
+  Zap,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
+import { useRefresh } from '../contexts/RefreshContext'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const { language, setLanguage } = useSiteSettings()
+  const { isRefreshEnabled, toggleRefresh } = useRefresh()
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'vn' : 'en')
@@ -36,13 +39,28 @@ export default function Header() {
           </h1>
         </div>
 
-        <button
-          onClick={toggleLanguage}
-          className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors border border-gray-600"
-          aria-label="Toggle language"
-        >
-          <span className="text-sm font-bold tracking-wide">{language === 'en' ? 'EN' : 'VN'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleRefresh}
+            className={`p-2 rounded-md transition-colors border ${
+              isRefreshEnabled
+                ? 'bg-green-600 hover:bg-green-700 border-green-500 text-white'
+                : 'bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-400'
+            }`}
+            aria-label={isRefreshEnabled ? 'Auto-refresh: ON (30s)' : 'Auto-refresh: OFF'}
+            title={isRefreshEnabled ? 'Auto-refresh: ON (30s)' : 'Auto-refresh: OFF'}
+          >
+            <Zap size={18} />
+          </button>
+
+          <button
+            onClick={toggleLanguage}
+            className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors border border-gray-600"
+            aria-label="Toggle language"
+          >
+            <span className="text-sm font-bold tracking-wide">{language === 'en' ? 'EN' : 'VN'}</span>
+          </button>
+        </div>
       </header>
 
       <aside

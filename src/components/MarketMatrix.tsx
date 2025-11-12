@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { ChevronLeft, ChevronRight, ChevronDown, Repeat, Star } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
+import { useRefresh } from '@/contexts/RefreshContext'
 import { getTickers, type StockData } from '@/lib/api-client'
 import { format, parseISO } from 'date-fns'
 import {
@@ -57,6 +58,7 @@ const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_D
 
 export function MarketMatrix() {
   const { tickerGroups, loading: apiLoading } = useAPI()
+  const { lastRefresh } = useRefresh()
   const { t } = useTranslation()
 
   // State management - simple defaults, no localStorage
@@ -266,7 +268,7 @@ export function MarketMatrix() {
 
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTickers, currentPage, viewMode, tickerGroups])
+  }, [selectedTickers, currentPage, viewMode, tickerGroups, lastRefresh])
 
   // Group rows by sector and sort within each sector
   const rowsBySector = React.useMemo(() => {

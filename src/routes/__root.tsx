@@ -10,6 +10,7 @@ import Header from '../components/Header'
 import { APIProvider } from '../contexts/APIContext'
 import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
 import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
+import { RefreshProvider } from '../contexts/RefreshContext'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -67,26 +68,28 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <SiteSettingsProvider>
-          <APIProvider>
-            <ChartSettingsProvider>
-              <Header />
-              {children}
-            {import.meta.env.DEV && (
-              <TanStackDevtools
-                config={{
-                  position: 'bottom-right',
-                }}
-                plugins={[
-                  {
-                    name: 'Tanstack Router',
-                    render: <TanStackRouterDevtoolsPanel />,
-                  },
-                  TanStackQueryDevtools,
-                ]}
-              />
-            )}
-            </ChartSettingsProvider>
-          </APIProvider>
+          <RefreshProvider>
+            <APIProvider>
+              <ChartSettingsProvider>
+                <Header />
+                {children}
+              {import.meta.env.DEV && (
+                <TanStackDevtools
+                  config={{
+                    position: 'bottom-right',
+                  }}
+                  plugins={[
+                    {
+                      name: 'Tanstack Router',
+                      render: <TanStackRouterDevtoolsPanel />,
+                    },
+                    TanStackQueryDevtools,
+                  ]}
+                />
+              )}
+              </ChartSettingsProvider>
+            </APIProvider>
+          </RefreshProvider>
         </SiteSettingsProvider>
         <Scripts />
       </body>

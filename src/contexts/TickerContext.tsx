@@ -1,6 +1,7 @@
 import React from 'react'
 import { getTickers, type StockData } from '@/lib/api-client'
 import { useChartSettings } from './ChartSettingsContext'
+import { useRefresh } from './RefreshContext'
 
 interface TickerContextValue {
   selectedTicker: string
@@ -29,6 +30,7 @@ export function TickerProvider({
 }: TickerProviderProps) {
     // Get global settings for API calls (only if fetching is enabled)
   const settings = enableFetching ? useChartSettings() : null
+  const { lastRefresh } = useRefresh()
   const [selectedTicker, setSelectedTicker] = React.useState(initialTicker)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
@@ -71,7 +73,7 @@ export function TickerProvider({
     }
 
     fetchChartData()
-  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit])
+  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh])
 
   // Also trigger initial fetch when settings become available
   React.useEffect(() => {
@@ -99,7 +101,7 @@ export function TickerProvider({
 
       fetchChartData()
     }
-  }, [enableFetching, settings, selectedTicker])
+  }, [enableFetching, settings, selectedTicker, lastRefresh])
 
   const contextValue = {
     selectedTicker,
