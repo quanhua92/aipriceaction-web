@@ -1,4 +1,22 @@
 /**
+ * Safari-safe date parsing for "YYYY-MM-DD HH:MM:SS" format
+ * Safari requires ISO 8601 format with 'T' separator instead of space
+ * Chrome is lenient and accepts both formats
+ * @param dateString - Date string in "YYYY-MM-DD HH:MM:SS" format
+ * @returns Date object (returns Invalid Date if parsing fails)
+ * @example parseSafariSafeDate("2025-11-09 21:00:00") => Valid Date object on all browsers
+ */
+function parseSafariSafeDate(dateString: string): Date {
+  if (!dateString || typeof dateString !== 'string') {
+    return new Date('Invalid Date')
+  }
+  // Replace space with 'T' for ISO 8601 compliance (Safari requirement)
+  // "2025-11-09 21:00:00" → "2025-11-09T21:00:00"
+  const isoString = dateString.replace(' ', 'T')
+  return new Date(isoString)
+}
+
+/**
  * Format a price value with comma separators
  * @param price - The price value to format
  * @param useDecimals - If true, formats with 2 decimals. Default false for VND (no decimals)
@@ -56,13 +74,17 @@ export function formatVolume(volume: number): string {
  * Convert UTC timestamp string to Vietnam time (UTC+7)
  * The API returns timestamps in UTC format (e.g., "2025-11-09 14:00:00")
  * This function parses them as UTC and converts to Vietnam timezone by adding 7 hours
+ * Safari-compatible: Uses ISO 8601 format with 'T' separator
  * @param utcTimeString - UTC time string in format "YYYY-MM-DD HH:MM:SS" or "YYYY-MM-DD"
  * @returns Unix timestamp in seconds adjusted for Vietnam timezone (UTC+7)
  * @example parseUTCToVietnamTime("2025-11-09 14:00:00") => Unix timestamp for 9pm Vietnam time
  */
 export function parseUTCToVietnamTime(utcTimeString: string): number {
-  // Parse as UTC by appending 'UTC' to force UTC interpretation
-  const utcDate = new Date(utcTimeString + ' UTC')
+  // Safari-safe: Use parseSafariSafeDate to handle space-to-T conversion
+  // Parse as UTC by appending 'Z' for explicit UTC timezone
+  const isoString = utcTimeString.replace(' ', 'T') + 'Z'
+  const utcDate = new Date(isoString)
+
   // Add 7 hours for Vietnam (UTC+7)
   const vietnamTime = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000))
   // Return Unix timestamp in seconds

@@ -114,7 +114,9 @@ export function BaseTradingViewChart({
 
 		data.forEach((point, index) => {
 			// Convert ISO date string to Unix timestamp
-			const dateTime = new Date(point.time)
+			// Safari-safe: Replace space with 'T' for ISO 8601 compliance
+			// "2025-11-09 21:00:00" → "2025-11-09T21:00:00"
+			const dateTime = new Date(point.time.replace(' ', 'T'))
 
 			// Skip invalid dates
 			if (isNaN(dateTime.getTime())) {
@@ -677,11 +679,13 @@ export function BaseTradingViewChart({
 						<span className="text-zinc-400 ml-2 text-xs">
 							{(() => {
 								try {
-									const date = new Date(latestData.time)
-									if (isNaN(date.getTime())) return latestData.time
+									if (!latestData.time || typeof latestData.time !== 'string') return '--'
+									// Safari-safe: Replace space with 'T' for ISO 8601 compliance
+									const date = new Date(latestData.time.replace(' ', 'T'))
+									if (isNaN(date.getTime())) return '--'
 									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 								} catch {
-									return latestData.time
+									return '--'
 								}
 							})()}
 						</span>
