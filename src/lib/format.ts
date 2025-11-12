@@ -2,11 +2,16 @@
  * Safari-safe date parsing for "YYYY-MM-DD HH:MM:SS" format
  * Safari requires ISO 8601 format with 'T' separator instead of space
  * Chrome is lenient and accepts both formats
- * @param dateString - Date string in "YYYY-MM-DD HH:MM:SS" format
+ *
+ * Use this function for ALL date parsing in the application to ensure
+ * cross-browser compatibility, especially for Safari/iOS Safari.
+ *
+ * @param dateString - Date string in "YYYY-MM-DD HH:MM:SS" or "YYYY-MM-DD" format
  * @returns Date object (returns Invalid Date if parsing fails)
  * @example parseSafariSafeDate("2025-11-09 21:00:00") => Valid Date object on all browsers
+ * @example parseSafariSafeDate("2025-11-09") => Valid Date object on all browsers
  */
-function parseSafariSafeDate(dateString: string): Date {
+export function parseSafariSafeDate(dateString: string): Date {
   if (!dateString || typeof dateString !== 'string') {
     return new Date('Invalid Date')
   }

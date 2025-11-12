@@ -15,7 +15,7 @@ import {
 	LineSeries,
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseSafariSafeDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -113,10 +113,8 @@ export function BaseTradingViewChart({
 		const ma200: LineData[] = []
 
 		data.forEach((point, index) => {
-			// Convert ISO date string to Unix timestamp
-			// Safari-safe: Replace space with 'T' for ISO 8601 compliance
-			// "2025-11-09 21:00:00" → "2025-11-09T21:00:00"
-			const dateTime = new Date(point.time.replace(' ', 'T'))
+			// Convert ISO date string to Unix timestamp using Safari-safe parser
+			const dateTime = parseSafariSafeDate(point.time)
 
 			// Skip invalid dates
 			if (isNaN(dateTime.getTime())) {
@@ -680,8 +678,7 @@ export function BaseTradingViewChart({
 							{(() => {
 								try {
 									if (!latestData.time || typeof latestData.time !== 'string') return '--'
-									// Safari-safe: Replace space with 'T' for ISO 8601 compliance
-									const date = new Date(latestData.time.replace(' ', 'T'))
+									const date = parseSafariSafeDate(latestData.time)
 									if (isNaN(date.getTime())) return '--'
 									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 								} catch {
