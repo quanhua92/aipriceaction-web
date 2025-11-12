@@ -1,0 +1,565 @@
+import * as React from 'react'
+import { ChevronLeft, ChevronRight, ChevronDown, Repeat, Star } from 'lucide-react'
+import { useAPI } from '@/contexts/APIContext'
+import { getTickers } from '@/lib/api-client'
+import { format, parseISO } from 'date-fns'
+import {
+  ALL_WATCHLIST_NAME,
+  MARKET_INDICES,
+  MATRIX_DAYS_PER_PAGE,
+  PRIORITY_GROUPS,
+  SECTOR_ABBREVIATIONS,
+} from '@/lib/constants'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
+import { MatrixChartDialog } from './MatrixChartDialog'
+
+type ViewMode = 'close_changed' | 'ma20_score'
+
+interface MatrixCell {
+  date: string
+  value: number
+}
+
+interface MatrixRow {
+  ticker: string
+  sector: string
+  cells: MatrixCell[]
+}
+
+interface MatrixData {
+  dates: string[] // Sorted descending (newest first)
+  rows: MatrixRow[]
+}
+
+// Color coding helper (reference scheme)
+function getCellColor(value: number): { bg: string; text: string } {
+  if (value > 6.5) return { bg: 'bg-purple-500', text: 'text-white' } // Ceiling
+  if (value < -6.5) return { bg: 'bg-cyan-500', text: 'text-white' } // Floor
+  if (value > 0) return { bg: 'bg-green-500', text: 'text-white' } // Gain
+  if (value < 0) return { bg: 'bg-red-500', text: 'text-white' } // Loss
+  return { bg: 'bg-gray-200', text: 'text-gray-600' } // No change
+}
+
+// Default sectors to show expanded
+const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN']
+
+export function MarketMatrix() {
+  const { tickerGroups, loading: apiLoading } = useAPI()
+
+  // State management - simple defaults, no localStorage
+  const [selectedWatchlist, setSelectedWatchlist] = React.useState<string>(ALL_WATCHLIST_NAME)
+  const [viewMode, setViewMode] = React.useState<ViewMode>('close_changed')
+  const [currentPage, setCurrentPage] = React.useState<number>(0)
+  const [openSectors, setOpenSectors] = React.useState<Set<string>>(() => {
+    // Initialize with only default sectors open (all others collapsed)
+    return new Set(DEFAULT_OPEN_SECTORS)
+  })
+
+  const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
+  const [matrixData, setMatrixData] = React.useState<MatrixData | null>(null)
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+
+  // Dialog state
+  const [dialogTicker, setDialogTicker] = React.useState<string | null>(null)
+  const [dialogStartDate, setDialogStartDate] = React.useState<string | null>(null)
+  const [dialogEndDate, setDialogEndDate] = React.useState<string | null>(null)
+
+  // Load custom watchlists
+  React.useEffect(() => {
+    setCustomWatchlists(getWatchlistNames())
+  }, [])
+
+  // Get available sector groups
+  const sectorGroups = React.useMemo(() => {
+    if (!tickerGroups) return []
+    return Object.keys(tickerGroups)
+      .filter((group) => !MARKET_INDICES.includes(group as any))
+      .sort((a, b) => {
+        const priorityA = PRIORITY_GROUPS.indexOf(a as any)
+        const priorityB = PRIORITY_GROUPS.indexOf(b as any)
+
+        if (priorityA !== -1 && priorityB !== -1) {
+          return priorityA - priorityB
+        }
+        if (priorityA !== -1) return -1
+        if (priorityB !== -1) return 1
+
+        return a.localeCompare(b)
+      })
+  }, [tickerGroups])
+
+  // Get all available groups
+  const allGroups = React.useMemo(() => {
+    return [ALL_WATCHLIST_NAME, ...customWatchlists, ...sectorGroups]
+  }, [customWatchlists, sectorGroups])
+
+  // Get tickers for selected watchlist
+  const selectedTickers = React.useMemo(() => {
+    if (!tickerGroups) return []
+
+    if (selectedWatchlist === ALL_WATCHLIST_NAME) {
+      // Get all tickers from all sectors
+      const allTickers: string[] = []
+      Object.entries(tickerGroups).forEach(([sector, symbols]) => {
+        if (!MARKET_INDICES.includes(sector as any)) {
+          allTickers.push(...symbols)
+        }
+      })
+      return allTickers
+    }
+
+    // Check if custom watchlist
+    if (customWatchlists.includes(selectedWatchlist)) {
+      return getWatchlistTickers(selectedWatchlist)
+    }
+
+    // Regular sector group
+    return tickerGroups[selectedWatchlist] || []
+  }, [tickerGroups, selectedWatchlist, customWatchlists])
+
+  // Fetch matrix data
+  React.useEffect(() => {
+    if (selectedTickers.length === 0) {
+      setMatrixData(null)
+      return
+    }
+
+    const fetchData = async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        // Calculate end_date for API: use today for page 0, or oldest date from previous page
+        const endDateForAPI =
+          currentPage === 0
+            ? format(new Date(), 'yyyy-MM-dd')
+            : matrixData?.dates[matrixData.dates.length - 1] || format(new Date(), 'yyyy-MM-dd')
+
+        // Fetch VNINDEX first to get trading day calendar (source of truth)
+        const vnindexResponse = await getTickers({
+          symbol: ['VNINDEX'],
+          interval: '1D',
+          end_date: endDateForAPI,
+          limit: MATRIX_DAYS_PER_PAGE,
+        })
+
+        // Extract dates from VNINDEX only (always has data when market is open)
+        const vnindexData = vnindexResponse['VNINDEX'] || []
+        const dates = vnindexData
+          .map((point) => point.time.split(' ')[0])
+          .sort((a, b) => b.localeCompare(a)) // Newest first
+
+        if (dates.length === 0) {
+          setError('No market data available')
+          return
+        }
+
+        // Fetch ticker data with same end_date and limit
+        const response = await getTickers({
+          symbol: selectedTickers,
+          interval: '1D',
+          end_date: endDateForAPI,
+          limit: MATRIX_DAYS_PER_PAGE,
+        })
+
+        // Group tickers by sector
+        const tickersBySector: { [sector: string]: string[] } = {}
+        selectedTickers.forEach((ticker) => {
+          let sector = 'Unknown'
+
+          // Find sector for this ticker
+          if (tickerGroups) {
+            for (const [sectorName, symbols] of Object.entries(tickerGroups)) {
+              if (symbols.includes(ticker)) {
+                sector = sectorName
+                break
+              }
+            }
+          }
+
+          if (!tickersBySector[sector]) {
+            tickersBySector[sector] = []
+          }
+          tickersBySector[sector].push(ticker)
+        })
+
+        // Create matrix rows
+        const rows: MatrixRow[] = []
+
+        // Sort sectors by priority
+        const sortedSectors = Object.keys(tickersBySector).sort((a, b) => {
+          const priorityA = PRIORITY_GROUPS.indexOf(a as any)
+          const priorityB = PRIORITY_GROUPS.indexOf(b as any)
+
+          if (priorityA !== -1 && priorityB !== -1) {
+            return priorityA - priorityB
+          }
+          if (priorityA !== -1) return -1
+          if (priorityB !== -1) return 1
+
+          return a.localeCompare(b)
+        })
+
+        // Build rows grouped by sector
+        for (const sector of sortedSectors) {
+          const sectorTickers = tickersBySector[sector]
+
+          for (const ticker of sectorTickers) {
+            const tickerData = response[ticker] || []
+
+            const cells: MatrixCell[] = dates.map((date) => {
+              const point = tickerData.find((d) => d.time.split(' ')[0] === date)
+
+              let value = 0
+              if (point) {
+                if (viewMode === 'close_changed') {
+                  value = point.close_changed ?? 0
+                } else {
+                  value = point.ma20_score ?? 0
+                }
+              }
+
+              return { date, value }
+            })
+
+            rows.push({ ticker, sector, cells })
+          }
+        }
+
+        setMatrixData({ dates, rows })
+      } catch (err) {
+        console.error('Failed to fetch matrix data:', err)
+        setError('Failed to load matrix data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTickers, currentPage, viewMode, tickerGroups])
+
+  // Group rows by sector
+  const rowsBySector = React.useMemo(() => {
+    if (!matrixData) return {}
+
+    const grouped: { [sector: string]: MatrixRow[] } = {}
+    matrixData.rows.forEach((row) => {
+      if (!grouped[row.sector]) {
+        grouped[row.sector] = []
+      }
+      grouped[row.sector].push(row)
+    })
+
+    return grouped
+  }, [matrixData])
+
+  // Event handlers
+  const handleWatchlistChange = (value: string) => {
+    setSelectedWatchlist(value)
+    setCurrentPage(0) // Reset to first page
+  }
+
+  const handleViewModeToggle = () => {
+    setViewMode((prev) => (prev === 'close_changed' ? 'ma20_score' : 'close_changed'))
+  }
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(0, prev - 1))
+  }
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => prev + 1)
+  }
+
+  const toggleSector = (sector: string) => {
+    setOpenSectors((prev) => {
+      const next = new Set(prev)
+      if (next.has(sector)) {
+        next.delete(sector)
+      } else {
+        next.add(sector)
+      }
+      return next
+    })
+  }
+
+  const handleCellClick = (ticker: string) => {
+    if (!matrixData) return
+
+    setDialogTicker(ticker)
+    // Use actual date range from data (oldest to newest)
+    setDialogStartDate(matrixData.dates[matrixData.dates.length - 1])
+    setDialogEndDate(matrixData.dates[0])
+  }
+
+  const handleCloseDialog = () => {
+    setDialogTicker(null)
+    setDialogStartDate(null)
+    setDialogEndDate(null)
+  }
+
+  if (apiLoading) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <p>Loading market data...</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="p-3 md:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <CardTitle className="text-lg font-semibold">Market Matrix</CardTitle>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Watchlist Selector */}
+              <Select value={selectedWatchlist} onValueChange={handleWatchlistChange}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select watchlist" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allGroups.map((group) => (
+                    <SelectItem key={group} value={group}>
+                      <div className="flex items-center gap-2">
+                        {customWatchlists.includes(group) && (
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        )}
+                        <span>{group}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* View Mode Toggle */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleViewModeToggle}
+                className="flex items-center gap-1 h-8 px-3"
+                title={`Switch to ${viewMode === 'close_changed' ? 'MA20 Score' : 'Close Change'}`}
+              >
+                <Repeat className="h-3 w-3" />
+                <span className="text-xs font-medium">
+                  {viewMode === 'close_changed' ? 'CLOSE %' : 'MA20'}
+                </span>
+              </Button>
+
+              {/* Pagination */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 0}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-xs px-2">Page {currentPage + 1}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Date Range Info */}
+          {matrixData && (
+            <div className="text-xs text-muted-foreground mt-2">
+              {matrixData.dates[matrixData.dates.length - 1]} to {matrixData.dates[0]} ({matrixData.dates.length} trading days)
+            </div>
+          )}
+        </CardHeader>
+
+        <CardContent className="p-0">
+          {loading && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-red-500">{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && matrixData && (
+            <div className="flex">
+              {/* Fixed Left Column - Ticker Symbols */}
+              <div className="w-[100px] min-w-[100px] flex-shrink-0 border-r border-border">
+                {/* Header */}
+                <div className="bg-muted/50 text-center px-2 py-2 font-semibold border-b border-border h-[40px] flex items-center justify-center text-xs">
+                  Ticker
+                </div>
+
+                {/* Sector rows */}
+                {Object.keys(rowsBySector)
+                  .sort((a, b) => {
+                    const priorityA = PRIORITY_GROUPS.indexOf(a as any)
+                    const priorityB = PRIORITY_GROUPS.indexOf(b as any)
+
+                    if (priorityA !== -1 && priorityB !== -1) {
+                      return priorityA - priorityB
+                    }
+                    if (priorityA !== -1) return -1
+                    if (priorityB !== -1) return 1
+
+                    return a.localeCompare(b)
+                  })
+                  .map((sector) => {
+                    const sectorRows = rowsBySector[sector]
+                    const isCollapsed = !openSectors.has(sector)
+
+                    return (
+                      <div key={sector}>
+                        {/* Sector Header */}
+                        <div className="bg-primary/20 px-2 py-2 font-semibold text-primary text-xs flex items-center border-b border-primary/30 h-[36px]">
+                          <button
+                            onClick={() => toggleSector(sector)}
+                            className="flex items-center gap-1 hover:bg-primary/30 rounded px-1 transition-colors w-full"
+                            title={sector}
+                          >
+                            {isCollapsed ? (
+                              <ChevronRight className="h-3 w-3 flex-shrink-0" />
+                            ) : (
+                              <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                            )}
+                            <span className="truncate flex-1 text-left">
+                              {SECTOR_ABBREVIATIONS[sector] || sector.slice(0, 4)}
+                            </span>
+                            <span className="opacity-70 flex-shrink-0">({sectorRows.length})</span>
+                          </button>
+                        </div>
+
+                        {/* Ticker rows */}
+                        {!isCollapsed &&
+                          sectorRows.map((row) => (
+                            <div
+                              key={row.ticker}
+                              className="bg-white px-2 py-2 border-b border-border hover:bg-muted/10 h-[36px] flex items-center justify-center"
+                            >
+                              <span className="font-mono font-semibold text-xs truncate">
+                                {row.ticker}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )
+                  })}
+              </div>
+
+              {/* Scrollable Right Column - Data Cells */}
+              <div className="flex-1 overflow-x-auto">
+                {/* Header row */}
+                <div className="flex bg-muted/50 border-b border-border h-[40px]">
+                  {matrixData.dates.map((date) => (
+                    <div
+                      key={date}
+                      className="w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 font-semibold text-xs flex items-center justify-center"
+                    >
+                      {format(parseISO(date), 'MMM d')}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Data rows */}
+                {Object.keys(rowsBySector)
+                  .sort((a, b) => {
+                    const priorityA = PRIORITY_GROUPS.indexOf(a as any)
+                    const priorityB = PRIORITY_GROUPS.indexOf(b as any)
+
+                    if (priorityA !== -1 && priorityB !== -1) {
+                      return priorityA - priorityB
+                    }
+                    if (priorityA !== -1) return -1
+                    if (priorityB !== -1) return 1
+
+                    return a.localeCompare(b)
+                  })
+                  .map((sector) => {
+                    const sectorRows = rowsBySector[sector]
+                    const isCollapsed = !openSectors.has(sector)
+
+                    return (
+                      <div key={sector}>
+                        {/* Sector Header Row */}
+                        <div className="flex bg-primary/20 h-[36px]">
+                          {matrixData.dates.map((date) => (
+                            <div
+                              key={date}
+                              className="w-[60px] min-w-[60px] flex-shrink-0 border-r border-primary/30"
+                            />
+                          ))}
+                        </div>
+
+                        {/* Data rows for tickers */}
+                        {!isCollapsed &&
+                          sectorRows.map((row) => (
+                            <div key={row.ticker} className="flex hover:bg-muted/10 h-[36px]">
+                              {row.cells.map((cell) => {
+                                const colors = getCellColor(cell.value)
+                                const displayValue =
+                                  Math.abs(cell.value) >= 0.1
+                                    ? cell.value.toFixed(1) + '%'
+                                    : '-'
+
+                                return (
+                                  <div
+                                    key={cell.date}
+                                    onClick={() => handleCellClick(row.ticker)}
+                                    className={`w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 text-xs font-semibold flex items-center justify-center cursor-pointer border-r border-border hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 ${colors.bg} ${colors.text}`}
+                                    title={`${row.ticker} - ${cell.date}\n${viewMode === 'close_changed' ? 'Close Change' : 'MA20 Score'}: ${cell.value.toFixed(2)}%`}
+                                  >
+                                    {displayValue}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ))}
+                      </div>
+                    )
+                  })}
+              </div>
+            </div>
+          )}
+
+          {!loading && !error && !matrixData && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No data available</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Chart Dialog */}
+      <MatrixChartDialog
+        ticker={dialogTicker}
+        startDate={dialogStartDate}
+        endDate={dialogEndDate}
+        onClose={handleCloseDialog}
+      />
+    </>
+  )
+}

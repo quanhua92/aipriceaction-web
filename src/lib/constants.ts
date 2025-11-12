@@ -36,3 +36,45 @@ export const CUSTOM_WATCHLISTS_STORAGE_KEY = 'customWatchlists'
  * Special watchlist name for showing all tickers
  */
 export const ALL_WATCHLIST_NAME = 'ALL'
+
+/**
+ * Number of days to display per page in Market Matrix
+ */
+export const MATRIX_DAYS_PER_PAGE = 40
+
+/**
+ * Sector abbreviations for compact display in Market Matrix
+ * Based on real API sectors from https://api.aipriceaction.com/tickers/group
+ */
+export const SECTOR_ABBREVIATIONS: Record<string, string> = {
+	// Priority sectors
+	NGAN_HANG: 'NH',
+	CHUNG_KHOAN: 'CK',
+	BAT_DONG_SAN: 'BDS',
+	XAY_DUNG: 'XD',
+	THEP: 'THEP',
+	BAN_LE: 'BL',
+
+	// Other sectors (alphabetical)
+	BAO_HIEM: 'BH',
+	BAT_DONG_SAN_KCN: 'KCN',
+	CAO_SU: 'CS',
+	CONG_NGHE: 'CN',
+	DAU_KHI: 'DK',
+	DAU_TU_CONG: 'DTC',
+	DET_MAY: 'DM',
+	HANG_KHONG: 'HK',
+	HOA_CHAT: 'HC',
+	KHAI_KHOANG: 'KK',
+	NANG_LUONG: 'NL',
+	NHUA: 'NHUA',
+	NONG_NGHIEP: 'NN',
+	OTHERS: 'OTH',
+	PENNY: 'PNY',
+	SUC_KHOE: 'SK',
+	THUC_PHAM: 'TP',
+	THUY_SAN: 'TS',
+	VAN_TAI: 'VT',
+	VLXD: 'VLXD',
+	XAY_LAP_DIEN: 'XLD',
+}
