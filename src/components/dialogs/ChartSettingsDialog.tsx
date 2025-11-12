@@ -40,6 +40,14 @@ const LIMIT_OPTIONS = [
 	{ value: '756', label: '756 records (3 years)' },
 ]
 
+const HEIGHT_OPTIONS = [
+	{ value: '200', label: '200px' },
+	{ value: '300', label: '300px' },
+	{ value: '400', label: '400px' },
+	{ value: '500', label: '500px' },
+	{ value: '600', label: '600px' },
+]
+
 export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 	const { t } = useTranslation()
 	const {
@@ -306,9 +314,31 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 										</SelectContent>
 									</Select>
 								</div>
-							</div>
 
-							{/* Clear Filters Button */}
+							{/* Height */}
+							<div className="space-y-2">
+								<Label htmlFor="height" className="text-sm">
+									Height
+								</Label>
+								<Select
+									value={height.toString()}
+									onValueChange={(value) => setHeight(parseInt(value))}
+								>
+									<SelectTrigger id="height" className="w-full">
+										<SelectValue placeholder="Select height" />
+									</SelectTrigger>
+									<SelectContent>
+										{HEIGHT_OPTIONS.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
+
+						{/* Clear Filters Button */}
 							<div className="pt-2">
 								<Button
 									variant="outline"

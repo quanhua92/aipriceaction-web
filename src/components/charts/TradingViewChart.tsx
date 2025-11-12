@@ -23,7 +23,6 @@ interface TradingViewChartProps {
 	onIntervalChange?: (interval: Interval) => void
 	limit?: number
 	setLimit?: (limit: number) => void
-	height?: number
 	setHeight?: (height: number) => void
 	maVisibility?: MaVisibility
 	setMaVisibility?: (visibility: MaVisibility) => void
