@@ -52,8 +52,8 @@ function getCellColor(value: number): { bg: string; text: string } {
   return { bg: 'bg-gray-200', text: 'text-gray-600' } // No change
 }
 
-// Default sectors to show expanded
-const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN']
+// Default sectors to show expanded (matches PRIORITY_GROUPS)
+const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
 
 export function MarketMatrix() {
   const { tickerGroups, loading: apiLoading } = useAPI()
