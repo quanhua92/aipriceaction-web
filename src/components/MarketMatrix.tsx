@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ChevronLeft, ChevronRight, ChevronDown, Repeat, Star } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
-import { getTickers } from '@/lib/api-client'
+import { getTickers, type StockData } from '@/lib/api-client'
 import { format, parseISO } from 'date-fns'
 import {
   ALL_WATCHLIST_NAME,
@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
 import { MatrixChartDialog } from './MatrixChartDialog'
+import type { SortBy } from '@/components/lists/SortableTickerList'
 
 type ViewMode = 'close_changed' | 'ma20_score'
 
@@ -33,6 +34,7 @@ interface MatrixRow {
   ticker: string
   sector: string
   cells: MatrixCell[]
+  latestData?: StockData
 }
 
 interface MatrixData {
@@ -59,6 +61,7 @@ export function MarketMatrix() {
   const [selectedWatchlist, setSelectedWatchlist] = React.useState<string>(ALL_WATCHLIST_NAME)
   const [viewMode, setViewMode] = React.useState<ViewMode>('close_changed')
   const [currentPage, setCurrentPage] = React.useState<number>(0)
+  const [sortBy, setSortBy] = React.useState<SortBy>('volume')
   const [openSectors, setOpenSectors] = React.useState<Set<string>>(() => {
     // Initialize with only default sectors open (all others collapsed)
     return new Set(DEFAULT_OPEN_SECTORS)
@@ -66,6 +69,7 @@ export function MarketMatrix() {
 
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
   const [matrixData, setMatrixData] = React.useState<MatrixData | null>(null)
+  const [sortReferenceData, setSortReferenceData] = React.useState<Record<string, StockData>>({})
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -211,11 +215,14 @@ export function MarketMatrix() {
         })
 
         // Build rows grouped by sector
+        const newSortReferenceData: Record<string, StockData> = {}
+
         for (const sector of sortedSectors) {
           const sectorTickers = tickersBySector[sector]
 
           for (const ticker of sectorTickers) {
             const tickerData = response[ticker] || []
+            const latestData = tickerData[tickerData.length - 1]
 
             const cells: MatrixCell[] = dates.map((date) => {
               const point = tickerData.find((d) => d.time.split(' ')[0] === date)
@@ -232,11 +239,21 @@ export function MarketMatrix() {
               return { date, value }
             })
 
-            rows.push({ ticker, sector, cells })
+            rows.push({ ticker, sector, cells, latestData })
+
+            // Store reference data from page 0 for consistent sorting
+            if (currentPage === 0 && latestData) {
+              newSortReferenceData[ticker] = latestData
+            }
           }
         }
 
         setMatrixData({ dates, rows })
+
+        // Update sort reference data only on page 0
+        if (currentPage === 0) {
+          setSortReferenceData(newSortReferenceData)
+        }
       } catch (err) {
         console.error('Failed to fetch matrix data:', err)
         setError('Failed to load matrix data')
@@ -249,7 +266,7 @@ export function MarketMatrix() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTickers, currentPage, viewMode, tickerGroups])
 
-  // Group rows by sector
+  // Group rows by sector and sort within each sector
   const rowsBySector = React.useMemo(() => {
     if (!matrixData) return {}
 
@@ -261,8 +278,55 @@ export function MarketMatrix() {
       grouped[row.sector].push(row)
     })
 
+    // Sort rows within each sector based on sortBy
+    Object.keys(grouped).forEach((sector) => {
+      grouped[sector].sort((a, b) => {
+        // Use sortReferenceData (from page 0) for consistent sorting across pages
+        const aData = sortReferenceData[a.ticker] || a.latestData
+        const bData = sortReferenceData[b.ticker] || b.latestData
+
+        switch (sortBy) {
+          case 'az':
+            return a.ticker.localeCompare(b.ticker)
+
+          case 'gainers':
+            // Sort by price change descending (highest gain first)
+            const aChange = aData?.close_changed ?? -Infinity
+            const bChange = bData?.close_changed ?? -Infinity
+            return bChange - aChange
+
+          case 'losers':
+            // Sort by price change ascending (lowest/most negative first)
+            const aLoss = aData?.close_changed ?? Infinity
+            const bLoss = bData?.close_changed ?? Infinity
+            return aLoss - bLoss
+
+          case 'volume':
+            // Sort by volume descending (highest volume first)
+            const aVol = aData?.volume ?? 0
+            const bVol = bData?.volume ?? 0
+            return bVol - aVol
+
+          case 'ma20':
+            // Sort by MA20 score descending (highest/most bullish first)
+            const aMA20 = aData?.ma20_score ?? -Infinity
+            const bMA20 = bData?.ma20_score ?? -Infinity
+            return bMA20 - aMA20
+
+          case 'ma50':
+            // Sort by MA50 score descending (highest/most bullish first)
+            const aMA50 = aData?.ma50_score ?? -Infinity
+            const bMA50 = bData?.ma50_score ?? -Infinity
+            return bMA50 - aMA50
+
+          default:
+            return 0
+        }
+      })
+    })
+
     return grouped
-  }, [matrixData])
+  }, [matrixData, sortBy, sortReferenceData])
 
   // Event handlers
   const handleWatchlistChange = (value: string) => {
@@ -382,6 +446,72 @@ export function MarketMatrix() {
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Sort Buttons */}
+          <div className="grid grid-cols-3 gap-1.5 mt-3 shrink-0">
+            {/* Row 1 */}
+            <button
+              onClick={() => setSortBy('volume')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'volume'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              Volume
+            </button>
+            <button
+              onClick={() => setSortBy('gainers')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'gainers'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              Gainers
+            </button>
+            <button
+              onClick={() => setSortBy('losers')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'losers'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              Losers
+            </button>
+            {/* Row 2 */}
+            <button
+              onClick={() => setSortBy('ma20')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'ma20'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              MA20
+            </button>
+            <button
+              onClick={() => setSortBy('ma50')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'ma50'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              MA50
+            </button>
+            <button
+              onClick={() => setSortBy('az')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'az'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              A-Z
+            </button>
           </div>
 
           {/* Date Range Info */}
