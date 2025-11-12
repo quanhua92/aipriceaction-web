@@ -382,7 +382,7 @@ export function BasicWatchList({
             size="sm"
             onClick={navigateToPrevious}
             disabled={sortedTickers.length <= 1}
-            className="shrink-0 sm:px-4 px-3 h-8"
+            className="shrink-0 px-6 h-8 min-w-[80px]"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -398,7 +398,7 @@ export function BasicWatchList({
             size="sm"
             onClick={navigateToNext}
             disabled={sortedTickers.length <= 1}
-            className="shrink-0 sm:px-4 px-3 h-8"
+            className="shrink-0 px-6 h-8 min-w-[80px]"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
