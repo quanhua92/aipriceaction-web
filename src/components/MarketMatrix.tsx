@@ -608,14 +608,29 @@ export function MarketMatrix() {
               <div className="flex-1 overflow-x-auto">
                 {/* Header row */}
                 <div className="flex bg-muted/50 border-b border-border h-[40px]">
-                  {matrixData.dates.map((date) => (
-                    <div
-                      key={date}
-                      className="w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 font-semibold text-xs flex items-center justify-center"
-                    >
-                      {format(parseISO(date), 'MMM d')}
-                    </div>
-                  ))}
+                  {matrixData.dates.map((date) => {
+                    try {
+                      return (
+                        <div
+                          key={date}
+                          className="w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 font-semibold text-xs flex items-center justify-center"
+                        >
+                          {format(parseISO(date), 'MMM d')}
+                        </div>
+                      )
+                    } catch (error) {
+                      // Fallback for invalid dates
+                      console.error('Invalid date format:', date, error)
+                      return (
+                        <div
+                          key={date}
+                          className="w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 font-semibold text-xs flex items-center justify-center"
+                        >
+                          {date}
+                        </div>
+                      )
+                    }
+                  })}
                 </div>
 
                 {/* Data rows */}

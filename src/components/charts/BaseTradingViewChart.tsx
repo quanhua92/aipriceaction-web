@@ -114,7 +114,15 @@ export function BaseTradingViewChart({
 
 		data.forEach((point, index) => {
 			// Convert ISO date string to Unix timestamp
-			const time = Math.floor(new Date(point.time).getTime() / 1000) as Time
+			const dateTime = new Date(point.time)
+
+			// Skip invalid dates
+			if (isNaN(dateTime.getTime())) {
+				console.error('Invalid date in chart data:', point.time)
+				return
+			}
+
+			const time = Math.floor(dateTime.getTime() / 1000) as Time
 			const prevPoint = index > 0 ? data[index - 1] : null
 			const volumeColor = prevPoint
 				? point.close >= prevPoint.close
@@ -391,16 +399,25 @@ export function BaseTradingViewChart({
 			}
 
 			// Format date with time (UTC to match chart timezone)
-			const dateStr = new Date(
-				(param.time as number) * 1000,
-			).toLocaleString('en-US', {
-				year: 'numeric',
-				month: 'short',
-				day: 'numeric',
-				hour: '2-digit',
-				minute: '2-digit',
-				timeZone: 'UTC'
-			})
+			let dateStr: string
+			try {
+				const date = new Date((param.time as number) * 1000)
+				if (isNaN(date.getTime())) {
+					dateStr = String(param.time)
+				} else {
+					dateStr = date.toLocaleString('en-US', {
+						year: 'numeric',
+						month: 'short',
+						day: 'numeric',
+						hour: '2-digit',
+						minute: '2-digit',
+						timeZone: 'UTC'
+					})
+				}
+			} catch (error) {
+				console.error('Invalid date in tooltip:', param.time, error)
+				dateStr = String(param.time)
+			}
 
 			// Find current index in original data to get change percentages
 			const currentIndex = chartData.candlestick.findIndex(
@@ -658,7 +675,15 @@ export function BaseTradingViewChart({
 						<span className="mx-1"></span>
 						<span className={cn(latestData.volume_changed >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(latestData.volume)}</span> <span className={cn(latestData.volume_changed >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.volume_changed)}</span>
 						<span className="text-zinc-400 ml-2 text-xs">
-							{new Date(latestData.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+							{(() => {
+								try {
+									const date = new Date(latestData.time)
+									if (isNaN(date.getTime())) return latestData.time
+									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+								} catch {
+									return latestData.time
+								}
+							})()}
 						</span>
 					</div>
 				)}
