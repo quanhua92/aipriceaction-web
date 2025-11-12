@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
 import { MatrixChartDialog } from './MatrixChartDialog'
 import type { SortBy } from '@/components/lists/SortableTickerList'
+import { useTranslation } from '@/hooks/useTranslation'
 
 type ViewMode = 'close_changed' | 'ma20_score'
 
@@ -56,6 +57,7 @@ const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN']
 
 export function MarketMatrix() {
   const { tickerGroups, loading: apiLoading } = useAPI()
+  const { t } = useTranslation()
 
   // State management - simple defaults, no localStorage
   const [selectedWatchlist, setSelectedWatchlist] = React.useState<string>(ALL_WATCHLIST_NAME)
@@ -459,7 +461,7 @@ export function MarketMatrix() {
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              Volume
+              {t('dialogs.selectTicker.sortBy.volume')}
             </button>
             <button
               onClick={() => setSortBy('gainers')}
@@ -469,7 +471,7 @@ export function MarketMatrix() {
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              Gainers
+              {t('dialogs.selectTicker.sortBy.gainers')}
             </button>
             <button
               onClick={() => setSortBy('losers')}
@@ -479,7 +481,7 @@ export function MarketMatrix() {
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              Losers
+              {t('dialogs.selectTicker.sortBy.losers')}
             </button>
             {/* Row 2 */}
             <button
@@ -490,7 +492,7 @@ export function MarketMatrix() {
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              MA20
+              {t('dialogs.selectTicker.sortBy.ma20')}
             </button>
             <button
               onClick={() => setSortBy('ma50')}
@@ -500,7 +502,7 @@ export function MarketMatrix() {
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              MA50
+              {t('dialogs.selectTicker.sortBy.ma50')}
             </button>
             <button
               onClick={() => setSortBy('az')}
@@ -510,7 +512,7 @@ export function MarketMatrix() {
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}
             >
-              A-Z
+              {t('dialogs.selectTicker.sortBy.az')}
             </button>
           </div>
 
