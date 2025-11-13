@@ -28,12 +28,12 @@ export function getPriceChangeColor(change: number): string {
  * @returns Tailwind text color class string
  *
  * Color logic:
- * - > 100%: Purple (extreme volume spike)
+ * - > 150%: Purple (extreme volume spike)
  * - Positive: Green (volume increase)
  * - Negative: Red (volume decrease)
  */
 export function getVolumeChangeColor(change: number): string {
-  if (change > 100) {
+  if (change > 150) {
     return 'text-purple-600 dark:text-purple-500'
   }
   if (change >= 0) {

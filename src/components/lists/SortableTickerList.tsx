@@ -243,7 +243,7 @@ export function SortableTickerList({
                             <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
                               <span className="tabular-nums">{t('dialogs.selectTicker.labels.volume')}: {formatVolume(latestData.volume)}</span>
                               {latestData.volume_changed !== null && latestData.volume_changed !== undefined && (
-                                <span className={`tabular-nums opacity-70 ${getVolumeChangeColor(latestData.volume_changed)}`}>
+                                <span className={`tabular-nums opacity-70 ${latestData.volume_changed > 150 ? 'text-purple-600 dark:text-purple-500' : ''}`}>
                                   {latestData.volume_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.volume_changed)}
                                 </span>
                               )}
@@ -291,7 +291,7 @@ export function SortableTickerList({
                             <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
                               <span className="tabular-nums">{t('dialogs.selectTicker.labels.volume')}: {formatVolume(latestData.volume)}</span>
                               {latestData.volume_changed !== null && latestData.volume_changed !== undefined && (
-                                <span className={`tabular-nums opacity-70 ${getVolumeChangeColor(latestData.volume_changed)}`}>
+                                <span className={`tabular-nums opacity-70 ${latestData.volume_changed > 150 ? 'text-purple-600 dark:text-purple-500' : ''}`}>
                                   {latestData.volume_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.volume_changed)}
                                 </span>
                               )}
