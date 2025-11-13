@@ -2,7 +2,7 @@ import * as React from 'react'
 import { ChevronLeft, ChevronRight, ChevronDown, Repeat, Star } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
-import { getTickers, type StockData } from '@/lib/api-client'
+import { type StockData } from '@/lib/api-client'
 import { format, parseISO } from 'date-fns'
 import { parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import {
@@ -60,7 +60,7 @@ function getCellColor(value: number): { bg: string; text: string } {
 const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
 
 export function MarketMatrix() {
-  const { tickerGroups, loading: apiLoading } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { t } = useTranslation()
 
@@ -70,14 +70,16 @@ export function MarketMatrix() {
   const [currentPage, setCurrentPage] = React.useState<number>(0)
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
   const [openSectors, setOpenSectors] = React.useState<Set<string>>(() => {
-    // Try to load from localStorage
-    try {
-      const saved = localStorage.getItem(MATRIX_OPEN_SECTORS_STORAGE_KEY)
-      if (saved) {
-        return new Set(JSON.parse(saved))
+    // Try to load from localStorage (only on client)
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(MATRIX_OPEN_SECTORS_STORAGE_KEY)
+        if (saved) {
+          return new Set(JSON.parse(saved))
+        }
+      } catch (error) {
+        console.error('Failed to load open sectors from localStorage:', error)
       }
-    } catch (error) {
-      console.error('Failed to load open sectors from localStorage:', error)
     }
     // Initialize with only default sectors open (all others collapsed)
     return new Set(DEFAULT_OPEN_SECTORS)
@@ -98,12 +100,14 @@ export function MarketMatrix() {
     setCustomWatchlists(getWatchlistNames())
   }, [])
 
-  // Save open sectors to localStorage whenever they change
+  // Save open sectors to localStorage whenever they change (client-side only)
   React.useEffect(() => {
-    try {
-      localStorage.setItem(MATRIX_OPEN_SECTORS_STORAGE_KEY, JSON.stringify(Array.from(openSectors)))
-    } catch (error) {
-      console.error('Failed to save open sectors to localStorage:', error)
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(MATRIX_OPEN_SECTORS_STORAGE_KEY, JSON.stringify(Array.from(openSectors)))
+      } catch (error) {
+        console.error('Failed to save open sectors to localStorage:', error)
+      }
     }
   }, [openSectors])
 
