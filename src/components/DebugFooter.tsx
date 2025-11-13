@@ -184,11 +184,11 @@ function DebugFooterContent() {
 
 	const preferencesData = getLocalStorageData()
 
-	// Copy logs to clipboard
+	// Copy logs to clipboard (filtered logs only)
 	const handleCopyLogs = React.useCallback(async () => {
-		if (logs.length === 0) return
+		if (filteredLogs.length === 0) return
 
-		const logsText = logs
+		const logsText = filteredLogs
 			.map((log) => {
 				const timestamp = new Date(log.timestamp).toLocaleString()
 				const dataStr = log.data !== undefined ? ` | Data: ${JSON.stringify(log.data)}` : ''
@@ -203,7 +203,7 @@ function DebugFooterContent() {
 		} catch (err) {
 			console.error('Failed to copy logs:', err)
 		}
-	}, [logs])
+	}, [filteredLogs])
 
 	// Handle clear logs with confirmation
 	const handleClearLogs = React.useCallback(() => {
