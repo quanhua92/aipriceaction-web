@@ -85,6 +85,27 @@ function DebugSection({ data }: { data: Record<string, any> }) {
  * Always visible (both dev and production) for debugging live issues
  */
 export function DebugFooter() {
+	// Only render on client side to avoid SSR issues
+	const [isMounted, setIsMounted] = React.useState(false)
+
+	React.useEffect(() => {
+		setIsMounted(true)
+	}, [])
+
+	if (!isMounted) {
+		return (
+			<div className="border-t bg-muted/30 py-1.5 px-4 text-center">
+				<div className="text-xs text-muted-foreground">
+					© {new Date().getFullYear()} AIPriceAction
+				</div>
+			</div>
+		)
+	}
+
+	return <DebugFooterContent />
+}
+
+function DebugFooterContent() {
 	const location = useLocation()
 	const apiContext = useAPI()
 	const chartSettings = useChartSettings()
