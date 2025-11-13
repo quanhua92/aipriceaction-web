@@ -24,8 +24,8 @@ function AIContextPage() {
 	const [fetchError, setFetchError] = React.useState<string | null>(null);
 
 	const aiContext = React.useMemo(() => {
-		return buildAIContext(language, marketData || undefined);
-	}, [language, marketData]);
+		return buildAIContext(language, marketData || undefined, interval);
+	}, [language, marketData, interval]);
 
 	const handleCopy = async () => {
 		try {

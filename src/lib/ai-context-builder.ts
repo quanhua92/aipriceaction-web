@@ -26,7 +26,8 @@ interface StockData {
 
 export function buildAIContext(
 	language: "en" | "vn" = "en",
-	marketData?: Record<string, StockData[]>
+	marketData?: Record<string, StockData[]>,
+	interval?: string
 ): string {
 	const sections: string[] = [];
 
@@ -226,12 +227,12 @@ Các Điểm Chính:
 		const marketDataLines: string[] = [];
 
 		if (language === "en") {
-			marketDataLines.push("=== Market Data (Last 40 Trading Days) ===");
+			marketDataLines.push("=== Market Data ===");
 			marketDataLines.push("");
 			marketDataLines.push("Historical OHLCV data with moving averages and momentum indicators for selected tickers. Each line represents one trading day with explicit key-value pairs.");
 			marketDataLines.push("");
 		} else {
-			marketDataLines.push("=== Dữ Liệu Thị Trường (40 Phiên Gần Nhất) ===");
+			marketDataLines.push("=== Dữ Liệu Thị Trường ===");
 			marketDataLines.push("");
 			marketDataLines.push("Dữ liệu OHLCV lịch sử với đường trung bình động và chỉ báo động lực cho các mã được chọn. Mỗi dòng đại diện cho một phiên giao dịch với các cặp key-value rõ ràng.");
 			marketDataLines.push("");
@@ -252,9 +253,17 @@ Các Điểm Chính:
 			sortedData.forEach(record => {
 				const fields: string[] = [];
 
+				// Format time based on interval
+				let formattedTime = record.time;
+				if (interval && ['1D', '2W', '1M'].includes(interval)) {
+					// For day, week, month intervals - only show date (YYYY-MM-DD)
+					formattedTime = record.time.split(' ')[0];
+				}
+				// For minute/hour intervals (5m, 15m, 1H) - keep full datetime
+
 				// Always include basic fields
 				fields.push(`ticker=${record.symbol || ticker}`);
-				fields.push(`time=${record.time}`);
+				fields.push(`time=${formattedTime}`);
 				fields.push(`open=${record.open.toFixed(2)}`);
 				fields.push(`high=${record.high.toFixed(2)}`);
 				fields.push(`low=${record.low.toFixed(2)}`);
