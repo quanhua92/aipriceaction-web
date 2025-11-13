@@ -9,6 +9,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
 import { getTickers, getHealth } from "@/lib/api-client";
 import { loadTranslations } from "@/translations";
+import { AI_SELECTED_TICKERS_STORAGE_KEY } from "@/lib/constants";
 
 export const Route = createFileRoute("/ai")({ component: AIContextPage });
 
@@ -19,13 +20,37 @@ function AIContextPage() {
 	const translations = loadTranslations(language);
 	const [copied, setCopied] = React.useState(false);
 	const [copiedTemplate, setCopiedTemplate] = React.useState<number | null>(null);
-	const [selectedTickers, setSelectedTickers] = React.useState<string[]>(["VNINDEX"]);
+	const [selectedTickers, setSelectedTickers] = React.useState<string[]>(() => {
+		// Load from localStorage on initialization
+		try {
+			const stored = localStorage.getItem(AI_SELECTED_TICKERS_STORAGE_KEY);
+			if (stored) {
+				const parsed = JSON.parse(stored);
+				if (Array.isArray(parsed) && parsed.length > 0) {
+					return parsed;
+				}
+			}
+		} catch (error) {
+			console.error("Failed to load tickers from localStorage:", error);
+		}
+		// Default to VNINDEX if nothing in storage
+		return ["VNINDEX"];
+	});
 	const [limit, setLimit] = React.useState<number>(20);
 	const [interval, setInterval] = React.useState<string>("1D");
 	const [marketData, setMarketData] = React.useState<Record<string, any[]> | null>(null);
 	const [isFetching, setIsFetching] = React.useState(false);
 	const [fetchError, setFetchError] = React.useState<string | null>(null);
 	const [isTradingHours, setIsTradingHours] = React.useState<boolean>(false);
+
+	// Save selected tickers to localStorage whenever they change
+	React.useEffect(() => {
+		try {
+			localStorage.setItem(AI_SELECTED_TICKERS_STORAGE_KEY, JSON.stringify(selectedTickers));
+		} catch (error) {
+			console.error("Failed to save tickers to localStorage:", error);
+		}
+	}, [selectedTickers]);
 
 	// Fetch health status to check trading hours
 	React.useEffect(() => {

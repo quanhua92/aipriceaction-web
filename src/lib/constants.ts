@@ -33,6 +33,11 @@ export const DEFAULT_WATCHLIST_TICKERS = 'VNINDEX,VN30'
 export const CUSTOM_WATCHLISTS_STORAGE_KEY = 'customWatchlists'
 
 /**
+ * LocalStorage key for AI page selected tickers
+ */
+export const AI_SELECTED_TICKERS_STORAGE_KEY = 'ai-selected-tickers'
+
+/**
  * Special watchlist name for showing all tickers
  */
 export const ALL_WATCHLIST_NAME = 'ALL'
