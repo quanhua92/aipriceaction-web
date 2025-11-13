@@ -184,6 +184,20 @@ function DebugFooterContent() {
 
 	const preferencesData = getLocalStorageData()
 
+	// Filter logs based on search query - must be defined before handleCopyLogs
+	const filteredLogs = React.useMemo(() => {
+		if (!logSearch.trim()) return logs
+
+		const searchLower = logSearch.toLowerCase()
+		return logs.filter((log) => {
+			const message = log.message.toLowerCase()
+			const level = log.level.toLowerCase()
+			const dataStr = log.data !== undefined ? JSON.stringify(log.data).toLowerCase() : ''
+
+			return message.includes(searchLower) || level.includes(searchLower) || dataStr.includes(searchLower)
+		})
+	}, [logs, logSearch])
+
 	// Copy logs to clipboard (filtered logs only)
 	const handleCopyLogs = React.useCallback(async () => {
 		if (filteredLogs.length === 0) return
@@ -215,20 +229,6 @@ function DebugFooterContent() {
 			setClearClickCount(0)
 		}
 	}, [clearClickCount, clearLogs])
-
-	// Filter logs based on search query
-	const filteredLogs = React.useMemo(() => {
-		if (!logSearch.trim()) return logs
-
-		const searchLower = logSearch.toLowerCase()
-		return logs.filter((log) => {
-			const message = log.message.toLowerCase()
-			const level = log.level.toLowerCase()
-			const dataStr = log.data !== undefined ? JSON.stringify(log.data).toLowerCase() : ''
-
-			return message.includes(searchLower) || level.includes(searchLower) || dataStr.includes(searchLower)
-		})
-	}, [logs, logSearch])
 
 	return (
 		<Collapsible
