@@ -23,7 +23,7 @@
  */
 
 // Export main client
-export { AIPriceActionClient, type ClientConfig } from "./client.js";
+export { AIPriceActionClient, type ClientConfig, type RequestResult } from "./client.js";
 
 // Export types
 export type {

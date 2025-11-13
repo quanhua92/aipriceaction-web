@@ -30,6 +30,20 @@ import {
 } from "./utils.js";
 
 /**
+ * Response with metadata including headers
+ */
+export interface RequestResult<T> {
+  data: T;
+  headers: Record<string, string>;
+  metadata: {
+    url: string;
+    status: number;
+    duration: number;
+    retries: number;
+  };
+}
+
+/**
  * Client configuration options
  */
 export interface ClientConfig {
@@ -41,6 +55,8 @@ export interface ClientConfig {
   retry?: Partial<RetryConfig>;
   /** Enable debug logging */
   debug?: boolean;
+  /** Enable response metadata (headers, timing) - defaults to false for backward compatibility */
+  includeMetadata?: boolean;
 }
 
 /**
@@ -60,6 +76,7 @@ export class AIPriceActionClient {
   private readonly timeout: number;
   private readonly retryConfig: RetryConfig;
   private readonly debug: boolean;
+  private readonly includeMetadata: boolean;
 
   constructor(config: ClientConfig = {}) {
     this.baseURL = (
@@ -70,6 +87,7 @@ export class AIPriceActionClient {
     this.timeout = config.timeout || 30000;
     this.retryConfig = { ...DEFAULT_RETRY_CONFIG, ...config.retry };
     this.debug = config.debug || false;
+    this.includeMetadata = config.includeMetadata || false;
   }
 
   /**
@@ -78,10 +96,12 @@ export class AIPriceActionClient {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<T> {
+  ): Promise<T | RequestResult<T>> {
     const url = `${this.baseURL}${endpoint}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const startTime = Date.now();
+    let retryCount = 0;
 
     const requestOptions: RequestInit = {
       ...options,
@@ -129,6 +149,7 @@ export class AIPriceActionClient {
         },
         this.retryConfig,
         (attempt, error) => {
+          retryCount = attempt;
           if (this.debug) {
             console.log(
               `[AIPriceAction] Retry attempt ${attempt} after error:`,
@@ -139,17 +160,40 @@ export class AIPriceActionClient {
       );
 
       clearTimeout(timeoutId);
+      const duration = Date.now() - startTime;
 
       // Handle different response types
       const contentType = response.headers.get("content-type");
+      let data: T;
 
       if (contentType?.includes("application/json")) {
-        return (await response.json()) as T;
+        data = (await response.json()) as T;
       } else if (contentType?.includes("text/csv")) {
-        return (await response.text()) as T;
+        data = (await response.text()) as T;
       } else {
-        return (await response.text()) as T;
+        data = (await response.text()) as T;
       }
+
+      // Return with metadata if enabled
+      if (this.includeMetadata) {
+        const headers: Record<string, string> = {};
+        response.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+
+        return {
+          data,
+          headers,
+          metadata: {
+            url,
+            status: response.status,
+            duration,
+            retries: retryCount,
+          },
+        } as RequestResult<T>;
+      }
+
+      return data;
     } catch (error) {
       clearTimeout(timeoutId);
 
@@ -191,7 +235,7 @@ export class AIPriceActionClient {
    * const data = await client.getTickers({ symbol: 'VCB', format: 'json' });
    * ```
    */
-  async getTickers(params: TickersQueryParams = {}): Promise<TickersResponse> {
+  async getTickers(params: TickersQueryParams = {}): Promise<TickersResponse | RequestResult<TickersResponse>> {
     // Validate dates
     if (params.start_date && !isValidDate(params.start_date)) {
       throw new ValidationError(
@@ -216,7 +260,18 @@ export class AIPriceActionClient {
     } else {
       // Default: request CSV and parse it to TickersResponse
       const csvText = await this.request<string>(`/tickers${queryString}`);
-      return parseCSVToTickersResponse(csvText) as TickersResponse;
+
+      if (this.includeMetadata && typeof csvText !== 'string') {
+        // csvText is RequestResult<string>
+        const result = csvText as RequestResult<string>;
+        return {
+          data: parseCSVToTickersResponse(result.data),
+          headers: result.headers,
+          metadata: result.metadata,
+        } as RequestResult<TickersResponse>;
+      }
+
+      return parseCSVToTickersResponse(csvText as string) as TickersResponse;
     }
   }
 
@@ -229,7 +284,7 @@ export class AIPriceActionClient {
    * console.log(csv); // CSV string
    * ```
    */
-  async getTickersCSV(params: Omit<TickersQueryParams, "format"> = {}): Promise<string> {
+  async getTickersCSV(params: Omit<TickersQueryParams, "format"> = {}): Promise<string | RequestResult<string>> {
     const csvParams = { ...params, format: "csv" };
     const queryString = buildQueryString(csvParams as Record<string, unknown>);
     return this.request<string>(`/tickers${queryString}`);
@@ -245,7 +300,7 @@ export class AIPriceActionClient {
    * console.log(`Active tickers: ${health.active_tickers_count}`);
    * ```
    */
-  async getHealth(): Promise<HealthResponse> {
+  async getHealth(): Promise<HealthResponse | RequestResult<HealthResponse>> {
     return this.request<HealthResponse>("/health");
   }
 
@@ -259,7 +314,7 @@ export class AIPriceActionClient {
    * console.log(groups.BANKING); // ['VCB', 'CTG', 'BID', ...]
    * ```
    */
-  async getTickerGroups(): Promise<TickerGroups> {
+  async getTickerGroups(): Promise<TickerGroups | RequestResult<TickerGroups>> {
     return this.request<TickerGroups>("/tickers/group");
   }
 
@@ -290,7 +345,7 @@ export class AIPriceActionClient {
    */
   async getTopPerformers(
     params: TopPerformersQueryParams = {}
-  ): Promise<TopPerformersResponse> {
+  ): Promise<TopPerformersResponse | RequestResult<TopPerformersResponse>> {
     // Validate date
     if (params.date && !isValidDate(params.date)) {
       throw new ValidationError(
@@ -326,7 +381,7 @@ export class AIPriceActionClient {
    */
   async getMAScoresBySector(
     params: MAScoresBySectorQueryParams = {}
-  ): Promise<MAScoresBySectorResponse> {
+  ): Promise<MAScoresBySectorResponse | RequestResult<MAScoresBySectorResponse>> {
     // Validate date
     if (params.date && !isValidDate(params.date)) {
       throw new ValidationError(
