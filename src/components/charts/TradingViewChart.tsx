@@ -5,6 +5,7 @@ import * as React from 'react'
 import { Interval } from '@/lib/api-client'
 import { BaseTradingViewChart } from './BaseTradingViewChart'
 import { ChartControlBar } from './ChartControlBar'
+import { ChartFullscreenDialog } from '@/components/ChartFullscreenDialog'
 
 interface TradingViewChartProps {
 	// Visual configuration
@@ -57,6 +58,9 @@ function TradingViewChartContent({
 	const globalSettings = useChartSettings()
 	const { selectedTicker, setSelectedTicker } = useTicker()
 
+	// Fullscreen dialog state
+	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null)
+
 	// Use global settings as defaults, override with props if provided
 	const currentInterval = interval ?? globalSettings.interval
 	const currentLimit = limit ?? globalSettings.limit
@@ -79,27 +83,45 @@ function TradingViewChartContent({
 		}
 	}, [ticker, selectedTicker, setSelectedTicker])
 
+	// Fullscreen handlers
+	const handleFullscreenClick = () => {
+		setFullscreenTicker(selectedTicker)
+	}
+
+	const handleCloseFullscreen = () => {
+		setFullscreenTicker(null)
+	}
+
 	return (
-		<div className="space-y-4">
-			{showControls && (
-				<ChartControlBar
-					ticker={selectedTicker}
-					interval={currentInterval}
-					onIntervalChange={handleIntervalChange}
-					onTickerChange={(newTicker) => {
-						setSelectedTicker(newTicker)
-						onTickerChange?.(newTicker)
-					}}
-					showTickerSelect={true}
+		<>
+			<div className="space-y-4">
+				{showControls && (
+					<ChartControlBar
+						ticker={selectedTicker}
+						interval={currentInterval}
+						onIntervalChange={handleIntervalChange}
+						onTickerChange={(newTicker) => {
+							setSelectedTicker(newTicker)
+							onTickerChange?.(newTicker)
+						}}
+						showTickerSelect={true}
+						onFullscreenClick={handleFullscreenClick}
+					/>
+				)}
+				<BaseTradingViewChart
+					{...visualProps}
+					height={currentHeight}
+					maVisibility={currentMaVisibility}
+					noDataMessage={t('common.noDataAvailable')}
 				/>
-			)}
-			<BaseTradingViewChart
-				{...visualProps}
-				height={currentHeight}
-				maVisibility={currentMaVisibility}
-				noDataMessage={t('common.noDataAvailable')}
+			</div>
+
+			{/* Fullscreen Dialog */}
+			<ChartFullscreenDialog
+				ticker={fullscreenTicker}
+				onClose={handleCloseFullscreen}
 			/>
-		</div>
+		</>
 	)
 }
 

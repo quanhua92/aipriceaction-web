@@ -10,7 +10,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Settings } from 'lucide-react'
+import { MoreVertical, Settings, Maximize2 } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -24,6 +24,7 @@ interface ChartControlBarProps {
 	visibleIntervals?: Interval[] // Desktop visible intervals
 	mobileVisibleIntervals?: Interval[] // Mobile visible intervals
 	className?: string
+	onFullscreenClick?: () => void
 }
 
 const DEFAULT_VISIBLE_INTERVALS: Interval[] = [
@@ -60,6 +61,7 @@ export function ChartControlBar({
 	visibleIntervals = DEFAULT_VISIBLE_INTERVALS,
 	mobileVisibleIntervals = DEFAULT_MOBILE_VISIBLE_INTERVALS,
 	className = '',
+	onFullscreenClick,
 }: ChartControlBarProps) {
 		const {
 		interval: globalInterval,
@@ -184,8 +186,21 @@ export function ChartControlBar({
 				</div>
 			)}
 
+			{/* Fullscreen Button (if provided) */}
+			{onFullscreenClick && (
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-7 w-7 p-0 ml-auto"
+					onClick={onFullscreenClick}
+					title="Open fullscreen chart"
+				>
+					<Maximize2 className="h-4 w-4" />
+				</Button>
+			)}
+
 			{/* Settings Button - Top Right */}
-			<div className="ml-auto">
+			<div className={onFullscreenClick ? '' : 'ml-auto'}>
 				<ChartSettingsDialog>
 					<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
 						<Settings className="h-4 w-4" />
