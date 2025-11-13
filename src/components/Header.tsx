@@ -56,10 +56,10 @@ export default function Header() {
 
           <button
             onClick={toggleLanguage}
-            className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors border border-gray-600"
+            className="p-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors border border-gray-600"
             aria-label="Toggle language"
           >
-            <span className="text-sm font-bold tracking-wide">{language === 'en' ? 'EN' : 'VN'}</span>
+            <span className="text-sm text-gray-300 leading-none flex items-center justify-center w-[18px] h-[18px]">{language === 'en' ? 'EN' : 'VN'}</span>
           </button>
         </div>
       </header>
