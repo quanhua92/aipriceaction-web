@@ -106,7 +106,7 @@ function TradingViewChartContent({
 // Main export - wrapper component that provides TickerProvider
 export function TradingViewChart(props: TradingViewChartProps) {
 	return (
-		<TickerProvider initialTicker={props.initialTicker}>
+		<TickerProvider initialTicker={props.initialTicker} ticker={props.ticker}>
 			<TradingViewChartContent {...props} />
 		</TickerProvider>
 	)

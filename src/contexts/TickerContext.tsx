@@ -14,6 +14,7 @@ interface TickerContextValue {
 interface TickerProviderProps {
   children: React.ReactNode | ((context: TickerContextValue) => React.ReactNode)
   initialTicker?: string
+  ticker?: string
   limit?: number
   enableFetching?: boolean
 }
@@ -25,22 +26,23 @@ const TickerContext = React.createContext<TickerContextValue | undefined>(
 export function TickerProvider({
   children,
   initialTicker = 'VNINDEX',
+  ticker,
   limit,
   enableFetching = true
 }: TickerProviderProps) {
     // Get global settings for API calls (only if fetching is enabled)
   const settings = enableFetching ? useChartSettings() : null
   const { lastRefresh } = useRefresh()
-  const [selectedTicker, setSelectedTicker] = React.useState(initialTicker)
+  const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
-  
-  // Initialize with initial ticker on mount only
+
+  // Initialize with ticker on mount only (prioritize ticker prop over initialTicker)
   React.useEffect(() => {
-        if (initialTicker) {
-      setSelectedTicker(initialTicker)
+        if (ticker ?? initialTicker) {
+      setSelectedTicker(ticker ?? initialTicker)
     }
   }, []) // Only run once on mount, no dependencies
 
