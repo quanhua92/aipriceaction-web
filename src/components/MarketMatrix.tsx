@@ -689,8 +689,8 @@ export function MarketMatrix() {
                               {row.cells.map((cell) => {
                                 const colors = getCellColor(cell.value)
                                 const displayValue =
-                                  Math.abs(cell.value) >= 0.1
-                                    ? cell.value.toFixed(1) + '%'
+                                  Math.abs(cell.value ?? 0) >= 0.1
+                                    ? (cell.value ?? 0).toFixed(1) + '%'
                                     : '-'
 
                                 return (
@@ -698,7 +698,7 @@ export function MarketMatrix() {
                                     key={cell.date}
                                     onClick={() => handleCellClick(row.ticker)}
                                     className={`w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 text-xs font-semibold flex items-center justify-center cursor-pointer border-r border-border hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 ${colors.bg} ${colors.text}`}
-                                    title={`${row.ticker} - ${cell.date}\n${viewMode === 'close_changed' ? 'Close Change' : 'MA20 Score'}: ${cell.value.toFixed(2)}%`}
+                                    title={`${row.ticker} - ${cell.date}\n${viewMode === 'close_changed' ? 'Close Change' : 'MA20 Score'}: ${(cell.value ?? 0).toFixed(2)}%`}
                                   >
                                     {displayValue}
                                   </div>
