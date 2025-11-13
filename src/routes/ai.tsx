@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { buildAIContext } from "@/lib/ai-context-builder";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
-import { getTickers } from "@/lib/api-client";
+import { getTickers, getHealth } from "@/lib/api-client";
 import { loadTranslations } from "@/translations";
 
 export const Route = createFileRoute("/ai")({ component: AIContextPage });
@@ -25,10 +25,25 @@ function AIContextPage() {
 	const [marketData, setMarketData] = React.useState<Record<string, any[]> | null>(null);
 	const [isFetching, setIsFetching] = React.useState(false);
 	const [fetchError, setFetchError] = React.useState<string | null>(null);
+	const [isTradingHours, setIsTradingHours] = React.useState<boolean>(false);
+
+	// Fetch health status to check trading hours
+	React.useEffect(() => {
+		const fetchHealthStatus = async () => {
+			try {
+				const health = await getHealth();
+				setIsTradingHours(health.is_trading_hours);
+			} catch (error) {
+				console.error("Failed to fetch health status:", error);
+			}
+		};
+
+		fetchHealthStatus();
+	}, []);
 
 	const aiContext = React.useMemo(() => {
-		return buildAIContext(language, marketData || undefined, interval);
-	}, [language, marketData, interval]);
+		return buildAIContext(language, marketData || undefined, interval, isTradingHours);
+	}, [language, marketData, interval, isTradingHours]);
 
 	const handleCopy = async () => {
 		try {

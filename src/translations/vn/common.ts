@@ -48,6 +48,7 @@ export default {
     cardDescription: 'Ngữ cảnh này bao gồm lời nhắc hệ thống AIPriceAction Investment Advisor, giải thích MA Score, và tuyên bố miễn trừ trách nhiệm đầu tư. Sao chép để sử dụng với trợ lý AI của bạn.',
     copyButton: 'Sao Chép Ngữ Cảnh',
     copied: 'Đã Sao Chép!',
+    tradingHoursNotice: '⚠️ THÔNG BÁO GIỜ GIAO DỊCH: Thị trường đang mở cửa. Bản ghi dữ liệu gần nhất hiển thị khối lượng chưa đầy đủ vì phiên giao dịch đang diễn ra. Con số khối lượng sẽ thấp hơn các giá trị lịch sử thông thường cho đến khi thị trường đóng cửa.',
     howToUseTitle: 'Cách Sử Dụng:',
     howToUseSteps: {
       step1: 'Nhấp "Sao Chép Ngữ Cảnh" để sao chép toàn bộ ngữ cảnh vào clipboard',

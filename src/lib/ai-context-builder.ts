@@ -27,7 +27,8 @@ interface StockData {
 export function buildAIContext(
 	language: "en" | "vn" = "en",
 	marketData?: Record<string, StockData[]>,
-	interval?: string
+	interval?: string,
+	isTradingHours?: boolean
 ): string {
 	const sections: string[] = [];
 
@@ -319,6 +320,15 @@ Các Điểm Chính:
 		});
 
 		sections.push(marketDataLines.join("\n"));
+	}
+
+	// 5. Trading Hours Notice (if trading hours and market data exists)
+	if (isTradingHours && marketData && Object.keys(marketData).length > 0) {
+		if (language === "en") {
+			sections.push("=== Trading Hours Notice ===\n\n⚠️ TRADING HOURS NOTICE: The market is currently open. The most recent data record shows incomplete volume as the trading session is still in progress. Volume figures will be lower than typical historical values until market close.");
+		} else {
+			sections.push("=== Thông Báo Giờ Giao Dịch ===\n\n⚠️ THÔNG BÁO GIỜ GIAO DỊCH: Thị trường đang mở cửa. Bản ghi dữ liệu gần nhất hiển thị khối lượng chưa đầy đủ vì phiên giao dịch đang diễn ra. Con số khối lượng sẽ thấp hơn các giá trị lịch sử thông thường cho đến khi thị trường đóng cửa.");
+		}
 	}
 
 	// Join all sections with double newlines

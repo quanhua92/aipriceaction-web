@@ -48,6 +48,7 @@ export default {
     cardDescription: 'This context includes the AIPriceAction Investment Advisor system prompt, MA Score explanation, and investment disclaimer. Copy this to use with your AI assistant.',
     copyButton: 'Copy Context',
     copied: 'Copied!',
+    tradingHoursNotice: '⚠️ TRADING HOURS NOTICE: The market is currently open. The most recent data record shows incomplete volume as the trading session is still in progress. Volume figures will be lower than typical historical values until market close.',
     howToUseTitle: 'How to Use:',
     howToUseSteps: {
       step1: 'Click "Copy Context" to copy the entire context to your clipboard',
