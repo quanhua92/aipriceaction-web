@@ -38,6 +38,11 @@ export const CUSTOM_WATCHLISTS_STORAGE_KEY = 'customWatchlists'
 export const AI_SELECTED_TICKERS_STORAGE_KEY = 'ai-selected-tickers'
 
 /**
+ * LocalStorage key for Market Matrix open sectors state
+ */
+export const MATRIX_OPEN_SECTORS_STORAGE_KEY = 'matrix-open-sectors'
+
+/**
  * Special watchlist name for showing all tickers
  */
 export const ALL_WATCHLIST_NAME = 'ALL'
