@@ -249,7 +249,7 @@ export function BasicWatchList({
     if (!settings || !symbol) return
 
     // Fire-and-forget HTTP call for browser cache
-    getTickers({
+    getTickers('BasicWatchList.prefetch', {
       symbol,
       interval: settings.interval,
       start_date: settings.startDate,

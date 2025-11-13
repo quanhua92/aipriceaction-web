@@ -57,7 +57,7 @@ function AIContextPage() {
 	React.useEffect(() => {
 		const fetchHealthStatus = async () => {
 			try {
-				const health = await getHealth();
+				const health = await getHealth('AIRoute.tradingHours');
 				setIsTradingHours(health.is_trading_hours);
 			} catch (error) {
 				console.error("Failed to fetch health status:", error);
@@ -117,7 +117,7 @@ function AIContextPage() {
 			setFetchError(null);
 
 			try {
-				const data = await getTickers({
+				const data = await getTickers('AIRoute.marketData', {
 					symbol: selectedTickers,
 					limit: limit,
 					interval: interval,

@@ -33,8 +33,8 @@ interface APIContextValue {
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
-  getTickers: (params?: TickersQueryParams) => Promise<Record<string, StockData[]>>
-  getHealth: () => Promise<HealthResponse>
+  getTickers: (source: string, params?: TickersQueryParams) => Promise<Record<string, StockData[]>>
+  getHealth: (source: string) => Promise<HealthResponse>
 }
 
 const APIContext = React.createContext<APIContextValue | undefined>(undefined)
@@ -56,7 +56,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       // Fetch both ticker groups and all tickers data in parallel
       const [groups, tickersData] = await Promise.all([
         getTickerGroups(),
-        getTickersWithLogging({}, { info, warn: info, error: logError })
+        getTickersWithLogging('APIContext.init', {}, { info, warn: info, error: logError })
       ])
 
       const duration = Date.now() - startTime
@@ -99,22 +99,22 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
 
   // Provide logged API methods
   const getTickers = React.useCallback(
-    async (params?: TickersQueryParams) => {
-      return getTickersWithLogging(params ?? {}, { info, warn: info, error: logError })
+    async (source: string, params?: TickersQueryParams) => {
+      return getTickersWithLogging(source, params ?? {}, { info, warn: info, error: logError })
     },
     [info, logError]
   )
 
-  const getHealth = React.useCallback(async () => {
+  const getHealth = React.useCallback(async (source: string) => {
     try {
       const startTime = Date.now()
       const health = await getHealthApi()
       const duration = Date.now() - startTime
-      info(`[API] getHealth: ${duration}ms | Status: ${health.status}`)
+      info(`[API] ${source} getHealth: ${duration}ms | Status: ${health.status}`)
       return health
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err)
-      logError(`[API] getHealth FAILED: ${errorMessage}`)
+      logError(`[API] ${source} getHealth FAILED: ${errorMessage}`)
       throw err
     }
   }, [info, logError])

@@ -106,10 +106,12 @@ export async function getTickers(params: Parameters<typeof apiClient.getTickers>
 
 /**
  * Get ticker data with logging support
+ * @param source - Source component/context calling this function
  * @param params - Query parameters for tickers API
  * @param logger - Logger functions (info, warn, error)
  */
 export async function getTickersWithLogging(
+  source: string,
   params: Parameters<typeof apiClient.getTickers>[0],
   logger?: {
     info: (message: string) => void
@@ -150,7 +152,7 @@ export async function getTickersWithLogging(
       ].filter(Boolean).join(' ')
 
       logger.info(
-        `[API] getTickers: ${paramsStr} | ${response.metadata.duration}ms | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
+        `[API] ${source} getTickers: ${paramsStr} | ${response.metadata.duration}ms | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
       )
     }
 
@@ -170,7 +172,7 @@ export async function getTickersWithLogging(
       ].filter(Boolean).join(' ')
 
       const errorMessage = error instanceof Error ? error.message : String(error)
-      logger.error(`[API] getTickers FAILED: ${errorMessage} | Params: ${paramsStr}`)
+      logger.error(`[API] ${source} getTickers FAILED: ${errorMessage} | Params: ${paramsStr}`)
     }
 
     throw error

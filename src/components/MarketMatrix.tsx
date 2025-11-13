@@ -179,7 +179,7 @@ export function MarketMatrix() {
 
         // Fetch VNINDEX first to get trading day calendar (source of truth)
         // Use TRADING_DAYS_PER_YEAR (~1 year) for better caching across components, then slice to page size
-        const vnindexResponse = await getTickers({
+        const vnindexResponse = await getTickers('MarketMatrix.calendar', {
           symbol: ['VNINDEX'],
           interval: '1D',
           end_date: endDateForAPI,
@@ -202,7 +202,7 @@ export function MarketMatrix() {
         // Optimization: When "ALL" watchlist is selected, omit symbol parameter
         // to avoid super long URLs with hundreds of ticker symbols (symbol=VCB&symbol=FPT&...)
         // The API will return all tickers when symbol is undefined/omitted
-        const response = await getTickers({
+        const response = await getTickers('MarketMatrix.data', {
           symbol: selectedWatchlist === ALL_WATCHLIST_NAME ? undefined : selectedTickers,
           interval: '1D',
           end_date: endDateForAPI,

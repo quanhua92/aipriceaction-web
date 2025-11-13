@@ -122,7 +122,7 @@ export function TickerProvider({
             await sleep(delay)
           }
 
-          const response = await getTickers({
+          const response = await getTickers('TickerContext', {
             symbol: selectedTicker,
             interval: settings.interval,
             start_date: settings.startDate,
