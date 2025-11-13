@@ -58,7 +58,7 @@ export function BaseTradingViewChart({
 	// Show loading state when using context
 	if (loading) {
 		return (
-			<div className="flex items-center justify-center py-12">
+			<div className="flex items-center justify-center" style={{ height: `${height}px` }}>
 				<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 				<span className="ml-2 text-muted-foreground">Loading chart data...</span>
 			</div>
