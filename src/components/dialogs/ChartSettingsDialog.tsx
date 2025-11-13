@@ -26,6 +26,7 @@ import {
 import { useTranslation } from '@/hooks/useTranslation'
 import { CalendarIcon, X } from 'lucide-react'
 import { format } from 'date-fns'
+import { TRADING_DAYS_PER_YEAR } from '@/lib/constants'
 
 interface ChartSettingsDialogProps {
 	children: React.ReactNode
@@ -35,9 +36,9 @@ const LIMIT_OPTIONS = [
 	{ value: '30', label: '30 records' },
 	{ value: '90', label: '90 records' },
 	{ value: '180', label: '180 records' },
-	{ value: '252', label: '252 records (1 year)' },
-	{ value: '504', label: '504 records (2 years)' },
-	{ value: '756', label: '756 records (3 years)' },
+	{ value: TRADING_DAYS_PER_YEAR.toString(), label: `${TRADING_DAYS_PER_YEAR} records (1 year)` },
+	{ value: (TRADING_DAYS_PER_YEAR * 2).toString(), label: `${TRADING_DAYS_PER_YEAR * 2} records (2 years)` },
+	{ value: (TRADING_DAYS_PER_YEAR * 3).toString(), label: `${TRADING_DAYS_PER_YEAR * 3} records (3 years)` },
 ]
 
 const HEIGHT_OPTIONS = [
@@ -76,7 +77,7 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 	const handleClearFilters = () => {
 		setStartDate(undefined)
 		setEndDate(undefined)
-		setLimit(252)
+		setLimit(TRADING_DAYS_PER_YEAR)
 	}
 
 	// Convert string date to Date object for calendar

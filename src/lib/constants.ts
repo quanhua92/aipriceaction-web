@@ -53,6 +53,11 @@ export const ALL_WATCHLIST_NAME = 'ALL'
 export const MATRIX_DAYS_PER_PAGE = 40
 
 /**
+ * Number of trading days in approximately 1 year (used for caching VNINDEX data)
+ */
+export const TRADING_DAYS_PER_YEAR = 252
+
+/**
  * Maximum number of retry attempts for failed API calls
  */
 export const API_RETRY_ATTEMPTS = 3

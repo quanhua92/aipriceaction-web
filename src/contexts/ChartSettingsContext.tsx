@@ -1,5 +1,6 @@
 import React from 'react'
 import { Interval } from '@/lib/api-client'
+import { TRADING_DAYS_PER_YEAR } from '@/lib/constants'
 
 export interface MaVisibility {
 	ma10: boolean
@@ -56,7 +57,7 @@ function getDefaultMaVisibility(interval: Interval): MaVisibility {
 
 export function ChartSettingsProvider({ children }: { children: React.ReactNode }) {
 	const [interval, setInterval] = React.useState<Interval>(Interval.Daily)
-	const [limit, setLimit] = React.useState<number>(252)
+	const [limit, setLimit] = React.useState<number>(TRADING_DAYS_PER_YEAR)
 	const [height, setHeight] = React.useState<number>(
 		typeof window !== 'undefined' && window.innerWidth >= 768 ? 400 : 300
 	)
