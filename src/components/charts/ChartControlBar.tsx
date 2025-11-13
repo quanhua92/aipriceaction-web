@@ -82,12 +82,26 @@ export function ChartControlBar({
 	// Use global interval if no specific interval provided
 	const currentInterval = interval ?? globalInterval
 	const handleIntervalChange = onIntervalChange ?? setGlobalInterval
-	// Calculate hidden intervals for dropdown menu
+
+	// Create dynamic visible intervals that include the current selection
+	const createDynamicVisibleIntervals = (baseIntervals: Interval[]) => {
+		const intervalsSet = new Set([...baseIntervals, currentInterval])
+		const mergedIntervals = Array.from(intervalsSet)
+		// Sort by position in ALL_INTERVALS to maintain chronological order
+		return mergedIntervals.sort(
+			(a, b) => ALL_INTERVALS.indexOf(a) - ALL_INTERVALS.indexOf(b)
+		)
+	}
+
+	const dynamicDesktopVisibleIntervals = createDynamicVisibleIntervals(visibleIntervals)
+	const dynamicMobileVisibleIntervals = createDynamicVisibleIntervals(mobileVisibleIntervals)
+
+	// Calculate hidden intervals for dropdown menu (excluding dynamically visible ones)
 	const desktopHiddenIntervals = ALL_INTERVALS.filter(
-		(i) => !visibleIntervals.includes(i),
+		(i) => !dynamicDesktopVisibleIntervals.includes(i),
 	)
 	const mobileHiddenIntervals = ALL_INTERVALS.filter(
-		(i) => !mobileVisibleIntervals.includes(i),
+		(i) => !dynamicMobileVisibleIntervals.includes(i),
 	)
 
 	const renderIntervalButton = (int: Interval, isMobile: boolean = false) => (
@@ -122,12 +136,12 @@ export function ChartControlBar({
 
 			{/* Desktop Interval Buttons */}
 			<div className="hidden md:flex gap-0.5">
-				{visibleIntervals.map((int) => renderIntervalButton(int))}
+				{dynamicDesktopVisibleIntervals.map((int) => renderIntervalButton(int))}
 			</div>
 
 			{/* Mobile Interval Buttons */}
 			<div className="flex md:hidden gap-0.5">
-				{mobileVisibleIntervals.map((int) => renderIntervalButton(int, true))}
+				{dynamicMobileVisibleIntervals.map((int) => renderIntervalButton(int, true))}
 			</div>
 
 			{/* More Menu - Desktop (shows hidden intervals only) */}
