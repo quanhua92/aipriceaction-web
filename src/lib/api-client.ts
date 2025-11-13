@@ -30,7 +30,8 @@ function convertUTCTimestampToVietnamString(utcTimeString: string): string {
   let utcTimeToParse = utcTimeString
   if (isDateOnly) {
     // For date-only formats (1D, 1W, 2W, 1M), API uses 02:00 UTC
-    utcTimeToParse = utcTimeString + ' 02:00:00'
+    // Use ISO 8601 format with 'T' separator for Safari compatibility
+    utcTimeToParse = utcTimeString + 'T02:00:00'
   }
 
   const unixTime = parseUTCToVietnamTime(utcTimeToParse)

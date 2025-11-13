@@ -85,8 +85,9 @@ export function formatVolume(volume: number): string {
  * @example parseUTCToVietnamTime("2025-11-09 14:00:00") => Unix timestamp for 9pm Vietnam time
  */
 export function parseUTCToVietnamTime(utcTimeString: string): number {
-  // Safari-safe: Use parseSafariSafeDate to handle space-to-T conversion
-  // Parse as UTC by appending 'Z' for explicit UTC timezone
+  // Safari-safe: Convert to ISO 8601 format if needed
+  // Replace space with 'T' for legacy space-separated format
+  // Already ISO format will pass through unchanged
   const isoString = utcTimeString.replace(' ', 'T') + 'Z'
   const utcDate = new Date(isoString)
 
