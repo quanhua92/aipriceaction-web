@@ -15,7 +15,7 @@ import {
 	LineSeries,
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamTime } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamTime, toVietnamUnixTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -122,7 +122,8 @@ export function BaseTradingViewChart({
 				return
 			}
 
-			const time = Math.floor(dateTime.getTime() / 1000) as Time
+			// Convert to Vietnam time Unix timestamp for chart display
+			const time = toVietnamUnixTime(dateTime) as Time
 			const prevPoint = index > 0 ? data[index - 1] : null
 			const volumeColor = prevPoint
 				? point.close >= prevPoint.close
@@ -398,21 +399,22 @@ export function BaseTradingViewChart({
 				return
 			}
 
-			// Format date with time in Vietnam timezone
+			// Format date with time (timestamp is already in Vietnam time)
 			let dateStr: string
 			try {
 				const date = new Date((param.time as number) * 1000)
 				if (isNaN(date.getTime())) {
 					dateStr = String(param.time)
 				} else {
-					// Format to Vietnam time string, then display as readable format
-					const vietnamTimeStr = formatToVietnamTime(date)
-					// Parse and format for display: "2025-11-09 21:00:00" -> "Nov 9, 2025, 09:00 PM"
-					const [datePart, timePart] = vietnamTimeStr.split(' ')
-					const [year, month, day] = datePart.split('-')
-					const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-					const monthName = monthNames[parseInt(month) - 1]
-					dateStr = `${monthName} ${parseInt(day)}, ${year}, ${timePart}`
+					// Timestamp is already shifted to Vietnam time, format as UTC to display correctly
+					dateStr = date.toLocaleString('en-US', {
+						year: 'numeric',
+						month: 'short',
+						day: 'numeric',
+						hour: '2-digit',
+						minute: '2-digit',
+						timeZone: 'UTC' // Use UTC because timestamp is already shifted
+					})
 				}
 			} catch (error) {
 				console.error('Invalid date in tooltip:', param.time, error)

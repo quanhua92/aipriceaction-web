@@ -74,6 +74,27 @@ export function formatToVietnamDate(date: Date): string {
 }
 
 /**
+ * Convert UTC Date to Vietnam time Unix timestamp (for chart libraries)
+ * Chart libraries like TradingView need Unix timestamps in seconds.
+ * This shifts the timestamp to Vietnam timezone so the chart axis displays Vietnam time.
+ *
+ * @param utcDate - Date object in UTC
+ * @returns Unix timestamp in seconds, shifted to Vietnam timezone (UTC+7)
+ * @example toVietnamUnixTime(new Date("2025-11-09T14:00:00Z")) => Unix timestamp for 21:00 Vietnam time
+ */
+export function toVietnamUnixTime(utcDate: Date): number {
+  if (!utcDate || isNaN(utcDate.getTime())) {
+    return 0
+  }
+
+  // Add 7 hours for Vietnam timezone (UTC+7)
+  const vietnamTime = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000))
+
+  // Return Unix timestamp in seconds
+  return Math.floor(vietnamTime.getTime() / 1000)
+}
+
+/**
  * Format a price value with comma separators
  * @param price - The price value to format
  * @param useDecimals - If true, formats with 2 decimals. Default false for VND (no decimals)
