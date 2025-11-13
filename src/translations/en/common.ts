@@ -36,4 +36,19 @@ export default {
     ma100: 'MA100',
     score: 'Score',
   },
+  aiContext: {
+    title: 'AI Context Preview',
+    description: 'Preview the AIPriceAction system prompt and MA Score explanation that can be used with AI assistants',
+    cardTitle: 'Ask AI Context',
+    cardDescription: 'This context includes the AIPriceAction Investment Advisor system prompt, MA Score explanation, and investment disclaimer. Copy this to use with your AI assistant.',
+    copyButton: 'Copy Context',
+    copied: 'Copied!',
+    howToUseTitle: 'How to Use:',
+    howToUseSteps: {
+      step1: 'Click "Copy Context" to copy the entire context to your clipboard',
+      step2: 'Paste this context into your AI assistant conversation',
+      step3: 'Ask your questions about Vietnamese stock market analysis',
+      step4: 'The AI will use this context to provide informed, data-driven insights',
+    },
+  },
 }

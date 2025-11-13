@@ -36,4 +36,19 @@ export default {
     ma100: 'MA100',
     score: 'Điểm',
   },
+  aiContext: {
+    title: 'Xem Trước Ngữ Cảnh AI',
+    description: 'Xem trước lời nhắc hệ thống AIPriceAction và giải thích MA Score để sử dụng với trợ lý AI',
+    cardTitle: 'Ngữ Cảnh Hỏi AI',
+    cardDescription: 'Ngữ cảnh này bao gồm lời nhắc hệ thống AIPriceAction Investment Advisor, giải thích MA Score, và tuyên bố miễn trừ trách nhiệm đầu tư. Sao chép để sử dụng với trợ lý AI của bạn.',
+    copyButton: 'Sao Chép Ngữ Cảnh',
+    copied: 'Đã Sao Chép!',
+    howToUseTitle: 'Cách Sử Dụng:',
+    howToUseSteps: {
+      step1: 'Nhấp "Sao Chép Ngữ Cảnh" để sao chép toàn bộ ngữ cảnh vào clipboard',
+      step2: 'Dán ngữ cảnh này vào cuộc trò chuyện với trợ lý AI của bạn',
+      step3: 'Đặt câu hỏi về phân tích thị trường chứng khoán Việt Nam',
+      step4: 'AI sẽ sử dụng ngữ cảnh này để cung cấp thông tin dựa trên dữ liệu',
+    },
+  },
 }
