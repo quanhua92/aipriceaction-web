@@ -11,12 +11,19 @@ import { APIProvider } from '../contexts/APIContext'
 import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
 import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
 import { RefreshProvider } from '../contexts/RefreshContext'
+import { GoogleAnalyticsProvider } from '../contexts/GoogleAnalyticsProvider'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
+
+declare global {
+	interface Window {
+		GA_MEASUREMENT_ID?: string;
+	}
+}
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -54,6 +61,29 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         href: appCss,
       },
     ],
+    scripts: [
+      {
+        type: 'text/javascript',
+        children: `
+          // Vite replaces import.meta.env.VITE_GA_MEASUREMENT_ID at build time
+          window.GA_MEASUREMENT_ID = '${import.meta.env.VITE_GA_MEASUREMENT_ID || ''}';
+
+          if (window.GA_MEASUREMENT_ID && window.GA_MEASUREMENT_ID !== '' && !window.GA_MEASUREMENT_ID.includes('undefined')) {
+            // Google tag (gtag.js)
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', window.GA_MEASUREMENT_ID);
+
+            // Load gtag script
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + window.GA_MEASUREMENT_ID;
+            document.head.appendChild(script);
+          }
+        `,
+      },
+    ],
   }),
 
   notFoundComponent: NotFound,
@@ -61,36 +91,40 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const measurementId = typeof window !== 'undefined' ? window.GA_MEASUREMENT_ID : undefined;
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        <SiteSettingsProvider>
-          <RefreshProvider>
-            <APIProvider>
-              <ChartSettingsProvider>
-                <Header />
-                {children}
-              {import.meta.env.DEV && (
-                <TanStackDevtools
-                  config={{
-                    position: 'bottom-right',
-                  }}
-                  plugins={[
-                    {
-                      name: 'Tanstack Router',
-                      render: <TanStackRouterDevtoolsPanel />,
-                    },
-                    TanStackQueryDevtools,
-                  ]}
-                />
-              )}
-              </ChartSettingsProvider>
-            </APIProvider>
-          </RefreshProvider>
-        </SiteSettingsProvider>
+        <GoogleAnalyticsProvider measurementId={measurementId}>
+          <SiteSettingsProvider>
+            <RefreshProvider>
+              <APIProvider>
+                <ChartSettingsProvider>
+                  <Header />
+                  {children}
+                {import.meta.env.DEV && (
+                  <TanStackDevtools
+                    config={{
+                      position: 'bottom-right',
+                    }}
+                    plugins={[
+                      {
+                        name: 'Tanstack Router',
+                        render: <TanStackRouterDevtoolsPanel />,
+                      },
+                      TanStackQueryDevtools,
+                    ]}
+                  />
+                )}
+                </ChartSettingsProvider>
+              </APIProvider>
+            </RefreshProvider>
+          </SiteSettingsProvider>
+        </GoogleAnalyticsProvider>
         <Scripts />
       </body>
     </html>
