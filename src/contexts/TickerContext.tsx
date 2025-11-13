@@ -2,7 +2,7 @@ import React from 'react'
 import { getTickers, type StockData } from '@/lib/api-client'
 import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
-import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS } from '@/lib/constants'
+import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT } from '@/lib/constants'
 
 interface TickerContextValue {
   selectedTicker: string
@@ -23,6 +23,43 @@ interface TickerProviderProps {
 const TickerContext = React.createContext<TickerContextValue | undefined>(
   undefined
 )
+
+// Track recent API calls to skip delay for cached requests
+// Map key: "ticker:interval", value: timestamp
+const recentApiCalls = new Map<string, number>()
+
+// Helper: Generate cache key from ticker and interval
+function getCacheKey(ticker: string, interval: string): string {
+  return `${ticker}:${interval}`
+}
+
+// Helper: Check if request was made recently (likely cached)
+function isRecentRequest(ticker: string, interval: string): boolean {
+  const key = getCacheKey(ticker, interval)
+  const lastCallTime = recentApiCalls.get(key)
+
+  if (!lastCallTime) return false
+
+  const now = Date.now()
+  const timeSinceLastCall = now - lastCallTime
+
+  return timeSinceLastCall < API_CACHE_WINDOW_MS
+}
+
+// Helper: Record an API call
+function recordApiCall(ticker: string, interval: string): void {
+  const key = getCacheKey(ticker, interval)
+  recentApiCalls.set(key, Date.now())
+
+  // Limit map size to prevent memory leak
+  if (recentApiCalls.size > API_RECENT_CALLS_LIMIT) {
+    // Remove oldest entry
+    const firstKey = recentApiCalls.keys().next().value
+    if (firstKey) {
+      recentApiCalls.delete(firstKey)
+    }
+  }
+}
 
 // Helper: Generate random delay between min and max milliseconds
 function getRandomDelay(): number {
@@ -74,9 +111,14 @@ export function TickerProvider({
       // Retry loop with exponential backoff
       for (let attempt = 1; attempt <= API_RETRY_ATTEMPTS; attempt++) {
         try {
-          // Add random delay before API call to prevent simultaneous requests
-          const delay = getRandomDelay()
-          await sleep(delay)
+          // Check if this is a recent request (likely cached)
+          const isRecent = isRecentRequest(selectedTicker, settings.interval)
+
+          // Only add random delay for new requests, skip for cached ones
+          if (!isRecent) {
+            const delay = getRandomDelay()
+            await sleep(delay)
+          }
 
           const response = await getTickers({
             symbol: selectedTicker,
@@ -87,6 +129,9 @@ export function TickerProvider({
           })
           const data = response[selectedTicker] || []
           setChartData(data)
+
+          // Record this API call for future cache detection
+          recordApiCall(selectedTicker, settings.interval)
 
           // Success - clear error and exit retry loop
           setLoading(false)

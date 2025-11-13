@@ -68,6 +68,17 @@ export const API_CALL_DELAY_MS = {
 } as const
 
 /**
+ * Time window (in milliseconds) to consider a recent API call as "cached"
+ * If same ticker+interval was fetched within this window, skip the random delay
+ */
+export const API_CACHE_WINDOW_MS = 15000 // 15 seconds
+
+/**
+ * Maximum number of recent API calls to track for cache detection
+ */
+export const API_RECENT_CALLS_LIMIT = 10
+
+/**
  * Sector abbreviations for compact display in Market Matrix
  * Based on real API sectors from https://api.aipriceaction.com/tickers/group
  */
