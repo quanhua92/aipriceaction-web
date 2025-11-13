@@ -15,7 +15,7 @@ import {
 	LineSeries,
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamTime, toVietnamUnixTime } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamTime, toVietnamUnixTime, formatToVietnamDateShort } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -681,14 +681,7 @@ export function BaseTradingViewChart({
 								try {
 									if (!latestData.time || typeof latestData.time !== 'string') return '--'
 									const date = parseUTCISOString(latestData.time)
-									if (isNaN(date.getTime())) return '--'
-									// Convert to Vietnam time and format
-									const vietnamDate = new Date(date.getTime() + (7 * 60 * 60 * 1000))
-									return vietnamDate.toLocaleDateString('en-US', {
-										month: 'short',
-										day: 'numeric',
-										timeZone: 'UTC' // Use UTC because we already shifted by +7
-									})
+									return formatToVietnamDateShort(date)
 								} catch {
 									return '--'
 								}

@@ -95,6 +95,31 @@ export function toVietnamUnixTime(utcDate: Date): number {
 }
 
 /**
+ * Format a Date object to short Vietnam date string (e.g., "Nov 9")
+ * Useful for compact displays like chart overlays
+ *
+ * @param utcDate - Date object in UTC
+ * @returns Short date string in "MMM D" format (e.g., "Nov 9")
+ * @example formatToVietnamDateShort(new Date("2025-11-09T14:00:00Z")) => "Nov 9"
+ */
+export function formatToVietnamDateShort(utcDate: Date): string {
+  if (!utcDate || isNaN(utcDate.getTime())) {
+    return '--'
+  }
+
+  // Add 7 hours for Vietnam timezone (UTC+7)
+  const vietnamTime = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000))
+
+  // Format using UTC methods (the time is already shifted by +7)
+  const month = vietnamTime.getUTCMonth()
+  const day = vietnamTime.getUTCDate()
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  return `${monthNames[month]} ${day}`
+}
+
+/**
  * Format a price value with comma separators
  * @param price - The price value to format
  * @param useDecimals - If true, formats with 2 decimals. Default false for VND (no decimals)
