@@ -77,34 +77,6 @@ export function TickerProvider({
     fetchChartData()
   }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh])
 
-  // Also trigger initial fetch when settings become available
-  React.useEffect(() => {
-    if (enableFetching && settings && selectedTicker && chartData.length === 0) {
-            const fetchChartData = async () => {
-                setLoading(true)
-        setError(null)
-        try {
-          const response = await getTickers({
-            symbol: selectedTicker,
-            interval: settings.interval,
-            start_date: settings.startDate,
-            end_date: settings.endDate,
-            limit: limit ?? settings.limit,
-          })
-          const data = response[selectedTicker] || []
-          setChartData(data)
-        } catch (err) {
-                    setError(err instanceof Error ? err.message : 'Failed to fetch chart data')
-          setChartData([])
-        } finally {
-                    setLoading(false)
-        }
-      }
-
-      fetchChartData()
-    }
-  }, [enableFetching, settings, selectedTicker, lastRefresh])
-
   const contextValue = {
     selectedTicker,
     setSelectedTicker,
