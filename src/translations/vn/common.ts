@@ -23,6 +23,11 @@ export default {
   yes: 'Có',
   no: 'Không',
   ok: 'OK',
+  home: {
+    welcomeTitle: 'Chào mừng đến với AIPriceAction',
+    welcomeDescription: 'Nền tảng phân tích thị trường chứng khoán Việt Nam thông minh. Theo dõi xu hướng thị trường, phân tích hành động giá với điểm MA, và tận dụng thông tin chi tiết được hỗ trợ bởi AI để đưa ra quyết định giao dịch thông minh hơn.',
+    tryAIContext: 'Dùng Thử AI Context',
+  },
   ticker: {
     open: 'Mở Cửa',
     high: 'Cao Nhất',

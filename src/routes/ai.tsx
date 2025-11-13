@@ -16,6 +16,7 @@ const MAX_TICKERS = 20;
 function AIContextPage() {
 	const { t, language } = useTranslation();
 	const [copied, setCopied] = React.useState(false);
+	const [copiedTemplate, setCopiedTemplate] = React.useState<number | null>(null);
 	const [selectedTickers, setSelectedTickers] = React.useState<string[]>(["VNINDEX"]);
 	const [limit, setLimit] = React.useState<number>(20);
 	const [interval, setInterval] = React.useState<string>("1D");
@@ -34,6 +35,17 @@ function AIContextPage() {
 			setTimeout(() => setCopied(false), 2000);
 		} catch (err) {
 			console.error("Failed to copy text:", err);
+		}
+	}
+
+	const handleCopyTemplate = async (templateIndex: number, question: string) => {
+		try {
+			const contextWithQuestion = `${aiContext}\n\n=== Question ===\n${question}`;
+			await navigator.clipboard.writeText(contextWithQuestion);
+			setCopiedTemplate(templateIndex);
+			setTimeout(() => setCopiedTemplate(null), 2000);
+		} catch (err) {
+			console.error("Failed to copy template:", err);
 		}
 	}
 
@@ -257,6 +269,63 @@ function AIContextPage() {
 							<li>{t("common.aiContext.howToUseSteps.step3")}</li>
 							<li>{t("common.aiContext.howToUseSteps.step4")}</li>
 						</ol>
+					</div>
+
+					{/* Template Questions Section */}
+					<div className="mt-6 space-y-4">
+						<div>
+							<h3 className="font-semibold text-sm">{t("templates.sectionTitle")}</h3>
+							<p className="text-sm text-muted-foreground">
+								{t("templates.sectionDescription")}
+							</p>
+						</div>
+
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+							{[0, 1, 2].map((index) => {
+								const template = t(`templates.templates.${index}`) as any;
+								const isCopied = copiedTemplate === index;
+
+								return (
+									<Card
+										key={index}
+										className="hover:border-primary/50 transition-colors cursor-pointer"
+										onClick={() => handleCopyTemplate(index, template.question)}
+									>
+										<CardHeader className="pb-3">
+											<CardTitle className="text-sm font-medium">
+												{template.title}
+											</CardTitle>
+										</CardHeader>
+										<CardContent className="space-y-3">
+											<p className="text-xs text-muted-foreground line-clamp-2">
+												{template.snippet}
+											</p>
+											<Button
+												variant={isCopied ? "default" : "outline"}
+												size="sm"
+												className="w-full"
+												onClick={(e) => {
+													e.stopPropagation();
+													handleCopyTemplate(index, template.question);
+												}}
+											>
+												{isCopied ? (
+													<>
+														<Check className="mr-2 h-3.5 w-3.5" />
+														{t("templates.templateCopied")}
+													</>
+												) : (
+													<>
+														<Copy className="mr-2 h-3.5 w-3.5" />
+														{t("templates.copyTemplate")}
+													</>
+												)}
+											</Button>
+										</CardContent>
+									</Card>
+								);
+							})}
+						</div>
 					</div>
 				</CardContent>
 			</Card>

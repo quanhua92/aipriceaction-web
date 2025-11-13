@@ -23,6 +23,11 @@ export default {
   yes: 'Yes',
   no: 'No',
   ok: 'OK',
+  home: {
+    welcomeTitle: 'Welcome to AIPriceAction',
+    welcomeDescription: 'Your intelligent Vietnamese stock market analysis platform. Track market trends, analyze price action with MA scores, and leverage AI-powered insights for smarter trading decisions.',
+    tryAIContext: 'Try AI Context',
+  },
   ticker: {
     open: 'Open',
     high: 'High',

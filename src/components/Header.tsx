@@ -8,6 +8,7 @@ import {
   Table,
   X,
   Zap,
+  Brain,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
@@ -117,6 +118,19 @@ export default function Header() {
           >
             <Table size={20} />
             <span className="font-medium">Market Matrix</span>
+          </Link>
+
+          <Link
+            to="/ai"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+            activeProps={{
+              className:
+                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+            }}
+          >
+            <Brain size={20} />
+            <span className="font-medium">AI Context</span>
           </Link>
         </nav>
       </aside>
