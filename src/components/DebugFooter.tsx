@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation } from '@tanstack/react-router'
-import { ChevronUp, ChevronDown } from 'lucide-react'
+import { ChevronUp, ChevronDown, Copy, Check } from 'lucide-react'
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -111,6 +111,8 @@ function DebugFooterContent() {
 	const chartSettings = useChartSettings()
 	const refresh = useRefresh()
 	const { logs, clearLogs } = useLogs()
+	const [clearClickCount, setClearClickCount] = React.useState(0)
+	const [copied, setCopied] = React.useState(false)
 
 	// Load collapsed state from localStorage
 	const [isOpen, setIsOpen] = React.useState(() => {
@@ -179,6 +181,38 @@ function DebugFooterContent() {
 	}
 
 	const preferencesData = getLocalStorageData()
+
+	// Copy logs to clipboard
+	const handleCopyLogs = React.useCallback(async () => {
+		if (logs.length === 0) return
+
+		const logsText = logs
+			.map((log) => {
+				const timestamp = new Date(log.timestamp).toLocaleString()
+				const dataStr = log.data !== undefined ? ` | Data: ${JSON.stringify(log.data)}` : ''
+				return `[${log.level.toUpperCase()}] ${timestamp} - ${log.message}${dataStr}`
+			})
+			.join('\n')
+
+		try {
+			await navigator.clipboard.writeText(logsText)
+			setCopied(true)
+			setTimeout(() => setCopied(false), 2000)
+		} catch (err) {
+			console.error('Failed to copy logs:', err)
+		}
+	}, [logs])
+
+	// Handle clear logs with confirmation
+	const handleClearLogs = React.useCallback(() => {
+		if (clearClickCount === 0) {
+			setClearClickCount(1)
+			setTimeout(() => setClearClickCount(0), 3000) // Reset after 3 seconds
+		} else {
+			clearLogs()
+			setClearClickCount(0)
+		}
+	}, [clearClickCount, clearLogs])
 
 	return (
 		<Collapsible
@@ -270,14 +304,34 @@ function DebugFooterContent() {
 										<span className="text-xs text-muted-foreground">
 											{logs.length} log{logs.length !== 1 ? 's' : ''} (max 500)
 										</span>
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={clearLogs}
-											className="h-6 px-2 text-xs"
-										>
-											Clear Logs
-										</Button>
+										<div className="flex gap-2">
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleCopyLogs}
+												className="h-6 px-2 text-xs"
+											>
+												{copied ? (
+													<>
+														<Check className="h-3 w-3 mr-1" />
+														Copied
+													</>
+												) : (
+													<>
+														<Copy className="h-3 w-3 mr-1" />
+														Copy Logs
+													</>
+												)}
+											</Button>
+											<Button
+												variant={clearClickCount > 0 ? "destructive" : "outline"}
+												size="sm"
+												onClick={handleClearLogs}
+												className="h-6 px-2 text-xs"
+											>
+												{clearClickCount > 0 ? 'Click Again to Clear' : 'Clear Logs'}
+											</Button>
+										</div>
 									</div>
 									{logs.map((log, index) => (
 										<div
