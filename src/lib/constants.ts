@@ -60,10 +60,11 @@ export const API_RETRY_ATTEMPTS = 3
 /**
  * Random delay range (in milliseconds) before API calls to prevent simultaneous requests
  * Will use random value between min and max
+ * Kept small (0-50ms) to avoid bad UX since browser cache can serve data instantly
  */
 export const API_CALL_DELAY_MS = {
   min: 0,
-  max: 500
+  max: 50
 } as const
 
 /**
