@@ -2,7 +2,6 @@ import * as React from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight, Star, Plus, Edit2 } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
-import { getTickers } from '@/lib/api-client'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
 import {
   Select,
@@ -36,7 +35,7 @@ export function BasicWatchList({
   onSelectTicker,
   onSectorChange
 }: BasicWatchListProps) {
-  const { tickerGroups, allTickersData, loading, error } = useAPI()
+  const { tickerGroups, allTickersData, loading, error, getTickers } = useAPI()
   const settings = useChartSettings()
 
   // State to track custom watchlists and trigger re-renders
@@ -257,7 +256,7 @@ export function BasicWatchList({
       end_date: settings.endDate,
       limit: settings.limit,
     }).catch(() => {}) // Ignore errors
-  }, [settings])
+  }, [settings, getTickers])
 
   // Keyboard navigation
   React.useEffect(() => {

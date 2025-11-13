@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { buildAIContext } from "@/lib/ai-context-builder";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
-import { getTickers, getHealth } from "@/lib/api-client";
+import { useAPI } from "@/contexts/APIContext";
 import { loadTranslations } from "@/translations";
 import { AI_SELECTED_TICKERS_STORAGE_KEY } from "@/lib/constants";
 
@@ -18,6 +18,7 @@ const MAX_TICKERS = 20;
 function AIContextPage() {
 	const { t, language } = useTranslation();
 	const translations = loadTranslations(language);
+	const { getTickers, getHealth } = useAPI();
 	const [copied, setCopied] = React.useState(false);
 	const [copiedTemplate, setCopiedTemplate] = React.useState<number | null>(null);
 	const [selectedTickers, setSelectedTickers] = React.useState<string[]>(() => {
@@ -64,7 +65,7 @@ function AIContextPage() {
 		};
 
 		fetchHealthStatus();
-	}, []);
+	}, [getHealth]);
 
 	const aiContext = React.useMemo(() => {
 		return buildAIContext(language, marketData || undefined, interval, isTradingHours);
@@ -132,7 +133,7 @@ function AIContextPage() {
 		}
 
 		fetchData();
-	}, [selectedTickers, limit, interval]);
+	}, [selectedTickers, limit, interval, getTickers]);
 
 	const canAddMoreTickers = selectedTickers.length < MAX_TICKERS;
 

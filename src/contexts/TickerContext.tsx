@@ -1,7 +1,8 @@
 import React from 'react'
-import { getTickers, type StockData } from '@/lib/api-client'
+import { type StockData } from '@/lib/api-client'
 import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
+import { useAPI } from './APIContext'
 import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT } from '@/lib/constants'
 
 interface TickerContextValue {
@@ -82,6 +83,7 @@ export function TickerProvider({
     // Get global settings for API calls (only if fetching is enabled)
   const settings = enableFetching ? useChartSettings() : null
   const { lastRefresh } = useRefresh()
+  const { getTickers } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
