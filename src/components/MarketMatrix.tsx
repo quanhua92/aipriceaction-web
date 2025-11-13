@@ -177,37 +177,28 @@ export function MarketMatrix() {
             ? format(new Date(), 'yyyy-MM-dd')
             : matrixData?.dates[matrixData.dates.length - 1] || format(new Date(), 'yyyy-MM-dd')
 
-        // Fetch VNINDEX first to get trading day calendar (source of truth)
-        // Use TRADING_DAYS_PER_YEAR (~1 year) for better caching across components, then slice to page size
-        const vnindexResponse = await getTickers('MarketMatrix.calendar', {
-          symbol: ['VNINDEX'],
+        // Fetch ticker data including VNINDEX (for trading day calendar)
+        // Optimization: When "ALL" watchlist is selected, omit symbol parameter
+        // to avoid super long URLs with hundreds of ticker symbols (symbol=VCB&symbol=FPT&...)
+        // The API will return all tickers (including VNINDEX) when symbol is undefined/omitted
+        // For specific watchlists, always include VNINDEX to get trading day calendar
+        const response = await getTickers('MarketMatrix.data', {
+          symbol: selectedWatchlist === ALL_WATCHLIST_NAME ? undefined : ['VNINDEX', ...selectedTickers],
           interval: '1D',
           end_date: endDateForAPI,
-          limit: TRADING_DAYS_PER_YEAR,
+          limit: MATRIX_DAYS_PER_PAGE,
         })
 
-        // Extract dates from VNINDEX only (always has data when market is open)
-        const vnindexData = vnindexResponse['VNINDEX'] || []
+        // Extract dates from VNINDEX (always has data when market is open, serves as trading day calendar)
+        const vnindexData = response['VNINDEX'] || []
         const dates = vnindexData
           .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
           .sort((a, b) => b.localeCompare(a)) // Newest first
-          .slice(0, MATRIX_DAYS_PER_PAGE) // Use only the page size needed
 
         if (dates.length === 0) {
           setError('No market data available')
           return
         }
-
-        // Fetch ticker data with same end_date and limit
-        // Optimization: When "ALL" watchlist is selected, omit symbol parameter
-        // to avoid super long URLs with hundreds of ticker symbols (symbol=VCB&symbol=FPT&...)
-        // The API will return all tickers when symbol is undefined/omitted
-        const response = await getTickers('MarketMatrix.data', {
-          symbol: selectedWatchlist === ALL_WATCHLIST_NAME ? undefined : selectedTickers,
-          interval: '1D',
-          end_date: endDateForAPI,
-          limit: MATRIX_DAYS_PER_PAGE,
-        })
 
         // Group tickers by sector
         const tickersBySector: { [sector: string]: string[] } = {}
