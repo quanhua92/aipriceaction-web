@@ -67,7 +67,6 @@ export function MatrixChartDialog({
           <div className="mt-4">
             <TradingViewChart
               ticker={ticker}
-              showControls={false}
               height={600}
             />
           </div>
