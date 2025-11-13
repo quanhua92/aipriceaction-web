@@ -1,7 +1,33 @@
 // AI Context Builder for AIPriceAction
 // Builds the complete AI context including system prompt, MA Score explanation, and disclaimer
 
-export function buildAIContext(language: "en" | "vn" = "en"): string {
+interface StockData {
+	symbol: string;
+	time: string;
+	open: number;
+	high: number;
+	low: number;
+	close: number;
+	volume: number;
+	ma10?: number | null;
+	ma20?: number | null;
+	ma50?: number | null;
+	ma100?: number | null;
+	ma200?: number | null;
+	ma10_score?: number | null;
+	ma20_score?: number | null;
+	ma50_score?: number | null;
+	ma100_score?: number | null;
+	ma200_score?: number | null;
+	close_changed?: number | null;
+	volume_changed?: number | null;
+	total_money_changed?: number | null;
+}
+
+export function buildAIContext(
+	language: "en" | "vn" = "en",
+	marketData?: Record<string, StockData[]>
+): string {
 	const sections: string[] = [];
 
 	// 1. System Prompt
@@ -193,6 +219,97 @@ Các Điểm Chính:
 - AIPriceAction và các cộng tác viên không chịu trách nhiệm cho bất kỳ tổn thất đầu tư nào
 - Điều kiện thị trường có thể thay đổi nhanh chóng và không lường trước
 - Luôn chỉ đầu tư số tiền bạn có thể chấp nhận mất`);
+	}
+
+	// 4. Market Data (if provided)
+	if (marketData && Object.keys(marketData).length > 0) {
+		const marketDataLines: string[] = [];
+
+		if (language === "en") {
+			marketDataLines.push("=== Market Data (Last 40 Trading Days) ===");
+			marketDataLines.push("");
+			marketDataLines.push("Historical OHLCV data with moving averages and momentum indicators for selected tickers. Each line represents one trading day with explicit key-value pairs.");
+			marketDataLines.push("");
+		} else {
+			marketDataLines.push("=== Dữ Liệu Thị Trường (40 Phiên Gần Nhất) ===");
+			marketDataLines.push("");
+			marketDataLines.push("Dữ liệu OHLCV lịch sử với đường trung bình động và chỉ báo động lực cho các mã được chọn. Mỗi dòng đại diện cho một phiên giao dịch với các cặp key-value rõ ràng.");
+			marketDataLines.push("");
+		}
+
+		// Sort tickers alphabetically
+		const sortedTickers = Object.keys(marketData).sort();
+
+		sortedTickers.forEach(ticker => {
+			const data = marketData[ticker];
+			if (!data || data.length === 0) return;
+
+			// Sort data chronologically (oldest first)
+			const sortedData = [...data].sort((a, b) => a.time.localeCompare(b.time));
+
+			marketDataLines.push(`## ${ticker} (${sortedData.length} records)`);
+
+			sortedData.forEach(record => {
+				const fields: string[] = [];
+
+				// Always include basic fields
+				fields.push(`ticker=${record.symbol || ticker}`);
+				fields.push(`time=${record.time}`);
+				fields.push(`open=${record.open.toFixed(2)}`);
+				fields.push(`high=${record.high.toFixed(2)}`);
+				fields.push(`low=${record.low.toFixed(2)}`);
+				fields.push(`close=${record.close.toFixed(2)}`);
+				fields.push(`volume=${record.volume}`);
+
+				// Add MA values if available
+				if (record.ma10 !== null && record.ma10 !== undefined) {
+					fields.push(`ma10=${record.ma10.toFixed(2)}`);
+				}
+				if (record.ma20 !== null && record.ma20 !== undefined) {
+					fields.push(`ma20=${record.ma20.toFixed(2)}`);
+				}
+				if (record.ma50 !== null && record.ma50 !== undefined) {
+					fields.push(`ma50=${record.ma50.toFixed(2)}`);
+				}
+				if (record.ma100 !== null && record.ma100 !== undefined) {
+					fields.push(`ma100=${record.ma100.toFixed(2)}`);
+				}
+				if (record.ma200 !== null && record.ma200 !== undefined) {
+					fields.push(`ma200=${record.ma200.toFixed(2)}`);
+				}
+
+				// Add MA scores if available
+				if (record.ma10_score !== null && record.ma10_score !== undefined) {
+					fields.push(`ma10_score=${record.ma10_score.toFixed(2)}`);
+				}
+				if (record.ma20_score !== null && record.ma20_score !== undefined) {
+					fields.push(`ma20_score=${record.ma20_score.toFixed(2)}`);
+				}
+				if (record.ma50_score !== null && record.ma50_score !== undefined) {
+					fields.push(`ma50_score=${record.ma50_score.toFixed(2)}`);
+				}
+				if (record.ma100_score !== null && record.ma100_score !== undefined) {
+					fields.push(`ma100_score=${record.ma100_score.toFixed(2)}`);
+				}
+				if (record.ma200_score !== null && record.ma200_score !== undefined) {
+					fields.push(`ma200_score=${record.ma200_score.toFixed(2)}`);
+				}
+
+				// Add change metrics if available
+				if (record.close_changed !== null && record.close_changed !== undefined) {
+					fields.push(`close_changed=${record.close_changed.toFixed(2)}`);
+				}
+				if (record.volume_changed !== null && record.volume_changed !== undefined) {
+					fields.push(`volume_changed=${record.volume_changed.toFixed(2)}`);
+				}
+
+				marketDataLines.push(fields.join(" "));
+			});
+
+			marketDataLines.push(""); // Empty line between tickers
+		});
+
+		sections.push(marketDataLines.join("\n"));
 	}
 
 	// Join all sections with double newlines
