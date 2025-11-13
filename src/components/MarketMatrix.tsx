@@ -90,7 +90,6 @@ export function MarketMatrix() {
 
   // Dialog state
   const [dialogTicker, setDialogTicker] = React.useState<string | null>(null)
-  const [dialogStartDate, setDialogStartDate] = React.useState<string | null>(null)
   const [dialogEndDate, setDialogEndDate] = React.useState<string | null>(null)
 
   // Load custom watchlists
@@ -386,14 +385,12 @@ export function MarketMatrix() {
     if (!matrixData) return
 
     setDialogTicker(ticker)
-    // Use actual date range from data (oldest to newest)
-    setDialogStartDate(matrixData.dates[matrixData.dates.length - 1])
+    // Use latest date from matrix as end date; chart will fetch 128 days backward
     setDialogEndDate(matrixData.dates[0])
   }
 
   const handleCloseDialog = () => {
     setDialogTicker(null)
-    setDialogStartDate(null)
     setDialogEndDate(null)
   }
 
@@ -725,7 +722,6 @@ export function MarketMatrix() {
       {/* Chart Dialog */}
       <MatrixChartDialog
         ticker={dialogTicker}
-        startDate={dialogStartDate}
         endDate={dialogEndDate}
         onClose={handleCloseDialog}
       />

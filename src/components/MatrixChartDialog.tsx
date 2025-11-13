@@ -10,48 +10,51 @@ import { useChartSettings } from '@/contexts/ChartSettingsContext'
 
 interface MatrixChartDialogProps {
   ticker: string | null
-  startDate: string | null
   endDate: string | null
   onClose: () => void
+  limit?: number
 }
 
 export function MatrixChartDialog({
   ticker,
-  startDate,
   endDate,
   onClose,
+  limit = 128,
 }: MatrixChartDialogProps) {
   const isOpen = ticker !== null
   const settings = useChartSettings()
 
   // Use refs to avoid infinite loops in useEffect
-  const previousDatesRef = useRef<{ start?: string; end?: string } | undefined>(undefined)
-  const datesSetRef = useRef(false)
+  const previousSettingsRef = useRef<{ start?: string; end?: string; limit: number } | undefined>(undefined)
+  const settingsSetRef = useRef(false)
 
-  // Manage global date state when dialog opens/closes
+  // Manage global chart settings when dialog opens/closes
   useEffect(() => {
-    if (isOpen && startDate && endDate && !datesSetRef.current) {
-      // Save current global dates (only once when dialog opens)
-      previousDatesRef.current = {
+    if (isOpen && endDate && !settingsSetRef.current) {
+      // Save current global settings (only once when dialog opens)
+      previousSettingsRef.current = {
         start: settings.startDate,
         end: settings.endDate,
+        limit: settings.limit,
       }
 
-      // Set dialog-specific dates
-      settings.setStartDate(startDate)
+      // Set dialog-specific settings: use endDate + limit to fetch historical data
+      settings.setStartDate(undefined) // Let API calculate start based on limit
       settings.setEndDate(endDate)
-      datesSetRef.current = true
+      settings.setLimit(limit)
+      settingsSetRef.current = true
     }
 
-    if (!isOpen && datesSetRef.current) {
-      // Restore previous dates when dialog closes
-      if (previousDatesRef.current) {
-        settings.setStartDate(previousDatesRef.current.start)
-        settings.setEndDate(previousDatesRef.current.end)
+    if (!isOpen && settingsSetRef.current) {
+      // Restore previous settings when dialog closes
+      if (previousSettingsRef.current) {
+        settings.setStartDate(previousSettingsRef.current.start)
+        settings.setEndDate(previousSettingsRef.current.end)
+        settings.setLimit(previousSettingsRef.current.limit)
       }
-      datesSetRef.current = false
+      settingsSetRef.current = false
     }
-  }, [isOpen, startDate, endDate])
+  }, [isOpen, endDate, limit])
   // NOTE: settings NOT in dependencies to avoid infinite loop
 
   return (
@@ -59,11 +62,11 @@ export function MatrixChartDialog({
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {ticker} - {startDate} to {endDate}
+            {ticker} - Last {limit} days ending {endDate}
           </DialogTitle>
         </DialogHeader>
 
-        {ticker && startDate && endDate && (
+        {ticker && endDate && (
           <div className="mt-4">
             <TradingViewChart
               ticker={ticker}
