@@ -192,8 +192,11 @@ export function MarketMatrix() {
         }
 
         // Fetch ticker data with same end_date and limit
+        // Optimization: When "ALL" watchlist is selected, omit symbol parameter
+        // to avoid super long URLs with hundreds of ticker symbols (symbol=VCB&symbol=FPT&...)
+        // The API will return all tickers when symbol is undefined/omitted
         const response = await getTickers({
-          symbol: selectedTickers,
+          symbol: selectedWatchlist === ALL_WATCHLIST_NAME ? undefined : selectedTickers,
           interval: '1D',
           end_date: endDateForAPI,
           limit: MATRIX_DAYS_PER_PAGE,
