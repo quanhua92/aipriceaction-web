@@ -1,6 +1,8 @@
 // AI Context Builder for AIPriceAction
 // Builds the complete AI context including system prompt, MA Score explanation, and disclaimer
 
+import { parseUTCISOString, formatToVietnamTime, formatToVietnamDate } from './format';
+
 interface StockData {
 	symbol: string;
 	time: string;
@@ -254,13 +256,17 @@ Các Điểm Chính:
 			sortedData.forEach(record => {
 				const fields: string[] = [];
 
-				// Format time based on interval
-				let formattedTime = record.time;
+				// Parse UTC ISO string and format to Vietnam time
+				const date = parseUTCISOString(record.time);
+				let formattedTime: string;
+
 				if (interval && ['1D', '2W', '1M'].includes(interval)) {
 					// For day, week, month intervals - only show date (YYYY-MM-DD)
-					formattedTime = record.time.split(' ')[0];
+					formattedTime = formatToVietnamDate(date);
+				} else {
+					// For minute/hour intervals (5m, 15m, 1H) - show full datetime
+					formattedTime = formatToVietnamTime(date);
 				}
-				// For minute/hour intervals (5m, 15m, 1H) - keep full datetime
 
 				// Always include basic fields
 				fields.push(`ticker=${record.symbol || ticker}`);

@@ -1,24 +1,76 @@
 /**
- * Safari-safe date parsing for "YYYY-MM-DD HH:MM:SS" format
- * Safari requires ISO 8601 format with 'T' separator instead of space
- * Chrome is lenient and accepts both formats
+ * Parse UTC ISO string to Date object
+ * Safari-compatible: Handles both standard ISO format and space-separated format
  *
- * Use this function for ALL date parsing in the application to ensure
- * cross-browser compatibility, especially for Safari/iOS Safari.
- *
- * @param dateString - Date string in "YYYY-MM-DD HH:MM:SS" or "YYYY-MM-DD" format
- * @returns Date object (returns Invalid Date if parsing fails)
- * @example parseSafariSafeDate("2025-11-09 21:00:00") => Valid Date object on all browsers
- * @example parseSafariSafeDate("2025-11-09") => Valid Date object on all browsers
+ * @param utcISOString - UTC timestamp in ISO 8601 format (e.g., "2025-11-09T14:00:00Z")
+ * @returns Date object representing the UTC time
+ * @example parseUTCISOString("2025-11-09T14:00:00Z") => Date object at 2pm UTC
+ * @example parseUTCISOString("2025-11-09 14:00:00") => Date object at 2pm UTC (auto-adds Z)
  */
-export function parseSafariSafeDate(dateString: string): Date {
-  if (!dateString || typeof dateString !== 'string') {
+export function parseUTCISOString(utcISOString: string): Date {
+  if (!utcISOString || typeof utcISOString !== 'string') {
     return new Date('Invalid Date')
   }
-  // Replace space with 'T' for ISO 8601 compliance (Safari requirement)
-  // "2025-11-09 21:00:00" → "2025-11-09T21:00:00"
-  const isoString = dateString.replace(' ', 'T')
+
+  // Handle both formats: "2025-11-09T14:00:00Z" and "2025-11-09 14:00:00"
+  let isoString = utcISOString.replace(' ', 'T') // Safari compatibility
+
+  // Ensure it has UTC marker
+  if (!isoString.endsWith('Z')) {
+    isoString += 'Z'
+  }
+
   return new Date(isoString)
+}
+
+/**
+ * Format a Date object to Vietnam time string (UTC+7)
+ * Always displays time in Vietnam timezone regardless of user's local timezone
+ *
+ * @param date - Date object (typically parsed from UTC)
+ * @returns Vietnam time string in "YYYY-MM-DD HH:MM:SS" format
+ * @example formatToVietnamTime(new Date("2025-11-09T14:00:00Z")) => "2025-11-09 21:00:00"
+ */
+export function formatToVietnamTime(date: Date): string {
+  if (!date || isNaN(date.getTime())) {
+    return ''
+  }
+
+  // Add 7 hours for Vietnam timezone (UTC+7)
+  const vietnamTime = new Date(date.getTime() + (7 * 60 * 60 * 1000))
+
+  // Format using UTC methods (the time is already shifted by +7)
+  const year = vietnamTime.getUTCFullYear()
+  const month = String(vietnamTime.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(vietnamTime.getUTCDate()).padStart(2, '0')
+  const hours = String(vietnamTime.getUTCHours()).padStart(2, '0')
+  const minutes = String(vietnamTime.getUTCMinutes()).padStart(2, '0')
+  const seconds = String(vietnamTime.getUTCSeconds()).padStart(2, '0')
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
+
+/**
+ * Format a Date object to Vietnam date string (date only, no time)
+ *
+ * @param date - Date object (typically parsed from UTC)
+ * @returns Vietnam date string in "YYYY-MM-DD" format
+ * @example formatToVietnamDate(new Date("2025-11-09T14:00:00Z")) => "2025-11-09"
+ */
+export function formatToVietnamDate(date: Date): string {
+  if (!date || isNaN(date.getTime())) {
+    return ''
+  }
+
+  // Add 7 hours for Vietnam timezone (UTC+7)
+  const vietnamTime = new Date(date.getTime() + (7 * 60 * 60 * 1000))
+
+  // Format using UTC methods (the time is already shifted by +7)
+  const year = vietnamTime.getUTCFullYear()
+  const month = String(vietnamTime.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(vietnamTime.getUTCDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
 }
 
 /**
@@ -78,24 +130,3 @@ export function formatVolume(volume: number | null | undefined): string {
   return safeVolume.toFixed(0)
 }
 
-/**
- * Convert UTC timestamp string to Vietnam time (UTC+7)
- * The API returns timestamps in UTC format (e.g., "2025-11-09 14:00:00")
- * This function parses them as UTC and converts to Vietnam timezone by adding 7 hours
- * Safari-compatible: Uses ISO 8601 format with 'T' separator
- * @param utcTimeString - UTC time string in format "YYYY-MM-DD HH:MM:SS" or "YYYY-MM-DD"
- * @returns Unix timestamp in seconds adjusted for Vietnam timezone (UTC+7)
- * @example parseUTCToVietnamTime("2025-11-09 14:00:00") => Unix timestamp for 9pm Vietnam time
- */
-export function parseUTCToVietnamTime(utcTimeString: string): number {
-  // Safari-safe: Convert to ISO 8601 format if needed
-  // Replace space with 'T' for legacy space-separated format
-  // Already ISO format will pass through unchanged
-  const isoString = utcTimeString.replace(' ', 'T') + 'Z'
-  const utcDate = new Date(isoString)
-
-  // Add 7 hours for Vietnam (UTC+7)
-  const vietnamTime = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000))
-  // Return Unix timestamp in seconds
-  return Math.floor(vietnamTime.getTime() / 1000)
-}

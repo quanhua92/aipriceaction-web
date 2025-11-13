@@ -4,6 +4,7 @@ import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { getTickers, type StockData } from '@/lib/api-client'
 import { format, parseISO } from 'date-fns'
+import { parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import {
   ALL_WATCHLIST_NAME,
   MARKET_INDICES,
@@ -183,7 +184,7 @@ export function MarketMatrix() {
         // Extract dates from VNINDEX only (always has data when market is open)
         const vnindexData = vnindexResponse['VNINDEX'] || []
         const dates = vnindexData
-          .map((point) => point.time.split(' ')[0])
+          .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
           .sort((a, b) => b.localeCompare(a)) // Newest first
 
         if (dates.length === 0) {
@@ -248,7 +249,7 @@ export function MarketMatrix() {
             const latestData = tickerData[tickerData.length - 1]
 
             const cells: MatrixCell[] = dates.map((date) => {
-              const point = tickerData.find((d) => d.time.split(' ')[0] === date)
+              const point = tickerData.find((d) => formatToVietnamDate(parseUTCISOString(d.time)) === date)
 
               let value = 0
               if (point) {

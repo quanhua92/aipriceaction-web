@@ -1,6 +1,6 @@
 import type { StockData } from '@/lib/api-client'
 import { TrendingUp, TrendingDown, ChevronDown, Star } from 'lucide-react'
-import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
@@ -113,7 +113,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                   <ChevronDown className="ml-1 h-4 w-4 opacity-60" />
                 </div>
               </SelectTickerDialog>
-              <p className="text-xs text-muted-foreground">{data.time.split(' ')[0]}</p>
+              <p className="text-xs text-muted-foreground">{formatToVietnamDate(parseUTCISOString(data.time))}</p>
             </div>
             <div className="text-right">
               <div className="flex items-center justify-end gap-2">

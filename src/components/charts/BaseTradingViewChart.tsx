@@ -15,7 +15,7 @@ import {
 	LineSeries,
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { formatPrice, formatPercent, formatVolume, parseSafariSafeDate } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -113,8 +113,8 @@ export function BaseTradingViewChart({
 		const ma200: LineData[] = []
 
 		data.forEach((point, index) => {
-			// Convert ISO date string to Unix timestamp using Safari-safe parser
-			const dateTime = parseSafariSafeDate(point.time)
+			// Parse UTC ISO string to Date object
+			const dateTime = parseUTCISOString(point.time)
 
 			// Skip invalid dates
 			if (isNaN(dateTime.getTime())) {
@@ -398,21 +398,21 @@ export function BaseTradingViewChart({
 				return
 			}
 
-			// Format date with time (UTC to match chart timezone)
+			// Format date with time in Vietnam timezone
 			let dateStr: string
 			try {
 				const date = new Date((param.time as number) * 1000)
 				if (isNaN(date.getTime())) {
 					dateStr = String(param.time)
 				} else {
-					dateStr = date.toLocaleString('en-US', {
-						year: 'numeric',
-						month: 'short',
-						day: 'numeric',
-						hour: '2-digit',
-						minute: '2-digit',
-						timeZone: 'UTC'
-					})
+					// Format to Vietnam time string, then display as readable format
+					const vietnamTimeStr = formatToVietnamTime(date)
+					// Parse and format for display: "2025-11-09 21:00:00" -> "Nov 9, 2025, 09:00 PM"
+					const [datePart, timePart] = vietnamTimeStr.split(' ')
+					const [year, month, day] = datePart.split('-')
+					const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+					const monthName = monthNames[parseInt(month) - 1]
+					dateStr = `${monthName} ${parseInt(day)}, ${year}, ${timePart}`
 				}
 			} catch (error) {
 				console.error('Invalid date in tooltip:', param.time, error)
@@ -678,9 +678,15 @@ export function BaseTradingViewChart({
 							{(() => {
 								try {
 									if (!latestData.time || typeof latestData.time !== 'string') return '--'
-									const date = parseSafariSafeDate(latestData.time)
+									const date = parseUTCISOString(latestData.time)
 									if (isNaN(date.getTime())) return '--'
-									return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+									// Convert to Vietnam time and format
+									const vietnamDate = new Date(date.getTime() + (7 * 60 * 60 * 1000))
+									return vietnamDate.toLocaleDateString('en-US', {
+										month: 'short',
+										day: 'numeric',
+										timeZone: 'UTC' // Use UTC because we already shifted by +7
+									})
 								} catch {
 									return '--'
 								}
