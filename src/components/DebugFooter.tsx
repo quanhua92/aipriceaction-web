@@ -9,6 +9,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useAPI } from '@/contexts/APIContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useRefresh } from '@/contexts/RefreshContext'
@@ -113,6 +114,7 @@ function DebugFooterContent() {
 	const { logs, clearLogs } = useLogs()
 	const [clearClickCount, setClearClickCount] = React.useState(0)
 	const [copied, setCopied] = React.useState(false)
+	const [logSearch, setLogSearch] = React.useState('')
 
 	// Load collapsed state from localStorage
 	const [isOpen, setIsOpen] = React.useState(() => {
@@ -214,6 +216,20 @@ function DebugFooterContent() {
 		}
 	}, [clearClickCount, clearLogs])
 
+	// Filter logs based on search query
+	const filteredLogs = React.useMemo(() => {
+		if (!logSearch.trim()) return logs
+
+		const searchLower = logSearch.toLowerCase()
+		return logs.filter((log) => {
+			const message = log.message.toLowerCase()
+			const level = log.level.toLowerCase()
+			const dataStr = log.data !== undefined ? JSON.stringify(log.data).toLowerCase() : ''
+
+			return message.includes(searchLower) || level.includes(searchLower) || dataStr.includes(searchLower)
+		})
+	}, [logs, logSearch])
+
 	return (
 		<Collapsible
 			open={isOpen}
@@ -300,40 +316,49 @@ function DebugFooterContent() {
 						<TabsContent value="logs" className="mt-0">
 							{logs.length > 0 ? (
 								<div className="space-y-2">
-									<div className="flex justify-between items-center mb-2">
-										<span className="text-xs text-muted-foreground">
-											{logs.length} log{logs.length !== 1 ? 's' : ''} (max 500)
-										</span>
-										<div className="flex gap-2">
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={handleCopyLogs}
-												className="h-6 px-2 text-xs"
-											>
-												{copied ? (
-													<>
-														<Check className="h-3 w-3 mr-1" />
-														Copied
-													</>
-												) : (
-													<>
-														<Copy className="h-3 w-3 mr-1" />
-														Copy Logs
-													</>
-												)}
-											</Button>
-											<Button
-												variant={clearClickCount > 0 ? "destructive" : "outline"}
-												size="sm"
-												onClick={handleClearLogs}
-												className="h-6 px-2 text-xs"
-											>
-												{clearClickCount > 0 ? 'Click Again to Clear' : 'Clear Logs'}
-											</Button>
+									<div className="flex flex-col gap-2 mb-2">
+										<div className="flex justify-between items-center">
+											<span className="text-xs text-muted-foreground">
+												{filteredLogs.length} / {logs.length} log{logs.length !== 1 ? 's' : ''} (max 500)
+											</span>
+											<div className="flex gap-2">
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={handleCopyLogs}
+													className="h-6 px-2 text-xs"
+												>
+													{copied ? (
+														<>
+															<Check className="h-3 w-3 mr-1" />
+															Copied
+														</>
+													) : (
+														<>
+															<Copy className="h-3 w-3 mr-1" />
+															Copy Logs
+														</>
+													)}
+												</Button>
+												<Button
+													variant={clearClickCount > 0 ? "destructive" : "outline"}
+													size="sm"
+													onClick={handleClearLogs}
+													className="h-6 px-2 text-xs"
+												>
+													{clearClickCount > 0 ? 'Click Again to Clear' : 'Clear Logs'}
+												</Button>
+											</div>
 										</div>
+										<Input
+											type="text"
+											placeholder="Search logs..."
+											value={logSearch}
+											onChange={(e) => setLogSearch(e.target.value)}
+											className="h-7 text-xs"
+										/>
 									</div>
-									{logs.map((log, index) => (
+									{filteredLogs.map((log, index) => (
 										<div
 											key={index}
 											className="flex items-start gap-2 p-2 bg-muted/50 rounded text-xs"
