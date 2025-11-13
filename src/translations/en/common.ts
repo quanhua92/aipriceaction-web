@@ -43,7 +43,7 @@ export default {
   },
   aiContext: {
     title: 'AI Context Preview',
-    description: 'Preview the AIPriceAction system prompt and MA Score explanation that can be used with AI assistants',
+    description: 'Build comprehensive AI contexts by selecting multiple stocks, configuring data intervals and limits, then copying pre-formatted analysis prompts with live market data to your AI assistant',
     cardTitle: 'Ask AI Context',
     cardDescription: 'This context includes the AIPriceAction Investment Advisor system prompt, MA Score explanation, and investment disclaimer. Copy this to use with your AI assistant.',
     copyButton: 'Copy Context',
