@@ -1,6 +1,7 @@
 import * as React from 'react'
-import { getTickerGroups, getTickers, type TickerGroups, type StockData } from '@/lib/api-client'
+import { getTickerGroups, getTickersWithLogging, getHealth as getHealthApi, type TickerGroups, type StockData, type TickersQueryParams, type HealthResponse } from '@/lib/api-client'
 import { PRIORITY_GROUPS } from '@/lib/constants'
+import { useLogs } from './LogsContext'
 
 const sortTickerGroups = (groups: TickerGroups): TickerGroups => {
   const sortedEntries = Object.entries(groups)
@@ -32,11 +33,14 @@ interface APIContextValue {
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
+  getTickers: (params?: TickersQueryParams) => Promise<Record<string, StockData[]>>
+  getHealth: () => Promise<HealthResponse>
 }
 
 const APIContext = React.createContext<APIContextValue | undefined>(undefined)
 
 export function APIProvider({ children }: { children: React.ReactNode }) {
+  const { info, error: logError } = useLogs()
   const [tickerGroups, setTickerGroups] = React.useState<TickerGroups | null>(null)
   const [tickers, setTickers] = React.useState<Ticker[]>([])
   const [allTickersData, setAllTickersData] = React.useState<Record<string, StockData[]>>({})
@@ -46,13 +50,17 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
   const fetchTickerGroups = React.useCallback(async () => {
     setLoading(true)
     setError(null)
+    const startTime = Date.now()
 
     try {
       // Fetch both ticker groups and all tickers data in parallel
       const [groups, tickersData] = await Promise.all([
         getTickerGroups(),
-        getTickers({})
+        getTickersWithLogging({}, { info, warn: info, error: logError })
       ])
+
+      const duration = Date.now() - startTime
+      info(`[API] Initial data fetch completed in ${duration}ms`)
 
       const sortedGroups = sortTickerGroups(groups)
       setTickerGroups(sortedGroups)
@@ -76,25 +84,63 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       setTickers(uniqueTickers)
     } catch (err) {
       console.error('Failed to fetch API data:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load market data'
+      logError(`[API] Initial data fetch failed: ${errorMessage}`)
       setError('Failed to load market data')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [info, logError])
 
   // Fetch on mount
   React.useEffect(() => {
     fetchTickerGroups()
   }, [fetchTickerGroups])
 
-  const value: APIContextValue = {
-    tickerGroups,
-    tickers,
-    allTickersData,
-    loading,
-    error,
-    refetch: fetchTickerGroups,
-  }
+  // Provide logged API methods
+  const getTickers = React.useCallback(
+    async (params?: TickersQueryParams) => {
+      return getTickersWithLogging(params ?? {}, { info, warn: info, error: logError })
+    },
+    [info, logError]
+  )
+
+  const getHealth = React.useCallback(async () => {
+    try {
+      const startTime = Date.now()
+      const health = await getHealthApi()
+      const duration = Date.now() - startTime
+      info(`[API] getHealth: ${duration}ms | Status: ${health.status}`)
+      return health
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      logError(`[API] getHealth FAILED: ${errorMessage}`)
+      throw err
+    }
+  }, [info, logError])
+
+  const value: APIContextValue = React.useMemo(
+    () => ({
+      tickerGroups,
+      tickers,
+      allTickersData,
+      loading,
+      error,
+      refetch: fetchTickerGroups,
+      getTickers,
+      getHealth,
+    }),
+    [
+      tickerGroups,
+      tickers,
+      allTickersData,
+      loading,
+      error,
+      fetchTickerGroups,
+      getTickers,
+      getHealth,
+    ]
+  )
 
   return <APIContext.Provider value={value}>{children}</APIContext.Provider>
 }
