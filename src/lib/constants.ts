@@ -53,6 +53,20 @@ export const ALL_WATCHLIST_NAME = 'ALL'
 export const MATRIX_DAYS_PER_PAGE = 40
 
 /**
+ * Maximum number of retry attempts for failed API calls
+ */
+export const API_RETRY_ATTEMPTS = 3
+
+/**
+ * Random delay range (in milliseconds) before API calls to prevent simultaneous requests
+ * Will use random value between min and max
+ */
+export const API_CALL_DELAY_MS = {
+  min: 0,
+  max: 500
+} as const
+
+/**
  * Sector abbreviations for compact display in Market Matrix
  * Based on real API sectors from https://api.aipriceaction.com/tickers/group
  */
