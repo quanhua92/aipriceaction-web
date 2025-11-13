@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useLogs } from './LogsContext'
 
 interface RefreshContextValue {
   isRefreshEnabled: boolean
@@ -10,6 +11,7 @@ interface RefreshContextValue {
 const RefreshContext = React.createContext<RefreshContextValue | undefined>(undefined)
 
 export function RefreshProvider({ children }: { children: React.ReactNode }) {
+  const { info } = useLogs()
   const [isRefreshEnabled, setIsRefreshEnabled] = React.useState(false)
   const [lastRefresh, setLastRefresh] = React.useState(Date.now())
   const intervalRef = React.useRef<NodeJS.Timeout | null>(null)
@@ -23,6 +25,11 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
   const toggleRefresh = React.useCallback(() => {
     setIsRefreshEnabled((prev) => !prev)
   }, [])
+
+  // Log refresh state changes
+  React.useEffect(() => {
+    info(`Refresh ${isRefreshEnabled ? 'enabled' : 'disabled'}`)
+  }, [isRefreshEnabled, info])
 
   // Setup/cleanup 30-second interval when refresh is enabled
   React.useEffect(() => {

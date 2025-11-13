@@ -13,6 +13,7 @@ import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
 import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
 import { RefreshProvider } from '../contexts/RefreshContext'
 import { GoogleAnalyticsProvider } from '../contexts/GoogleAnalyticsProvider'
+import { LogsProvider } from '../contexts/LogsContext'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -101,31 +102,33 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <GoogleAnalyticsProvider measurementId={measurementId}>
-          <SiteSettingsProvider>
-            <RefreshProvider>
-              <APIProvider>
-                <ChartSettingsProvider>
-                  <Header />
-                  {children}
-                  <DebugFooter />
-                {import.meta.env.DEV && (
-                  <TanStackDevtools
-                    config={{
-                      position: 'bottom-right',
-                    }}
-                    plugins={[
-                      {
-                        name: 'Tanstack Router',
-                        render: <TanStackRouterDevtoolsPanel />,
-                      },
-                      TanStackQueryDevtools,
-                    ]}
-                  />
-                )}
-                </ChartSettingsProvider>
-              </APIProvider>
-            </RefreshProvider>
-          </SiteSettingsProvider>
+          <LogsProvider>
+            <SiteSettingsProvider>
+              <RefreshProvider>
+                <APIProvider>
+                  <ChartSettingsProvider>
+                    <Header />
+                    {children}
+                    <DebugFooter />
+                  {import.meta.env.DEV && (
+                    <TanStackDevtools
+                      config={{
+                        position: 'bottom-right',
+                      }}
+                      plugins={[
+                        {
+                          name: 'Tanstack Router',
+                          render: <TanStackRouterDevtoolsPanel />,
+                        },
+                        TanStackQueryDevtools,
+                      ]}
+                    />
+                  )}
+                  </ChartSettingsProvider>
+                </APIProvider>
+              </RefreshProvider>
+            </SiteSettingsProvider>
+          </LogsProvider>
         </GoogleAnalyticsProvider>
         <Scripts />
       </body>

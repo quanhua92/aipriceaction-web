@@ -8,9 +8,11 @@ import {
 } from '@/components/ui/collapsible'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { useAPI } from '@/contexts/APIContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useRefresh } from '@/contexts/RefreshContext'
+import { useLogs } from '@/contexts/LogsContext'
 import {
 	ALL_WATCHLIST_NAME,
 	CUSTOM_WATCHLISTS_STORAGE_KEY,
@@ -87,6 +89,7 @@ export function DebugFooter() {
 	const apiContext = useAPI()
 	const chartSettings = useChartSettings()
 	const refresh = useRefresh()
+	const { logs, clearLogs } = useLogs()
 
 	// Load collapsed state from localStorage
 	const [isOpen, setIsOpen] = React.useState(() => {
@@ -200,6 +203,9 @@ export function DebugFooter() {
 						<TabsTrigger value="preferences" className="text-xs">
 							Preferences
 						</TabsTrigger>
+						<TabsTrigger value="logs" className="text-xs">
+							Logs
+						</TabsTrigger>
 						<TabsTrigger value="performance" className="text-xs">
 							Performance
 						</TabsTrigger>
@@ -233,6 +239,62 @@ export function DebugFooter() {
 								<div className="text-sm text-muted-foreground">
 									No preferences data found
 								</div>
+							)}
+						</TabsContent>
+
+						<TabsContent value="logs" className="mt-0">
+							{logs.length > 0 ? (
+								<div className="space-y-2">
+									<div className="flex justify-between items-center mb-2">
+										<span className="text-xs text-muted-foreground">
+											{logs.length} log{logs.length !== 1 ? 's' : ''} (max 500)
+										</span>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={clearLogs}
+											className="h-6 px-2 text-xs"
+										>
+											Clear Logs
+										</Button>
+									</div>
+									{logs.map((log, index) => (
+										<div
+											key={index}
+											className="flex items-start gap-2 p-2 bg-muted/50 rounded text-xs"
+										>
+											<Badge
+												variant={
+													log.level === 'error'
+														? 'destructive'
+														: log.level === 'warn'
+														? 'secondary'
+														: log.level === 'debug'
+														? 'outline'
+														: 'default'
+												}
+												className="shrink-0 text-[10px] h-5"
+											>
+												{log.level.toUpperCase()}
+											</Badge>
+											<div className="flex-1 min-w-0 space-y-1">
+												<div className="text-muted-foreground">
+													{formatTimestamp(log.timestamp)}
+												</div>
+												<div className="font-mono break-words">{log.message}</div>
+												{log.data !== undefined && (
+													<pre className="text-[10px] bg-muted p-1 rounded overflow-x-auto">
+														{typeof log.data === 'object'
+															? JSON.stringify(log.data, null, 2)
+															: String(log.data)}
+													</pre>
+												)}
+											</div>
+										</div>
+									))}
+								</div>
+							) : (
+								<div className="text-sm text-muted-foreground">No logs yet</div>
 							)}
 						</TabsContent>
 
