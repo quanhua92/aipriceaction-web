@@ -8,6 +8,7 @@ import { buildAIContext } from "@/lib/ai-context-builder";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
 import { getTickers } from "@/lib/api-client";
+import { loadTranslations } from "@/translations";
 
 export const Route = createFileRoute("/ai")({ component: AIContextPage });
 
@@ -15,6 +16,7 @@ const MAX_TICKERS = 20;
 
 function AIContextPage() {
 	const { t, language } = useTranslation();
+	const translations = loadTranslations(language);
 	const [copied, setCopied] = React.useState(false);
 	const [copiedTemplate, setCopiedTemplate] = React.useState<number | null>(null);
 	const [selectedTickers, setSelectedTickers] = React.useState<string[]>(["VNINDEX"]);
@@ -244,7 +246,11 @@ function AIContextPage() {
 						<Button
 							onClick={handleCopy}
 							variant={copied ? "default" : "outline"}
-							className="min-w-[120px]"
+							className={`min-w-[120px] ${
+								copied
+									? 'bg-green-500 hover:bg-green-600 text-white'
+									: 'border-green-500 text-green-600 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-950'
+							}`}
 						>
 							{copied ? (
 								<>
@@ -281,47 +287,46 @@ function AIContextPage() {
 						</div>
 
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-							{[0, 1, 2].map((index) => {
-								const template = t(`templates.templates.${index}`) as any;
+							{translations.templates.templates.map((template: any, index: number) => {
 								const isCopied = copiedTemplate === index;
 
 								return (
 									<Card
 										key={index}
-										className="hover:border-primary/50 transition-colors cursor-pointer"
+										className="hover:border-primary/50 transition-colors cursor-pointer p-4"
 										onClick={() => handleCopyTemplate(index, template.question)}
 									>
-										<CardHeader className="pb-3">
-											<CardTitle className="text-sm font-medium">
-												{template.title}
-											</CardTitle>
-										</CardHeader>
-										<CardContent className="space-y-3">
-											<p className="text-xs text-muted-foreground line-clamp-2">
-												{template.snippet}
-											</p>
-											<Button
-												variant={isCopied ? "default" : "outline"}
-												size="sm"
-												className="w-full"
-												onClick={(e) => {
-													e.stopPropagation();
-													handleCopyTemplate(index, template.question);
-												}}
-											>
-												{isCopied ? (
-													<>
-														<Check className="mr-2 h-3.5 w-3.5" />
-														{t("templates.templateCopied")}
-													</>
-												) : (
-													<>
-														<Copy className="mr-2 h-3.5 w-3.5" />
-														{t("templates.copyTemplate")}
-													</>
-												)}
-											</Button>
-										</CardContent>
+										<h3 className="text-base font-semibold mb-2">
+											{template.title}
+										</h3>
+										<p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+											{template.snippet}
+										</p>
+										<Button
+											variant={isCopied ? "default" : "outline"}
+											size="sm"
+											className={`w-full ${
+												isCopied
+													? 'bg-green-500 hover:bg-green-600 text-white'
+													: 'border-green-500 text-green-600 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-950'
+											}`}
+											onClick={(e) => {
+												e.stopPropagation();
+												handleCopyTemplate(index, template.question);
+											}}
+										>
+											{isCopied ? (
+												<>
+													<Check className="mr-2 h-3.5 w-3.5" />
+													{t("templates.templateCopied")}
+												</>
+											) : (
+												<>
+													<Copy className="mr-2 h-3.5 w-3.5" />
+													{t("templates.copyTemplate")}
+												</>
+											)}
+										</Button>
 									</Card>
 								);
 							})}
