@@ -1,4 +1,4 @@
-import { AIPriceActionClient } from '@/integrations/aipriceaction/src'
+import { AIPriceActionClient, type RequestResult } from '@/integrations/aipriceaction/src'
 import type { StockData, TickersResponse } from '@/integrations/aipriceaction/src'
 
 /**
@@ -49,7 +49,7 @@ function normalizeStockDataTimestamps(data: StockData[]): StockData[] {
 }
 
 /**
- * Singleton API client instance
+ * Singleton API client instance (without metadata)
  */
 export const apiClient = new AIPriceActionClient({
   baseURL: getApiBaseURL(),
@@ -61,6 +61,23 @@ export const apiClient = new AIPriceActionClient({
     backoffMultiplier: 2,
   },
   debug: import.meta.env.MODE === 'development',
+  includeMetadata: false,
+})
+
+/**
+ * API client instance with metadata enabled (for logging)
+ */
+export const apiClientWithMetadata = new AIPriceActionClient({
+  baseURL: getApiBaseURL(),
+  timeout: 30000,
+  retry: {
+    maxRetries: 3,
+    initialDelay: 1000,
+    maxDelay: 10000,
+    backoffMultiplier: 2,
+  },
+  debug: import.meta.env.MODE === 'development',
+  includeMetadata: true,
 })
 
 /**
@@ -85,6 +102,79 @@ export async function getTickers(params: Parameters<typeof apiClient.getTickers>
   }
 
   return normalizedResponse
+}
+
+/**
+ * Get ticker data with logging support
+ * @param params - Query parameters for tickers API
+ * @param logger - Logger functions (info, warn, error)
+ */
+export async function getTickersWithLogging(
+  params: Parameters<typeof apiClient.getTickers>[0],
+  logger?: {
+    info: (message: string) => void
+    warn: (message: string) => void
+    error: (message: string) => void
+  }
+) {
+  try {
+    const response = await apiClientWithMetadata.getTickers(params) as RequestResult<TickersResponse>
+
+    // Normalize all ticker data timestamps to UTC ISO format
+    const normalizedResponse: TickersResponse = {}
+    for (const [ticker, data] of Object.entries(response.data)) {
+      normalizedResponse[ticker] = normalizeStockDataTimestamps(data)
+    }
+
+    // Log success
+    if (logger) {
+      const symbolParam = params?.symbol
+      const symbolStr = Array.isArray(symbolParam)
+        ? symbolParam.length > 3
+          ? `${symbolParam.slice(0, 3).join(',')}... (${symbolParam.length} total)`
+          : symbolParam.join(',')
+        : symbolParam || 'ALL'
+
+      const cfCache = response.headers['cf-cache-status'] || 'N/A'
+      const cfRay = response.headers['cf-ray'] || 'N/A'
+      const rateLimit = response.headers['x-ratelimit-remaining']
+        ? `RateLimit:${response.headers['x-ratelimit-remaining']}/${response.headers['x-ratelimit-limit']}`
+        : 'RateLimit:N/A'
+
+      const paramsStr = [
+        `symbol=${symbolStr}`,
+        params?.interval ? `interval=${params.interval}` : null,
+        params?.limit ? `limit=${params.limit}` : null,
+        params?.start_date ? `start=${params.start_date}` : null,
+        params?.end_date ? `end=${params.end_date}` : null,
+      ].filter(Boolean).join(' ')
+
+      logger.info(
+        `[API] getTickers: ${paramsStr} | ${response.metadata.duration}ms | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
+      )
+    }
+
+    return normalizedResponse
+  } catch (error) {
+    // Log error
+    if (logger) {
+      const symbolParam = params?.symbol
+      const symbolStr = Array.isArray(symbolParam)
+        ? symbolParam.join(',')
+        : symbolParam || 'ALL'
+
+      const paramsStr = [
+        `symbol=${symbolStr}`,
+        params?.interval ? `interval=${params.interval}` : null,
+        params?.limit ? `limit=${params.limit}` : null,
+      ].filter(Boolean).join(' ')
+
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.error(`[API] getTickers FAILED: ${errorMessage} | Params: ${paramsStr}`)
+    }
+
+    throw error
+  }
 }
 
 /**
