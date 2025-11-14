@@ -516,7 +516,7 @@ export function BaseTradingViewChart({
 			tooltip.style.top = `${top}px`
 		})
 
-		// Handle resize
+		// Handle resize using ResizeObserver to detect container size changes
 		const handleResize = () => {
 			if (chartContainerRef.current) {
 				chart.applyOptions({
@@ -525,10 +525,22 @@ export function BaseTradingViewChart({
 			}
 		}
 
+		// Use ResizeObserver to watch container size changes (e.g., grid column changes)
+		const resizeObserver = new ResizeObserver(() => {
+			handleResize()
+		})
+
+		if (chartContainerRef.current) {
+			resizeObserver.observe(chartContainerRef.current)
+		}
+
+		// Also listen to window resize for fullscreen/browser resize
 		window.addEventListener('resize', handleResize)
 
 		return () => {
+			// Clean up resize listeners
 			window.removeEventListener('resize', handleResize)
+			resizeObserver.disconnect()
 
 			// Remove tooltip
 			if (
