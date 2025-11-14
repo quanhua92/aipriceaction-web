@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, ChevronDown, Repeat, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, Repeat, Star, Bookmark } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { type StockData } from '@/lib/api-client'
@@ -24,6 +24,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
+import {
+  getPredefinedWatchlistNames,
+  getPredefinedWatchlistTickers,
+  isPredefinedWatchlist as checkIsPredefinedWatchlist
+} from '@/lib/predefined-watchlists'
 import { MatrixChartDialog } from './MatrixChartDialog'
 import type { SortBy } from '@/components/lists/SortableTickerList'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -111,6 +116,9 @@ export function MarketMatrix() {
     }
   }, [openSectors])
 
+  // Get predefined watchlist names
+  const predefinedWatchlists = React.useMemo(() => getPredefinedWatchlistNames(), [])
+
   // Get available sector groups
   const sectorGroups = React.useMemo(() => {
     if (!tickerGroups) return []
@@ -130,10 +138,15 @@ export function MarketMatrix() {
       })
   }, [tickerGroups])
 
-  // Get all available groups
+  // Get all available groups (ALL first, then predefined, then custom, then sectors)
   const allGroups = React.useMemo(() => {
-    return [ALL_WATCHLIST_NAME, ...customWatchlists, ...sectorGroups]
-  }, [customWatchlists, sectorGroups])
+    return [ALL_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
+  }, [predefinedWatchlists, customWatchlists, sectorGroups])
+
+  // Helper to check if a watchlist is predefined
+  const isPredefinedWatchlist = React.useCallback((watchlist: string) => {
+    return checkIsPredefinedWatchlist(watchlist)
+  }, [])
 
   // Get tickers for selected watchlist
   const selectedTickers = React.useMemo(() => {
@@ -150,6 +163,11 @@ export function MarketMatrix() {
       return allTickers
     }
 
+    // Check if predefined watchlist
+    if (isPredefinedWatchlist(selectedWatchlist)) {
+      return getPredefinedWatchlistTickers(selectedWatchlist)
+    }
+
     // Check if custom watchlist
     if (customWatchlists.includes(selectedWatchlist)) {
       return getWatchlistTickers(selectedWatchlist)
@@ -157,7 +175,7 @@ export function MarketMatrix() {
 
     // Regular sector group
     return tickerGroups[selectedWatchlist] || []
-  }, [tickerGroups, selectedWatchlist, customWatchlists])
+  }, [tickerGroups, selectedWatchlist, customWatchlists, isPredefinedWatchlist])
 
   // Fetch matrix data
   React.useEffect(() => {
@@ -422,6 +440,9 @@ export function MarketMatrix() {
                   {allGroups.map((group) => (
                     <SelectItem key={group} value={group}>
                       <div className="flex items-center gap-2">
+                        {isPredefinedWatchlist(group) && (
+                          <Bookmark className="h-3 w-3 fill-purple-500 text-purple-500" />
+                        )}
                         {customWatchlists.includes(group) && (
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                         )}

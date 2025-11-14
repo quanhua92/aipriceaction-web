@@ -48,6 +48,14 @@ export const MATRIX_OPEN_SECTORS_STORAGE_KEY = 'matrix-open-sectors'
 export const ALL_WATCHLIST_NAME = 'ALL'
 
 /**
+ * Names of predefined watchlists (VN30, VINGROUP, etc.)
+ * These appear between "ALL" and custom watchlists in the UI
+ */
+export const PREDEFINED_WATCHLIST_NAMES = ['VN30', 'VINGROUP'] as const
+
+export type PredefinedWatchlistName = typeof PREDEFINED_WATCHLIST_NAMES[number]
+
+/**
  * Number of days to display per page in Market Matrix
  */
 export const MATRIX_DAYS_PER_PAGE = 40

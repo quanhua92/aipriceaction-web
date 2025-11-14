@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Star, Plus, Edit2 } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Star, Plus, Edit2, Bookmark } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
@@ -15,6 +15,11 @@ import { SortableTickerList, type Ticker } from './SortableTickerList'
 import { CreateWatchListDialog } from '@/components/dialogs/CreateWatchListDialog'
 import { EditWatchListDialog } from '@/components/dialogs/EditWatchListDialog'
 import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
+import {
+  getPredefinedWatchlistNames,
+  getPredefinedWatchlistTickers,
+  isPredefinedWatchlist as checkIsPredefinedWatchlist
+} from '@/lib/predefined-watchlists'
 
 export interface BasicWatchListProps {
   defaultGroup?: string
@@ -44,6 +49,9 @@ export function BasicWatchList({
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
   const [refreshKey, setRefreshKey] = React.useState(0)
 
+  // Get predefined watchlist names
+  const predefinedWatchlists = React.useMemo(() => getPredefinedWatchlistNames(), [])
+
   // Load custom watchlists from localStorage
   React.useEffect(() => {
     const loadCustomWatchlists = () => {
@@ -58,6 +66,11 @@ export function BasicWatchList({
     return customWatchlists.includes(group)
   }, [customWatchlists])
 
+  // Helper to check if a group is a predefined watchlist
+  const isPredefinedWatchlist = React.useCallback((group: string) => {
+    return checkIsPredefinedWatchlist(group)
+  }, [])
+
   // Helper to check if a group is the ALL watchlist
   const isAllWatchlist = React.useCallback((group: string) => {
     return group === ALL_WATCHLIST_NAME
@@ -71,10 +84,10 @@ export function BasicWatchList({
     )
   }, [tickerGroups])
 
-  // Get all available groups (ALL first, then custom watchlists, then sectors)
+  // Get all available groups (ALL first, then predefined, then custom watchlists, then sectors)
   const allGroups = React.useMemo(() => {
-    return [ALL_WATCHLIST_NAME, ...customWatchlists, ...sectorGroups]
-  }, [customWatchlists, sectorGroups])
+    return [ALL_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
+  }, [predefinedWatchlists, customWatchlists, sectorGroups])
 
   // Track if user has explicitly changed the group
   const [hasUserChangedGroup, setHasUserChangedGroup] = React.useState(false)
@@ -135,6 +148,15 @@ export function BasicWatchList({
       return [...marketIndicesTickers, ...allSectorTickers]
     }
 
+    // Check if this is a predefined watchlist
+    if (isPredefinedWatchlist(selectedGroup)) {
+      const watchlistTickers = getPredefinedWatchlistTickers(selectedGroup)
+      return watchlistTickers.map(symbol => ({
+        symbol,
+        sector: selectedGroup
+      }))
+    }
+
     // Check if this is a custom watchlist
     if (isCustomWatchlist(selectedGroup)) {
       const watchlistTickers = getWatchlistTickers(selectedGroup)
@@ -153,7 +175,7 @@ export function BasicWatchList({
       symbol,
       sector: selectedGroup
     }))
-  }, [selectedGroup, tickerGroups, isCustomWatchlist, isAllWatchlist, refreshKey])
+  }, [selectedGroup, tickerGroups, isCustomWatchlist, isPredefinedWatchlist, isAllWatchlist, refreshKey])
 
   // Navigation state - use sorted tickers from SortableTickerList
   const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
@@ -325,6 +347,9 @@ export function BasicWatchList({
               {allGroups.map((group) => (
                 <SelectItem key={group} value={group}>
                   <div className="flex items-center gap-2">
+                    {isPredefinedWatchlist(group) && (
+                      <Bookmark className="h-3.5 w-3.5 fill-purple-500 text-purple-500" />
+                    )}
                     {isCustomWatchlist(group) && (
                       <Star className="h-3.5 w-3.5 fill-primary text-primary" />
                     )}
