@@ -6,13 +6,19 @@ import {
   LineChart,
   Menu,
   Table,
-  X,
   Zap,
   Brain,
   Eye,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -27,13 +33,88 @@ export default function Header() {
     <>
       <header className="p-4 flex items-center justify-between bg-gray-800 text-white shadow-lg">
         <div className="flex items-center">
-          <button
-            onClick={() => setIsOpen(true)}
-            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu size={24} />
-          </button>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <button
+                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu size={24} />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 bg-gray-900 text-white border-gray-700">
+              <SheetHeader className="border-b border-gray-700 pb-4">
+                <SheetTitle className="text-xl font-bold text-white">Navigation</SheetTitle>
+              </SheetHeader>
+
+              <nav className="flex-1 mt-4 overflow-y-auto">
+                <Link
+                  to="/"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                  activeProps={{
+                    className:
+                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                  }}
+                >
+                  <Home size={20} />
+                  <span className="font-medium">Home</span>
+                </Link>
+
+                <Link
+                  to="/chart"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                  activeProps={{
+                    className:
+                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                  }}
+                >
+                  <LineChart size={20} />
+                  <span className="font-medium">Chart</span>
+                </Link>
+
+                <Link
+                  to="/watch"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                  activeProps={{
+                    className:
+                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                  }}
+                >
+                  <Eye size={20} />
+                  <span className="font-medium">Watch</span>
+                </Link>
+
+                <Link
+                  to="/matrix"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                  activeProps={{
+                    className:
+                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                  }}
+                >
+                  <Table size={20} />
+                  <span className="font-medium">Market Matrix</span>
+                </Link>
+
+                <Link
+                  to="/ai"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                  activeProps={{
+                    className:
+                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                  }}
+                >
+                  <Brain size={20} />
+                  <span className="font-medium">AI Context</span>
+                </Link>
+              </nav>
+            </SheetContent>
+          </Sheet>
           <h1 className="ml-4 text-xl font-semibold">
             <Link to="/" className="text-white hover:text-cyan-400 transition-colors">
               AIPriceAction
@@ -64,90 +145,6 @@ export default function Header() {
           </button>
         </div>
       </header>
-
-      <aside
-        className={`fixed top-0 left-0 h-full w-80 bg-gray-900 text-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold">Navigation</h2>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            aria-label="Close menu"
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        <nav className="flex-1 p-4 overflow-y-auto">
-          <Link
-            to="/"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Home size={20} />
-            <span className="font-medium">Home</span>
-          </Link>
-
-          <Link
-            to="/chart"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <LineChart size={20} />
-            <span className="font-medium">Chart</span>
-          </Link>
-
-          <Link
-            to="/watch"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Eye size={20} />
-            <span className="font-medium">Watch</span>
-          </Link>
-
-          <Link
-            to="/matrix"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Table size={20} />
-            <span className="font-medium">Market Matrix</span>
-          </Link>
-
-          <Link
-            to="/ai"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Brain size={20} />
-            <span className="font-medium">AI Context</span>
-          </Link>
-        </nav>
-      </aside>
     </>
   )
 }
