@@ -32,94 +32,162 @@ export default function Header() {
   return (
     <>
       <header className="p-4 flex items-center justify-between bg-gray-800 text-white shadow-lg">
-        <div className="flex items-center">
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <button
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                aria-label="Open menu"
-              >
-                <Menu size={24} />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80 bg-gray-900 text-white border-gray-700">
-              <SheetHeader className="border-b border-gray-700 pb-4">
-                <SheetTitle className="text-xl font-bold text-white">Navigation</SheetTitle>
-              </SheetHeader>
-
-              <nav className="flex-1 mt-4 overflow-y-auto">
-                <Link
-                  to="/"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                  activeProps={{
-                    className:
-                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-                  }}
+        <div className="flex items-center gap-6">
+          {/* Mobile: Hamburger Menu + Drawer */}
+          <div className="md:hidden">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                  aria-label="Open menu"
                 >
-                  <Home size={20} />
-                  <span className="font-medium">Home</span>
-                </Link>
+                  <Menu size={24} />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 bg-gray-900 text-white border-gray-700">
+                <SheetHeader className="border-b border-gray-700 pb-4">
+                  <SheetTitle className="text-xl font-bold text-white">Navigation</SheetTitle>
+                </SheetHeader>
 
-                <Link
-                  to="/chart"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                  activeProps={{
-                    className:
-                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-                  }}
-                >
-                  <LineChart size={20} />
-                  <span className="font-medium">Chart</span>
-                </Link>
+                <nav className="flex-1 mt-4 overflow-y-auto">
+                  <Link
+                    to="/"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                    activeProps={{
+                      className:
+                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                    }}
+                  >
+                    <Home size={20} />
+                    <span className="font-medium">Home</span>
+                  </Link>
 
-                <Link
-                  to="/watch"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                  activeProps={{
-                    className:
-                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-                  }}
-                >
-                  <Eye size={20} />
-                  <span className="font-medium">Watch</span>
-                </Link>
+                  <Link
+                    to="/chart"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                    activeProps={{
+                      className:
+                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                    }}
+                  >
+                    <LineChart size={20} />
+                    <span className="font-medium">Chart</span>
+                  </Link>
 
-                <Link
-                  to="/matrix"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                  activeProps={{
-                    className:
-                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-                  }}
-                >
-                  <Table size={20} />
-                  <span className="font-medium">Market Matrix</span>
-                </Link>
+                  <Link
+                    to="/watch"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                    activeProps={{
+                      className:
+                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                    }}
+                  >
+                    <Eye size={20} />
+                    <span className="font-medium">Watch</span>
+                  </Link>
 
-                <Link
-                  to="/ai"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                  activeProps={{
-                    className:
-                      'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-                  }}
-                >
-                  <Brain size={20} />
-                  <span className="font-medium">AI Context</span>
-                </Link>
-              </nav>
-            </SheetContent>
-          </Sheet>
-          <h1 className="ml-4 text-xl font-semibold">
+                  <Link
+                    to="/matrix"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                    activeProps={{
+                      className:
+                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                    }}
+                  >
+                    <Table size={20} />
+                    <span className="font-medium">Market Matrix</span>
+                  </Link>
+
+                  <Link
+                    to="/ai"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                    activeProps={{
+                      className:
+                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                    }}
+                  >
+                    <Brain size={20} />
+                    <span className="font-medium">AI Context</span>
+                  </Link>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Logo/Brand */}
+          <h1 className="text-xl font-semibold">
             <Link to="/" className="text-white hover:text-cyan-400 transition-colors">
               AIPriceAction
             </Link>
           </h1>
+
+          {/* Desktop: Horizontal Navigation */}
+          <nav className="hidden md:flex md:items-center md:gap-1">
+            <Link
+              to="/"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+              }}
+            >
+              <Home size={18} />
+              <span className="font-medium">Home</span>
+            </Link>
+
+            <Link
+              to="/chart"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+              }}
+            >
+              <LineChart size={18} />
+              <span className="font-medium">Chart</span>
+            </Link>
+
+            <Link
+              to="/watch"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+              }}
+            >
+              <Eye size={18} />
+              <span className="font-medium">Watch</span>
+            </Link>
+
+            <Link
+              to="/matrix"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+              }}
+            >
+              <Table size={18} />
+              <span className="font-medium">Market Matrix</span>
+            </Link>
+
+            <Link
+              to="/ai"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+              }}
+            >
+              <Brain size={18} />
+              <span className="font-medium">AI Context</span>
+            </Link>
+          </nav>
         </div>
 
         <div className="flex items-center gap-2">
