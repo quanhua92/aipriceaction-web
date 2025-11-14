@@ -8,6 +8,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import Header from '../components/Header'
 import { DebugFooter } from '../components/DebugFooter'
+import { StatusBar } from '../components/StatusBar'
 import { APIProvider } from '../contexts/APIContext'
 import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
 import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
@@ -109,6 +110,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   <ChartSettingsProvider>
                     <Header />
                     {children}
+                    <StatusBar />
                     <DebugFooter />
                   {import.meta.env.DEV && (
                     <TanStackDevtools
