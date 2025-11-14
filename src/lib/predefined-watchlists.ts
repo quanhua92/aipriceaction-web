@@ -32,6 +32,18 @@ const VINGROUP_TICKERS = [
 ]
 
 /**
+ * TM - TM Group companies
+ */
+const TM_TICKERS = [
+  'GEX',  // Gelex Group
+  'GEE',  // Geleximco
+  'VIX',  // Viglacera
+  'EIB',  // Eximbank
+  'VGC',  // Viglacera Corporation
+  'IDC'   // IDICO Corporation
+]
+
+/**
  * All predefined watchlists
  */
 export const PREDEFINED_WATCHLISTS: PredefinedWatchlist[] = [
@@ -44,6 +56,11 @@ export const PREDEFINED_WATCHLISTS: PredefinedWatchlist[] = [
     name: 'VINGROUP',
     tickers: VINGROUP_TICKERS,
     description: 'Vingroup ecosystem companies'
+  },
+  {
+    name: 'TM',
+    tickers: TM_TICKERS,
+    description: 'TM Group companies'
   }
 ]
 
