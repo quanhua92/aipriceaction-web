@@ -98,6 +98,18 @@ function WatchPage() {
 		setFullscreenTicker(null);
 	};
 
+	// Get ticker symbols array for navigation in fullscreen dialog
+	const tickerSymbols = React.useMemo(() => {
+		return sortedTickers.map(t => t.symbol);
+	}, [sortedTickers]);
+
+	// Get current index for fullscreen dialog
+	const fullscreenTickerIndex = React.useMemo(() => {
+		if (!fullscreenTicker) return 0;
+		const index = tickerSymbols.indexOf(fullscreenTicker);
+		return index !== -1 ? index : 0;
+	}, [fullscreenTicker, tickerSymbols]);
+
 	// Grid column classes
 	const gridColsClass = {
 		1: "grid-cols-1",
@@ -285,6 +297,8 @@ function WatchPage() {
 			<ChartFullscreenDialog
 				ticker={fullscreenTicker}
 				onClose={handleCloseFullscreen}
+				tickerList={tickerSymbols}
+				currentIndex={fullscreenTickerIndex}
 			/>
 		</div>
 	);
