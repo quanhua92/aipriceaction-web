@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 import { MARKET_INDICES } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
+import { getSectorDisplayName } from '@/lib/sector-names'
 import { useTranslation } from '@/hooks/useTranslation'
 import type { StockData } from '@/lib/api-client'
 
@@ -43,7 +44,7 @@ export function SortableTickerList({
   onSortedTickersChange
 }: SortableTickerListProps) {
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const getLatestData = (symbol: string): StockData | undefined => {
     const data = allTickersData[symbol]
@@ -274,7 +275,7 @@ export function SortableTickerList({
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
-                          <span className="text-xs text-muted-foreground/70 truncate">{ticker.sector}</span>
+                          <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
