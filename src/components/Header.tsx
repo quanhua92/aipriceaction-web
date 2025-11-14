@@ -58,7 +58,7 @@ export default function Header() {
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                     activeProps={{
                       className:
-                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
                     }}
                   >
                     <Home size={20} />
@@ -71,7 +71,7 @@ export default function Header() {
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                     activeProps={{
                       className:
-                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
                     }}
                   >
                     <LineChart size={20} />
@@ -84,7 +84,7 @@ export default function Header() {
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                     activeProps={{
                       className:
-                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
                     }}
                   >
                     <Eye size={20} />
@@ -97,7 +97,7 @@ export default function Header() {
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                     activeProps={{
                       className:
-                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
                     }}
                   >
                     <Table size={20} />
@@ -110,7 +110,7 @@ export default function Header() {
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                     activeProps={{
                       className:
-                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
                     }}
                   >
                     <Brain size={20} />
@@ -123,7 +123,7 @@ export default function Header() {
 
           {/* Logo/Brand */}
           <h1 className="text-xl font-semibold">
-            <Link to="/" className="text-white hover:text-cyan-400 transition-colors">
+            <Link to="/" className="text-white hover:text-green-400 transition-colors">
               AIPriceAction
             </Link>
           </h1>
@@ -135,7 +135,7 @@ export default function Header() {
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
               <Home size={18} />
@@ -147,7 +147,7 @@ export default function Header() {
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
               <LineChart size={18} />
@@ -159,7 +159,7 @@ export default function Header() {
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
               <Eye size={18} />
@@ -171,7 +171,7 @@ export default function Header() {
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
               <Table size={18} />
@@ -183,7 +183,7 @@ export default function Header() {
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-cyan-600 hover:bg-cyan-700 transition-colors',
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
               <Brain size={18} />
@@ -196,7 +196,7 @@ export default function Header() {
           <Toggle
             pressed={isRefreshEnabled}
             onPressedChange={toggleRefresh}
-            className="data-[state=on]:bg-cyan-600 data-[state=on]:text-white data-[state=on]:border-cyan-500 border border-gray-600"
+            className="data-[state=on]:bg-green-600 data-[state=on]:text-white data-[state=on]:border-green-500 border border-gray-600"
             aria-label={isRefreshEnabled ? 'Auto-refresh: ON (30s)' : 'Auto-refresh: OFF'}
             title={isRefreshEnabled ? 'Auto-refresh: ON (30s)' : 'Auto-refresh: OFF'}
           >

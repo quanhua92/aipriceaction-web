@@ -27,7 +27,7 @@ function DemoPage() {
           to="/demo/start/server-funcs"
           className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-accent transition-colors"
         >
-          <SquareFunction className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-1" />
+          <SquareFunction className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold mb-1">Server Functions</h3>
             <p className="text-sm text-muted-foreground">
@@ -41,7 +41,7 @@ function DemoPage() {
           to="/demo/start/api-request"
           className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-accent transition-colors"
         >
-          <Network className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-1" />
+          <Network className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold mb-1">API Request</h3>
             <p className="text-sm text-muted-foreground">
@@ -55,7 +55,7 @@ function DemoPage() {
           to="/demo/start/ssr"
           className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-accent transition-colors"
         >
-          <StickyNote className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-1" />
+          <StickyNote className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold mb-1">SSR Demos</h3>
             <p className="text-sm text-muted-foreground">
@@ -69,7 +69,7 @@ function DemoPage() {
           to="/demo/tanstack-query"
           className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-accent transition-colors"
         >
-          <Network className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-1" />
+          <Network className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold mb-1">TanStack Query</h3>
             <p className="text-sm text-muted-foreground">
@@ -83,7 +83,7 @@ function DemoPage() {
           to="/demo/table"
           className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-accent transition-colors"
         >
-          <Table className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-1" />
+          <Table className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold mb-1">TanStack Table</h3>
             <p className="text-sm text-muted-foreground">
@@ -97,7 +97,7 @@ function DemoPage() {
           to="/demo/form/simple"
           className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-accent transition-colors"
         >
-          <ClipboardType className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-1" />
+          <ClipboardType className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold mb-1">Simple Form</h3>
             <p className="text-sm text-muted-foreground">
@@ -111,7 +111,7 @@ function DemoPage() {
           to="/demo/form/address"
           className="flex items-start gap-4 p-4 rounded-lg border border-border hover:bg-accent transition-colors"
         >
-          <ClipboardType className="h-6 w-6 text-cyan-500 flex-shrink-0 mt-1" />
+          <ClipboardType className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
           <div>
             <h3 className="font-semibold mb-1">Address Form</h3>
             <p className="text-sm text-muted-foreground">
