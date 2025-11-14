@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
+import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -35,6 +36,9 @@ function WatchPage() {
 
 	// Grid columns state
 	const [columns, setColumns] = React.useState<1 | 2 | 3 | 4 | 5 | 6>(2);
+
+	// Fullscreen dialog state
+	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
 
 	// Calculate pagination
 	const totalPages = Math.ceil(sortedTickers.length / pageSize);
@@ -86,6 +90,14 @@ function WatchPage() {
 		setCurrentPage(totalPages - 1);
 	};
 
+	const handleSelectTicker = (symbol: string) => {
+		setFullscreenTicker(symbol);
+	};
+
+	const handleCloseFullscreen = () => {
+		setFullscreenTicker(null);
+	};
+
 	// Grid column classes
 	const gridColsClass = {
 		1: "grid-cols-1",
@@ -116,6 +128,7 @@ function WatchPage() {
 							maxHeight="500px"
 							showMarketIndices={true}
 							showControls={false}
+							onSelectTicker={handleSelectTicker}
 							onSectorChange={handleSectorChange}
 							onSortedTickersChange={handleSortedTickersChange}
 						/>
@@ -267,6 +280,12 @@ function WatchPage() {
 					t={t}
 				/>
 			</div>
+
+			{/* Fullscreen Dialog */}
+			<ChartFullscreenDialog
+				ticker={fullscreenTicker}
+				onClose={handleCloseFullscreen}
+			/>
 		</div>
 	);
 }
