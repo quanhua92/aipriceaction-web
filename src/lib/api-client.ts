@@ -143,6 +143,11 @@ export async function getTickersWithLogging(
         ? `RateLimit:${response.headers['x-ratelimit-remaining']}/${response.headers['x-ratelimit-limit']}`
         : 'RateLimit:N/A'
 
+      // Get response size from metadata (already calculated during fetch)
+      const sizeKB = response.metadata.responseSize
+        ? (response.metadata.responseSize / 1024).toFixed(2) + 'KB'
+        : 'N/A'
+
       const paramsStr = [
         `symbol=${symbolStr}`,
         params?.interval ? `interval=${params.interval}` : null,
@@ -152,7 +157,7 @@ export async function getTickersWithLogging(
       ].filter(Boolean).join(' ')
 
       logger.info(
-        `[API] ${source} getTickers: ${paramsStr} | ${response.metadata.duration}ms | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
+        `[API] ${source} getTickers: ${paramsStr} | ${response.metadata.duration}ms | ${sizeKB} | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
       )
     }
 

@@ -40,6 +40,7 @@ export interface RequestResult<T> {
     status: number;
     duration: number;
     retries: number;
+    responseSize?: number; // Response body size in bytes
   };
 }
 
@@ -165,13 +166,20 @@ export class AIPriceActionClient {
       // Handle different response types
       const contentType = response.headers.get("content-type");
       let data: T;
+      let responseSize: number | undefined;
 
       if (contentType?.includes("application/json")) {
-        data = (await response.json()) as T;
+        const text = await response.text();
+        responseSize = new TextEncoder().encode(text).length;
+        data = JSON.parse(text) as T;
       } else if (contentType?.includes("text/csv")) {
-        data = (await response.text()) as T;
+        const text = await response.text();
+        responseSize = new TextEncoder().encode(text).length;
+        data = text as T;
       } else {
-        data = (await response.text()) as T;
+        const text = await response.text();
+        responseSize = new TextEncoder().encode(text).length;
+        data = text as T;
       }
 
       // Return with metadata if enabled
@@ -189,6 +197,7 @@ export class AIPriceActionClient {
             status: response.status,
             duration,
             retries: retryCount,
+            responseSize,
           },
         } as RequestResult<T>;
       }
