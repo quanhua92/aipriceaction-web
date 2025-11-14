@@ -109,7 +109,7 @@ export function MarketMatrix() {
   // BUT: Don't save when viewing predefined watchlists to avoid "disaster" scenario
   React.useEffect(() => {
     // Skip saving if viewing predefined watchlist (VN30, VINGROUP)
-    if (isPredefinedWatchlist(selectedWatchlist)) {
+    if (checkIsPredefinedWatchlist(selectedWatchlist)) {
       return
     }
 
@@ -120,7 +120,7 @@ export function MarketMatrix() {
         console.error('Failed to save open sectors to localStorage:', error)
       }
     }
-  }, [openSectors, selectedWatchlist, isPredefinedWatchlist])
+  }, [openSectors, selectedWatchlist])
 
   // Get predefined watchlist names
   const predefinedWatchlists = React.useMemo(() => getPredefinedWatchlistNames(), [])
@@ -149,11 +149,6 @@ export function MarketMatrix() {
     return [ALL_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
   }, [predefinedWatchlists, customWatchlists, sectorGroups])
 
-  // Helper to check if a watchlist is predefined
-  const isPredefinedWatchlist = React.useCallback((watchlist: string) => {
-    return checkIsPredefinedWatchlist(watchlist)
-  }, [])
-
   // Get tickers for selected watchlist
   const selectedTickers = React.useMemo(() => {
     if (!tickerGroups) return []
@@ -170,7 +165,7 @@ export function MarketMatrix() {
     }
 
     // Check if predefined watchlist
-    if (isPredefinedWatchlist(selectedWatchlist)) {
+    if (checkIsPredefinedWatchlist(selectedWatchlist)) {
       return getPredefinedWatchlistTickers(selectedWatchlist)
     }
 
@@ -181,7 +176,7 @@ export function MarketMatrix() {
 
     // Regular sector group
     return tickerGroups[selectedWatchlist] || []
-  }, [tickerGroups, selectedWatchlist, customWatchlists, isPredefinedWatchlist])
+  }, [tickerGroups, selectedWatchlist, customWatchlists])
 
   // Fetch matrix data
   React.useEffect(() => {
@@ -379,14 +374,14 @@ export function MarketMatrix() {
   // Auto-expand all sectors when viewing predefined watchlists (VN30, VINGROUP)
   // This does NOT save to localStorage (handled in the save effect above)
   React.useEffect(() => {
-    if (isPredefinedWatchlist(selectedWatchlist)) {
+    if (checkIsPredefinedWatchlist(selectedWatchlist)) {
       // Get all sectors currently in the matrix
       const allSectorsInView = Object.keys(rowsBySector)
       if (allSectorsInView.length > 0) {
         setOpenSectors(new Set(allSectorsInView))
       }
     }
-  }, [selectedWatchlist, isPredefinedWatchlist, rowsBySector])
+  }, [selectedWatchlist, rowsBySector])
 
   // Event handlers
   const handleWatchlistChange = (value: string) => {
@@ -458,7 +453,7 @@ export function MarketMatrix() {
                   {allGroups.map((group) => (
                     <SelectItem key={group} value={group}>
                       <div className="flex items-center gap-2">
-                        {isPredefinedWatchlist(group) && (
+                        {checkIsPredefinedWatchlist(group) && (
                           <Bookmark className="h-3 w-3 fill-purple-500 text-purple-500" />
                         )}
                         {customWatchlists.includes(group) && (
