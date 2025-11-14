@@ -29,6 +29,7 @@ import {
   getPredefinedWatchlistTickers,
   isPredefinedWatchlist as checkIsPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
+import { getSectorDisplayName } from '@/lib/sector-names'
 import { MatrixChartDialog } from './MatrixChartDialog'
 import type { SortBy } from '@/components/lists/SortableTickerList'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -67,7 +68,7 @@ const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_D
 export function MarketMatrix() {
   const { tickerGroups, loading: apiLoading, getTickers } = useAPI()
   const { lastRefresh } = useRefresh()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   // State management - simple defaults, no localStorage
   const [selectedWatchlist, setSelectedWatchlist] = React.useState<string>(ALL_WATCHLIST_NAME)
@@ -148,6 +149,17 @@ export function MarketMatrix() {
   const allGroups = React.useMemo(() => {
     return [ALL_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
   }, [predefinedWatchlists, customWatchlists, sectorGroups])
+
+  // Helper to get display name for dropdown (readable names only for sectors)
+  const getDropdownDisplayName = React.useCallback((group: string): string => {
+    // Check if it's a sector group (not ALL, not predefined, not custom)
+    const isSector = sectorGroups.includes(group)
+    if (isSector) {
+      return getSectorDisplayName(group, language)
+    }
+    // Keep ALL, predefined, and custom watchlist names as-is
+    return group
+  }, [sectorGroups, language])
 
   // Get tickers for selected watchlist
   const selectedTickers = React.useMemo(() => {
@@ -459,7 +471,7 @@ export function MarketMatrix() {
                         {customWatchlists.includes(group) && (
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                         )}
-                        <span>{group}</span>
+                        <span>{getDropdownDisplayName(group)}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -625,7 +637,7 @@ export function MarketMatrix() {
                           <button
                             onClick={() => toggleSector(sector)}
                             className="flex items-center gap-1 hover:bg-primary/30 rounded px-1 transition-colors w-full"
-                            title={sector}
+                            title={getSectorDisplayName(sector, language)}
                           >
                             {isCollapsed ? (
                               <ChevronRight className="h-3 w-3 flex-shrink-0" />
