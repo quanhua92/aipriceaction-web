@@ -2,6 +2,7 @@ import * as React from 'react'
 import { getTickerGroups, getTickersWithLogging, getHealth as getHealthApi, type TickerGroups, type StockData, type TickersQueryParams, type HealthResponse } from '@/lib/api-client'
 import { PRIORITY_GROUPS } from '@/lib/constants'
 import { useLogs } from './LogsContext'
+import { useRefresh } from './RefreshContext'
 
 const sortTickerGroups = (groups: TickerGroups): TickerGroups => {
   const sortedEntries = Object.entries(groups)
@@ -41,6 +42,7 @@ const APIContext = React.createContext<APIContextValue | undefined>(undefined)
 
 export function APIProvider({ children }: { children: React.ReactNode }) {
   const { info, error: logError } = useLogs()
+  const { lastRefresh } = useRefresh()
   const [tickerGroups, setTickerGroups] = React.useState<TickerGroups | null>(null)
   const [tickers, setTickers] = React.useState<Ticker[]>([])
   const [allTickersData, setAllTickersData] = React.useState<Record<string, StockData[]>>({})
@@ -92,10 +94,10 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
     }
   }, [info, logError])
 
-  // Fetch on mount
+  // Fetch on mount and when refresh is triggered
   React.useEffect(() => {
     fetchTickerGroups()
-  }, [fetchTickerGroups])
+  }, [fetchTickerGroups, lastRefresh])
 
   // Provide logged API methods
   const getTickers = React.useCallback(
