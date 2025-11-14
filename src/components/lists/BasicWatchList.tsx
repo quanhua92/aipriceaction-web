@@ -20,6 +20,8 @@ import {
   getPredefinedWatchlistTickers,
   isPredefinedWatchlist as checkIsPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
+import { getSectorDisplayName } from '@/lib/sector-names'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export interface BasicWatchListProps {
   defaultGroup?: string
@@ -44,6 +46,7 @@ export function BasicWatchList({
 }: BasicWatchListProps) {
   const { tickerGroups, allTickersData, loading, error, getTickers } = useAPI()
   const settings = useChartSettings()
+  const { language } = useTranslation()
 
   // State to track custom watchlists and trigger re-renders
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
@@ -88,6 +91,17 @@ export function BasicWatchList({
   const allGroups = React.useMemo(() => {
     return [ALL_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
   }, [predefinedWatchlists, customWatchlists, sectorGroups])
+
+  // Helper to get display name for dropdown (readable names only for sectors)
+  const getDropdownDisplayName = React.useCallback((group: string): string => {
+    // Check if it's a sector group (not ALL, not predefined, not custom)
+    const isSector = sectorGroups.includes(group)
+    if (isSector) {
+      return getSectorDisplayName(group, language)
+    }
+    // Keep ALL, predefined, and custom watchlist names as-is
+    return group
+  }, [sectorGroups, language])
 
   // Track if user has explicitly changed the group
   const [hasUserChangedGroup, setHasUserChangedGroup] = React.useState(false)
@@ -354,7 +368,7 @@ export function BasicWatchList({
                       <Star className="h-3.5 w-3.5 fill-primary text-primary" />
                     )}
                     <span className={isAllWatchlist(group) ? 'font-bold' : ''}>
-                      {group}
+                      {getDropdownDisplayName(group)}
                     </span>
                   </div>
                 </SelectItem>
