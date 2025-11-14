@@ -9,6 +9,7 @@ import {
   X,
   Zap,
   Brain,
+  Eye,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
@@ -105,6 +106,19 @@ export default function Header() {
           >
             <LineChart size={20} />
             <span className="font-medium">Chart</span>
+          </Link>
+
+          <Link
+            to="/watch"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+            activeProps={{
+              className:
+                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+            }}
+          >
+            <Eye size={20} />
+            <span className="font-medium">Watch</span>
           </Link>
 
           <Link

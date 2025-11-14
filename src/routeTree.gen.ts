@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WatchRouteImport } from './routes/watch'
 import { Route as MatrixRouteImport } from './routes/matrix'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as IndexRouteImport } from './routes/index'
@@ -27,6 +28,11 @@ import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
 import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
 
+const WatchRoute = WatchRouteImport.update({
+  id: '/watch',
+  path: '/watch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MatrixRoute = MatrixRouteImport.update({
   id: '/matrix',
   path: '/matrix',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/matrix': typeof MatrixRoute
+  '/watch': typeof WatchRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/chart': typeof ChartIndexRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/matrix': typeof MatrixRoute
+  '/watch': typeof WatchRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/chart': typeof ChartIndexRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/matrix': typeof MatrixRoute
+  '/watch': typeof WatchRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/chart/': typeof ChartIndexRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ai'
     | '/matrix'
+    | '/watch'
     | '/demo/table'
     | '/demo/tanstack-query'
     | '/chart'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ai'
     | '/matrix'
+    | '/watch'
     | '/demo/table'
     | '/demo/tanstack-query'
     | '/chart'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ai'
     | '/matrix'
+    | '/watch'
     | '/demo/table'
     | '/demo/tanstack-query'
     | '/chart/'
@@ -235,6 +247,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AiRoute: typeof AiRoute
   MatrixRoute: typeof MatrixRoute
+  WatchRoute: typeof WatchRoute
   DemoTableRoute: typeof DemoTableRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   ChartIndexRoute: typeof ChartIndexRoute
@@ -253,6 +266,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/watch': {
+      id: '/watch'
+      path: '/watch'
+      fullPath: '/watch'
+      preLoaderRoute: typeof WatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/matrix': {
       id: '/matrix'
       path: '/matrix'
@@ -379,6 +399,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AiRoute: AiRoute,
   MatrixRoute: MatrixRoute,
+  WatchRoute: WatchRoute,
   DemoTableRoute: DemoTableRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   ChartIndexRoute: ChartIndexRoute,

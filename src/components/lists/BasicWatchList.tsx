@@ -24,6 +24,7 @@ export interface BasicWatchListProps {
   showControls?: boolean
   onSelectTicker?: (symbol: string) => void
   onSectorChange?: (sector: string) => void
+  onSortedTickersChange?: (tickers: Ticker[]) => void
 }
 
 export function BasicWatchList({
@@ -33,7 +34,8 @@ export function BasicWatchList({
   showMarketIndices = false,
   showControls = false,
   onSelectTicker,
-  onSectorChange
+  onSectorChange,
+  onSortedTickersChange
 }: BasicWatchListProps) {
   const { tickerGroups, allTickersData, loading, error, getTickers } = useAPI()
   const settings = useChartSettings()
@@ -168,8 +170,12 @@ export function BasicWatchList({
     if (newSortedTickers.length !== current.length ||
         newSortedTickers.some((ticker, index) => ticker.symbol !== current[index]?.symbol)) {
       setSortedTickers(newSortedTickers)
+      // Notify parent component if callback is provided
+      if (onSortedTickersChange) {
+        onSortedTickersChange(newSortedTickers)
+      }
     }
-  }, [])
+  }, [onSortedTickersChange])
 
   const handleSelectTicker = (symbol: string) => {
     if (onSelectTicker) {
