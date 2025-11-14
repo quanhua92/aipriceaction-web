@@ -9,6 +9,7 @@ import {
   Zap,
   Brain,
   Eye,
+  Globe,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
@@ -19,6 +20,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { Toggle } from '@/components/ui/toggle'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -191,26 +193,25 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={toggleRefresh}
-            className={`p-2 rounded-md transition-colors border ${
-              isRefreshEnabled
-                ? 'bg-green-600 hover:bg-green-700 border-green-500 text-white'
-                : 'bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-400'
-            }`}
+          <Toggle
+            pressed={isRefreshEnabled}
+            onPressedChange={toggleRefresh}
+            className="data-[state=on]:bg-cyan-600 data-[state=on]:text-white data-[state=on]:border-cyan-500 border border-gray-600"
             aria-label={isRefreshEnabled ? 'Auto-refresh: ON (30s)' : 'Auto-refresh: OFF'}
             title={isRefreshEnabled ? 'Auto-refresh: ON (30s)' : 'Auto-refresh: OFF'}
           >
             <Zap size={18} />
-          </button>
+          </Toggle>
 
-          <button
+          <Toggle
+            pressed={false}
             onClick={toggleLanguage}
-            className="p-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors border border-gray-600"
+            className="border border-gray-600"
             aria-label="Toggle language"
           >
-            <span className="text-sm text-gray-300 leading-none flex items-center justify-center w-[18px] h-[18px]">{language === 'en' ? 'EN' : 'VN'}</span>
-          </button>
+            <Globe size={18} />
+            <span className="ml-1.5 text-xs font-medium">{language.toUpperCase()}</span>
+          </Toggle>
         </div>
       </header>
     </>
