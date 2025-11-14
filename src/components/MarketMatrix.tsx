@@ -106,7 +106,13 @@ export function MarketMatrix() {
   }, [])
 
   // Save open sectors to localStorage whenever they change (client-side only)
+  // BUT: Don't save when viewing predefined watchlists to avoid "disaster" scenario
   React.useEffect(() => {
+    // Skip saving if viewing predefined watchlist (VN30, VINGROUP)
+    if (isPredefinedWatchlist(selectedWatchlist)) {
+      return
+    }
+
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(MATRIX_OPEN_SECTORS_STORAGE_KEY, JSON.stringify(Array.from(openSectors)))
@@ -114,7 +120,7 @@ export function MarketMatrix() {
         console.error('Failed to save open sectors to localStorage:', error)
       }
     }
-  }, [openSectors])
+  }, [openSectors, selectedWatchlist, isPredefinedWatchlist])
 
   // Get predefined watchlist names
   const predefinedWatchlists = React.useMemo(() => getPredefinedWatchlistNames(), [])
@@ -369,6 +375,18 @@ export function MarketMatrix() {
 
     return grouped
   }, [matrixData, sortBy, sortReferenceData])
+
+  // Auto-expand all sectors when viewing predefined watchlists (VN30, VINGROUP)
+  // This does NOT save to localStorage (handled in the save effect above)
+  React.useEffect(() => {
+    if (isPredefinedWatchlist(selectedWatchlist)) {
+      // Get all sectors currently in the matrix
+      const allSectorsInView = Object.keys(rowsBySector)
+      if (allSectorsInView.length > 0) {
+        setOpenSectors(new Set(allSectorsInView))
+      }
+    }
+  }, [selectedWatchlist, isPredefinedWatchlist, rowsBySector])
 
   // Event handlers
   const handleWatchlistChange = (value: string) => {
