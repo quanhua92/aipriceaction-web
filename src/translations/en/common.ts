@@ -129,4 +129,7 @@ export default {
     previous: 'Previous',
     next: 'Next',
   },
+  chart: {
+    loadMore: 'Load More',
+  },
 }

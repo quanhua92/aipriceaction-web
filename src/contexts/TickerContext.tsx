@@ -3,6 +3,7 @@ import { type StockData } from '@/lib/api-client'
 import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
 import { useAPI } from './APIContext'
+import { useLogs } from './LogsContext'
 import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT } from '@/lib/constants'
 
 interface TickerContextValue {
@@ -11,6 +12,8 @@ interface TickerContextValue {
   chartData: StockData[]
   loading: boolean
   error: string | null
+  loadMoreHistoricalData: () => Promise<void>
+  loadingMore: boolean
 }
 
 interface TickerProviderProps {
@@ -84,11 +87,47 @@ export function TickerProvider({
   const settings = enableFetching ? useChartSettings() : null
   const { lastRefresh } = useRefresh()
   const { getTickers } = useAPI()
+  const { info } = useLogs()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [loadingMore, setLoadingMore] = React.useState(false)
 
+  // Local limit state (independent of global settings)
+  const [localLimit, setLocalLimit] = React.useState<number | null>(null)
+
+  // Refs for stable access
+  const loadingMoreRef = React.useRef(false)
+
+  // Load more historical data (for Load More button)
+  const loadMoreHistoricalData = React.useCallback(() => {
+    if (!settings || loadingMoreRef.current) {
+      return
+    }
+
+    loadingMoreRef.current = true
+
+    // Increase local limit by 252 - this will trigger main effect to refetch
+    const currentLimit = localLimit ?? (limit ?? settings.limit)
+    const newLimit = currentLimit + 252
+    setLocalLimit(newLimit)
+
+    // Reset flag after state update
+    setTimeout(() => {
+      loadingMoreRef.current = false
+    }, 100)
+  }, [settings, localLimit, limit])
+
+  // Sync loadingMore with main loading state
+  React.useEffect(() => {
+    setLoadingMore(loading)
+  }, [loading])
+
+  // Reset local limit when ticker or key settings change
+  React.useEffect(() => {
+    setLocalLimit(null)
+  }, [selectedTicker, settings?.interval])
 
   // Initialize with ticker on mount only (prioritize ticker prop over initialTicker)
   React.useEffect(() => {
@@ -127,9 +166,10 @@ export function TickerProvider({
             interval: settings.interval,
             start_date: settings.startDate,
             end_date: settings.endDate,
-            limit: limit ?? settings.limit,
+            limit: localLimit ?? (limit ?? settings.limit),
           })
           const data = response[selectedTicker] || []
+
           setChartData(data)
 
           // Record this API call for future cache detection
@@ -157,7 +197,7 @@ export function TickerProvider({
     }
 
     fetchChartData()
-  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh])
+  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localLimit])
 
   const contextValue = {
     selectedTicker,
@@ -165,6 +205,8 @@ export function TickerProvider({
     chartData,
     loading,
     error,
+    loadMoreHistoricalData,
+    loadingMore,
   }
 
   

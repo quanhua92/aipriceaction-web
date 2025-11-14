@@ -91,10 +91,10 @@ export function BaseTradingViewChart({
 	} | null>(null)
 	const [isDataInitialized, setIsDataInitialized] = useState(false)
 
-	// Reset viewport state when data changes
+	// Reset data initialization flag when data changes
+	// Note: We intentionally preserve viewport position for comparison across tickers
 	useEffect(() => {
-		setUserViewportSet(false)
-		setLastViewportRange(null)
+		console.log('[BaseTradingViewChart] Data changed:', data?.length, 'bars')
 		setIsDataInitialized(false)
 	}, [data])
 

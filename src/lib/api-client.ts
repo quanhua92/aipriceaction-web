@@ -122,6 +122,9 @@ export async function getTickersWithLogging(
   try {
     const response = await apiClientWithMetadata.getTickers(params) as RequestResult<TickersResponse>
 
+    // Calculate raw API response bars (before normalization)
+    const rawBars = Object.values(response.data).reduce((sum, data) => sum + data.length, 0)
+
     // Normalize all ticker data timestamps to UTC ISO format
     const normalizedResponse: TickersResponse = {}
     for (const [ticker, data] of Object.entries(response.data)) {
@@ -156,8 +159,11 @@ export async function getTickersWithLogging(
         params?.end_date ? `end=${params.end_date}` : null,
       ].filter(Boolean).join(' ')
 
+      // Calculate total bars returned after normalization
+      const totalBars = Object.values(normalizedResponse).reduce((sum, data) => sum + data.length, 0)
+
       logger.info(
-        `[API] ${source} getTickers: ${paramsStr} | ${response.metadata.duration}ms | ${sizeKB} | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
+        `[API] ${source} getTickers: ${paramsStr} | ${rawBars} bars (raw) -> ${totalBars} bars (normalized) | ${response.metadata.duration}ms | ${sizeKB} | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
       )
     }
 

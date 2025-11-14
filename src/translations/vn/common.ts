@@ -129,4 +129,7 @@ export default {
     previous: 'Trước',
     next: 'Sau',
   },
+  chart: {
+    loadMore: 'Tải Thêm',
+  },
 }

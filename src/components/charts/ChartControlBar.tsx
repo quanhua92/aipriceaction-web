@@ -2,6 +2,8 @@ import { Interval } from '@/lib/api-client'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
+import { useTicker } from '@/contexts/TickerContext'
+import { useTranslation } from '@/hooks/useTranslation'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -10,7 +12,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Settings, Maximize2 } from 'lucide-react'
+import { MoreVertical, Settings, Maximize2, Plus, Loader2 } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -63,7 +65,9 @@ export function ChartControlBar({
 	className = '',
 	onFullscreenClick,
 }: ChartControlBarProps) {
-		const {
+	const { t } = useTranslation()
+	const { loadMoreHistoricalData, loadingMore } = useTicker()
+	const {
 		interval: globalInterval,
 		setInterval: setGlobalInterval,
 		limit,
@@ -199,6 +203,39 @@ export function ChartControlBar({
 					</DropdownMenu>
 				</div>
 			)}
+
+			{/* Load More Button - Icon + Text on Desktop */}
+			<Button
+				variant="outline"
+				size="sm"
+				className="hidden md:flex h-7 text-xs px-2 gap-1"
+				onClick={loadMoreHistoricalData}
+				disabled={loadingMore}
+				title="Load 252 more historical bars"
+			>
+				{loadingMore ? (
+					<Loader2 className="h-3.5 w-3.5 animate-spin" />
+				) : (
+					<Plus className="h-3.5 w-3.5" />
+				)}
+				{loadingMore ? t('common.loading') : t('common.chart.loadMore')}
+			</Button>
+
+			{/* Load More Button - Icon Only on Mobile */}
+			<Button
+				variant="ghost"
+				size="sm"
+				className="flex md:hidden h-7 w-7 p-0"
+				onClick={loadMoreHistoricalData}
+				disabled={loadingMore}
+				title="Load 252 more historical bars"
+			>
+				{loadingMore ? (
+					<Loader2 className="h-4 w-4 animate-spin" />
+				) : (
+					<Plus className="h-4 w-4" />
+				)}
+			</Button>
 
 			{/* Fullscreen Button (if provided) */}
 			{onFullscreenClick && (
