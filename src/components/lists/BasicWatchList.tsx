@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight, Star, Plus, Edit2, Bookmark } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
-import { useChartSettings } from '@/contexts/ChartSettingsContext'
+import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
 import {
   Select,
@@ -44,8 +44,8 @@ export function BasicWatchList({
   onSectorChange,
   onSortedTickersChange
 }: BasicWatchListProps) {
-  const { tickerGroups, allTickersData, loading, error, getTickers } = useAPI()
-  const settings = useChartSettings()
+  const { tickerGroups, allTickersData, loading, error } = useAPI()
+  const { prefetchTickers } = usePrefetchTicker()
   const { language } = useTranslation()
 
   // State to track custom watchlists and trigger re-renders
@@ -286,19 +286,6 @@ export function BasicWatchList({
     }
   }, [currentSelectedIndex, sortedTickers, onSelectTicker])
 
-  // Prefetch function to make fire-and-forget HTTP calls for browser cache
-  const prefetchTickerData = React.useCallback((symbol: string) => {
-    if (!settings || !symbol) return
-
-    // Fire-and-forget HTTP call for browser cache
-    getTickers('BasicWatchList.prefetch', {
-      symbol,
-      interval: settings.interval,
-      start_date: settings.startDate,
-      end_date: settings.endDate,
-      limit: settings.limit,
-    }).catch(() => {}) // Ignore errors
-  }, [settings, getTickers])
 
   // Keyboard navigation
   React.useEffect(() => {
@@ -324,14 +311,18 @@ export function BasicWatchList({
   React.useEffect(() => {
     if (!showControls || sortedTickers.length === 0) return
 
-    // Prefetch next N tickers using a loop
+    // Build array of next N ticker symbols to prefetch
+    const symbolsToPrefetch: string[] = []
     for (let i = 1; i <= BASIC_WATCHLIST_PREFETCH_COUNT; i++) {
       const nextIndex = currentSelectedIndex + i
       if (nextIndex < sortedTickers.length) {
-        prefetchTickerData(sortedTickers[nextIndex].symbol)
+        symbolsToPrefetch.push(sortedTickers[nextIndex].symbol)
       }
     }
-  }, [currentSelectedIndex, sortedTickers, showControls, prefetchTickerData])
+
+    // Fire-and-forget prefetch
+    prefetchTickers(symbolsToPrefetch)
+  }, [currentSelectedIndex, sortedTickers, showControls, prefetchTickers])
 
   // Auto-select first ticker when controls are enabled and tickers are available
   // Also reset to first ticker when sorting changes (sortedTickers array changes)
