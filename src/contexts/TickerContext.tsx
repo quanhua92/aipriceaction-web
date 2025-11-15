@@ -3,7 +3,6 @@ import { type StockData } from '@/lib/api-client'
 import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
 import { useAPI } from './APIContext'
-import { useLogs } from './LogsContext'
 import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT } from '@/lib/constants'
 
 interface TickerContextValue {
@@ -107,7 +106,7 @@ export function TickerProvider({
   const loadingMoreRef = React.useRef(false)
 
   // Load more historical data (for Load More button)
-  const loadMoreHistoricalData = React.useCallback(() => {
+  const loadMoreHistoricalData = React.useCallback(async () => {
     if (!settings || loadingMoreRef.current) {
       return
     }
@@ -120,9 +119,8 @@ export function TickerProvider({
     setLocalLimit(newLimit)
 
     // Reset flag after state update
-    setTimeout(() => {
-      loadingMoreRef.current = false
-    }, 100)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    loadingMoreRef.current = false
   }, [settings, localLimit, limit])
 
   // Sync loadingMore with main loading state

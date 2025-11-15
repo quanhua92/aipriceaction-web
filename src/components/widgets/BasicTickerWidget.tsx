@@ -97,6 +97,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
         }
 
         const priceChange = data.close_changed ?? 0
+        const volumeChange = data.volume_changed ?? 0
         const isPricePositive = priceChange >= 0
 
         return (

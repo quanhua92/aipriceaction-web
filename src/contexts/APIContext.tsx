@@ -7,8 +7,8 @@ import { useRefresh } from './RefreshContext'
 const sortTickerGroups = (groups: TickerGroups): TickerGroups => {
   const sortedEntries = Object.entries(groups)
     .sort(([groupA], [groupB]) => {
-      const priorityA = PRIORITY_GROUPS.indexOf(groupA)
-      const priorityB = PRIORITY_GROUPS.indexOf(groupB)
+      const priorityA = PRIORITY_GROUPS.indexOf(groupA as typeof PRIORITY_GROUPS[number])
+      const priorityB = PRIORITY_GROUPS.indexOf(groupB as typeof PRIORITY_GROUPS[number])
 
       if (priorityA !== -1 && priorityB !== -1) {
         return priorityA - priorityB
@@ -112,7 +112,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       const startTime = Date.now()
       const health = await getHealthApi()
       const duration = Date.now() - startTime
-      info(`[API] ${source} getHealth: ${duration}ms | Status: ${health.status}`)
+      info(`[API] ${source} getHealth: ${duration}ms | Active tickers: ${health.active_tickers_count}`)
       return health
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err)

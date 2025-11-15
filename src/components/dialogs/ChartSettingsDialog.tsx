@@ -23,7 +23,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select'
-import { useTranslation } from '@/hooks/useTranslation'
 import { CalendarIcon, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { TRADING_DAYS_PER_YEAR } from '@/lib/constants'
