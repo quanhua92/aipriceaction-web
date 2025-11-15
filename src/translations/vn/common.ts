@@ -128,6 +128,7 @@ export default {
     selectWatchlist: 'Chọn danh mục hoặc ngành để xem biểu đồ',
     previous: 'Trước',
     next: 'Sau',
+    clickToViewFullscreen: 'Nhấn vào bất kỳ mã nào trong danh sách để xem biểu đồ toàn màn hình',
   },
   chart: {
     loadMore: 'Tải Thêm',

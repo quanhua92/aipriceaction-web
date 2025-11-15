@@ -4,6 +4,7 @@ import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 
 export const Route = createFileRoute("/chart/")({
@@ -11,7 +12,8 @@ export const Route = createFileRoute("/chart/")({
 });
 
 function ChartPage() {
-		// State for selected sector group from watchlist
+	const { t } = useTranslation();
+	// State for selected sector group from watchlist
 	const [selectedSector, setSelectedSector] = React.useState(ALL_WATCHLIST_NAME);
 
 	// Fullscreen dialog state
@@ -70,7 +72,7 @@ function ChartPage() {
 					</div>
 					<div className="lg:col-span-2">
 						<p className="text-sm text-muted-foreground">
-							Click on any ticker in the watchlist to view its chart in fullscreen mode.
+							{t('common.watch.clickToViewFullscreen')}
 						</p>
 					</div>
 				</div>

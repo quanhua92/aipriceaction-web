@@ -128,6 +128,7 @@ export default {
     selectWatchlist: 'Select a watchlist or sector to view charts',
     previous: 'Previous',
     next: 'Next',
+    clickToViewFullscreen: 'Click on any ticker in the watchlist to view its chart in fullscreen mode',
   },
   chart: {
     loadMore: 'Load More',

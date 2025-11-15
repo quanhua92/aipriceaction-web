@@ -93,7 +93,7 @@ function HomePage() {
 					</div>
 					<div className="lg:col-span-2">
 						<p className="text-sm text-muted-foreground">
-							Click on any ticker in the watchlist to view its chart in fullscreen mode.
+							{t('common.watch.clickToViewFullscreen')}
 						</p>
 					</div>
 				</div>
