@@ -58,7 +58,7 @@ See `src/routes/__root.tsx` for the provider tree.
 - Orchestrates all API data fetching
 - Provides `getTickers()` wrapper that **automatically logs** to LogsContext
 - Fetches on mount AND when `lastRefresh` changes
-- Populates `allTickersData` used by BasicWatchList and other components
+- Populates `allTickersLastData` (latest bar only, `limit: 1`) used by BasicWatchList and other components for displaying current prices/volumes
 
 ### TickerContext (`src/contexts/TickerContext.tsx`)
 - Manages single ticker + chart data
@@ -102,7 +102,7 @@ useEffect(() => {
 ```
 
 **Current implementations:**
-- ✅ `APIContext` - refetches `allTickersData`
+- ✅ `APIContext` - refetches `allTickersLastData`
 - ✅ `MarketMatrix` - refreshes matrix view
 - ✅ `TickerContext` - updates chart data
 - ✅ `ai.tsx` route - refreshes selected tickers

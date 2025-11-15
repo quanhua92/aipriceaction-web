@@ -20,7 +20,7 @@ interface SelectTickerDialogProps {
 export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
-  const { tickers, loading, error, allTickersData } = useAPI()
+  const { tickers, loading, error, allTickersLastData } = useAPI()
   const { t } = useTranslation()
 
   const handleSelectTicker = (symbol: string) => {
@@ -50,7 +50,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
         <div className="flex-1 min-h-0">
           <SortableTickerList
             tickers={tickers}
-            allTickersData={allTickersData}
+            allTickersLastData={allTickersLastData}
             searchQuery={search}
             marketIndices={[...MARKET_INDICES]}
             onSelectTicker={handleSelectTicker}

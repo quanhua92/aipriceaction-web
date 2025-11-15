@@ -145,7 +145,7 @@ function DebugFooterContent() {
 		'ticker groups count': apiContext.tickerGroups
 			? Object.keys(apiContext.tickerGroups).length
 			: 0,
-		'all tickers data count': Object.keys(apiContext.allTickersData).length,
+		'all tickers last data count': Object.keys(apiContext.allTickersLastData).length,
 	}
 
 	const chartData = {

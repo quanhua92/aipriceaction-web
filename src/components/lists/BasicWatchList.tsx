@@ -44,7 +44,7 @@ export function BasicWatchList({
   onSectorChange,
   onSortedTickersChange
 }: BasicWatchListProps) {
-  const { tickerGroups, allTickersData, loading, error } = useAPI()
+  const { tickerGroups, allTickersLastData, loading, error } = useAPI()
   const { prefetchTickers } = usePrefetchTicker()
   const { language } = useTranslation()
 
@@ -395,7 +395,7 @@ export function BasicWatchList({
       <div className="flex-1 px-3">
         <SortableTickerList
         tickers={tickers}
-        allTickersData={allTickersData}
+        allTickersLastData={allTickersLastData}
         searchQuery="" // No search in watchlist
         marketIndices={[]} // No market indices in watchlist
         showMarketIndices={showMarketIndices}

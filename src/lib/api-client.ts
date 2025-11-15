@@ -161,9 +161,11 @@ export async function getTickersWithLogging(
 
       // Calculate total bars returned after normalization
       const totalBars = Object.values(normalizedResponse).reduce((sum, data) => sum + data.length, 0)
+      const tickerCount = Object.keys(normalizedResponse).length
+      const averageBarsPerTicker = tickerCount > 0 ? Math.round(totalBars / tickerCount) : 0
 
       logger.info(
-        `[API] ${source} getTickers: ${paramsStr} | ${rawBars} bars (raw) -> ${totalBars} bars (normalized) | ${response.metadata.duration}ms | ${sizeKB} | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
+        `[API] ${source} getTickers: ${paramsStr} | ${tickerCount} tickers × ~${averageBarsPerTicker} bars avg (${totalBars} total, ${rawBars} raw) | ${response.metadata.duration}ms | ${sizeKB} | CF:${cfCache} | Ray:${cfRay} | ${rateLimit} | ${response.metadata.status}`
       )
     }
 

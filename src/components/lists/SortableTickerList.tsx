@@ -16,7 +16,7 @@ export type SortBy = 'az' | 'gainers' | 'losers' | 'volume' | 'ma20' | 'ma50'
 
 export interface SortableTickerListProps {
   tickers: Ticker[]
-  allTickersData: Record<string, StockData[]>
+  allTickersLastData: Record<string, StockData[]>
   searchQuery: string
   marketIndices?: string[]
   showMarketIndices?: boolean
@@ -31,7 +31,7 @@ export interface SortableTickerListProps {
 
 export function SortableTickerList({
   tickers,
-  allTickersData,
+  allTickersLastData,
   searchQuery = '',
   marketIndices = [...MARKET_INDICES],
   showMarketIndices = true,
@@ -47,7 +47,7 @@ export function SortableTickerList({
   const { t, language } = useTranslation()
 
   const getLatestData = (symbol: string): StockData | undefined => {
-    const data = allTickersData[symbol]
+    const data = allTickersLastData[symbol]
     return data?.[data.length - 1]
   }
 
@@ -116,7 +116,7 @@ export function SortableTickerList({
       filteredMarketIndices: indices,
       filteredTickers: sortedTickers
     }
-  }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersData])
+  }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersLastData])
 
   // Notify parent component when sorted tickers change
   React.useEffect(() => {

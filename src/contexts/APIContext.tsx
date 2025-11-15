@@ -30,7 +30,7 @@ interface Ticker {
 interface APIContextValue {
   tickerGroups: TickerGroups | null
   tickers: Ticker[]
-  allTickersData: Record<string, StockData[]>
+  allTickersLastData: Record<string, StockData[]>
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
@@ -45,7 +45,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
   const { lastRefresh } = useRefresh()
   const [tickerGroups, setTickerGroups] = React.useState<TickerGroups | null>(null)
   const [tickers, setTickers] = React.useState<Ticker[]>([])
-  const [allTickersData, setAllTickersData] = React.useState<Record<string, StockData[]>>({})
+  const [allTickersLastData, setAllTickersLastData] = React.useState<Record<string, StockData[]>>({})
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -58,7 +58,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       // Fetch both ticker groups and all tickers data in parallel
       const [groups, tickersData] = await Promise.all([
         getTickerGroups(),
-        getTickersWithLogging('APIContext.init', {}, { info, warn: info, error: logError })
+        getTickersWithLogging('APIContext.init', { limit: 1 }, { info, warn: info, error: logError })
       ])
 
       const duration = Date.now() - startTime
@@ -66,7 +66,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
 
       const sortedGroups = sortTickerGroups(groups)
       setTickerGroups(sortedGroups)
-      setAllTickersData(tickersData)
+      setAllTickersLastData(tickersData)
 
       // Flatten groups into ticker list with sector info
       const tickerList: Ticker[] = []
@@ -125,7 +125,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
     () => ({
       tickerGroups,
       tickers,
-      allTickersData,
+      allTickersLastData,
       loading,
       error,
       refetch: fetchTickerGroups,
@@ -135,7 +135,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
     [
       tickerGroups,
       tickers,
-      allTickersData,
+      allTickersLastData,
       loading,
       error,
       fetchTickerGroups,
