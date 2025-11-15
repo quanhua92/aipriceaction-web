@@ -244,7 +244,7 @@ export class AIPriceActionClient {
    * const data = await client.getTickers({ symbol: 'VCB', format: 'json' });
    * ```
    */
-  async getTickers(params: TickersQueryParams = {}): Promise<TickersResponse | RequestResult<TickersResponse>> {
+  async getTickers(params: TickersQueryParams = {}): Promise<TickersResponse> {
     // Validate dates
     if (params.start_date && !isValidDate(params.start_date)) {
       throw new ValidationError(
@@ -265,7 +265,7 @@ export class AIPriceActionClient {
 
     if (params.format === 'json') {
       // If JSON format is explicitly requested, use original behavior
-      return this.request<TickersResponse>(`/tickers${queryString}`);
+      return this.request<TickersResponse>(`/tickers${queryString}`) as Promise<TickersResponse>;
     } else {
       // Default: request CSV and parse it to TickersResponse
       const csvText = await this.request<string>(`/tickers${queryString}`);
@@ -273,11 +273,7 @@ export class AIPriceActionClient {
       if (this.includeMetadata && typeof csvText !== 'string') {
         // csvText is RequestResult<string>
         const result = csvText as RequestResult<string>;
-        return {
-          data: parseCSVToTickersResponse(result.data),
-          headers: result.headers,
-          metadata: result.metadata,
-        } as RequestResult<TickersResponse>;
+        return parseCSVToTickersResponse(result.data) as TickersResponse;
       }
 
       return parseCSVToTickersResponse(csvText as string) as TickersResponse;
@@ -293,10 +289,10 @@ export class AIPriceActionClient {
    * console.log(csv); // CSV string
    * ```
    */
-  async getTickersCSV(params: Omit<TickersQueryParams, "format"> = {}): Promise<string | RequestResult<string>> {
+  async getTickersCSV(params: Omit<TickersQueryParams, "format"> = {}): Promise<string> {
     const csvParams = { ...params, format: "csv" };
     const queryString = buildQueryString(csvParams as Record<string, unknown>);
-    return this.request<string>(`/tickers${queryString}`);
+    return this.request<string>(`/tickers${queryString}`) as Promise<string>;
   }
 
   /**
@@ -309,8 +305,8 @@ export class AIPriceActionClient {
    * console.log(`Active tickers: ${health.active_tickers_count}`);
    * ```
    */
-  async getHealth(): Promise<HealthResponse | RequestResult<HealthResponse>> {
-    return this.request<HealthResponse>("/health");
+  async getHealth(): Promise<HealthResponse> {
+    return this.request<HealthResponse>("/health") as Promise<HealthResponse>;
   }
 
   /**
@@ -323,8 +319,8 @@ export class AIPriceActionClient {
    * console.log(groups.BANKING); // ['VCB', 'CTG', 'BID', ...]
    * ```
    */
-  async getTickerGroups(): Promise<TickerGroups | RequestResult<TickerGroups>> {
-    return this.request<TickerGroups>("/tickers/group");
+  async getTickerGroups(): Promise<TickerGroups> {
+    return this.request<TickerGroups>("/tickers/group") as Promise<TickerGroups>;
   }
 
   /**
@@ -354,7 +350,7 @@ export class AIPriceActionClient {
    */
   async getTopPerformers(
     params: TopPerformersQueryParams = {}
-  ): Promise<TopPerformersResponse | RequestResult<TopPerformersResponse>> {
+  ): Promise<TopPerformersResponse> {
     // Validate date
     if (params.date && !isValidDate(params.date)) {
       throw new ValidationError(
@@ -366,7 +362,7 @@ export class AIPriceActionClient {
     const queryString = buildQueryString(params as Record<string, unknown>);
     return this.request<TopPerformersResponse>(
       `/analysis/top-performers${queryString}`
-    );
+    ) as Promise<TopPerformersResponse>;
   }
 
   /**
@@ -390,7 +386,7 @@ export class AIPriceActionClient {
    */
   async getMAScoresBySector(
     params: MAScoresBySectorQueryParams = {}
-  ): Promise<MAScoresBySectorResponse | RequestResult<MAScoresBySectorResponse>> {
+  ): Promise<MAScoresBySectorResponse> {
     // Validate date
     if (params.date && !isValidDate(params.date)) {
       throw new ValidationError(
@@ -411,7 +407,7 @@ export class AIPriceActionClient {
     const queryString = buildQueryString(params as Record<string, unknown>);
     return this.request<MAScoresBySectorResponse>(
       `/analysis/ma-scores-by-sector${queryString}`
-    );
+    ) as Promise<MAScoresBySectorResponse>;
   }
 
   /**
