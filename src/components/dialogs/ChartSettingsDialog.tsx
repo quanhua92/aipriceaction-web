@@ -1,5 +1,5 @@
 import React from 'react'
-import { useChartSettings, MaVisibility } from '@/contexts/ChartSettingsContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import {
 	Dialog,
 	DialogContent,
@@ -50,7 +50,6 @@ const HEIGHT_OPTIONS = [
 ]
 
 export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
-	const { t } = useTranslation()
 	const {
 		limit,
 		setLimit,

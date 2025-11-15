@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Star, Plus, Edit2, Bookmark } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star, Plus, Edit2, Bookmark } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'

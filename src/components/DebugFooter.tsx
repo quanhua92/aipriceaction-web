@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation } from '@tanstack/react-router'
-import { ChevronUp, ChevronDown, Copy, Check } from 'lucide-react'
+import { ChevronDown, Copy, Check } from 'lucide-react'
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -15,7 +15,6 @@ import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { useLogs } from '@/contexts/LogsContext'
 import {
-	ALL_WATCHLIST_NAME,
 	CUSTOM_WATCHLISTS_STORAGE_KEY,
 	AI_SELECTED_TICKERS_STORAGE_KEY,
 	MATRIX_OPEN_SECTORS_STORAGE_KEY,

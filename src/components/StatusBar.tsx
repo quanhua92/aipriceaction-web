@@ -27,14 +27,6 @@ function formatTimeAgo(ms: number | null): string {
   return `${seconds}s`
 }
 
-/**
- * Format bytes to human-readable size
- */
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes}B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
-}
 
 /**
  * Status bar component showing API health and data freshness
@@ -60,13 +52,6 @@ export function StatusBar() {
     yellow: 'bg-yellow-500',
     red: 'bg-red-500',
     gray: 'bg-gray-400',
-  }
-
-  const badgeVariants = {
-    green: 'default' as const,
-    yellow: 'secondary' as const,
-    red: 'destructive' as const,
-    gray: 'outline' as const,
   }
 
   return (

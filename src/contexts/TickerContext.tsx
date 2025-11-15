@@ -91,7 +91,6 @@ export function TickerProvider({
   const settings = enableFetching ? useChartSettings() : null
   const { lastRefresh } = useRefresh()
   const { getTickers } = useAPI()
-  const { info } = useLogs()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)

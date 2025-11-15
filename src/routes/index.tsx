@@ -14,8 +14,6 @@ export const Route = createFileRoute("/")({ component: HomePage });
 
 function HomePage() {
 	const { t } = useTranslation();
-	// State for selected sector group from watchlist
-	const [selectedSector, setSelectedSector] = React.useState(ALL_WATCHLIST_NAME);
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);

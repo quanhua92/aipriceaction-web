@@ -1,4 +1,3 @@
-import type { StockData } from '@/lib/api-client'
 import {
 	createChart,
 	createTextWatermark,
@@ -15,7 +14,7 @@ import {
 	LineSeries,
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamTime, toVietnamUnixTime, formatToVietnamDateShort } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -685,9 +684,9 @@ export function BaseTradingViewChart({
 							MozOsxFontSmoothing: 'grayscale',
 						}}
 					>
-						<span className={cn("font-semibold", latestData.close_changed >= 0 ? "text-green-400" : "text-red-400")}>{latestData.symbol}</span> <span className={cn(latestData.close_changed >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(latestData.close)}</span> <span className={cn(latestData.close_changed >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.close_changed)}</span>
+						<span className={cn("font-semibold", (latestData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{latestData.symbol}</span> <span className={cn((latestData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(latestData.close)}</span> <span className={cn((latestData.close_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.close_changed ?? 0)}</span>
 						<span className="mx-1"></span>
-						<span className={cn(latestData.volume_changed >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(latestData.volume)}</span> <span className={cn(latestData.volume_changed >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.volume_changed)}</span>
+						<span className={cn((latestData.volume_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(latestData.volume)}</span> <span className={cn((latestData.volume_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.volume_changed ?? 0)}</span>
 						<span className="text-zinc-400 ml-2 text-xs">
 							{(() => {
 								try {

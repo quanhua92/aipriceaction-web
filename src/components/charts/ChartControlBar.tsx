@@ -70,17 +70,6 @@ export function ChartControlBar({
 	const {
 		interval: globalInterval,
 		setInterval: setGlobalInterval,
-		limit,
-		setLimit,
-		height,
-		setHeight,
-		maVisibility,
-		setMaVisibility,
-		resetMaVisibility,
-		startDate,
-		setStartDate,
-		endDate,
-		setEndDate,
 	} = useChartSettings()
 
 	// Use global interval if no specific interval provided
@@ -108,7 +97,7 @@ export function ChartControlBar({
 		(i) => !dynamicMobileVisibleIntervals.includes(i),
 	)
 
-	const renderIntervalButton = (int: Interval, isMobile: boolean = false) => (
+	const renderIntervalButton = (int: Interval, _isMobile: boolean = false) => (
 		<Button
 			key={int}
 			variant="ghost"

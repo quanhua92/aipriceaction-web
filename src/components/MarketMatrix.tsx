@@ -12,7 +12,6 @@ import {
   MATRIX_OPEN_SECTORS_STORAGE_KEY,
   PRIORITY_GROUPS,
   SECTOR_ABBREVIATIONS,
-  TRADING_DAYS_PER_YEAR,
 } from '@/lib/constants'
 import {
   Select,

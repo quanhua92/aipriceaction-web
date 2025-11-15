@@ -64,18 +64,9 @@ function TradingViewChartContent({
 
 	// Use global settings as defaults, override with props if provided
 	const currentInterval = interval ?? globalSettings.interval
-	const currentLimit = limit ?? globalSettings.limit
 	const currentHeight = height ?? globalSettings.height
 	const currentMaVisibility = maVisibility ?? globalSettings.maVisibility
-	const currentStartDate = startDate ?? globalSettings.startDate
-	const currentEndDate = endDate ?? globalSettings.endDate
 	const handleIntervalChange = onIntervalChange ?? globalSettings.setInterval
-	const handleLimitChange = setLimit ?? globalSettings.setLimit
-	const handleHeightChange = setHeight ?? globalSettings.setHeight
-	const handleMaVisibilityChange = setMaVisibility ?? globalSettings.setMaVisibility
-	const handleResetMaVisibility = resetMaVisibility ?? globalSettings.resetMaVisibility
-	const handleStartDateChange = setStartDate ?? globalSettings.setStartDate
-	const handleEndDateChange = setEndDate ?? globalSettings.setEndDate
 
 	// Sync with external ticker prop changes
 	React.useEffect(() => {

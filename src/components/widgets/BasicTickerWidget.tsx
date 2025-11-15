@@ -1,4 +1,3 @@
-import type { StockData } from '@/lib/api-client'
 import { TrendingUp, TrendingDown, ChevronDown, Star } from 'lucide-react'
 import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
@@ -98,9 +97,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
         }
 
         const priceChange = data.close_changed ?? 0
-        const volumeChange = data.volume_changed ?? 0
         const isPricePositive = priceChange >= 0
-        const isVolumePositive = volumeChange >= 0
 
         return (
         <div className="border rounded-lg p-4 bg-card">
