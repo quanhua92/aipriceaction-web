@@ -2,18 +2,45 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
-import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
+import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
+import type { Ticker } from "@/components/lists/SortableTickerList";
 
 export const Route = createFileRoute("/chart/")({
 	component: ChartPage,
 });
 
 function ChartPage() {
-		// State for selected ticker from watchlist
-	const [selectedTicker, setSelectedTicker] = React.useState("VNINDEX");
 		// State for selected sector group from watchlist
 	const [selectedSector, setSelectedSector] = React.useState(ALL_WATCHLIST_NAME);
+
+	// Fullscreen dialog state
+	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
+	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
+
+	// Get ticker symbols array for navigation in fullscreen dialog
+	const tickerSymbols = React.useMemo(() => {
+		return sortedTickers.map(t => t.symbol);
+	}, [sortedTickers]);
+
+	// Get current index for fullscreen dialog
+	const fullscreenTickerIndex = React.useMemo(() => {
+		if (!fullscreenTicker) return 0;
+		const index = tickerSymbols.indexOf(fullscreenTicker);
+		return index !== -1 ? index : 0;
+	}, [fullscreenTicker, tickerSymbols]);
+
+	const handleSelectTicker = (symbol: string) => {
+		setFullscreenTicker(symbol);
+	};
+
+	const handleCloseFullscreen = () => {
+		setFullscreenTicker(null);
+	};
+
+	const handleSortedTickersChange = (tickers: Ticker[]) => {
+		setSortedTickers(tickers);
+	};
 
 	return (
 		<div className="space-y-8">
@@ -33,36 +60,29 @@ function ChartPage() {
 					<div className="lg:col-span-1">
 						<BasicWatchList
 							defaultGroup={ALL_WATCHLIST_NAME}
-							showControls={true}
-							onSelectTicker={setSelectedTicker}
+							maxHeight="500px"
+							showMarketIndices={true}
+							showControls={false}
+							onSelectTicker={handleSelectTicker}
 							onSectorChange={setSelectedSector}
+							onSortedTickersChange={handleSortedTickersChange}
 						/>
 					</div>
 					<div className="lg:col-span-2">
-						<div className="mb-2">
-							<span className="text-sm text-muted-foreground">
-								Current Sector:{" "}
-								<span className="font-semibold">{selectedSector}</span>
-							</span>
-						</div>
-						<h3 className="text-lg font-semibold mb-4">
-							Watchlist Chart: {selectedTicker}
-						</h3>
-						<div className="grid grid-cols-1 gap-4">
-							<TradingViewChart
-                initialTicker="VNINDEX"
-                ticker={selectedTicker}
-                onTickerChange={setSelectedTicker}
-              />
-							<BasicTickerWidget
-                initialTicker="VNINDEX"
-                ticker={selectedTicker}
-                onTickerChange={setSelectedTicker}
-              />
-						</div>
+						<p className="text-sm text-muted-foreground">
+							Click on any ticker in the watchlist to view its chart in fullscreen mode.
+						</p>
 					</div>
 				</div>
 			</div>
+
+			{/* Fullscreen Dialog */}
+			<ChartFullscreenDialog
+				ticker={fullscreenTicker}
+				onClose={handleCloseFullscreen}
+				tickerList={tickerSymbols}
+				currentIndex={fullscreenTickerIndex}
+			/>
 		</div>
 	);
 }
