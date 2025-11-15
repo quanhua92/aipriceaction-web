@@ -132,5 +132,6 @@ export default {
   },
   chart: {
     loadMore: 'Tải Thêm',
+    ending: 'Kết thúc',
   },
 }

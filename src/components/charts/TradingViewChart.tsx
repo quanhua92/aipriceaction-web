@@ -32,6 +32,7 @@ interface TradingViewChartProps {
 	setStartDate?: (date?: string) => void
 	endDate?: string
 	setEndDate?: (date?: string) => void
+	endDateOverride?: string | null  // Local endDate override (for dialogs)
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -128,7 +129,12 @@ function TradingViewChartContent({
 // Main export - wrapper component that provides TickerProvider
 export function TradingViewChart(props: TradingViewChartProps) {
 	return (
-		<TickerProvider initialTicker={props.initialTicker} ticker={props.ticker}>
+		<TickerProvider
+			initialTicker={props.initialTicker}
+			ticker={props.ticker}
+			limit={props.limit}
+			endDate={props.endDateOverride}
+		>
 			<TradingViewChartContent {...props} />
 		</TickerProvider>
 	)

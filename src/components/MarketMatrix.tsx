@@ -30,7 +30,7 @@ import {
   isPredefinedWatchlist as checkIsPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
 import { getSectorDisplayName } from '@/lib/sector-names'
-import { MatrixChartDialog } from './MatrixChartDialog'
+import { ChartFullscreenDialog } from './ChartFullscreenDialog'
 import type { SortBy } from '@/components/lists/SortableTickerList'
 import { useTranslation } from '@/hooks/useTranslation'
 
@@ -839,7 +839,7 @@ export function MarketMatrix() {
       </Card>
 
       {/* Chart Dialog */}
-      <MatrixChartDialog
+      <ChartFullscreenDialog
         ticker={dialogTicker}
         endDate={dialogEndDate}
         onClose={handleCloseDialog}

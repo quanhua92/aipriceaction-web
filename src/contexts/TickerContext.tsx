@@ -14,6 +14,8 @@ interface TickerContextValue {
   error: string | null
   loadMoreHistoricalData: () => Promise<void>
   loadingMore: boolean
+  localEndDate: string | null
+  setLocalEndDate: (date: string | null) => void
 }
 
 interface TickerProviderProps {
@@ -21,6 +23,7 @@ interface TickerProviderProps {
   initialTicker?: string
   ticker?: string
   limit?: number
+  endDate?: string | null
   enableFetching?: boolean
 }
 
@@ -81,6 +84,7 @@ export function TickerProvider({
   initialTicker = 'VNINDEX',
   ticker,
   limit,
+  endDate,
   enableFetching = true
 }: TickerProviderProps) {
     // Get global settings for API calls (only if fetching is enabled)
@@ -96,6 +100,9 @@ export function TickerProvider({
 
   // Local limit state (independent of global settings)
   const [localLimit, setLocalLimit] = React.useState<number | null>(null)
+
+  // Local endDate state (independent of global settings)
+  const [localEndDate, setLocalEndDate] = React.useState<string | null>(null)
 
   // Refs for stable access
   const loadingMoreRef = React.useRef(false)
@@ -124,10 +131,14 @@ export function TickerProvider({
     setLoadingMore(loading)
   }, [loading])
 
-  // Reset local limit when ticker or key settings change
+  // Reset local limit and endDate when ticker or key settings change
   React.useEffect(() => {
     setLocalLimit(null)
-  }, [selectedTicker, settings?.interval])
+    // Only reset localEndDate if no endDate prop is provided
+    if (endDate === undefined || endDate === null) {
+      setLocalEndDate(null)
+    }
+  }, [selectedTicker, settings?.interval, endDate])
 
   // Initialize with ticker on mount only (prioritize ticker prop over initialTicker)
   React.useEffect(() => {
@@ -135,6 +146,13 @@ export function TickerProvider({
       setSelectedTicker(ticker ?? initialTicker)
     }
   }, []) // Only run once on mount, no dependencies
+
+  // Sync endDate prop with localEndDate state
+  React.useEffect(() => {
+    if (endDate !== undefined && endDate !== localEndDate) {
+      setLocalEndDate(endDate)
+    }
+  }, [endDate])
 
   // Data fetching effect (only if fetching is enabled)
   React.useEffect(() => {
@@ -165,7 +183,7 @@ export function TickerProvider({
             symbol: selectedTicker,
             interval: settings.interval,
             start_date: settings.startDate,
-            end_date: settings.endDate,
+            end_date: localEndDate ?? settings.endDate,
             limit: localLimit ?? (limit ?? settings.limit),
           })
           const data = response[selectedTicker] || []
@@ -197,7 +215,7 @@ export function TickerProvider({
     }
 
     fetchChartData()
-  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localLimit])
+  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localLimit, localEndDate])
 
   const contextValue = {
     selectedTicker,
@@ -207,6 +225,8 @@ export function TickerProvider({
     error,
     loadMoreHistoricalData,
     loadingMore,
+    localEndDate,
+    setLocalEndDate,
   }
 
   

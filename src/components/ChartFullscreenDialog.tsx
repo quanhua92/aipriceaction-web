@@ -9,9 +9,11 @@ import { TradingViewChart } from '@/components/charts/TradingViewChart'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface ChartFullscreenDialogProps {
   ticker: string | null
+  endDate?: string | null
   onClose: () => void
   tickerList?: string[]
   currentIndex?: number
@@ -19,10 +21,12 @@ interface ChartFullscreenDialogProps {
 
 export function ChartFullscreenDialog({
   ticker,
+  endDate,
   onClose,
   tickerList,
   currentIndex = 0,
 }: ChartFullscreenDialogProps) {
+  const { t } = useTranslation()
   const isOpen = ticker !== null
   const [chartHeight, setChartHeight] = React.useState(600)
   const dialogContentRef = React.useRef<HTMLDivElement>(null)
@@ -178,7 +182,10 @@ export function ChartFullscreenDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent ref={dialogContentRef} className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[95vh] h-[95dvh] p-3 gap-2 flex flex-col">
         <DialogHeader data-slot="header" className="flex-shrink-0 pb-2">
-          <DialogTitle className="text-base">{displayTicker}</DialogTitle>
+          <DialogTitle className="text-base">
+            {displayTicker}
+            {endDate && ` - ${t('common.chart.ending')} ${endDate}`}
+          </DialogTitle>
         </DialogHeader>
 
         {displayTicker && (
@@ -187,6 +194,7 @@ export function ChartFullscreenDialog({
               ticker={displayTicker}
               height={chartHeight}
               showControls={true}
+              endDateOverride={endDate}
             />
           </div>
         )}

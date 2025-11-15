@@ -132,5 +132,6 @@ export default {
   },
   chart: {
     loadMore: 'Load More',
+    ending: 'Ending',
   },
 }
