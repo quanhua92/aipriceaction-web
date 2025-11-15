@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
+import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -64,7 +65,6 @@ function ChartPage() {
 							showMarketIndices={true}
 							showControls={false}
 							onSelectTicker={handleSelectTicker}
-							onSectorChange={setSelectedSector}
 							onSortedTickersChange={handleSortedTickersChange}
 						/>
 					</div>

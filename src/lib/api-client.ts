@@ -120,7 +120,7 @@ export async function getTickersWithLogging(
   }
 ) {
   try {
-    const response = await apiClientWithMetadata.getTickers(params) as RequestResult<TickersResponse>
+    const response = await apiClientWithMetadata.getTickers(params) as unknown as RequestResult<TickersResponse>
 
     // Calculate raw API response bars (before normalization)
     const rawBars = Object.values(response.data).reduce((sum, data) => sum + data.length, 0)

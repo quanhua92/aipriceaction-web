@@ -145,7 +145,7 @@ async function main() {
       const sectorStart = Date.now();
 
       // Efficient: Single request with all tickers
-      const sectorData = await client.getTickers({
+      await client.getTickers({
         symbol: bankingTickers,
         limit: 1,
       });

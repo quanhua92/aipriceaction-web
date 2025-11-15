@@ -85,7 +85,6 @@ function HomePage() {
 							showMarketIndices={true}
 							showControls={false}
 							onSelectTicker={handleSelectTicker}
-							onSectorChange={setSelectedSector}
 							onSortedTickersChange={handleSortedTickersChange}
 						/>
 					</div>

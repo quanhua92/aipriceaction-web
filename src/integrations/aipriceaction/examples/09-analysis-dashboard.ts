@@ -43,11 +43,11 @@ async function main() {
 
     const [topGainers, topLosers, volumeLeaders] = await Promise.all([
       client.getTopPerformers({
-        sort_by: SortMetric.CloseChangePercent,
+        sort_by: SortMetric.CloseChanged,
         limit: 5,
       }),
       client.getTopPerformers({
-        sort_by: SortMetric.CloseChangePercent,
+        sort_by: SortMetric.CloseChanged,
         direction: "asc",
         limit: 5,
       }),

@@ -20,7 +20,7 @@ async function main() {
     // Example 1: Top 10 performers by percentage change
     console.log("🚀 Top 10 Performers (by % change):");
     const topPerformers = await client.getTopPerformers({
-      sort_by: SortMetric.CloseChangePercent,
+      sort_by: SortMetric.CloseChanged,
       direction: SortDirection.Descending,
       limit: 10,
     });
@@ -42,7 +42,7 @@ async function main() {
     // Example 2: Bottom 5 performers
     console.log("📉 Bottom 5 Performers (worst % change):");
     const bottomPerformers = await client.getTopPerformers({
-      sort_by: SortMetric.CloseChangePercent,
+      sort_by: SortMetric.CloseChanged,
       direction: SortDirection.Ascending,
       limit: 5,
     });
@@ -93,7 +93,7 @@ async function main() {
     console.log("🏆 Top 5 Banking Sector (NGAN_HANG) Performers:");
     const bankingPerformers = await client.getTopPerformers({
       sector: "NGAN_HANG",
-      sort_by: SortMetric.CloseChangePercent,
+      sort_by: SortMetric.CloseChanged,
       limit: 5,
     });
 

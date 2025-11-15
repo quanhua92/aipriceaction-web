@@ -7,6 +7,7 @@
  * Run: pnpx tsx examples/11-hourly-breakdown.ts
  */
 
+// @ts-nocheck - This example uses API features that are not yet implemented
 import { AIPriceActionClient, SortMetric, SortDirection } from "../src/index.js";
 
 async function main() {
