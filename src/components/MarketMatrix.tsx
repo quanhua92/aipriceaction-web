@@ -383,6 +383,44 @@ export function MarketMatrix() {
     return grouped
   }, [matrixData, sortBy, sortReferenceData])
 
+  // Get all tickers in current view for navigation
+  const allTickersInView = React.useMemo(() => {
+    const tickers: string[] = []
+    // Sort sectors in the same order as displayed in the matrix
+    const sortedSectors = Object.keys(rowsBySector).sort((a, b) => {
+      const priorityA = PRIORITY_GROUPS.indexOf(a as any)
+      const priorityB = PRIORITY_GROUPS.indexOf(b as any)
+
+      if (priorityA !== -1 && priorityB !== -1) {
+        return priorityA - priorityB
+      } else if (priorityA !== -1) {
+        return -1
+      } else if (priorityB !== -1) {
+        return 1
+      }
+      return a.localeCompare(b)
+    })
+
+    // Collect tickers from each sector
+    sortedSectors.forEach(sector => {
+      const sectorRows = rowsBySector[sector]
+      if (!openSectors.has(sector)) return // Skip collapsed sectors
+
+      sectorRows.forEach(row => {
+        tickers.push(row.ticker)
+      })
+    })
+
+    return tickers
+  }, [rowsBySector, openSectors])
+
+  // Find current ticker index in the list
+  const currentTickerIndex = React.useMemo(() => {
+    if (!dialogTicker) return 0
+    const index = allTickersInView.indexOf(dialogTicker)
+    return index !== -1 ? index : 0
+  }, [dialogTicker, allTickersInView])
+
   // Auto-expand all sectors when viewing predefined watchlists (VN30, VINGROUP)
   // This does NOT save to localStorage (handled in the save effect above)
   React.useEffect(() => {
@@ -771,6 +809,8 @@ export function MarketMatrix() {
         ticker={dialogTicker}
         endDate={dialogEndDate}
         onClose={handleCloseDialog}
+        tickerList={allTickersInView}
+        currentIndex={currentTickerIndex}
       />
     </>
   )
