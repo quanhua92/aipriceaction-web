@@ -529,28 +529,6 @@ export function MarketMatrix() {
                   {viewMode === 'close_changed' ? 'CLOSE %' : 'MA20'}
                 </span>
               </Button>
-
-              {/* Pagination */}
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 0}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-xs px-2">Page {currentPage + 1}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleNextPage}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -624,6 +602,34 @@ export function MarketMatrix() {
           {matrixData && (
             <div className="text-xs text-muted-foreground mt-2">
               {matrixData.dates[matrixData.dates.length - 1]} to {matrixData.dates[0]} ({matrixData.dates.length} trading days)
+            </div>
+          )}
+
+          {/* Pagination Controls - Above Matrix */}
+          {!loading && !error && matrixData && (
+            <div className="flex items-center justify-center gap-2 mt-4 pb-3 border-b">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 0}
+                className="h-8 px-3"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Previous</span>
+              </Button>
+              <div className="px-4 py-1 text-sm font-medium bg-muted rounded-md min-w-[100px] text-center">
+                {currentPage + 1}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                className="h-8 px-3"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           )}
         </CardHeader>
@@ -799,6 +805,34 @@ export function MarketMatrix() {
           {!loading && !error && !matrixData && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No data available</p>
+            </div>
+          )}
+
+          {/* Pagination Controls - Below Matrix */}
+          {!loading && !error && matrixData && (
+            <div className="flex items-center justify-center gap-2 py-4 border-t">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 0}
+                className="h-8 px-3"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Previous</span>
+              </Button>
+              <div className="px-4 py-1 text-sm font-medium bg-muted rounded-md min-w-[100px] text-center">
+                {currentPage + 1}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                className="h-8 px-3"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           )}
         </CardContent>
