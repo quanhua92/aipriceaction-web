@@ -321,7 +321,7 @@ export function BasicWatchList({
     }
 
     // Fire-and-forget prefetch
-    prefetchTickers(symbolsToPrefetch)
+    prefetchTickers('BasicWatchList', symbolsToPrefetch)
   }, [currentSelectedIndex, sortedTickers, showControls, prefetchTickers])
 
   // Auto-select first ticker when controls are enabled and tickers are available

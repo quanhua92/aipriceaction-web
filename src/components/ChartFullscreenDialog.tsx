@@ -8,6 +8,7 @@ import {
 import { TradingViewChart } from '@/components/charts/TradingViewChart'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 
 interface ChartFullscreenDialogProps {
   ticker: string | null
@@ -25,6 +26,7 @@ export function ChartFullscreenDialog({
   const isOpen = ticker !== null
   const [chartHeight, setChartHeight] = React.useState(600)
   const dialogContentRef = React.useRef<HTMLDivElement>(null)
+  const { prefetchTickers } = usePrefetchTicker()
 
   // Internal state for navigation when tickerList is provided
   const [internalIndex, setInternalIndex] = React.useState(currentIndex)
@@ -44,20 +46,48 @@ export function ChartFullscreenDialog({
   // Get the current ticker to display
   const displayTicker = tickerList && tickerList.length > 0 ? tickerList[internalIndex] : internalTicker
 
+  // Helper function to get tickers to prefetch with wraparound
+  const getTickersToPrefetch = React.useCallback((fromIndex: number, direction: 'next' | 'prev', count: number): string[] => {
+    if (!tickerList || tickerList.length === 0) return []
+
+    const symbols: string[] = []
+    const length = tickerList.length
+
+    for (let i = 1; i <= count; i++) {
+      let idx: number
+      if (direction === 'next') {
+        idx = (fromIndex + i) % length
+      } else {
+        idx = (fromIndex - i + length) % length
+      }
+      symbols.push(tickerList[idx])
+    }
+
+    return symbols
+  }, [tickerList])
+
   // Navigation functions
   const navigateToPrevious = React.useCallback(() => {
     if (!tickerList || tickerList.length === 0) return
     const newIndex = internalIndex === 0 ? tickerList.length - 1 : internalIndex - 1
     setInternalIndex(newIndex)
     setInternalTicker(tickerList[newIndex])
-  }, [tickerList, internalIndex])
+
+    // Prefetch previous 2 tickers from new position
+    const symbolsToPrefetch = getTickersToPrefetch(newIndex, 'prev', 2)
+    prefetchTickers('ChartFullscreenDialog.prev', symbolsToPrefetch)
+  }, [tickerList, internalIndex, getTickersToPrefetch, prefetchTickers])
 
   const navigateToNext = React.useCallback(() => {
     if (!tickerList || tickerList.length === 0) return
     const newIndex = (internalIndex + 1) % tickerList.length
     setInternalIndex(newIndex)
     setInternalTicker(tickerList[newIndex])
-  }, [tickerList, internalIndex])
+
+    // Prefetch next 2 tickers from new position
+    const symbolsToPrefetch = getTickersToPrefetch(newIndex, 'next', 2)
+    prefetchTickers('ChartFullscreenDialog.next', symbolsToPrefetch)
+  }, [tickerList, internalIndex, getTickersToPrefetch, prefetchTickers])
 
   // Keyboard navigation
   React.useEffect(() => {
@@ -78,6 +108,19 @@ export function ChartFullscreenDialog({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [isOpen, tickerList, navigateToPrevious, navigateToNext])
+
+  // Initial prefetch on dialog open - prefetch next and previous tickers
+  React.useEffect(() => {
+    if (!isOpen || !tickerList || tickerList.length === 0) return
+
+    // Prefetch next ticker
+    const nextSymbols = getTickersToPrefetch(internalIndex, 'next', 1)
+    // Prefetch previous ticker
+    const prevSymbols = getTickersToPrefetch(internalIndex, 'prev', 1)
+
+    // Combine and prefetch
+    prefetchTickers('ChartFullscreenDialog.initial', [...nextSymbols, ...prevSymbols])
+  }, [isOpen, tickerList, internalIndex, getTickersToPrefetch, prefetchTickers])
 
   // Measure available height when dialog opens or window resizes
   React.useEffect(() => {

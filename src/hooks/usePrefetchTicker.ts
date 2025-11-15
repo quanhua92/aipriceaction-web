@@ -12,17 +12,18 @@ export function usePrefetchTicker() {
 
   /**
    * Prefetch data for multiple tickers (fire-and-forget)
+   * @param source - Source identifier for debugging (e.g., 'BasicWatchList', 'ChartDialog.next')
    * @param symbols - Array of ticker symbols to prefetch
    */
   const prefetchTickers = useCallback(
-    (symbols: string[]) => {
+    (source: string, symbols: string[]) => {
       if (!settings || symbols.length === 0) return
 
       // Fire-and-forget HTTP calls for browser cache
       for (const symbol of symbols) {
         if (!symbol) continue
 
-        getTickers('prefetch', {
+        getTickers(`prefetch:${source}`, {
           symbol,
           interval: settings.interval,
           start_date: settings.startDate,
