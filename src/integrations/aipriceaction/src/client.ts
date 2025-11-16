@@ -271,9 +271,13 @@ export class AIPriceActionClient {
       const csvText = await this.request<string>(`/tickers${queryString}`);
 
       if (this.includeMetadata && typeof csvText !== 'string') {
-        // csvText is RequestResult<string>
+        // csvText is RequestResult<string>, need to preserve the wrapper
         const result = csvText as RequestResult<string>;
-        return parseCSVToTickersResponse(result.data) as TickersResponse;
+        return {
+          data: parseCSVToTickersResponse(result.data),
+          headers: result.headers,
+          metadata: result.metadata,
+        } as any as TickersResponse; // Return wrapped but cast to match signature
       }
 
       return parseCSVToTickersResponse(csvText as string) as TickersResponse;
