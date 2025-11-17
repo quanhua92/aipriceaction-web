@@ -27,6 +27,9 @@ export interface SortableTickerListProps {
   maxHeight?: string
   className?: string
   onSortedTickersChange?: (tickers: Ticker[]) => void
+  // Crypto support (optional for backward compatibility)
+  cryptoTickers?: Ticker[]
+  allCryptoTickersLastData?: Record<string, StockData[]>
 }
 
 export function SortableTickerList({
@@ -41,17 +44,20 @@ export function SortableTickerList({
   error = null,
   maxHeight = '400px',
   className = '',
-  onSortedTickersChange
+  onSortedTickersChange,
+  cryptoTickers = [],
+  allCryptoTickersLastData = {}
 }: SortableTickerListProps) {
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
   const { t, language } = useTranslation()
 
-  const getLatestData = (symbol: string): StockData | undefined => {
-    const data = allTickersLastData[symbol]
+  const getLatestData = (symbol: string, isCrypto = false): StockData | undefined => {
+    const dataSource = isCrypto ? allCryptoTickersLastData : allTickersLastData
+    const data = dataSource[symbol]
     return data?.[data.length - 1]
   }
 
-  const { filteredMarketIndices, filteredTickers } = React.useMemo(() => {
+  const { filteredMarketIndices, filteredTickers, filteredCryptoTickers } = React.useMemo(() => {
     const searchLower = searchQuery.toLowerCase()
 
     // Filter market indices
@@ -112,11 +118,55 @@ export function SortableTickerList({
       }
     })
 
+    // Filter and sort crypto tickers
+    const filteredCrypto = cryptoTickers.filter(
+      (ticker) => ticker.symbol.toLowerCase().includes(searchLower)
+    )
+
+    const sortedCrypto = [...filteredCrypto].sort((a, b) => {
+      const aData = getLatestData(a.symbol, true)
+      const bData = getLatestData(b.symbol, true)
+
+      switch (sortBy) {
+        case 'az':
+          return a.symbol.localeCompare(b.symbol)
+
+        case 'gainers':
+          const aChange = aData?.close_changed ?? -Infinity
+          const bChange = bData?.close_changed ?? -Infinity
+          return bChange - aChange
+
+        case 'losers':
+          const aLoss = aData?.close_changed ?? Infinity
+          const bLoss = bData?.close_changed ?? Infinity
+          return aLoss - bLoss
+
+        case 'volume':
+          const aVol = aData?.volume ?? 0
+          const bVol = bData?.volume ?? 0
+          return bVol - aVol
+
+        case 'ma20':
+          const aMA20 = aData?.ma20_score ?? -Infinity
+          const bMA20 = bData?.ma20_score ?? -Infinity
+          return bMA20 - aMA20
+
+        case 'ma50':
+          const aMA50 = aData?.ma50_score ?? -Infinity
+          const bMA50 = bData?.ma50_score ?? -Infinity
+          return bMA50 - aMA50
+
+        default:
+          return 0
+      }
+    })
+
     return {
       filteredMarketIndices: indices,
-      filteredTickers: sortedTickers
+      filteredTickers: sortedTickers,
+      filteredCryptoTickers: sortedCrypto
     }
-  }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersLastData])
+  }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersLastData, cryptoTickers, allCryptoTickersLastData])
 
   // Notify parent component when sorted tickers change
   React.useEffect(() => {
@@ -305,7 +355,55 @@ export function SortableTickerList({
                 </div>
               )}
 
-              {filteredMarketIndices.length === 0 && filteredTickers.length === 0 && (
+              {/* Crypto Tickers */}
+              {filteredCryptoTickers.length > 0 && (
+                <div>
+                  {showSections && (
+                    <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {t('dialogs.selectTicker.sections.crypto')}
+                    </div>
+                  )}
+                  {filteredCryptoTickers.map((ticker) => {
+                    const latestData = getLatestData(ticker.symbol, true)
+                    return (
+                      <button
+                        key={ticker.symbol}
+                        onClick={() => onSelectTicker(ticker.symbol)}
+                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                      >
+                        <div className="flex flex-col min-w-0 flex-shrink">
+                          <span className="font-extrabold">{ticker.symbol}</span>
+                          <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
+                        </div>
+                        {latestData && (
+                          <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                            {/* Price Row */}
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold tabular-nums">{formatPrice(latestData.close)}</span>
+                              {latestData.close_changed !== null && latestData.close_changed !== undefined && (
+                                <span className={`text-xs tabular-nums ${getPriceChangeColor(latestData.close_changed)}`}>
+                                  {latestData.close_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.close_changed)}
+                                </span>
+                              )}
+                            </div>
+                            {/* Volume Row */}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                              <span className="tabular-nums">{t('dialogs.selectTicker.labels.volume')}: {formatVolume(latestData.volume)}</span>
+                              {latestData.volume_changed !== null && latestData.volume_changed !== undefined && (
+                                <span className={`tabular-nums opacity-70 ${latestData.volume_changed > 150 ? 'text-purple-600 dark:text-purple-500' : ''}`}>
+                                  {latestData.volume_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.volume_changed)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {filteredMarketIndices.length === 0 && filteredTickers.length === 0 && filteredCryptoTickers.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   {t('dialogs.selectTicker.states.noTickersFound')}
                 </div>

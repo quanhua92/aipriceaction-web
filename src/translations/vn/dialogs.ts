@@ -13,6 +13,7 @@ export default {
     sections: {
       marketIndices: 'Chỉ Số Thị Trường',
       stocks: 'Cổ Phiếu',
+      crypto: 'Tiền Mã Hóa',
     },
     labels: {
       marketIndex: 'Chỉ số thị trường',

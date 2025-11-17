@@ -20,7 +20,16 @@ interface SelectTickerDialogProps {
 export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
-  const { tickers, loading, error, allTickersLastData } = useAPI()
+  const {
+    tickers,
+    loading,
+    error,
+    allTickersLastData,
+    cryptoTickers,
+    cryptoLoading,
+    cryptoError,
+    allCryptoTickersLastData
+  } = useAPI()
   const { t } = useTranslation()
 
   const handleSelectTicker = (symbol: string) => {
@@ -54,10 +63,12 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
             searchQuery={search}
             marketIndices={[...MARKET_INDICES]}
             onSelectTicker={handleSelectTicker}
-            loading={loading}
-            error={error}
+            loading={loading || cryptoLoading}
+            error={error || cryptoError}
             maxHeight="none"
             className="h-full"
+            cryptoTickers={cryptoTickers}
+            allCryptoTickersLastData={allCryptoTickersLastData}
           />
         </div>
       </DialogContent>

@@ -13,6 +13,7 @@ export default {
     sections: {
       marketIndices: 'Market Indices',
       stocks: 'Stocks',
+      crypto: 'Cryptocurrencies',
     },
     labels: {
       marketIndex: 'Market Index',
