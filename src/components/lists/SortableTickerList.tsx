@@ -50,7 +50,7 @@ export function SortableTickerList({
   allCryptoTickersLastData = {}
 }: SortableTickerListProps) {
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
-  const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>('all')
+  const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>('stocks')
   const { t, language } = useTranslation()
 
   const getLatestData = (symbol: string, isCrypto = false): StockData | undefined => {
