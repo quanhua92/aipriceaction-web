@@ -153,16 +153,11 @@ export function BasicWatchList({
     if (isAllWatchlist(selectedGroup)) {
       if (!tickerGroups) return []
 
-      // Start with market indices
-      const marketIndicesTickers: Ticker[] = [...MARKET_INDICES].map(symbol => ({
-        symbol,
-        sector: 'Market Indices'
-      }))
-
       // Get all tickers from all sector groups
+      // SortableTickerList will handle market indices via marketIndices prop
       const allSectorTickers: Ticker[] = []
       Object.entries(tickerGroups).forEach(([sector, symbols]) => {
-        // Skip market indices as they're already added
+        // Skip market indices as they're handled by SortableTickerList
         if (!MARKET_INDICES.includes(sector as any)) {
           symbols.forEach(symbol => {
             allSectorTickers.push({
@@ -173,7 +168,7 @@ export function BasicWatchList({
         }
       })
 
-      return [...marketIndicesTickers, ...allSectorTickers]
+      return allSectorTickers
     }
 
     // Check if this is the CRYPTO watchlist - return empty array for tickers
@@ -417,7 +412,7 @@ export function BasicWatchList({
         tickers={tickers}
         allTickersLastData={allTickersLastData}
         searchQuery="" // No search in watchlist
-        marketIndices={[]} // No market indices in watchlist
+        marketIndices={showMarketIndices ? [...MARKET_INDICES] : []}
         showMarketIndices={showMarketIndices}
         showSections={true} // Show section headers to distinguish stocks from crypto
         onSelectTicker={handleSelectTicker}
