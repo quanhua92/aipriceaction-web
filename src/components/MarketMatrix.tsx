@@ -65,6 +65,9 @@ function getCellColor(value: number): { bg: string; text: string } {
 // Default sectors to show expanded (matches PRIORITY_GROUPS)
 const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
 
+// Auto-expand threshold: expand all sectors if total sectors is below this number
+const AUTO_EXPAND_SECTOR_THRESHOLD = 3
+
 interface MarketMatrixProps {
   defaultWatchlist?: string
 }
@@ -73,6 +76,19 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { t, language } = useTranslation()
+
+  // Helper to detect if watchlist contains both stocks and crypto
+  const detectWatchlistType = React.useCallback((tickers: string[], cryptoTickersList: { symbol: string; sector: string }[]): 'stock' | 'crypto' | 'mixed' => {
+    if (tickers.length === 0) return 'stock'
+
+    const cryptoSymbolSet = new Set(cryptoTickersList.map(t => t.symbol))
+    const hasCrypto = tickers.some(symbol => cryptoSymbolSet.has(symbol))
+    const hasStock = tickers.some(symbol => !cryptoSymbolSet.has(symbol))
+
+    if (hasCrypto && hasStock) return 'mixed'
+    if (hasCrypto) return 'crypto'
+    return 'stock'
+  }, [])
 
   // State management - simple defaults, no localStorage
   const [selectedWatchlist, setSelectedWatchlist] = React.useState<string>(
@@ -113,11 +129,20 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   }, [])
 
   // Save open sectors to localStorage whenever they change (client-side only)
-  // BUT: Don't save when viewing predefined watchlists to avoid "disaster" scenario
+  // BUT: Don't save when viewing predefined watchlists OR small watchlists
   React.useEffect(() => {
     // Skip saving if viewing predefined watchlist (VN30, VINGROUP)
     if (checkIsPredefinedWatchlist(selectedWatchlist)) {
       return
+    }
+
+    // Count unique sectors from matrixData (if available)
+    // For small watchlists (< AUTO_EXPAND_SECTOR_THRESHOLD), don't persist to localStorage
+    if (matrixData) {
+      const uniqueSectors = new Set(matrixData.rows.map(row => row.sector))
+      if (uniqueSectors.size < AUTO_EXPAND_SECTOR_THRESHOLD) {
+        return
+      }
     }
 
     if (typeof window !== 'undefined') {
@@ -127,7 +152,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
         console.error('Failed to save open sectors to localStorage:', error)
       }
     }
-  }, [openSectors, selectedWatchlist])
+  }, [openSectors, selectedWatchlist, matrixData])
 
   // Get predefined watchlist names
   const predefinedWatchlists = React.useMemo(() => getPredefinedWatchlistNames(), [])
@@ -202,6 +227,36 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
     return tickerGroups[selectedWatchlist] || []
   }, [tickerGroups, selectedWatchlist, customWatchlists, cryptoTickers])
 
+  // Split selected tickers into stocks and crypto
+  const { stockSymbols, cryptoSymbols, watchlistType } = React.useMemo(() => {
+    if (selectedTickers.length === 0) {
+      return { stockSymbols: [], cryptoSymbols: [], watchlistType: 'stock' as const }
+    }
+
+    const cryptoSymbolSet = new Set(cryptoTickers.map(t => t.symbol))
+    const stocks: string[] = []
+    const crypto: string[] = []
+
+    selectedTickers.forEach(symbol => {
+      if (cryptoSymbolSet.has(symbol)) {
+        crypto.push(symbol)
+      } else {
+        stocks.push(symbol)
+      }
+    })
+
+    // Determine watchlist type with special case handling
+    const type =
+      // Special case: ALL watchlist is always stock-only (doesn't include crypto from APIContext)
+      selectedWatchlist === ALL_WATCHLIST_NAME ? 'stock' as const :
+      // Special case: CRYPTO watchlist is always crypto-only
+      selectedWatchlist === CRYPTO_WATCHLIST_NAME ? 'crypto' as const :
+      // For other watchlists (custom/predefined/sectors), detect based on actual symbols
+      detectWatchlistType(selectedTickers, cryptoTickers)
+
+    return { stockSymbols: stocks, cryptoSymbols: crypto, watchlistType: type }
+  }, [selectedTickers, cryptoTickers, detectWatchlistType, selectedWatchlist])
+
   // Fetch matrix data
   React.useEffect(() => {
     if (selectedTickers.length === 0) {
@@ -220,39 +275,80 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             ? format(new Date(), 'yyyy-MM-dd')
             : matrixData?.dates[matrixData.dates.length - 1] || format(new Date(), 'yyyy-MM-dd')
 
-        // Determine mode based on watchlist selection
-        const mode = selectedWatchlist === CRYPTO_WATCHLIST_NAME ? 'crypto' : 'vn'
+        // Determine if this is a mixed, crypto-only, or stock-only watchlist
+        const isMixed = watchlistType === 'mixed'
+        const isCryptoOnly = watchlistType === 'crypto' || selectedWatchlist === CRYPTO_WATCHLIST_NAME
+        const isStockOnly = watchlistType === 'stock'
 
-        // Fetch ticker data including VNINDEX (for trading day calendar, stocks only)
-        // Optimization: When "ALL" watchlist is selected, omit symbol parameter
-        // to avoid super long URLs with hundreds of ticker symbols (symbol=VCB&symbol=FPT&...)
-        // The API will return all tickers (including VNINDEX) when symbol is undefined/omitted
-        // For specific watchlists, always include VNINDEX to get trading day calendar (stocks only)
-        // For CRYPTO, don't include VNINDEX (it doesn't exist in crypto mode)
-        const response = await getTickers('MarketMatrix.data', {
-          symbol:
-            selectedWatchlist === ALL_WATCHLIST_NAME
-              ? undefined
-              : selectedWatchlist === CRYPTO_WATCHLIST_NAME
-                ? selectedTickers  // Crypto only, no VNINDEX
-                : ['VNINDEX', ...selectedTickers],  // Stocks, include VNINDEX for calendar
-          interval: '1D',
-          end_date: endDateForAPI,
-          limit: MATRIX_DAYS_PER_PAGE,
-          mode,
-        })
+        // Fetch ticker data - make separate calls for mixed watchlists
+        let stockResponse: Record<string, StockData[]> = {}
+        let cryptoResponse: Record<string, StockData[]> = {}
 
-        // Extract dates from reference ticker (VNINDEX for stocks, BTC for crypto)
+        if (isMixed) {
+          // Two parallel API calls for mixed watchlist
+          const [stocks, crypto] = await Promise.all([
+            stockSymbols.length > 0
+              ? getTickers('MarketMatrix.data.stocks', {
+                  symbol: ['VNINDEX', ...stockSymbols],
+                  interval: '1D',
+                  end_date: endDateForAPI,
+                  limit: MATRIX_DAYS_PER_PAGE,
+                  mode: 'vn',
+                })
+              : Promise.resolve({}),
+            cryptoSymbols.length > 0
+              ? getTickers('MarketMatrix.data.crypto', {
+                  symbol: ['BTC', ...cryptoSymbols],
+                  interval: '1D',
+                  end_date: endDateForAPI,
+                  limit: MATRIX_DAYS_PER_PAGE,
+                  mode: 'crypto',
+                })
+              : Promise.resolve({}),
+          ])
+          stockResponse = stocks
+          cryptoResponse = crypto
+        } else if (isCryptoOnly) {
+          // Single crypto call
+          cryptoResponse = await getTickers('MarketMatrix.data.crypto', {
+            symbol: selectedTickers,
+            interval: '1D',
+            end_date: endDateForAPI,
+            limit: MATRIX_DAYS_PER_PAGE,
+            mode: 'crypto',
+          })
+        } else {
+          // Single stock call (existing behavior)
+          // Optimization: When "ALL" watchlist is selected, omit symbol parameter
+          // to avoid super long URLs with hundreds of ticker symbols
+          stockResponse = await getTickers('MarketMatrix.data.stocks', {
+            symbol:
+              selectedWatchlist === ALL_WATCHLIST_NAME
+                ? undefined
+                : ['VNINDEX', ...selectedTickers],
+            interval: '1D',
+            end_date: endDateForAPI,
+            limit: MATRIX_DAYS_PER_PAGE,
+            mode: 'vn',
+          })
+        }
+
+        // Merge responses
+        const response = { ...stockResponse, ...cryptoResponse }
+
+        // Extract dates from reference ticker
+        // For mixed/crypto watchlists: use BTC (crypto calendar, 24/7)
+        // For stock-only watchlists: use VNINDEX (trading days only)
         let dates: string[] = []
 
-        if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
-          // For crypto, use BTC as calendar reference (most reliable/liquid)
+        if (isMixed || isCryptoOnly) {
+          // Use BTC as calendar reference for crypto-containing watchlists
           const btcData = response['BTC'] || []
           dates = btcData
             .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
             .sort((a, b) => b.localeCompare(a)) // Newest first
         } else {
-          // For stocks, use VNINDEX as trading day calendar
+          // Use VNINDEX as trading day calendar for stock-only watchlists
           const vnindexData = response['VNINDEX'] || []
           dates = vnindexData
             .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
@@ -365,7 +461,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTickers, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, lastRefresh])
+  }, [selectedTickers, stockSymbols, cryptoSymbols, watchlistType, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, lastRefresh])
 
   // Group rows by sector and sort within each sector
   const rowsBySector = React.useMemo(() => {
@@ -467,13 +563,19 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
     return index !== -1 ? index : 0
   }, [dialogTicker, allTickersInView])
 
-  // Auto-expand all sectors when viewing predefined watchlists (VN30, VINGROUP)
+  // Auto-expand all sectors when:
+  // 1. Viewing predefined watchlists (VN30, VINGROUP) OR
+  // 2. There are fewer than AUTO_EXPAND_SECTOR_THRESHOLD sectors
   // This does NOT save to localStorage (handled in the save effect above)
   React.useEffect(() => {
-    if (checkIsPredefinedWatchlist(selectedWatchlist)) {
-      // Get all sectors currently in the matrix
-      const allSectorsInView = Object.keys(rowsBySector)
-      if (allSectorsInView.length > 0) {
+    const allSectorsInView = Object.keys(rowsBySector)
+
+    if (allSectorsInView.length > 0) {
+      const shouldExpandAll =
+        checkIsPredefinedWatchlist(selectedWatchlist) ||
+        allSectorsInView.length < AUTO_EXPAND_SECTOR_THRESHOLD
+
+      if (shouldExpandAll) {
         setOpenSectors(new Set(allSectorsInView))
       }
     }
