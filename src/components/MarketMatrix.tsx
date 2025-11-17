@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns'
 import { parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import {
   ALL_WATCHLIST_NAME,
+  CRYPTO_WATCHLIST_NAME,
   MARKET_INDICES,
   MATRIX_DAYS_PER_PAGE,
   MATRIX_OPEN_SECTORS_STORAGE_KEY,
@@ -65,7 +66,7 @@ function getCellColor(value: number): { bg: string; text: string } {
 const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
 
 export function MarketMatrix() {
-  const { tickerGroups, loading: apiLoading, getTickers } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { t, language } = useTranslation()
 
@@ -144,9 +145,9 @@ export function MarketMatrix() {
       })
   }, [tickerGroups])
 
-  // Get all available groups (ALL first, then predefined, then custom, then sectors)
+  // Get all available groups (ALL, CRYPTO, predefined, custom, then sectors)
   const allGroups = React.useMemo(() => {
-    return [ALL_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
+    return [ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
   }, [predefinedWatchlists, customWatchlists, sectorGroups])
 
   // Helper to get display name for dropdown (readable names only for sectors)
@@ -175,6 +176,12 @@ export function MarketMatrix() {
       return allTickers
     }
 
+    // Check if CRYPTO watchlist
+    if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
+      // Return all crypto ticker symbols
+      return cryptoTickers.map(t => t.symbol)
+    }
+
     // Check if predefined watchlist
     if (checkIsPredefinedWatchlist(selectedWatchlist)) {
       return getPredefinedWatchlistTickers(selectedWatchlist)
@@ -187,7 +194,7 @@ export function MarketMatrix() {
 
     // Regular sector group
     return tickerGroups[selectedWatchlist] || []
-  }, [tickerGroups, selectedWatchlist, customWatchlists])
+  }, [tickerGroups, selectedWatchlist, customWatchlists, cryptoTickers])
 
   // Fetch matrix data
   React.useEffect(() => {
@@ -207,6 +214,9 @@ export function MarketMatrix() {
             ? format(new Date(), 'yyyy-MM-dd')
             : matrixData?.dates[matrixData.dates.length - 1] || format(new Date(), 'yyyy-MM-dd')
 
+        // Determine mode based on watchlist selection
+        const mode = selectedWatchlist === CRYPTO_WATCHLIST_NAME ? 'crypto' : 'vn'
+
         // Fetch ticker data including VNINDEX (for trading day calendar)
         // Optimization: When "ALL" watchlist is selected, omit symbol parameter
         // to avoid super long URLs with hundreds of ticker symbols (symbol=VCB&symbol=FPT&...)
@@ -217,6 +227,7 @@ export function MarketMatrix() {
           interval: '1D',
           end_date: endDateForAPI,
           limit: MATRIX_DAYS_PER_PAGE,
+          mode,
         })
 
         // Extract dates from VNINDEX (always has data when market is open, serves as trading day calendar)
@@ -236,11 +247,24 @@ export function MarketMatrix() {
           let sector = 'Unknown'
 
           // Find sector for this ticker
-          if (tickerGroups) {
-            for (const [sectorName, symbols] of Object.entries(tickerGroups)) {
-              if (symbols.includes(ticker)) {
-                sector = sectorName
-                break
+          if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
+            // Use cryptoTickerGroups for crypto
+            if (cryptoTickerGroups) {
+              for (const [sectorName, symbols] of Object.entries(cryptoTickerGroups)) {
+                if (symbols.includes(ticker)) {
+                  sector = sectorName
+                  break
+                }
+              }
+            }
+          } else {
+            // Use regular tickerGroups for stocks
+            if (tickerGroups) {
+              for (const [sectorName, symbols] of Object.entries(tickerGroups)) {
+                if (symbols.includes(ticker)) {
+                  sector = sectorName
+                  break
+                }
               }
             }
           }
@@ -318,7 +342,7 @@ export function MarketMatrix() {
 
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTickers, currentPage, viewMode, tickerGroups, lastRefresh])
+  }, [selectedTickers, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, lastRefresh])
 
   // Group rows by sector and sort within each sector
   const rowsBySector = React.useMemo(() => {
