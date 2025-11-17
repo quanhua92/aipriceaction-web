@@ -189,10 +189,14 @@ export function BasicWatchList({
     // Check if this is a custom watchlist
     if (isCustomWatchlist(selectedGroup)) {
       const watchlistTickers = getWatchlistTickers(selectedGroup)
-      return watchlistTickers.map(symbol => ({
-        symbol,
-        sector: selectedGroup
-      }))
+      // Filter out crypto symbols to prevent duplicates (crypto is passed separately via cryptoTickers prop)
+      const cryptoSymbolSet = new Set(cryptoTickers.map(t => t.symbol))
+      return watchlistTickers
+        .filter(symbol => !cryptoSymbolSet.has(symbol))
+        .map(symbol => ({
+          symbol,
+          sector: selectedGroup
+        }))
     }
 
     // Otherwise, use regular ticker groups
@@ -204,7 +208,7 @@ export function BasicWatchList({
       symbol,
       sector: selectedGroup
     }))
-  }, [selectedGroup, tickerGroups, isCustomWatchlist, isPredefinedWatchlist, isAllWatchlist, isCryptoWatchlist, refreshKey])
+  }, [selectedGroup, tickerGroups, isCustomWatchlist, isPredefinedWatchlist, isAllWatchlist, isCryptoWatchlist, refreshKey, cryptoTickers])
 
   // Navigation state - use sorted tickers from SortableTickerList
   const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
