@@ -69,6 +69,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
             className="h-full"
             cryptoTickers={cryptoTickers}
             allCryptoTickersLastData={allCryptoTickersLastData}
+            defaultSectionFilter="all"
           />
         </div>
       </DialogContent>
