@@ -427,13 +427,23 @@ export function BasicWatchList({
         maxHeight={maxHeight}
         className="h-full"
         cryptoTickers={
-          // Only show crypto in ALL, CRYPTO, or custom watchlists
-          isAllWatchlist(selectedGroup) || isCryptoWatchlist(selectedGroup) || isCustomWatchlist(selectedGroup)
+          // ALL: show all crypto
+          isAllWatchlist(selectedGroup)
             ? cryptoTickers
-            : []
+          // CRYPTO: show all crypto
+          : isCryptoWatchlist(selectedGroup)
+            ? cryptoTickers
+          // Custom watchlist: only show crypto symbols that are IN the watchlist
+          : isCustomWatchlist(selectedGroup)
+            ? (() => {
+                const watchlistSymbols = getWatchlistTickers(selectedGroup)
+                return cryptoTickers.filter(ticker => watchlistSymbols.includes(ticker.symbol))
+              })()
+          // Stock sectors/predefined: no crypto
+          : []
         }
         allCryptoTickersLastData={
-          // Only pass crypto data when crypto is shown
+          // Only pass crypto data when crypto might be shown
           isAllWatchlist(selectedGroup) || isCryptoWatchlist(selectedGroup) || isCustomWatchlist(selectedGroup)
             ? allCryptoTickersLastData
             : {}
