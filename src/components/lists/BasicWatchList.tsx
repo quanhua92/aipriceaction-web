@@ -408,7 +408,7 @@ export function BasicWatchList({
         searchQuery="" // No search in watchlist
         marketIndices={[]} // No market indices in watchlist
         showMarketIndices={showMarketIndices}
-        showSections={false} // Don't show section headers in watchlist
+        showSections={true} // Show section headers to distinguish stocks from crypto
         onSelectTicker={handleSelectTicker}
         onSortedTickersChange={handleSortedTickersChange}
         loading={loading || cryptoLoading}
