@@ -219,19 +219,42 @@ export function SortableTickerList({
     }
   }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersLastData, cryptoTickers, allCryptoTickersLastData])
 
+  // Build array matching the exact visual rendering order
+  // This ensures navigation order matches what user sees on screen
+  const visuallyOrderedTickers = React.useMemo(() => {
+    const ordered: Ticker[] = []
+
+    // 1. Market Indices (if shown and not filtered out)
+    if (filteredMarketIndices.length > 0 && sectionFilter !== 'crypto') {
+      // Convert market indices strings to Ticker objects
+      ordered.push(...filteredMarketIndices.map(symbol => ({ symbol, sector: 'Market Indices' })))
+    }
+
+    // 2. Major Crypto (if shown and not filtered out)
+    if (filteredMajorCrypto.length > 0 && sectionFilter !== 'stocks') {
+      ordered.push(...filteredMajorCrypto)
+    }
+
+    // 3. Regular Stocks (if shown and not filtered out)
+    if (filteredTickers.length > 0 && sectionFilter !== 'crypto') {
+      ordered.push(...filteredTickers)
+    }
+
+    // 4. Minor Crypto (if shown and not filtered out)
+    if (filteredCryptoTickers.length > 0 && sectionFilter !== 'stocks') {
+      ordered.push(...filteredCryptoTickers)
+    }
+
+    return ordered
+  }, [filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, sectionFilter])
+
   // Notify parent component when sorted tickers change
-  // Include ALL tickers: stocks + major crypto + regular crypto
+  // Pass the visually ordered list so navigation matches what user sees
   React.useEffect(() => {
     if (onSortedTickersChange) {
-      // Combine all sorted sections for complete navigation
-      const allSorted = [
-        ...filteredTickers,           // Regular stocks
-        ...filteredMajorCrypto,       // BTC, ETH, XRP, TON
-        ...filteredCryptoTickers       // Other crypto
-      ]
-      onSortedTickersChange(allSorted)
+      onSortedTickersChange(visuallyOrderedTickers)
     }
-  }, [filteredTickers, filteredMajorCrypto, filteredCryptoTickers, onSortedTickersChange])
+  }, [visuallyOrderedTickers, onSortedTickersChange])
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
