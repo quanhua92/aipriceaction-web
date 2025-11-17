@@ -44,7 +44,16 @@ export function BasicWatchList({
   onSectorChange,
   onSortedTickersChange
 }: BasicWatchListProps) {
-  const { tickerGroups, allTickersLastData, loading, error } = useAPI()
+  const {
+    tickerGroups,
+    allTickersLastData,
+    loading,
+    error,
+    cryptoTickers,
+    cryptoLoading,
+    cryptoError,
+    allCryptoTickersLastData
+  } = useAPI()
   const { prefetchTickers } = usePrefetchTicker()
   const { language } = useTranslation()
 
@@ -402,10 +411,12 @@ export function BasicWatchList({
         showSections={false} // Don't show section headers in watchlist
         onSelectTicker={handleSelectTicker}
         onSortedTickersChange={handleSortedTickersChange}
-        loading={loading}
-        error={error}
+        loading={loading || cryptoLoading}
+        error={error || cryptoError}
         maxHeight={maxHeight}
         className="h-full"
+        cryptoTickers={cryptoTickers}
+        allCryptoTickersLastData={allCryptoTickersLastData}
       />
       </div>
 
