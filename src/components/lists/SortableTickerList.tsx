@@ -398,7 +398,7 @@ export function SortableTickerList({
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                             {/* Price Row */}
                             <div className="flex items-center gap-2">
-                              <span className="font-bold tabular-nums">{formatPrice(latestData.close)}</span>
+                              <span className="font-bold tabular-nums">{formatPrice(latestData.close, latestData)}</span>
                               {latestData.close_changed !== null && latestData.close_changed !== undefined && (
                                 <span className={`text-xs tabular-nums ${getPriceChangeColor(latestData.close_changed)}`}>
                                   {latestData.close_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.close_changed)}
@@ -446,7 +446,7 @@ export function SortableTickerList({
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                             {/* Price Row */}
                             <div className="flex items-center gap-2">
-                              <span className="font-bold tabular-nums">{formatPrice(latestData.close)}</span>
+                              <span className="font-bold tabular-nums">{formatPrice(latestData.close, latestData)}</span>
                               {latestData.close_changed !== null && latestData.close_changed !== undefined && (
                                 <span className={`text-xs tabular-nums ${getPriceChangeColor(latestData.close_changed)}`}>
                                   {latestData.close_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.close_changed)}
@@ -494,7 +494,7 @@ export function SortableTickerList({
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                             {/* Price Row */}
                             <div className="flex items-center gap-2">
-                              <span className="font-bold tabular-nums">{formatPrice(latestData.close)}</span>
+                              <span className="font-bold tabular-nums">{formatPrice(latestData.close, latestData)}</span>
                               {latestData.close_changed !== null && latestData.close_changed !== undefined && (
                                 <span className={`text-xs tabular-nums ${getPriceChangeColor(latestData.close_changed)}`}>
                                   {latestData.close_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.close_changed)}
@@ -542,7 +542,7 @@ export function SortableTickerList({
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                             {/* Price Row */}
                             <div className="flex items-center gap-2">
-                              <span className="font-bold tabular-nums">{formatPrice(latestData.close)}</span>
+                              <span className="font-bold tabular-nums">{formatPrice(latestData.close, latestData)}</span>
                               {latestData.close_changed !== null && latestData.close_changed !== undefined && (
                                 <span className={`text-xs tabular-nums ${getPriceChangeColor(latestData.close_changed)}`}>
                                   {latestData.close_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.close_changed)}

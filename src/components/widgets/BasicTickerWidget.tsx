@@ -121,7 +121,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                     <span className="sr-only">Add to watchlist</span>
                   </Button>
                 </QuickAddWatchListDialog>
-                <div className="text-2xl font-bold">{formatPrice(data.close)}</div>
+                <div className="text-2xl font-bold">{formatPrice(data.close, data)}</div>
               </div>
               {data.close_changed !== null && data.close_changed !== undefined && (
                 <div
@@ -147,19 +147,19 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.open')}</p>
-                  <p className="text-sm font-semibold">{formatPrice(data.open)}</p>
+                  <p className="text-sm font-semibold">{formatPrice(data.open, data)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.high')}</p>
-                  <p className="text-sm font-semibold text-green-600 dark:text-green-500">{formatPrice(data.high)}</p>
+                  <p className="text-sm font-semibold text-green-600 dark:text-green-500">{formatPrice(data.high, data)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.low')}</p>
-                  <p className="text-sm font-semibold text-red-600 dark:text-red-500">{formatPrice(data.low)}</p>
+                  <p className="text-sm font-semibold text-red-600 dark:text-red-500">{formatPrice(data.low, data)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.close')}</p>
-                  <p className="text-sm font-semibold">{formatPrice(data.close)}</p>
+                  <p className="text-sm font-semibold">{formatPrice(data.close, data)}</p>
                 </div>
                 <div className="space-y-1 col-span-2 sm:col-span-2">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.volume')}</p>
@@ -184,7 +184,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma10')}</p>
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold">
-                      {data.ma10 !== null && data.ma10 !== undefined ? formatPrice(data.ma10) : '-'}
+                      {data.ma10 !== null && data.ma10 !== undefined ? formatPrice(data.ma10, data) : '-'}
                     </p>
                     <span className="text-xs text-muted-foreground/70">
                       {t('common.ticker.score')}:{' '}
@@ -200,7 +200,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma20')}</p>
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold">
-                      {data.ma20 !== null && data.ma20 !== undefined ? formatPrice(data.ma20) : '-'}
+                      {data.ma20 !== null && data.ma20 !== undefined ? formatPrice(data.ma20, data) : '-'}
                     </p>
                     <span className="text-xs text-muted-foreground/70">
                       {t('common.ticker.score')}:{' '}
@@ -216,7 +216,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma50')}</p>
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold">
-                      {data.ma50 !== null && data.ma50 !== undefined ? formatPrice(data.ma50) : '-'}
+                      {data.ma50 !== null && data.ma50 !== undefined ? formatPrice(data.ma50, data) : '-'}
                     </p>
                     <span className="text-xs text-muted-foreground/70">
                       {t('common.ticker.score')}:{' '}
@@ -232,7 +232,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma100')}</p>
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold">
-                      {data.ma100 !== null && data.ma100 !== undefined ? formatPrice(data.ma100) : '-'}
+                      {data.ma100 !== null && data.ma100 !== undefined ? formatPrice(data.ma100, data) : '-'}
                     </p>
                     <span className="text-xs text-muted-foreground/70">
                       {t('common.ticker.score')}:{' '}
