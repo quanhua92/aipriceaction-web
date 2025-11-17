@@ -264,7 +264,7 @@ export function SortableTickerList({
           onClick={() => setSectionFilter('all')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sectionFilter === 'all'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -274,7 +274,7 @@ export function SortableTickerList({
           onClick={() => setSectionFilter('stocks')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sectionFilter === 'stocks'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -284,7 +284,7 @@ export function SortableTickerList({
           onClick={() => setSectionFilter('crypto')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sectionFilter === 'crypto'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -299,7 +299,7 @@ export function SortableTickerList({
           onClick={() => setSortBy('volume')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'volume'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -309,7 +309,7 @@ export function SortableTickerList({
           onClick={() => setSortBy('gainers')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'gainers'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -319,7 +319,7 @@ export function SortableTickerList({
           onClick={() => setSortBy('losers')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'losers'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -330,7 +330,7 @@ export function SortableTickerList({
           onClick={() => setSortBy('ma20')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'ma20'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -340,7 +340,7 @@ export function SortableTickerList({
           onClick={() => setSortBy('ma50')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'ma50'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -350,7 +350,7 @@ export function SortableTickerList({
           onClick={() => setSortBy('az')}
           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
             sortBy === 'az'
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           }`}
         >
