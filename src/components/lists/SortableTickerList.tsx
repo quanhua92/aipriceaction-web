@@ -13,6 +13,7 @@ export interface Ticker {
 }
 
 export type SortBy = 'az' | 'gainers' | 'losers' | 'volume' | 'ma20' | 'ma50'
+export type SectionFilter = 'all' | 'stocks' | 'crypto'
 
 export interface SortableTickerListProps {
   tickers: Ticker[]
@@ -49,6 +50,7 @@ export function SortableTickerList({
   allCryptoTickersLastData = {}
 }: SortableTickerListProps) {
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
+  const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>('all')
   const { t, language } = useTranslation()
 
   const getLatestData = (symbol: string, isCrypto = false): StockData | undefined => {
@@ -177,6 +179,40 @@ export function SortableTickerList({
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
+      {/* Section Filter Buttons */}
+      <div className="grid grid-cols-3 gap-1.5 mb-2 shrink-0">
+        <button
+          onClick={() => setSectionFilter('all')}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            sectionFilter === 'all'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          {t('dialogs.selectTicker.filters.all')}
+        </button>
+        <button
+          onClick={() => setSectionFilter('stocks')}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            sectionFilter === 'stocks'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          {t('dialogs.selectTicker.filters.stocks')}
+        </button>
+        <button
+          onClick={() => setSectionFilter('crypto')}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            sectionFilter === 'crypto'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          {t('dialogs.selectTicker.filters.crypto')}
+        </button>
+      </div>
+
       {/* Sort Buttons */}
       <div className="grid grid-cols-3 gap-1.5 mb-3 shrink-0">
         {/* Row 1 */}
@@ -260,7 +296,7 @@ export function SortableTickerList({
           {!loading && !error && (
             <>
               {/* Market Indices */}
-              {filteredMarketIndices.length > 0 && (
+              {filteredMarketIndices.length > 0 && sectionFilter !== 'crypto' && (
                 <div className="mb-2">
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -308,7 +344,7 @@ export function SortableTickerList({
               )}
 
               {/* Regular Tickers */}
-              {filteredTickers.length > 0 && (
+              {filteredTickers.length > 0 && sectionFilter !== 'crypto' && (
                 <div>
                   {showSections && filteredMarketIndices.length > 0 && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -356,7 +392,7 @@ export function SortableTickerList({
               )}
 
               {/* Crypto Tickers */}
-              {filteredCryptoTickers.length > 0 && (
+              {filteredCryptoTickers.length > 0 && sectionFilter !== 'stocks' && (
                 <div>
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -403,7 +439,12 @@ export function SortableTickerList({
                 </div>
               )}
 
-              {filteredMarketIndices.length === 0 && filteredTickers.length === 0 && filteredCryptoTickers.length === 0 && (
+              {/* No results message - check visible sections only */}
+              {(
+                (sectionFilter === 'all' && filteredMarketIndices.length === 0 && filteredTickers.length === 0 && filteredCryptoTickers.length === 0) ||
+                (sectionFilter === 'stocks' && filteredMarketIndices.length === 0 && filteredTickers.length === 0) ||
+                (sectionFilter === 'crypto' && filteredCryptoTickers.length === 0)
+              ) && (
                 <div className="text-center py-8 text-muted-foreground">
                   {t('dialogs.selectTicker.states.noTickersFound')}
                 </div>

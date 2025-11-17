@@ -2,6 +2,11 @@ export default {
   selectTicker: {
     title: 'Chọn Mã Cổ Phiếu',
     searchPlaceholder: 'Tìm kiếm theo mã...',
+    filters: {
+      all: 'Tất cả',
+      stocks: 'Cổ phiếu',
+      crypto: 'Tiền mã hóa',
+    },
     sortBy: {
       volume: 'KL GD',
       gainers: '↑ Tăng',

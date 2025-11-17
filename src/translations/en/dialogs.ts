@@ -2,6 +2,11 @@ export default {
   selectTicker: {
     title: 'Select Ticker Symbol',
     searchPlaceholder: 'Search by symbol...',
+    filters: {
+      all: 'All',
+      stocks: 'Stocks',
+      crypto: 'Crypto',
+    },
     sortBy: {
       volume: 'Volume',
       gainers: '↑ Gainers',
