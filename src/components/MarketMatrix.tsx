@@ -80,7 +80,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   )
   const [viewMode, setViewMode] = React.useState<ViewMode>('close_changed')
   const [currentPage, setCurrentPage] = React.useState<number>(0)
-  const [sortBy, setSortBy] = React.useState<SortBy>('volume')
+  const [sortBy, setSortBy] = React.useState<SortBy>('gainers')
   const [openSectors, setOpenSectors] = React.useState<Set<string>>(() => {
     // Try to load from localStorage (only on client)
     if (typeof window !== 'undefined') {
