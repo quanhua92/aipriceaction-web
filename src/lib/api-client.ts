@@ -1,12 +1,23 @@
 import { AIPriceActionClient, type RequestResult } from '@/integrations/aipriceaction/src'
 import type { StockData, TickersResponse } from '@/integrations/aipriceaction/src'
+import { API_BASE_URL_OVERRIDE_STORAGE_KEY } from '@/lib/constants'
 
 /**
- * Get API base URL based on environment
+ * Get API base URL based on environment and localStorage override
+ * - Override (if set in localStorage): Uses custom URL from DebugFooter
  * - Development: /aipriceaction-api (proxied to localhost:3000 by Vite)
  * - Production: https://api.aipriceaction.com
  */
 function getApiBaseURL(): string {
+  // Check localStorage for override first
+  if (typeof window !== 'undefined') {
+    const override = localStorage.getItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
+    if (override) {
+      return override
+    }
+  }
+
+  // Fall back to environment-based logic
   if (import.meta.env.MODE === 'production') {
     return 'https://api.aipriceaction.com'
   }

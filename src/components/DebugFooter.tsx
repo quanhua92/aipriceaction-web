@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation } from '@tanstack/react-router'
-import { ChevronDown, Copy, Check } from 'lucide-react'
+import { ChevronDown, Copy, Check, Edit, X, RotateCcw } from 'lucide-react'
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -18,6 +18,7 @@ import {
 	CUSTOM_WATCHLISTS_STORAGE_KEY,
 	AI_SELECTED_TICKERS_STORAGE_KEY,
 	MATRIX_OPEN_SECTORS_STORAGE_KEY,
+	API_BASE_URL_OVERRIDE_STORAGE_KEY,
 } from '@/lib/constants'
 
 const DEBUG_FOOTER_STORAGE_KEY = 'debug-footer-open'
@@ -114,6 +115,9 @@ function DebugFooterContent() {
 	const [clearClickCount, setClearClickCount] = React.useState(0)
 	const [copied, setCopied] = React.useState(false)
 	const [logSearch, setLogSearch] = React.useState('')
+	const [isEditingUrl, setIsEditingUrl] = React.useState(false)
+	const [customUrl, setCustomUrl] = React.useState('')
+	const [urlSaved, setUrlSaved] = React.useState(false)
 
 	// Load collapsed state from localStorage
 	const [isOpen, setIsOpen] = React.useState(() => {
@@ -178,6 +182,11 @@ function DebugFooterContent() {
 		href: location.href,
 	}
 
+	// Get current API URL override from localStorage
+	const apiUrlOverride = typeof window !== 'undefined'
+		? localStorage.getItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
+		: null
+
 	const environmentData = {
 		mode: import.meta.env.MODE,
 		dev: import.meta.env.DEV,
@@ -186,6 +195,7 @@ function DebugFooterContent() {
 			import.meta.env.MODE === 'production'
 				? 'https://api.aipriceaction.com'
 				: '/aipriceaction-api',
+		'API URL Override': apiUrlOverride || 'None (using default)',
 		userAgent:
 			typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR',
 	}
@@ -237,6 +247,38 @@ function DebugFooterContent() {
 			setClearClickCount(0)
 		}
 	}, [clearClickCount, clearLogs])
+
+	// Handle edit URL button
+	const handleEditUrl = React.useCallback(() => {
+		setCustomUrl('http://100.121.116.69:3000') // Prefill with Tailscale IP
+		setIsEditingUrl(true)
+		setUrlSaved(false)
+	}, [])
+
+	// Handle save URL
+	const handleSaveUrl = React.useCallback(() => {
+		if (customUrl.trim()) {
+			localStorage.setItem(API_BASE_URL_OVERRIDE_STORAGE_KEY, customUrl.trim())
+			setUrlSaved(true)
+			setTimeout(() => setUrlSaved(false), 3000) // Hide message after 3 seconds
+		}
+	}, [customUrl])
+
+	// Handle cancel URL edit
+	const handleCancelUrl = React.useCallback(() => {
+		setIsEditingUrl(false)
+		setCustomUrl('')
+		setUrlSaved(false)
+	}, [])
+
+	// Handle clear URL override
+	const handleClearUrl = React.useCallback(() => {
+		localStorage.removeItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
+		setIsEditingUrl(false)
+		setCustomUrl('')
+		setUrlSaved(true)
+		setTimeout(() => setUrlSaved(false), 3000)
+	}, [])
 
 	return (
 		<Collapsible
@@ -309,6 +351,77 @@ function DebugFooterContent() {
 
 						<TabsContent value="environment" className="mt-0">
 							<DebugSection data={environmentData} />
+
+							{/* API URL Override Controls */}
+							<div className="mt-4 p-3 border rounded-md bg-muted/30">
+								<div className="flex items-center justify-between mb-2">
+									<span className="text-xs font-medium text-muted-foreground">
+										API URL Configuration
+									</span>
+									{!isEditingUrl && (
+										<div className="flex gap-2">
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleEditUrl}
+												className="h-6 px-2 text-xs"
+											>
+												<Edit className="h-3 w-3 mr-1" />
+												Edit URL
+											</Button>
+											{apiUrlOverride && (
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={handleClearUrl}
+													className="h-6 px-2 text-xs"
+												>
+													<RotateCcw className="h-3 w-3 mr-1" />
+													Clear Override
+												</Button>
+											)}
+										</div>
+									)}
+								</div>
+
+								{isEditingUrl && (
+									<div className="space-y-2">
+										<Input
+											type="text"
+											placeholder="Enter custom API URL"
+											value={customUrl}
+											onChange={(e) => setCustomUrl(e.target.value)}
+											className="h-8 text-xs font-mono"
+										/>
+										<div className="flex gap-2">
+											<Button
+												variant="default"
+												size="sm"
+												onClick={handleSaveUrl}
+												className="h-6 px-2 text-xs"
+												disabled={!customUrl.trim()}
+											>
+												Save
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleCancelUrl}
+												className="h-6 px-2 text-xs"
+											>
+												<X className="h-3 w-3 mr-1" />
+												Cancel
+											</Button>
+										</div>
+									</div>
+								)}
+
+								{urlSaved && (
+									<div className="mt-2 p-2 bg-green-500/10 border border-green-500/20 rounded text-xs text-green-700 dark:text-green-400">
+										✓ Saved! Reload the page to apply changes.
+									</div>
+								)}
+							</div>
 						</TabsContent>
 
 						<TabsContent value="preferences" className="mt-0">
