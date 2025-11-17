@@ -220,11 +220,18 @@ export function SortableTickerList({
   }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersLastData, cryptoTickers, allCryptoTickersLastData])
 
   // Notify parent component when sorted tickers change
+  // Include ALL tickers: stocks + major crypto + regular crypto
   React.useEffect(() => {
     if (onSortedTickersChange) {
-      onSortedTickersChange(filteredTickers)
+      // Combine all sorted sections for complete navigation
+      const allSorted = [
+        ...filteredTickers,           // Regular stocks
+        ...filteredMajorCrypto,       // BTC, ETH, XRP, TON
+        ...filteredCryptoTickers       // Other crypto
+      ]
+      onSortedTickersChange(allSorted)
     }
-  }, [filteredTickers, onSortedTickersChange])
+  }, [filteredTickers, filteredMajorCrypto, filteredCryptoTickers, onSortedTickersChange])
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
