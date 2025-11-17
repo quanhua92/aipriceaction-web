@@ -443,7 +443,7 @@ export function SortableTickerList({
               {/* Regular Tickers */}
               {filteredTickers.length > 0 && sectionFilter !== 'crypto' && (
                 <div>
-                  {showSections && filteredMarketIndices.length > 0 && (
+                  {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       {t('dialogs.selectTicker.sections.stocks')}
                     </div>
