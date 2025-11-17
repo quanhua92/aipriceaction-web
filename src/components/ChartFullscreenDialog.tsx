@@ -93,6 +93,28 @@ export function ChartFullscreenDialog({
     prefetchTickers('ChartFullscreenDialog.next', symbolsToPrefetch)
   }, [tickerList, internalIndex, getTickersToPrefetch, prefetchTickers])
 
+  // Handle ticker change from chart control bar
+  const handleTickerChange = React.useCallback((newTicker: string) => {
+    if (!tickerList || tickerList.length === 0) {
+      // No ticker list - just update internal ticker
+      setInternalTicker(newTicker)
+      return
+    }
+
+    // Check if new ticker is in the list
+    const index = tickerList.indexOf(newTicker)
+    if (index !== -1) {
+      // Ticker found in list - jump to that index (stay in navigation mode)
+      setInternalIndex(index)
+      setInternalTicker(newTicker)
+    } else {
+      // Ticker not in list - switch to single-ticker mode
+      setInternalTicker(newTicker)
+      // Note: Navigation will still show, but displayTicker will use internalTicker
+      // since it's not in the list at the current index
+    }
+  }, [tickerList])
+
   // Keyboard navigation
   React.useEffect(() => {
     if (!isOpen || !tickerList || tickerList.length === 0) return
@@ -192,6 +214,7 @@ export function ChartFullscreenDialog({
           <div className="flex-1 min-h-0 w-full">
             <TradingViewChart
               ticker={displayTicker}
+              onTickerChange={handleTickerChange}
               height={chartHeight}
               showControls={true}
               endDateOverride={endDate}
