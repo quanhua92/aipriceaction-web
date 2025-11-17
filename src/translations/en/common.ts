@@ -134,4 +134,7 @@ export default {
     loadMore: 'Load More',
     ending: 'Ending',
   },
+  watchlist: {
+    editWatchlist: 'Edit Watchlist',
+  },
 }

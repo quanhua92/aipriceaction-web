@@ -55,7 +55,7 @@ export function BasicWatchList({
     allCryptoTickersLastData
   } = useAPI()
   const { prefetchTickers } = usePrefetchTicker()
-  const { language } = useTranslation()
+  const { t, language } = useTranslation()
 
   // State to track custom watchlists and trigger re-renders
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
@@ -464,7 +464,7 @@ export function BasicWatchList({
           >
             <Button variant="ghost" size="sm" className="w-full h-8 text-xs">
               <Edit2 className="h-3.5 w-3.5 mr-2" />
-              Edit Watchlist
+              {t('common.watchlist.editWatchlist')}
             </Button>
           </EditWatchListDialog>
         </div>

@@ -134,4 +134,7 @@ export default {
     loadMore: 'Tải Thêm',
     ending: 'Kết thúc',
   },
+  watchlist: {
+    editWatchlist: 'Chỉnh Sửa Danh Mục',
+  },
 }
