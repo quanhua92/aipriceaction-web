@@ -122,13 +122,13 @@ export function formatToVietnamDateShort(utcDate: Date): string {
 /**
  * Format a price value with comma separators
  * @param price - The price value to format
- * @param useDecimals - If true, formats with 2 decimals. Default false for VND (no decimals)
- * @example formatPrice(145230.5) => "145,231" (VND)
- * @example formatPrice(1000) => "1,000" (VND)
- * @example formatPrice(145230.5, true) => "145,230.50" (with decimals)
- * @example formatPrice(1000, true) => "1,000.00" (with decimals)
+ * @param useDecimals - If true, formats with 2 decimals. Default true to support crypto prices
+ * @example formatPrice(145230.5) => "145,230.50" (with decimals)
+ * @example formatPrice(1000) => "1,000.00" (with decimals)
+ * @example formatPrice(145230.5, false) => "145,231" (VND - no decimals)
+ * @example formatPrice(1000, false) => "1,000" (VND - no decimals)
  */
-export function formatPrice(price: number | null | undefined, useDecimals: boolean = false): string {
+export function formatPrice(price: number | null | undefined, useDecimals: boolean = true): string {
   const safePrice = price ?? 0
   if (useDecimals) {
     return new Intl.NumberFormat('en-US', {
