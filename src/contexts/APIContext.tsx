@@ -165,7 +165,8 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
   // Fetch both stock and crypto data in parallel on mount and when refresh is triggered
   React.useEffect(() => {
     Promise.all([fetchStockData(), fetchCryptoData()])
-  }, [fetchStockData, fetchCryptoData, lastRefresh])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastRefresh])
 
   // Provide logged API methods
   const getTickers = React.useCallback(

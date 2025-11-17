@@ -72,11 +72,11 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		setMaVisibility(getDefaultMaVisibility(interval))
 	}, [interval])
 
-	const resetMaVisibility = () => {
+	const resetMaVisibility = React.useCallback(() => {
 		setMaVisibility(getDefaultMaVisibility(interval))
-	}
+	}, [interval])
 
-	const value: ChartSettingsState = {
+	const value: ChartSettingsState = React.useMemo(() => ({
 		interval,
 		setInterval,
 		limit,
@@ -90,7 +90,7 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		setStartDate,
 		endDate,
 		setEndDate,
-	}
+	}), [interval, limit, height, maVisibility, startDate, endDate, resetMaVisibility])
 
 	return (
 		<ChartSettingsContext.Provider value={value}>

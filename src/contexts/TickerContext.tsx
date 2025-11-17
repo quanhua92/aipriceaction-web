@@ -105,6 +105,14 @@ export function TickerProvider({
 
   // Refs for stable access
   const loadingMoreRef = React.useRef(false)
+  const tickersRef = React.useRef(tickers)
+  const cryptoTickersRef = React.useRef(cryptoTickers)
+
+  // Update refs when tickers change (but don't trigger re-fetch)
+  React.useEffect(() => {
+    tickersRef.current = tickers
+    cryptoTickersRef.current = cryptoTickers
+  }, [tickers, cryptoTickers])
 
   // Load more historical data (for Load More button)
   const loadMoreHistoricalData = React.useCallback(async () => {
@@ -138,12 +146,12 @@ export function TickerProvider({
     }
   }, [selectedTicker, settings?.interval, endDate])
 
-  // Initialize with ticker on mount only (prioritize ticker prop over initialTicker)
+  // Sync ticker prop changes (only if ticker prop is controlled externally)
   React.useEffect(() => {
-        if (ticker ?? initialTicker) {
-      setSelectedTicker(ticker ?? initialTicker)
+    if (ticker !== undefined && ticker !== selectedTicker) {
+      setSelectedTicker(ticker)
     }
-  }, []) // Only run once on mount, no dependencies
+  }, [ticker, selectedTicker])
 
   // Sync endDate prop with localEndDate state
   React.useEffect(() => {
@@ -152,12 +160,53 @@ export function TickerProvider({
     }
   }, [endDate])
 
+  // Track previous dependency values for debugging
+  const prevDepsRef = React.useRef<{
+    selectedTicker?: string
+    enableFetching?: boolean
+    interval?: string
+    startDate?: string | undefined
+    endDate?: string | undefined
+    limit?: number
+    lastRefresh?: number
+    localLimit?: number | null
+    localEndDate?: string | null
+    tickers?: any[]
+    cryptoTickers?: any[]
+  }>({})
+
   // Data fetching effect (only if fetching is enabled)
   React.useEffect(() => {
-    
+
     if (!enableFetching || !settings) {
             return
     }
+
+    // Track which dependencies changed
+    const currentDeps = {
+      selectedTicker,
+      enableFetching,
+      interval: settings?.interval,
+      startDate: settings?.startDate,
+      endDate: settings?.endDate,
+      limit: settings?.limit,
+      lastRefresh,
+      localLimit,
+      localEndDate,
+      tickersLen: tickers?.length,
+      cryptoTickersLen: cryptoTickers?.length,
+    }
+
+    const prevDeps = prevDepsRef.current
+    const changedDeps: string[] = []
+
+    for (const [key, value] of Object.entries(currentDeps)) {
+      if (prevDeps[key as keyof typeof prevDeps] !== value) {
+        changedDeps.push(`${key}:${prevDeps[key as keyof typeof prevDeps]}→${value}`)
+      }
+    }
+
+    prevDepsRef.current = currentDeps
 
     const fetchChartData = async () => {
             setLoading(true)
@@ -178,9 +227,14 @@ export function TickerProvider({
           }
 
           // Determine mode: crypto or stock (stock takes priority if symbol in both lists)
-          const mode = isCryptoTicker(selectedTicker, tickers, cryptoTickers) ? 'crypto' : 'vn'
+          const mode = isCryptoTicker(selectedTicker, tickersRef.current, cryptoTickersRef.current) ? 'crypto' : 'vn'
 
-          const response = await getTickers('TickerContext', {
+          // Build source string with dependency changes
+          const source = changedDeps.length > 0
+            ? `TickerContext [${changedDeps.join(', ')}]`
+            : 'TickerContext'
+
+          const response = await getTickers(source, {
             symbol: selectedTicker,
             interval: settings.interval,
             start_date: settings.startDate,
@@ -217,7 +271,8 @@ export function TickerProvider({
     }
 
     fetchChartData()
-  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localLimit, localEndDate, getTickers, tickers, cryptoTickers])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localLimit, localEndDate, getTickers])
 
   const contextValue = {
     selectedTicker,

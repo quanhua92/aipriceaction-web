@@ -68,13 +68,6 @@ function TradingViewChartContent({
 	const currentMaVisibility = maVisibility ?? globalSettings.maVisibility
 	const handleIntervalChange = onIntervalChange ?? globalSettings.setInterval
 
-	// Sync with external ticker prop changes
-	React.useEffect(() => {
-		if (ticker !== undefined && ticker !== selectedTicker) {
-			setSelectedTicker(ticker)
-		}
-	}, [ticker, selectedTicker, setSelectedTicker])
-
 	// Fullscreen handlers
 	const handleFullscreenClick = () => {
 		setFullscreenTicker(selectedTicker)
