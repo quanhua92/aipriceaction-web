@@ -55,6 +55,11 @@ export const MATRIX_OPEN_SECTORS_STORAGE_KEY = 'matrix-open-sectors'
 export const ALL_WATCHLIST_NAME = 'ALL'
 
 /**
+ * Special watchlist name for showing only crypto
+ */
+export const CRYPTO_WATCHLIST_NAME = 'CRYPTO'
+
+/**
  * Names of predefined watchlists (VN30, VINGROUP, TM, etc.)
  * These appear between "ALL" and custom watchlists in the UI
  */
