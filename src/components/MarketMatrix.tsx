@@ -65,13 +65,19 @@ function getCellColor(value: number): { bg: string; text: string } {
 // Default sectors to show expanded (matches PRIORITY_GROUPS)
 const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
 
-export function MarketMatrix() {
+interface MarketMatrixProps {
+  defaultWatchlist?: string
+}
+
+export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { t, language } = useTranslation()
 
   // State management - simple defaults, no localStorage
-  const [selectedWatchlist, setSelectedWatchlist] = React.useState<string>(ALL_WATCHLIST_NAME)
+  const [selectedWatchlist, setSelectedWatchlist] = React.useState<string>(
+    defaultWatchlist ?? ALL_WATCHLIST_NAME
+  )
   const [viewMode, setViewMode] = React.useState<ViewMode>('close_changed')
   const [currentPage, setCurrentPage] = React.useState<number>(0)
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
