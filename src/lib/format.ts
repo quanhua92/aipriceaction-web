@@ -122,14 +122,29 @@ export function formatToVietnamDateShort(utcDate: Date): string {
 /**
  * Format a price value with comma separators
  * @param price - The price value to format
- * @param useDecimals - If true, formats with 2 decimals. Default true to support crypto prices
- * @example formatPrice(145230.5) => "145,230.50" (with decimals)
- * @example formatPrice(1000) => "1,000.00" (with decimals)
+ * @param useDecimalsOrData - If boolean, explicit decimal control. If StockData, auto-detects from mode field
+ * @example formatPrice(145230.5) => "145,230.50" (default: with decimals)
+ * @example formatPrice(1000) => "1,000.00" (default: with decimals)
  * @example formatPrice(145230.5, false) => "145,231" (VND - no decimals)
  * @example formatPrice(1000, false) => "1,000" (VND - no decimals)
+ * @example formatPrice(1.83, dataWithModeCrypto) => "1.83" (auto-detect crypto)
+ * @example formatPrice(50000, dataWithModeVN) => "50,000" (auto-detect VN)
  */
-export function formatPrice(price: number | null | undefined, useDecimals: boolean = true): string {
+export function formatPrice(
+  price: number | null | undefined,
+  useDecimalsOrData?: boolean | { mode?: 'vn' | 'crypto' }
+): string {
   const safePrice = price ?? 0
+
+  // Determine if we should use decimals
+  let useDecimals = true // default
+  if (typeof useDecimalsOrData === 'boolean') {
+    useDecimals = useDecimalsOrData
+  } else if (useDecimalsOrData && typeof useDecimalsOrData === 'object' && 'mode' in useDecimalsOrData) {
+    // Auto-detect from data.mode: VN stocks = no decimals, crypto = decimals
+    useDecimals = useDecimalsOrData.mode !== 'vn'
+  }
+
   if (useDecimals) {
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,

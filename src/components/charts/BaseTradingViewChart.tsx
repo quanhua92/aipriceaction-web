@@ -446,16 +446,17 @@ export function BaseTradingViewChart({
 			const tickerSymbol = data.length > 0 ? data[0].symbol : ''
 
 			// Build tooltip HTML - 2-column grid layout
+			// Pass currentDataPoint to formatPrice for auto-detection of mode (VN vs crypto)
 			let html = `
 				<div style="display: flex; justify-content: space-between; align-items: center; color: #a1a1aa; font-size: 10px; margin-bottom: 4px;">
 					<span style="font-weight: bold;">${tickerSymbol}</span>
 					<span>${dateStr}</span>
 				</div>
 				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; font-size: 10px;">
-					<div><span style="color: #a1a1aa;">O</span> ${formatPrice(candleData.open)}</div>
-					<div><span style="color: #a1a1aa;">C</span> ${formatPrice(candleData.close)} ${priceChangePercent}</div>
-					<div><span style="color: #a1a1aa;">H</span> <span style="color: #16a34a;">${formatPrice(candleData.high)}</span></div>
-					<div><span style="color: #a1a1aa;">L</span> <span style="color: #dc2626;">${formatPrice(candleData.low)}</span></div>
+					<div><span style="color: #a1a1aa;">O</span> ${formatPrice(candleData.open, currentDataPoint)}</div>
+					<div><span style="color: #a1a1aa;">C</span> ${formatPrice(candleData.close, currentDataPoint)} ${priceChangePercent}</div>
+					<div><span style="color: #a1a1aa;">H</span> <span style="color: #16a34a;">${formatPrice(candleData.high, currentDataPoint)}</span></div>
+					<div><span style="color: #a1a1aa;">L</span> <span style="color: #dc2626;">${formatPrice(candleData.low, currentDataPoint)}</span></div>
 			`
 
 			// Add volume if available
@@ -471,27 +472,27 @@ export function BaseTradingViewChart({
 
 				if (ma10Data && maVisibility.ma10 && currentDataPoint?.ma10_score !== null && currentDataPoint?.ma10_score !== undefined) {
 					const ma10Color = currentDataPoint.ma10_score >= 0 ? '#16a34a' : '#dc2626'
-					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">MA10</span> ${formatPrice(ma10Data.value)}</div>`
+					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">MA10</span> ${formatPrice(ma10Data.value, currentDataPoint)}</div>`
 					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma10Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma10_score)}</span></div>`
 				}
 				if (ma20Data && maVisibility.ma20 && currentDataPoint?.ma20_score !== null && currentDataPoint?.ma20_score !== undefined) {
 					const ma20Color = currentDataPoint.ma20_score >= 0 ? '#16a34a' : '#dc2626'
-					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">MA20</span> ${formatPrice(ma20Data.value)}</div>`
+					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">MA20</span> ${formatPrice(ma20Data.value, currentDataPoint)}</div>`
 					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma20Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma20_score)}</span></div>`
 				}
 				if (ma50Data && maVisibility.ma50 && currentDataPoint?.ma50_score !== null && currentDataPoint?.ma50_score !== undefined) {
 					const ma50Color = currentDataPoint.ma50_score >= 0 ? '#16a34a' : '#dc2626'
-					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">MA50</span> ${formatPrice(ma50Data.value)}</div>`
+					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">MA50</span> ${formatPrice(ma50Data.value, currentDataPoint)}</div>`
 					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma50Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma50_score)}</span></div>`
 				}
 				if (ma100Data && maVisibility.ma100 && currentDataPoint?.ma100_score !== null && currentDataPoint?.ma100_score !== undefined) {
 					const ma100Color = currentDataPoint.ma100_score >= 0 ? '#16a34a' : '#dc2626'
-					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">MA100</span> ${formatPrice(ma100Data.value)}</div>`
+					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">MA100</span> ${formatPrice(ma100Data.value, currentDataPoint)}</div>`
 					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma100Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma100_score)}</span></div>`
 				}
 				if (ma200Data && maVisibility.ma200 && currentDataPoint?.ma200_score !== null && currentDataPoint?.ma200_score !== undefined) {
 					const ma200Color = currentDataPoint.ma200_score >= 0 ? '#16a34a' : '#dc2626'
-					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a; display: inline-block; width: 40px;">MA200</span> ${formatPrice(ma200Data.value)} <span style="color: #71717a;">Score</span> <span style="color: ${ma200Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma200_score)}</span></div>`
+					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a; display: inline-block; width: 40px;">MA200</span> ${formatPrice(ma200Data.value, currentDataPoint)} <span style="color: #71717a;">Score</span> <span style="color: ${ma200Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma200_score)}</span></div>`
 				}
 			}
 
@@ -684,7 +685,7 @@ export function BaseTradingViewChart({
 							MozOsxFontSmoothing: 'grayscale',
 						}}
 					>
-						<span className={cn("font-semibold", (latestData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{latestData.symbol}</span> <span className={cn((latestData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(latestData.close)}</span> <span className={cn((latestData.close_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.close_changed ?? 0)}</span>
+						<span className={cn("font-semibold", (latestData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{latestData.symbol}</span> <span className={cn((latestData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(latestData.close, latestData)}</span> <span className={cn((latestData.close_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.close_changed ?? 0)}</span>
 						<span className="mx-1"></span>
 						<span className={cn((latestData.volume_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(latestData.volume)}</span> <span className={cn((latestData.volume_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.volume_changed ?? 0)}</span>
 						<span className="text-zinc-400 ml-2 text-xs">

@@ -37,14 +37,16 @@ function normalizeAPITimestamp(apiTimeString: string): string {
 }
 
 /**
- * Transform StockData timestamps from API format to UTC ISO strings
+ * Transform StockData timestamps from API format to UTC ISO strings and inject mode
  * @param data - Array of stock data with API format timestamps
- * @returns Array of stock data with UTC ISO timestamps
+ * @param mode - Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies
+ * @returns Array of stock data with UTC ISO timestamps and mode field
  */
-function normalizeStockDataTimestamps(data: StockData[]): StockData[] {
+function normalizeStockDataTimestamps(data: StockData[], mode: 'vn' | 'crypto' = 'vn'): StockData[] {
   return data.map(item => ({
     ...item,
-    time: normalizeAPITimestamp(item.time)
+    time: normalizeAPITimestamp(item.time),
+    mode
   }))
 }
 
@@ -101,11 +103,12 @@ export async function getCryptoTickerGroups() {
  */
 export async function getTickers(params: Parameters<typeof apiClient.getTickers>[0]) {
   const response = await apiClient.getTickers(params)
+  const mode = params?.mode || 'vn'
 
-  // Normalize all ticker data timestamps to UTC ISO format
+  // Normalize all ticker data timestamps to UTC ISO format and inject mode
   const normalizedResponse: TickersResponse = {}
   for (const [ticker, data] of Object.entries(response)) {
-    normalizedResponse[ticker] = normalizeStockDataTimestamps(data)
+    normalizedResponse[ticker] = normalizeStockDataTimestamps(data, mode)
   }
 
   return normalizedResponse
@@ -134,10 +137,10 @@ export async function getTickersWithLogging(
     // Calculate raw API response bars (before normalization)
     const rawBars = Object.values(response.data).reduce((sum, data) => sum + data.length, 0)
 
-    // Normalize all ticker data timestamps to UTC ISO format
+    // Normalize all ticker data timestamps to UTC ISO format and inject mode
     const normalizedResponse: TickersResponse = {}
     for (const [ticker, data] of Object.entries(response.data)) {
-      normalizedResponse[ticker] = normalizeStockDataTimestamps(data)
+      normalizedResponse[ticker] = normalizeStockDataTimestamps(data, paramsWithMode.mode)
     }
 
     // Log success
