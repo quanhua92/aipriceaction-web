@@ -358,7 +358,7 @@ export function BasicWatchList({
   return (
     <div className={`flex flex-col ${className}`}>
       {/* Group Selection Header */}
-      <div className="flex items-center justify-between mb-3 shrink-0">
+      <div className="flex items-center mb-3 shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">
             Watchlist:
@@ -385,22 +385,7 @@ export function BasicWatchList({
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="flex items-center gap-1">
-          {/* Edit button - only show for custom watchlists */}
-          {selectedGroup && isCustomWatchlist(selectedGroup) && (
-            <EditWatchListDialog
-              watchlistName={selectedGroup}
-              onWatchlistUpdated={handleWatchlistUpdated}
-              onWatchlistDeleted={handleWatchlistDeleted}
-            >
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                <Edit2 className="h-3.5 w-3.5" />
-                <span className="sr-only">Edit watchlist</span>
-              </Button>
-            </EditWatchListDialog>
-          )}
-          {/* New button */}
+          {/* New button - right next to dropdown */}
           <CreateWatchListDialog onWatchlistCreated={handleWatchlistCreated}>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
               <Plus className="h-4 w-4" />
@@ -408,6 +393,19 @@ export function BasicWatchList({
             </Button>
           </CreateWatchListDialog>
         </div>
+        {/* Edit button - aligned far right */}
+        {selectedGroup && isCustomWatchlist(selectedGroup) && (
+          <EditWatchListDialog
+            watchlistName={selectedGroup}
+            onWatchlistUpdated={handleWatchlistUpdated}
+            onWatchlistDeleted={handleWatchlistDeleted}
+          >
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 ml-auto">
+              <Edit2 className="h-3.5 w-3.5" />
+              <span className="sr-only">Edit watchlist</span>
+            </Button>
+          </EditWatchListDialog>
+        )}
       </div>
 
       {/* Ticker List */}
@@ -425,6 +423,12 @@ export function BasicWatchList({
         error={error || cryptoError}
         maxHeight={maxHeight}
         className="h-full"
+        defaultSectionFilter={
+          // Custom watchlists and CRYPTO watchlist default to 'all'
+          isCustomWatchlist(selectedGroup) || isCryptoWatchlist(selectedGroup)
+            ? 'all'
+            : 'stocks'
+        }
         cryptoTickers={
           // ALL: show all crypto
           isAllWatchlist(selectedGroup)
@@ -449,6 +453,22 @@ export function BasicWatchList({
         }
       />
       </div>
+
+      {/* Edit Watchlist Button - only show for custom watchlists */}
+      {selectedGroup && isCustomWatchlist(selectedGroup) && (
+        <div className="px-3 mt-2">
+          <EditWatchListDialog
+            watchlistName={selectedGroup}
+            onWatchlistUpdated={handleWatchlistUpdated}
+            onWatchlistDeleted={handleWatchlistDeleted}
+          >
+            <Button variant="ghost" size="sm" className="w-full h-8 text-xs">
+              <Edit2 className="h-3.5 w-3.5 mr-2" />
+              Edit Watchlist
+            </Button>
+          </EditWatchListDialog>
+        </div>
+      )}
 
       {/* Navigation Controls */}
       {showControls && sortedTickers.length > 0 && (

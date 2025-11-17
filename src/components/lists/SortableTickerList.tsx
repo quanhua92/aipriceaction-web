@@ -31,6 +31,8 @@ export interface SortableTickerListProps {
   // Crypto support (optional for backward compatibility)
   cryptoTickers?: Ticker[]
   allCryptoTickersLastData?: Record<string, StockData[]>
+  // Default filter override (e.g., for custom watchlists)
+  defaultSectionFilter?: SectionFilter
 }
 
 export function SortableTickerList({
@@ -47,11 +49,17 @@ export function SortableTickerList({
   className = '',
   onSortedTickersChange,
   cryptoTickers = [],
-  allCryptoTickersLastData = {}
+  allCryptoTickersLastData = {},
+  defaultSectionFilter = 'stocks'
 }: SortableTickerListProps) {
   const [sortBy, setSortBy] = React.useState<SortBy>('volume')
-  const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>('stocks')
+  const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>(defaultSectionFilter)
   const { t, language } = useTranslation()
+
+  // Reset filter when defaultSectionFilter changes (e.g., switching between watchlists)
+  React.useEffect(() => {
+    setSectionFilter(defaultSectionFilter)
+  }, [defaultSectionFilter])
 
   const getLatestData = (symbol: string, isCrypto = false): StockData | undefined => {
     const dataSource = isCrypto ? allCryptoTickersLastData : allTickersLastData
