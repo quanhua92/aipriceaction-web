@@ -1,3 +1,5 @@
+import { MARKET_INDICES } from './constants'
+
 /**
  * Parse UTC ISO string to Date object
  * Safari-compatible: Handles both standard ISO format and space-separated format
@@ -122,17 +124,18 @@ export function formatToVietnamDateShort(utcDate: Date): string {
 /**
  * Format a price value with comma separators
  * @param price - The price value to format
- * @param useDecimalsOrData - If boolean, explicit decimal control. If StockData, auto-detects from mode field
+ * @param useDecimalsOrData - If boolean, explicit decimal control. If StockData, auto-detects from mode/symbol
  * @example formatPrice(145230.5) => "145,230.50" (default: with decimals)
  * @example formatPrice(1000) => "1,000.00" (default: with decimals)
  * @example formatPrice(145230.5, false) => "145,231" (VND - no decimals)
  * @example formatPrice(1000, false) => "1,000" (VND - no decimals)
  * @example formatPrice(1.83, dataWithModeCrypto) => "1.83" (auto-detect crypto)
- * @example formatPrice(50000, dataWithModeVN) => "50,000" (auto-detect VN)
+ * @example formatPrice(50000, dataWithModeVN) => "50,000" (auto-detect VN stock)
+ * @example formatPrice(1250.45, dataWithVNINDEX) => "1,250.45" (market indices show decimals)
  */
 export function formatPrice(
   price: number | null | undefined,
-  useDecimalsOrData?: boolean | { mode?: 'vn' | 'crypto' }
+  useDecimalsOrData?: boolean | { symbol?: string; mode?: 'vn' | 'crypto' }
 ): string {
   const safePrice = price ?? 0
 
@@ -140,9 +143,20 @@ export function formatPrice(
   let useDecimals = true // default
   if (typeof useDecimalsOrData === 'boolean') {
     useDecimals = useDecimalsOrData
-  } else if (useDecimalsOrData && typeof useDecimalsOrData === 'object' && 'mode' in useDecimalsOrData) {
-    // Auto-detect from data.mode: VN stocks = no decimals, crypto = decimals
-    useDecimals = useDecimalsOrData.mode !== 'vn'
+  } else if (useDecimalsOrData && typeof useDecimalsOrData === 'object') {
+    // Check if symbol is a market index (VNINDEX, VN30) - these always show decimals
+    if ('symbol' in useDecimalsOrData && useDecimalsOrData.symbol) {
+      const isMarketIndex = MARKET_INDICES.includes(useDecimalsOrData.symbol as typeof MARKET_INDICES[number])
+      if (isMarketIndex) {
+        useDecimals = true
+      } else if ('mode' in useDecimalsOrData) {
+        // Auto-detect from data.mode: VN stocks = no decimals, crypto = decimals
+        useDecimals = useDecimalsOrData.mode !== 'vn'
+      }
+    } else if ('mode' in useDecimalsOrData) {
+      // Auto-detect from data.mode: VN stocks = no decimals, crypto = decimals
+      useDecimals = useDecimalsOrData.mode !== 'vn'
+    }
   }
 
   if (useDecimals) {
