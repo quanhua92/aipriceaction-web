@@ -67,19 +67,6 @@ export default function Header() {
                   </Link>
 
                   <Link
-                    to="/crypto"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                    activeProps={{
-                      className:
-                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-                    }}
-                  >
-                    <Coins size={20} />
-                    <span className="font-medium">Crypto</span>
-                  </Link>
-
-                  <Link
                     to="/chart"
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -103,6 +90,19 @@ export default function Header() {
                   >
                     <Eye size={20} />
                     <span className="font-medium">Watch</span>
+                  </Link>
+
+                  <Link
+                    to="/crypto"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                    activeProps={{
+                      className:
+                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+                    }}
+                  >
+                    <Coins size={20} />
+                    <span className="font-medium">Crypto</span>
                   </Link>
 
                   <Link
@@ -157,18 +157,6 @@ export default function Header() {
             </Link>
 
             <Link
-              to="/crypto"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
-              activeProps={{
-                className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
-              }}
-            >
-              <Coins size={18} />
-              <span className="font-medium">Crypto</span>
-            </Link>
-
-            <Link
               to="/chart"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
@@ -190,6 +178,18 @@ export default function Header() {
             >
               <Eye size={18} />
               <span className="font-medium">Watch</span>
+            </Link>
+
+            <Link
+              to="/crypto"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
+              }}
+            >
+              <Coins size={18} />
+              <span className="font-medium">Crypto</span>
             </Link>
 
             <Link
