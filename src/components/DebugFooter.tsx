@@ -138,13 +138,22 @@ function DebugFooterContent() {
 
 	// Prepare debug data for each tab
 	const apiData = {
-		loading: apiContext.loading,
-		error: apiContext.error || 'None',
-		'tickers count': apiContext.tickers.length,
-		'ticker groups count': apiContext.tickerGroups
+		// VN Stocks
+		'VN loading': apiContext.stockLoading,
+		'VN error': apiContext.stockError || 'None',
+		'VN tickers count': apiContext.tickers.length,
+		'VN ticker groups count': apiContext.tickerGroups
 			? Object.keys(apiContext.tickerGroups).length
 			: 0,
-		'all tickers last data count': Object.keys(apiContext.allTickersLastData).length,
+		'VN all tickers last data count': Object.keys(apiContext.allTickersLastData).length,
+		// Crypto
+		'Crypto loading': apiContext.cryptoLoading,
+		'Crypto error': apiContext.cryptoError || 'None',
+		'Crypto tickers count': apiContext.cryptoTickers.length,
+		'Crypto ticker groups count': apiContext.cryptoTickerGroups
+			? Object.keys(apiContext.cryptoTickerGroups).length
+			: 0,
+		'Crypto all tickers last data count': Object.keys(apiContext.allCryptoTickersLastData).length,
 	}
 
 	const chartData = {

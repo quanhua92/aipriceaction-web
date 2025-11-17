@@ -213,6 +213,8 @@ export interface TickersQueryParams {
   format?: ResponseFormat | string;
   /** Use cache (default: true) */
   cache?: boolean;
+  /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (default: 'vn') */
+  mode?: 'vn' | 'crypto' | string;
 }
 
 /**

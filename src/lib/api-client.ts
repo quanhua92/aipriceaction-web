@@ -81,10 +81,17 @@ export const apiClientWithMetadata = new AIPriceActionClient({
 })
 
 /**
- * Get ticker groups organized by sector
+ * Get ticker groups organized by sector (Vietnamese stocks)
  */
 export async function getTickerGroups() {
-  return apiClient.getTickerGroups()
+  return apiClient.getTickerGroups('vn')
+}
+
+/**
+ * Get crypto ticker groups
+ */
+export async function getCryptoTickerGroups() {
+  return apiClient.getTickerGroups('crypto')
 }
 
 /**
@@ -120,7 +127,9 @@ export async function getTickersWithLogging(
   }
 ) {
   try {
-    const response = await apiClientWithMetadata.getTickers(params) as unknown as RequestResult<TickersResponse>
+    // Ensure mode is set (default to 'vn' if not specified)
+    const paramsWithMode = { ...params, mode: params?.mode || 'vn' }
+    const response = await apiClientWithMetadata.getTickers(paramsWithMode) as unknown as RequestResult<TickersResponse>
 
     // Calculate raw API response bars (before normalization)
     const rawBars = Object.values(response.data).reduce((sum, data) => sum + data.length, 0)
@@ -157,6 +166,7 @@ export async function getTickersWithLogging(
         params?.limit ? `limit=${params.limit}` : null,
         params?.start_date ? `start=${params.start_date}` : null,
         params?.end_date ? `end=${params.end_date}` : null,
+        paramsWithMode.mode !== 'vn' ? `mode=${paramsWithMode.mode}` : null,
       ].filter(Boolean).join(' ')
 
       // Calculate total bars returned after normalization
@@ -190,6 +200,25 @@ export async function getTickersWithLogging(
 
     throw error
   }
+}
+
+/**
+ * Get crypto ticker data with logging support
+ * Convenience wrapper that sets mode='crypto' automatically
+ * @param source - Source component/context calling this function
+ * @param params - Query parameters for tickers API
+ * @param logger - Logger functions (info, warn, error)
+ */
+export async function getCryptoTickersWithLogging(
+  source: string,
+  params: Parameters<typeof apiClient.getTickers>[0],
+  logger?: {
+    info: (message: string) => void
+    warn: (message: string) => void
+    error: (message: string) => void
+  }
+) {
+  return getTickersWithLogging(source, { ...params, mode: 'crypto' }, logger)
 }
 
 /**

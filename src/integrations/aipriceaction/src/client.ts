@@ -316,15 +316,22 @@ export class AIPriceActionClient {
   /**
    * GET /tickers/group - Get ticker groups
    *
+   * @param mode - Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (default: 'vn')
+   *
    * @example
    * ```ts
+   * // Get Vietnamese stock groups
    * const groups = await client.getTickerGroups();
    * console.log(groups.VN30); // ['VCB', 'VIC', 'VHM', ...]
    * console.log(groups.BANKING); // ['VCB', 'CTG', 'BID', ...]
+   *
+   * // Get crypto groups
+   * const cryptoGroups = await client.getTickerGroups('crypto');
    * ```
    */
-  async getTickerGroups(): Promise<TickerGroups> {
-    return this.request<TickerGroups>("/tickers/group") as Promise<TickerGroups>;
+  async getTickerGroups(mode: 'vn' | 'crypto' | string = 'vn'): Promise<TickerGroups> {
+    const queryString = mode !== 'vn' ? `?mode=${mode}` : '';
+    return this.request<TickerGroups>(`/tickers/group${queryString}`) as Promise<TickerGroups>;
   }
 
   /**
