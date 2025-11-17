@@ -1,6 +1,7 @@
 import { Interval } from '@/lib/api-client'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
+import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTicker } from '@/contexts/TickerContext'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -12,7 +13,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Settings, Maximize2, Plus, Loader2 } from 'lucide-react'
+import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -226,21 +227,30 @@ export function ChartControlBar({
 				)}
 			</Button>
 
-			{/* Fullscreen Button (if provided) */}
-			{onFullscreenClick && (
-				<Button
-					variant="ghost"
-					size="sm"
-					className="h-7 w-7 p-0 ml-auto"
-					onClick={onFullscreenClick}
-					title="Open fullscreen chart"
-				>
-					<Maximize2 className="h-4 w-4" />
-				</Button>
-			)}
+			{/* Right-aligned buttons group */}
+			<div className="ml-auto flex items-center gap-1">
+				{/* Star Button - Add to Watchlist */}
+				<QuickAddWatchListDialog ticker={ticker}>
+					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add to watchlist">
+						<Star className="h-4 w-4" />
+						<span className="sr-only">Add to watchlist</span>
+					</Button>
+				</QuickAddWatchListDialog>
 
-			{/* Settings Button - Top Right */}
-			<div className={onFullscreenClick ? '' : 'ml-auto'}>
+				{/* Fullscreen Button (if provided) */}
+				{onFullscreenClick && (
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 w-7 p-0"
+						onClick={onFullscreenClick}
+						title="Open fullscreen chart"
+					>
+						<Maximize2 className="h-4 w-4" />
+					</Button>
+				)}
+
+				{/* Settings Button - Top Right */}
 				<ChartSettingsDialog>
 					<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
 						<Settings className="h-4 w-4" />

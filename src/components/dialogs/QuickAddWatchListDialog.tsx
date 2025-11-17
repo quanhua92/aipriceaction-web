@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Star, Check } from 'lucide-react'
+import { Star, Check, X } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -64,6 +64,23 @@ export function QuickAddWatchListDialog({
     }
   }
 
+  const handleRemoveFromWatchlist = (watchlistName: string) => {
+    try {
+      const currentTickers = getWatchlistTickers(watchlistName)
+      const updatedTickers = currentTickers.filter(t => t !== ticker)
+      saveWatchlist(watchlistName, updatedTickers)
+
+      // Update UI to show it's been removed
+      setAddedWatchlists(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(watchlistName)
+        return newSet
+      })
+    } catch (err) {
+      console.error('Failed to remove ticker from watchlist:', err)
+    }
+  }
+
   const handleClose = () => {
     setOpen(false)
   }
@@ -108,14 +125,13 @@ export function QuickAddWatchListDialog({
                     <Button
                       variant={isAdded ? "outline" : "default"}
                       size="sm"
-                      onClick={() => handleAddToWatchlist(watchlistName)}
-                      disabled={isAdded}
-                      className="h-7 text-xs"
+                      onClick={() => isAdded ? handleRemoveFromWatchlist(watchlistName) : handleAddToWatchlist(watchlistName)}
+                      className={`h-7 text-xs ${isAdded ? 'hover:bg-destructive hover:text-destructive-foreground' : ''}`}
                     >
                       {isAdded ? (
                         <>
-                          <Check className="h-3 w-3 mr-1" />
-                          Added
+                          <X className="h-3 w-3 mr-1" />
+                          Remove
                         </>
                       ) : (
                         'Add'
