@@ -19,6 +19,7 @@ export default {
       marketIndices: 'Chỉ Số Thị Trường',
       stocks: 'Cổ Phiếu',
       crypto: 'Tiền Mã Hóa',
+      majorCrypto: 'Tiền Mã Hóa Chính',
     },
     labels: {
       marketIndex: 'Chỉ số thị trường',

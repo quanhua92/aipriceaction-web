@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Loader2 } from 'lucide-react'
-import { MARKET_INDICES } from '@/lib/constants'
+import { MARKET_INDICES, MAJOR_CRYPTO } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getPriceChangeColor } from '@/lib/colors'
 import { getSectorDisplayName } from '@/lib/sector-names'
@@ -59,7 +59,7 @@ export function SortableTickerList({
     return data?.[data.length - 1]
   }
 
-  const { filteredMarketIndices, filteredTickers, filteredCryptoTickers } = React.useMemo(() => {
+  const { filteredMarketIndices, filteredTickers, filteredMajorCrypto, filteredCryptoTickers } = React.useMemo(() => {
     const searchLower = searchQuery.toLowerCase()
 
     // Filter market indices
@@ -68,6 +68,13 @@ export function SortableTickerList({
           index.toLowerCase().includes(searchLower)
         )
       : []
+
+    // Filter major crypto (BTC, ETH, XRP, TON)
+    const majorCrypto = cryptoTickers.filter(
+      (ticker) =>
+        MAJOR_CRYPTO.includes(ticker.symbol as any) &&
+        ticker.symbol.toLowerCase().includes(searchLower)
+    )
 
     // Filter regular tickers (excluding market indices)
     const regularTickers = tickers.filter(
@@ -120,9 +127,11 @@ export function SortableTickerList({
       }
     })
 
-    // Filter and sort crypto tickers
+    // Filter and sort crypto tickers (excluding major crypto)
     const filteredCrypto = cryptoTickers.filter(
-      (ticker) => ticker.symbol.toLowerCase().includes(searchLower)
+      (ticker) =>
+        !MAJOR_CRYPTO.includes(ticker.symbol as any) &&
+        ticker.symbol.toLowerCase().includes(searchLower)
     )
 
     const sortedCrypto = [...filteredCrypto].sort((a, b) => {
@@ -163,9 +172,49 @@ export function SortableTickerList({
       }
     })
 
+    // Sort major crypto (same logic as regular crypto)
+    const sortedMajorCrypto = [...majorCrypto].sort((a, b) => {
+      const aData = getLatestData(a.symbol, true)
+      const bData = getLatestData(b.symbol, true)
+
+      switch (sortBy) {
+        case 'az':
+          return a.symbol.localeCompare(b.symbol)
+
+        case 'gainers':
+          const aChange = aData?.close_changed ?? -Infinity
+          const bChange = bData?.close_changed ?? -Infinity
+          return bChange - aChange
+
+        case 'losers':
+          const aLoss = aData?.close_changed ?? Infinity
+          const bLoss = bData?.close_changed ?? Infinity
+          return aLoss - bLoss
+
+        case 'volume':
+          const aVol = aData?.volume ?? 0
+          const bVol = bData?.volume ?? 0
+          return bVol - aVol
+
+        case 'ma20':
+          const aMA20 = aData?.ma20_score ?? -Infinity
+          const bMA20 = bData?.ma20_score ?? -Infinity
+          return bMA20 - aMA20
+
+        case 'ma50':
+          const aMA50 = aData?.ma50_score ?? -Infinity
+          const bMA50 = bData?.ma50_score ?? -Infinity
+          return bMA50 - aMA50
+
+        default:
+          return 0
+      }
+    })
+
     return {
       filteredMarketIndices: indices,
       filteredTickers: sortedTickers,
+      filteredMajorCrypto: sortedMajorCrypto,
       filteredCryptoTickers: sortedCrypto
     }
   }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersLastData, cryptoTickers, allCryptoTickersLastData])
@@ -343,6 +392,54 @@ export function SortableTickerList({
                 </div>
               )}
 
+              {/* Major Crypto */}
+              {filteredMajorCrypto.length > 0 && sectionFilter !== 'stocks' && (
+                <div className="mb-2">
+                  {showSections && (
+                    <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      {t('dialogs.selectTicker.sections.majorCrypto')}
+                    </div>
+                  )}
+                  {filteredMajorCrypto.map((ticker) => {
+                    const latestData = getLatestData(ticker.symbol, true)
+                    return (
+                      <button
+                        key={ticker.symbol}
+                        onClick={() => onSelectTicker(ticker.symbol)}
+                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                      >
+                        <div className="flex flex-col min-w-0 flex-shrink">
+                          <span className="font-extrabold">{ticker.symbol}</span>
+                          <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
+                        </div>
+                        {latestData && (
+                          <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                            {/* Price Row */}
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold tabular-nums">{formatPrice(latestData.close)}</span>
+                              {latestData.close_changed !== null && latestData.close_changed !== undefined && (
+                                <span className={`text-xs tabular-nums ${getPriceChangeColor(latestData.close_changed)}`}>
+                                  {latestData.close_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.close_changed)}
+                                </span>
+                              )}
+                            </div>
+                            {/* Volume Row */}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                              <span className="tabular-nums">{t('dialogs.selectTicker.labels.volume')}: {formatVolume(latestData.volume)}</span>
+                              {latestData.volume_changed !== null && latestData.volume_changed !== undefined && (
+                                <span className={`tabular-nums opacity-70 ${latestData.volume_changed > 150 ? 'text-purple-600 dark:text-purple-500' : ''}`}>
+                                  {latestData.volume_changed >= 0 ? '↑' : '↓'} {formatPercent(latestData.volume_changed)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
               {/* Regular Tickers */}
               {filteredTickers.length > 0 && sectionFilter !== 'crypto' && (
                 <div>
@@ -441,9 +538,9 @@ export function SortableTickerList({
 
               {/* No results message - check visible sections only */}
               {(
-                (sectionFilter === 'all' && filteredMarketIndices.length === 0 && filteredTickers.length === 0 && filteredCryptoTickers.length === 0) ||
+                (sectionFilter === 'all' && filteredMarketIndices.length === 0 && filteredTickers.length === 0 && filteredMajorCrypto.length === 0 && filteredCryptoTickers.length === 0) ||
                 (sectionFilter === 'stocks' && filteredMarketIndices.length === 0 && filteredTickers.length === 0) ||
-                (sectionFilter === 'crypto' && filteredCryptoTickers.length === 0)
+                (sectionFilter === 'crypto' && filteredMajorCrypto.length === 0 && filteredCryptoTickers.length === 0)
               ) && (
                 <div className="text-center py-8 text-muted-foreground">
                   {t('dialogs.selectTicker.states.noTickersFound')}

@@ -6,6 +6,13 @@ export const MARKET_INDICES = ['VNINDEX', 'VN30'] as const
 export type MarketIndex = typeof MARKET_INDICES[number]
 
 /**
+ * Major cryptocurrencies (shown at top like market indices)
+ */
+export const MAJOR_CRYPTO = ['BTC', 'ETH', 'XRP', 'TON'] as const
+
+export type MajorCrypto = typeof MAJOR_CRYPTO[number]
+
+/**
  * Number of tickers to prefetch ahead in BasicWatchList
  */
 export const BASIC_WATCHLIST_PREFETCH_COUNT = 3

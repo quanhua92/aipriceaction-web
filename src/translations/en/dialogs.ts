@@ -19,6 +19,7 @@ export default {
       marketIndices: 'Market Indices',
       stocks: 'Stocks',
       crypto: 'Cryptocurrencies',
+      majorCrypto: 'Major Crypto',
     },
     labels: {
       marketIndex: 'Market Index',
