@@ -217,24 +217,41 @@ export function MarketMatrix() {
         // Determine mode based on watchlist selection
         const mode = selectedWatchlist === CRYPTO_WATCHLIST_NAME ? 'crypto' : 'vn'
 
-        // Fetch ticker data including VNINDEX (for trading day calendar)
+        // Fetch ticker data including VNINDEX (for trading day calendar, stocks only)
         // Optimization: When "ALL" watchlist is selected, omit symbol parameter
         // to avoid super long URLs with hundreds of ticker symbols (symbol=VCB&symbol=FPT&...)
         // The API will return all tickers (including VNINDEX) when symbol is undefined/omitted
-        // For specific watchlists, always include VNINDEX to get trading day calendar
+        // For specific watchlists, always include VNINDEX to get trading day calendar (stocks only)
+        // For CRYPTO, don't include VNINDEX (it doesn't exist in crypto mode)
         const response = await getTickers('MarketMatrix.data', {
-          symbol: selectedWatchlist === ALL_WATCHLIST_NAME ? undefined : ['VNINDEX', ...selectedTickers],
+          symbol:
+            selectedWatchlist === ALL_WATCHLIST_NAME
+              ? undefined
+              : selectedWatchlist === CRYPTO_WATCHLIST_NAME
+                ? selectedTickers  // Crypto only, no VNINDEX
+                : ['VNINDEX', ...selectedTickers],  // Stocks, include VNINDEX for calendar
           interval: '1D',
           end_date: endDateForAPI,
           limit: MATRIX_DAYS_PER_PAGE,
           mode,
         })
 
-        // Extract dates from VNINDEX (always has data when market is open, serves as trading day calendar)
-        const vnindexData = response['VNINDEX'] || []
-        const dates = vnindexData
-          .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
-          .sort((a, b) => b.localeCompare(a)) // Newest first
+        // Extract dates from reference ticker (VNINDEX for stocks, BTC for crypto)
+        let dates: string[] = []
+
+        if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
+          // For crypto, use BTC as calendar reference (most reliable/liquid)
+          const btcData = response['BTC'] || []
+          dates = btcData
+            .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
+            .sort((a, b) => b.localeCompare(a)) // Newest first
+        } else {
+          // For stocks, use VNINDEX as trading day calendar
+          const vnindexData = response['VNINDEX'] || []
+          dates = vnindexData
+            .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
+            .sort((a, b) => b.localeCompare(a)) // Newest first
+        }
 
         if (dates.length === 0) {
           setError('No market data available')
