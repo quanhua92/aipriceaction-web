@@ -4,6 +4,7 @@ import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
 import { useAPI } from './APIContext'
 import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT } from '@/lib/constants'
+import { isCryptoTicker } from '@/lib/ticker-utils'
 
 interface TickerContextValue {
   selectedTicker: string
@@ -89,7 +90,7 @@ export function TickerProvider({
     // Get global settings for API calls (only if fetching is enabled)
   const settings = enableFetching ? useChartSettings() : null
   const { lastRefresh } = useRefresh()
-  const { getTickers } = useAPI()
+  const { getTickers, tickers, cryptoTickers } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [chartData, setChartData] = React.useState<StockData[]>([])
   const [loading, setLoading] = React.useState(false)
@@ -176,12 +177,16 @@ export function TickerProvider({
             await sleep(delay)
           }
 
+          // Determine mode: crypto or stock (stock takes priority if symbol in both lists)
+          const mode = isCryptoTicker(selectedTicker, tickers, cryptoTickers) ? 'crypto' : 'vn'
+
           const response = await getTickers('TickerContext', {
             symbol: selectedTicker,
             interval: settings.interval,
             start_date: settings.startDate,
             end_date: localEndDate ?? settings.endDate,
             limit: localLimit ?? (limit ?? settings.limit),
+            mode,
           })
           const data = response[selectedTicker] || []
 
@@ -212,7 +217,7 @@ export function TickerProvider({
     }
 
     fetchChartData()
-  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localLimit, localEndDate])
+  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localLimit, localEndDate, getTickers, tickers, cryptoTickers])
 
   const contextValue = {
     selectedTicker,
