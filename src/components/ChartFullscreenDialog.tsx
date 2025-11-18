@@ -77,9 +77,11 @@ export function ChartFullscreenDialog({
     setInternalIndex(newIndex)
     setInternalTicker(tickerList[newIndex])
 
-    // Prefetch previous 2 tickers from new position
-    const symbolsToPrefetch = getTickersToPrefetch(newIndex, 'prev', 2)
-    prefetchTickers('ChartFullscreenDialog.prev', symbolsToPrefetch)
+    // Prefetch previous 2 tickers from new position (delayed 100ms)
+    setTimeout(() => {
+      const symbolsToPrefetch = getTickersToPrefetch(newIndex, 'prev', 2)
+      prefetchTickers('ChartFullscreenDialog.prev', symbolsToPrefetch)
+    }, 100)
   }, [tickerList, internalIndex, getTickersToPrefetch, prefetchTickers])
 
   const navigateToNext = React.useCallback(() => {
@@ -88,9 +90,11 @@ export function ChartFullscreenDialog({
     setInternalIndex(newIndex)
     setInternalTicker(tickerList[newIndex])
 
-    // Prefetch next 2 tickers from new position
-    const symbolsToPrefetch = getTickersToPrefetch(newIndex, 'next', 2)
-    prefetchTickers('ChartFullscreenDialog.next', symbolsToPrefetch)
+    // Prefetch next 2 tickers from new position (delayed 100ms)
+    setTimeout(() => {
+      const symbolsToPrefetch = getTickersToPrefetch(newIndex, 'next', 2)
+      prefetchTickers('ChartFullscreenDialog.next', symbolsToPrefetch)
+    }, 100)
   }, [tickerList, internalIndex, getTickersToPrefetch, prefetchTickers])
 
   // Handle ticker change from chart control bar
@@ -136,16 +140,21 @@ export function ChartFullscreenDialog({
   }, [isOpen, tickerList, navigateToPrevious, navigateToNext])
 
   // Initial prefetch on dialog open - prefetch next and previous tickers
+  // Delay 100ms to allow main ticker to load first
   React.useEffect(() => {
     if (!isOpen || !tickerList || tickerList.length === 0) return
 
-    // Prefetch next ticker
-    const nextSymbols = getTickersToPrefetch(internalIndex, 'next', 1)
-    // Prefetch previous ticker
-    const prevSymbols = getTickersToPrefetch(internalIndex, 'prev', 1)
+    const timer = setTimeout(() => {
+      // Prefetch next ticker
+      const nextSymbols = getTickersToPrefetch(internalIndex, 'next', 1)
+      // Prefetch previous ticker
+      const prevSymbols = getTickersToPrefetch(internalIndex, 'prev', 1)
 
-    // Combine and prefetch
-    prefetchTickers('ChartFullscreenDialog.initial', [...nextSymbols, ...prevSymbols])
+      // Combine and prefetch
+      prefetchTickers('ChartFullscreenDialog.initial', [...nextSymbols, ...prevSymbols])
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [isOpen, tickerList, internalIndex, getTickersToPrefetch, prefetchTickers])
 
   // Measure available height when dialog opens or window resizes
