@@ -48,7 +48,7 @@ function ChartPage() {
 			<ChartPageContent />
 
 			<div className="p-4 md:p-6 border-t">
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 					<TradingViewChart initialTicker="VNINDEX" />
 					<TradingViewChart initialTicker="VIC" />
 					<TradingViewChart initialTicker="STB" />
@@ -57,8 +57,8 @@ function ChartPage() {
 			</div>
 
 			<div className="p-4 md:p-6 border-t">
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-					<div className="lg:col-span-1">
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+					<div>
 						<BasicWatchList
 							defaultGroup={ALL_WATCHLIST_NAME}
 							maxHeight="500px"
@@ -68,7 +68,7 @@ function ChartPage() {
 							onSortedTickersChange={handleSortedTickersChange}
 						/>
 					</div>
-					<div className="lg:col-span-2">
+					<div>
 						<p className="text-sm text-muted-foreground">
 							{t('common.watch.clickToViewFullscreen')}
 						</p>
