@@ -164,7 +164,7 @@ See `PRIORITY_GROUPS` and `SECTOR_ABBREVIATIONS` in `src/lib/constants.ts`
 ```typescript
 // src/lib/constants.ts
 MARKET_INDICES = ['VNINDEX', 'VN30']
-TRADING_DAYS_PER_YEAR = 252
+DEFAULT_CHART_LIMIT = 128
 API_RETRY_ATTEMPTS = 3
 API_CALL_DELAY_MS = {min: 0, max: 50}
 API_CACHE_WINDOW_MS = 15000  // 15 seconds

@@ -78,9 +78,9 @@ export type PredefinedWatchlistName = typeof PREDEFINED_WATCHLIST_NAMES[number]
 export const MATRIX_DAYS_PER_PAGE = 40
 
 /**
- * Number of trading days in approximately 1 year (used for caching VNINDEX data)
+ * Default number of records to load for charts
  */
-export const TRADING_DAYS_PER_YEAR = 252
+export const DEFAULT_CHART_LIMIT = 128
 
 /**
  * Maximum number of retry attempts for failed API calls

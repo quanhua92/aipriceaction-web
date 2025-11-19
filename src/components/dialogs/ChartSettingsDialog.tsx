@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/select'
 import { CalendarIcon, X } from 'lucide-react'
 import { format } from 'date-fns'
-import { TRADING_DAYS_PER_YEAR } from '@/lib/constants'
+import { DEFAULT_CHART_LIMIT } from '@/lib/constants'
 
 interface ChartSettingsDialogProps {
 	children: React.ReactNode
@@ -35,9 +35,9 @@ const LIMIT_OPTIONS = [
 	{ value: '30', label: '30 records' },
 	{ value: '90', label: '90 records' },
 	{ value: '180', label: '180 records' },
-	{ value: TRADING_DAYS_PER_YEAR.toString(), label: `${TRADING_DAYS_PER_YEAR} records (1 year)` },
-	{ value: (TRADING_DAYS_PER_YEAR * 2).toString(), label: `${TRADING_DAYS_PER_YEAR * 2} records (2 years)` },
-	{ value: (TRADING_DAYS_PER_YEAR * 3).toString(), label: `${TRADING_DAYS_PER_YEAR * 3} records (3 years)` },
+	{ value: DEFAULT_CHART_LIMIT.toString(), label: `${DEFAULT_CHART_LIMIT} records` },
+	{ value: (DEFAULT_CHART_LIMIT * 2).toString(), label: `${DEFAULT_CHART_LIMIT * 2} records` },
+	{ value: (DEFAULT_CHART_LIMIT * 3).toString(), label: `${DEFAULT_CHART_LIMIT * 3} records` },
 ]
 
 const HEIGHT_OPTIONS = [
@@ -75,7 +75,7 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 	const handleClearFilters = () => {
 		setStartDate(undefined)
 		setEndDate(undefined)
-		setLimit(TRADING_DAYS_PER_YEAR)
+		setLimit(DEFAULT_CHART_LIMIT)
 	}
 
 	// Convert string date to Date object for calendar

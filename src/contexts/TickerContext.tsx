@@ -3,7 +3,7 @@ import { type StockData } from '@/lib/api-client'
 import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
 import { useAPI } from './APIContext'
-import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT } from '@/lib/constants'
+import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT, DEFAULT_CHART_LIMIT } from '@/lib/constants'
 import { isCryptoTicker } from '@/lib/ticker-utils'
 
 interface TickerContextValue {
@@ -122,9 +122,9 @@ export function TickerProvider({
 
     loadingMoreRef.current = true
 
-    // Increase local limit by 252 - this will trigger main effect to refetch
+    // Increase local limit - this will trigger main effect to refetch
     const currentLimit = localLimit ?? (limit ?? settings.limit)
-    const newLimit = currentLimit + 252
+    const newLimit = currentLimit + DEFAULT_CHART_LIMIT
     setLocalLimit(newLimit)
 
     // Reset flag after state update

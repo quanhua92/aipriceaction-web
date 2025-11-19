@@ -201,7 +201,7 @@ export function ChartControlBar({
 				className="hidden md:flex h-7 text-xs px-2 gap-1"
 				onClick={loadMoreHistoricalData}
 				disabled={loadingMore}
-				title="Load 252 more historical bars"
+				title="Load more historical bars"
 			>
 				{loadingMore ? (
 					<Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -218,7 +218,7 @@ export function ChartControlBar({
 				className="flex md:hidden h-7 w-7 p-0"
 				onClick={loadMoreHistoricalData}
 				disabled={loadingMore}
-				title="Load 252 more historical bars"
+				title="Load more historical bars"
 			>
 				{loadingMore ? (
 					<Loader2 className="h-4 w-4 animate-spin" />
