@@ -253,6 +253,22 @@ export interface MAScoresBySectorQueryParams {
   top_per_sector?: number;
 }
 
+/**
+ * Query parameters for /analysis/volume-profile endpoint
+ */
+export interface VolumeProfileQueryParams {
+  /** Ticker symbol (required) */
+  symbol: string;
+  /** Date to analyze in YYYY-MM-DD format (required) */
+  date: string;
+  /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (default: 'vn') */
+  mode?: 'vn' | 'crypto' | string;
+  /** Number of price bins for aggregation (default: 50, range: 10-200) */
+  bins?: number;
+  /** Value area percentage (default: 70.0, range: 60-90) */
+  value_area_pct?: number;
+}
+
 // ===== Response Types =====
 
 /**
@@ -284,6 +300,104 @@ export interface MAScoresBySectorResponse {
     ma_period: number;
     threshold: number;
   };
+}
+
+/**
+ * Price range for the trading session
+ */
+export interface PriceRange {
+  /** Lowest price of the session */
+  low: number;
+  /** Highest price of the session */
+  high: number;
+  /** Price spread (high - low) */
+  spread: number;
+}
+
+/**
+ * Point of Control - price level with highest volume
+ */
+export interface PointOfControl {
+  /** POC price level */
+  price: number;
+  /** Total volume at POC */
+  volume: number;
+  /** Percentage of total volume at POC */
+  percentage: number;
+}
+
+/**
+ * Value Area - price range containing specified % of volume
+ */
+export interface ValueArea {
+  /** Lower boundary of value area */
+  low: number;
+  /** Upper boundary of value area */
+  high: number;
+  /** Total volume within value area */
+  volume: number;
+  /** Percentage of total volume (target: 70% by default) */
+  percentage: number;
+}
+
+/**
+ * Individual price level with volume distribution
+ */
+export interface PriceLevelVolume {
+  /** Price level */
+  price: number;
+  /** Volume at this price level */
+  volume: number;
+  /** Percentage of total volume at this level */
+  percentage: number;
+  /** Cumulative percentage up to this level */
+  cumulative_percentage: number;
+}
+
+/**
+ * Statistical measures of volume distribution
+ */
+export interface VolumeStatistics {
+  /** Volume-weighted mean price */
+  mean_price: number;
+  /** Median price (50th percentile by volume) */
+  median_price: number;
+  /** Volume-weighted standard deviation */
+  std_deviation: number;
+  /** Volume-weighted skewness */
+  skewness: number;
+}
+
+/**
+ * Volume profile analysis data
+ */
+export interface VolumeProfileData {
+  /** Ticker symbol */
+  symbol: string;
+  /** Total trading volume for the session */
+  total_volume: number;
+  /** Total number of minute candles analyzed */
+  total_minutes: number;
+  /** Price range information */
+  price_range: PriceRange;
+  /** Point of Control information */
+  poc: PointOfControl;
+  /** Value Area information */
+  value_area: ValueArea;
+  /** Volume distribution profile (sorted by price, aggregated into bins) */
+  profile: PriceLevelVolume[];
+  /** Statistical measures */
+  statistics: VolumeStatistics;
+}
+
+/**
+ * Response from /analysis/volume-profile endpoint
+ */
+export interface VolumeProfileResponse {
+  analysis_date: string;
+  analysis_type: "volume_profile";
+  total_analyzed: number;
+  data: VolumeProfileData;
 }
 
 /**

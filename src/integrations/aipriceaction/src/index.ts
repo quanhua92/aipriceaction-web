@@ -39,6 +39,14 @@ export type {
   TickersResponse,
   TopPerformersResponse,
   MAScoresBySectorResponse,
+  VolumeProfileQueryParams,
+  VolumeProfileResponse,
+  VolumeProfileData,
+  PriceRange,
+  PointOfControl,
+  ValueArea,
+  PriceLevelVolume,
+  VolumeStatistics,
   APIErrorResponse,
 } from "./types.js";
 

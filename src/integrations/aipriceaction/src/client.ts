@@ -18,6 +18,8 @@ import type {
   TickersResponse,
   TopPerformersQueryParams,
   TopPerformersResponse,
+  VolumeProfileQueryParams,
+  VolumeProfileResponse,
 } from "./types.js";
 import {
   buildQueryString,
@@ -419,6 +421,91 @@ export class AIPriceActionClient {
     return this.request<MAScoresBySectorResponse>(
       `/analysis/ma-scores-by-sector${queryString}`
     ) as Promise<MAScoresBySectorResponse>;
+  }
+
+  /**
+   * GET /analysis/volume-profile - Get volume profile analysis
+   *
+   * Provides volume distribution across price levels for a specific trading session.
+   * Uses minute-level OHLCV data with uniform distribution (smearing) method.
+   *
+   * @example
+   * ```ts
+   * // Basic volume profile for VN stock
+   * const profile = await client.getVolumeProfile({
+   *   symbol: 'VCB',
+   *   date: '2024-01-15'
+   * });
+   *
+   * console.log(`POC: ${profile.data.poc.price}`);
+   * console.log(`Value Area: ${profile.data.value_area.low} - ${profile.data.value_area.high}`);
+   *
+   * // Crypto volume profile
+   * const btcProfile = await client.getVolumeProfile({
+   *   symbol: 'BTC',
+   *   date: '2024-01-15',
+   *   mode: 'crypto'
+   * });
+   *
+   * // Custom parameters
+   * const customProfile = await client.getVolumeProfile({
+   *   symbol: 'VCB',
+   *   date: '2024-01-15',
+   *   bins: 100,           // More granular (default: 50)
+   *   value_area_pct: 80   // 80% value area (default: 70)
+   * });
+   * ```
+   */
+  async getVolumeProfile(
+    params: VolumeProfileQueryParams
+  ): Promise<VolumeProfileResponse> {
+    // Validate required parameters
+    if (!params.symbol) {
+      throw new ValidationError(
+        "symbol parameter is required",
+        "symbol"
+      );
+    }
+
+    if (!params.date) {
+      throw new ValidationError(
+        "date parameter is required (YYYY-MM-DD format)",
+        "date"
+      );
+    }
+
+    // Validate date format
+    if (!isValidDate(params.date)) {
+      throw new ValidationError(
+        `Invalid date format: ${params.date}. Expected YYYY-MM-DD`,
+        "date"
+      );
+    }
+
+    // Validate bins parameter (optional, 10-200 range)
+    if (params.bins !== undefined) {
+      if (params.bins < 10 || params.bins > 200) {
+        throw new ValidationError(
+          `Invalid bins: ${params.bins}. Must be between 10 and 200`,
+          "bins"
+        );
+      }
+    }
+
+    // Validate value_area_pct parameter (optional, 60-90 range)
+    if (params.value_area_pct !== undefined) {
+      if (params.value_area_pct < 60 || params.value_area_pct > 90) {
+        throw new ValidationError(
+          `Invalid value_area_pct: ${params.value_area_pct}. Must be between 60 and 90`,
+          "value_area_pct"
+        );
+      }
+    }
+
+    const queryString = buildQueryString(params as unknown as Record<string, unknown>);
+    return this.request<VolumeProfileResponse>(
+      `/analysis/volume-profile${queryString}`
+    ) as Promise<VolumeProfileResponse>;
   }
 
   /**
