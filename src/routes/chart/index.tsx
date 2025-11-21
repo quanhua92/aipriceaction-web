@@ -242,9 +242,11 @@ function ChartPage() {
 				<div className="overflow-auto space-y-4">
 					<BasicTickerWidget
 						ticker={activeChartTicker}
+						onTickerChange={handleSelectTicker}
 					/>
 					<VolumeProfileWidget
 						ticker={activeChartTicker}
+						onTickerChange={handleSelectTicker}
 					/>
 				</div>
 			</div>

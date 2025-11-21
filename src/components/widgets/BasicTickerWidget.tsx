@@ -28,11 +28,10 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
 
         // Sync with external ticker prop changes
         React.useEffect(() => {
-                    if (ticker !== undefined && ticker !== selectedTicker) {
-                        setSelectedTicker(ticker)
-            onTickerChange?.(ticker)
+          if (ticker !== undefined && ticker !== selectedTicker) {
+            setSelectedTicker(ticker)
           }
-        }, [ticker, selectedTicker, setSelectedTicker, onTickerChange])
+        }, [ticker, selectedTicker, setSelectedTicker])
 
         const handleSelectTicker = (newTicker: string) => {
                     setSelectedTicker(newTicker)
