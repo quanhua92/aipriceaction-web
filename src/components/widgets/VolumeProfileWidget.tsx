@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star, HelpCircle } from 'lucide-react'
 import { formatPrice, formatVolume, formatPercent } from '@/lib/format'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getVolumeProfile } from '@/lib/api-client'
+import { useTranslation } from '@/hooks/useTranslation'
 import type { VolumeProfileData, PriceLevelVolume } from '@/lib/api-client'
 
 interface VolumeProfileWidgetProps {
@@ -33,6 +34,7 @@ export function VolumeProfileWidget({
   onTickerChange,
   onDateChange,
 }: VolumeProfileWidgetProps) {
+  const { t } = useTranslation()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? getTodayDate())
   const [loading, setLoading] = React.useState(true)
@@ -141,54 +143,66 @@ export function VolumeProfileWidget({
     )
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="border rounded-lg p-4 bg-card">
-        <div className="flex items-center justify-between mb-4">
-          <SelectTickerDialog onSelectTicker={handleSelectTicker} defaultSectionFilter="stocks">
-            <div className="text-lg font-bold hover:bg-muted/50 transition-colors duration-200 inline-flex items-center cursor-pointer px-1 -ml-1">
-              {selectedTicker}
-              <ChevronDown className="ml-1 h-4 w-4 opacity-60" />
-            </div>
-          </SelectTickerDialog>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                <Calendar className="mr-2 h-4 w-4" />
-                {selectedDate}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-2" align="end">
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                className="w-auto"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+  // Render error or no data content (used inside main layout)
+  const renderContent = () => {
+    if (error) {
+      return (
         <div className="text-center text-destructive py-8">
           <p className="text-sm">{error}</p>
         </div>
-      </div>
-    )
-  }
+      )
+    }
 
-  // No data state
-  if (!profileData) {
-    return (
-      <div className="border rounded-lg p-4 bg-card">
-        <div className="text-center text-muted-foreground">
+    if (!profileData) {
+      return (
+        <div className="text-center text-muted-foreground py-8">
           <p className="text-sm">No data available</p>
         </div>
-      </div>
+      )
+    }
+
+    const { poc, value_area, profile, total_volume } = profileData
+    const maxVolume = Math.max(...profile.map((p) => p.volume))
+
+    return (
+      <>
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 pb-4 border-b">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.poc')}</p>
+            <p className="text-sm font-semibold text-yellow-600 dark:text-yellow-500">
+              {formatPrice(poc.price, { mode: 'vn' } as any)}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.vaLow')}</p>
+            <p className="text-sm font-semibold">{formatPrice(value_area.low, { mode: 'vn' } as any)}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.vaHigh')}</p>
+            <p className="text-sm font-semibold">{formatPrice(value_area.high, { mode: 'vn' } as any)}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.totalVol')}</p>
+            <p className="text-sm font-semibold">{formatVolume(total_volume)}</p>
+          </div>
+        </div>
+
+        {/* Volume Profile Bars */}
+        <div className="space-y-1 max-h-[600px] md:max-h-[300px] overflow-y-auto">
+          {profile.map((level) => (
+            <VolumeProfileRow
+              key={level.price}
+              level={level}
+              maxVolume={maxVolume}
+              poc={poc}
+              valueArea={value_area}
+            />
+          ))}
+        </div>
+      </>
     )
   }
-
-  const { poc, value_area, profile, total_volume } = profileData
-  const maxVolume = Math.max(...profile.map((p) => p.volume))
 
   return (
     <div className="border rounded-lg p-4 bg-card">
@@ -219,6 +233,28 @@ export function VolumeProfileWidget({
               <SelectItem value="50">50</SelectItem>
             </SelectContent>
           </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted/50">
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="sr-only">Help</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 text-sm" align="end">
+              <div className="space-y-3">
+                <h4 className="font-semibold">{t('common.volumeProfile.help.title')}</h4>
+                <p className="text-muted-foreground text-xs">{t('common.volumeProfile.help.description')}</p>
+                <div className="space-y-2 text-xs">
+                  <p><span className="font-medium text-yellow-600">●</span> {t('common.volumeProfile.help.poc')}</p>
+                  <p><span className="font-medium text-blue-600">●</span> {t('common.volumeProfile.help.valueArea')}</p>
+                  <p>{t('common.volumeProfile.help.totalVolume')}</p>
+                  <p><span className="font-medium text-green-600">●</span> {t('common.volumeProfile.help.hvn')}</p>
+                  <p><span className="font-medium text-orange-500">●</span> {t('common.volumeProfile.help.lvn')}</p>
+                  <p className="text-muted-foreground">{t('common.volumeProfile.help.colors')}</p>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -248,40 +284,7 @@ export function VolumeProfileWidget({
         </Button>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 pb-4 border-b">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">POC</p>
-          <p className="text-sm font-semibold text-yellow-600 dark:text-yellow-500">
-            {formatPrice(poc.price, { mode: 'vn' } as any)}
-          </p>
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">VA Low</p>
-          <p className="text-sm font-semibold">{formatPrice(value_area.low, { mode: 'vn' } as any)}</p>
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">VA High</p>
-          <p className="text-sm font-semibold">{formatPrice(value_area.high, { mode: 'vn' } as any)}</p>
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Vol</p>
-          <p className="text-sm font-semibold">{formatVolume(total_volume)}</p>
-        </div>
-      </div>
-
-      {/* Volume Profile Bars */}
-      <div className="space-y-1 max-h-[600px] md:max-h-[300px] overflow-y-auto">
-        {profile.map((level) => (
-          <VolumeProfileRow
-            key={level.price}
-            level={level}
-            maxVolume={maxVolume}
-            poc={poc}
-            valueArea={value_area}
-          />
-        ))}
-      </div>
+      {renderContent()}
     </div>
   )
 }
@@ -345,16 +348,6 @@ function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRow
                 POC
               </span>
             </>
-          )}
-          {isHVN && !isPOC && (
-            <span className="px-1.5 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 rounded font-semibold">
-              HVN
-            </span>
-          )}
-          {isLVN && (
-            <span className="px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-400 rounded font-semibold">
-              LVN
-            </span>
           )}
         </span>
       </div>

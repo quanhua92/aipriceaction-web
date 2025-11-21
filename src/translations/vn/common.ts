@@ -137,4 +137,23 @@ export default {
   watchlist: {
     editWatchlist: 'Chỉnh Sửa Danh Mục',
   },
+  volumeProfile: {
+    poc: 'POC',
+    vaLow: 'VA Low',
+    vaHigh: 'VA High',
+    totalVol: 'Tổng KL',
+    hvn: 'HVN',
+    lvn: 'LVN',
+    bins: 'Số mức',
+    help: {
+      title: 'Hướng Dẫn Volume Profile',
+      description: 'Volume Profile hiển thị hoạt động giao dịch tại từng mức giá.',
+      poc: 'POC (Point of Control): Mức giá có khối lượng cao nhất - "giá trị hợp lý" của phiên. Giá thường quay về đây như nam châm.',
+      valueArea: 'Vùng Giá Trị (VA Low - VA High): Vùng giá chứa 70% tổng khối lượng. Trong VA = vùng bình thường, ngoài VA = mức cực đoan.',
+      totalVolume: 'Tổng Khối Lượng: Tổng khối lượng giao dịch trong phiên.',
+      hvn: 'HVN (High Volume Node): Vùng hỗ trợ/kháng cự mạnh (≥3% khối lượng). Giá có xu hướng chậm lại ở đây.',
+      lvn: 'LVN (Low Volume Node): Vùng giá di chuyển nhanh (<1% khối lượng). Giá dễ gap qua các vùng này.',
+      colors: 'Màu sắc: Vàng = POC, Xanh lá = HVN (≥3%), Tím = Bình thường (1-3%), Cam = LVN (<1%), Nền xanh dương = Vùng Giá Trị.',
+    },
+  },
 }

@@ -137,4 +137,23 @@ export default {
   watchlist: {
     editWatchlist: 'Edit Watchlist',
   },
+  volumeProfile: {
+    poc: 'POC',
+    vaLow: 'VA Low',
+    vaHigh: 'VA High',
+    totalVol: 'Total Vol',
+    hvn: 'HVN',
+    lvn: 'LVN',
+    bins: 'Bins',
+    help: {
+      title: 'Volume Profile Guide',
+      description: 'Volume Profile shows where trading activity happened at each price level.',
+      poc: 'POC (Point of Control): Price with highest volume - the "fair value" for the session. Price often returns here like a magnet.',
+      valueArea: 'Value Area (VA Low - VA High): Price range containing 70% of total volume. Inside VA = normal range, outside = extreme levels.',
+      totalVolume: 'Total Volume: Sum of all trading volume for the session.',
+      hvn: 'HVN (High Volume Node): Strong support/resistance levels (≥3% of volume). Price tends to slow down here.',
+      lvn: 'LVN (Low Volume Node): Fast price movement areas (<1% volume). Price gaps through these quickly.',
+      colors: 'Colors: Yellow = POC, Green = HVN (≥3%), Purple = Normal (1-3%), Orange = LVN (<1%), Blue background = Value Area.',
+    },
+  },
 }
