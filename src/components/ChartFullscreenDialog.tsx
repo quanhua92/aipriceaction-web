@@ -48,7 +48,10 @@ export function ChartFullscreenDialog({
   }, [ticker, tickerList])
 
   // Get the current ticker to display
-  const displayTicker = tickerList && tickerList.length > 0 ? tickerList[internalIndex] : internalTicker
+  // If internalTicker is not in tickerList (user selected external ticker like crypto), use internalTicker directly
+  const displayTicker = tickerList && tickerList.length > 0 && tickerList.includes(internalTicker ?? '')
+    ? tickerList[internalIndex]
+    : internalTicker
 
   // Helper function to get tickers to prefetch with wraparound
   const getTickersToPrefetch = React.useCallback((fromIndex: number, direction: 'next' | 'prev', count: number): string[] => {
