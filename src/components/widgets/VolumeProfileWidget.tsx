@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getVolumeProfile } from '@/lib/api-client'
 import { useTranslation } from '@/hooks/useTranslation'
+import { useAPI } from '@/contexts/APIContext'
+import { isCryptoTicker } from '@/lib/ticker-utils'
 import type { VolumeProfileData, PriceLevelVolume } from '@/lib/api-client'
 
 interface VolumeProfileWidgetProps {
@@ -50,6 +52,7 @@ export function VolumeProfileWidget({
   onEndDateChange,
 }: VolumeProfileWidgetProps) {
   const { t } = useTranslation()
+  const { tickers: stockTickers, cryptoTickers } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? getTodayDate())
   const [loading, setLoading] = React.useState(true)
@@ -61,6 +64,12 @@ export function VolumeProfileWidget({
   const [isRangeMode, setIsRangeMode] = React.useState(false)
   const [selectedStartDate, setSelectedStartDate] = React.useState(startDate ?? initialStartDate ?? getTodayDate())
   const [selectedEndDate, setSelectedEndDate] = React.useState(endDate ?? initialEndDate ?? getTodayDate())
+
+  // Determine mode for price formatting
+  const currentMode = React.useMemo(() => {
+    return isCryptoTicker(selectedTicker, stockTickers, cryptoTickers) ? 'crypto' : 'vn'
+  }, [selectedTicker, stockTickers, cryptoTickers])
+  const priceFormatData = { mode: currentMode as 'vn' | 'crypto', symbol: selectedTicker }
 
   // Sync with external ticker prop
   React.useEffect(() => {
@@ -98,10 +107,14 @@ export function VolumeProfileWidget({
       setError(null)
 
       try {
+        // Determine if ticker is crypto
+        const isCrypto = isCryptoTicker(selectedTicker, stockTickers, cryptoTickers)
+        const mode = isCrypto ? 'crypto' : 'vn'
+
         // Use date range params if in range mode, otherwise single date
         const params = isRangeMode
-          ? { symbol: selectedTicker, start_date: selectedStartDate, end_date: selectedEndDate, bins }
-          : { symbol: selectedTicker, date: selectedDate, bins }
+          ? { symbol: selectedTicker, start_date: selectedStartDate, end_date: selectedEndDate, bins, mode }
+          : { symbol: selectedTicker, date: selectedDate, bins, mode }
 
         const response = await getVolumeProfile(params)
 
@@ -125,7 +138,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins])
+  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins, stockTickers, cryptoTickers])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)
@@ -218,16 +231,16 @@ export function VolumeProfileWidget({
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.poc')}</p>
             <p className="text-sm font-semibold text-amber-600 dark:text-amber-500">
-              {formatPrice(poc.price, { mode: 'vn' } as any)}
+              {formatPrice(poc.price, priceFormatData)}
             </p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.vaLow')}</p>
-            <p className="text-sm font-semibold">{formatPrice(value_area.low, { mode: 'vn' } as any)}</p>
+            <p className="text-sm font-semibold">{formatPrice(value_area.low, priceFormatData)}</p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.vaHigh')}</p>
-            <p className="text-sm font-semibold">{formatPrice(value_area.high, { mode: 'vn' } as any)}</p>
+            <p className="text-sm font-semibold">{formatPrice(value_area.high, priceFormatData)}</p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.totalVol')}</p>
@@ -245,6 +258,7 @@ export function VolumeProfileWidget({
               key={level.price}
               level={level}
               maxVolume={maxVolume}
+              priceFormatData={priceFormatData}
               poc={poc}
               valueArea={value_area}
             />
@@ -394,9 +408,10 @@ interface VolumeProfileRowProps {
   maxVolume: number
   poc: { price: number; volume: number; percentage: number }
   valueArea: { low: number; high: number; volume: number; percentage: number }
+  priceFormatData: { mode: 'vn' | 'crypto'; symbol: string }
 }
 
-function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRowProps) {
+function VolumeProfileRow({ level, maxVolume, poc, valueArea, priceFormatData }: VolumeProfileRowProps) {
   const isPOC = Math.abs(level.price - poc.price) < 0.01
   const inVA = level.price >= valueArea.low && level.price <= valueArea.high
   const isHVN = level.percentage >= 3.0
@@ -426,7 +441,7 @@ function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRow
         <div
           className={`w-20 text-xs font-mono text-right font-semibold ${isPOC ? 'text-amber-700 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'}`}
         >
-          {formatPrice(level.price, { mode: 'vn' } as any)}
+          {formatPrice(level.price, priceFormatData)}
         </div>
         <div className="flex-1 relative h-5">
           <div
