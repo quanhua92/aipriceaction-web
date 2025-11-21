@@ -153,7 +153,7 @@ export default {
       totalVolume: 'Tổng Khối Lượng: Tổng khối lượng giao dịch trong phiên.',
       hvn: 'HVN (High Volume Node): Vùng hỗ trợ/kháng cự mạnh (≥3% khối lượng). Giá có xu hướng chậm lại ở đây.',
       lvn: 'LVN (Low Volume Node): Vùng giá di chuyển nhanh (<1% khối lượng). Giá dễ gap qua các vùng này.',
-      colors: 'Màu sắc: Tím = POC, Xanh lá = HVN (≥3%), Xám = Bình thường (1-3%), Cam = LVN (<1%), Nền xanh dương = Vùng Giá Trị.',
+      colors: 'Màu sắc: Vàng = POC, Xanh lá = HVN (≥3%), Xám = Bình thường (1-3%), Xám đậm = LVN (<1%), Nền xanh dương = Vùng Giá Trị.',
     },
   },
 }

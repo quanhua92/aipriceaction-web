@@ -19,6 +19,7 @@ interface VolumeProfileWidgetProps {
   date?: string
   onTickerChange?: (ticker: string) => void
   onDateChange?: (date: string) => void
+  maxHeight?: string // e.g. "400px", "calc(100vh - 200px)"
 }
 
 function getTodayDate(): string {
@@ -33,6 +34,7 @@ export function VolumeProfileWidget({
   date,
   onTickerChange,
   onDateChange,
+  maxHeight,
 }: VolumeProfileWidgetProps) {
   const { t } = useTranslation()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
@@ -170,7 +172,7 @@ export function VolumeProfileWidget({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 pb-4 border-b">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.poc')}</p>
-            <p className="text-sm font-semibold text-purple-600 dark:text-purple-500">
+            <p className="text-sm font-semibold text-amber-600 dark:text-amber-500">
               {formatPrice(poc.price, { mode: 'vn' } as any)}
             </p>
           </div>
@@ -188,8 +190,11 @@ export function VolumeProfileWidget({
           </div>
         </div>
 
-        {/* Volume Profile Bars */}
-        <div className="space-y-1 max-h-[600px] md:max-h-[300px] overflow-y-auto">
+        {/* Volume Profile Bars - 600px mobile, maxHeight prop for desktop (default 300px) */}
+        <div
+          className="space-y-1 overflow-y-auto max-h-[600px] md:max-h-[var(--desktop-max-height)]"
+          style={{ ['--desktop-max-height' as string]: maxHeight ?? '300px' }}
+        >
           {profile.map((level) => (
             <VolumeProfileRow
               key={level.price}
@@ -245,11 +250,11 @@ export function VolumeProfileWidget({
                 <h4 className="font-semibold">{t('common.volumeProfile.help.title')}</h4>
                 <p className="text-muted-foreground text-xs">{t('common.volumeProfile.help.description')}</p>
                 <div className="space-y-2 text-xs">
-                  <p><span className="font-medium text-purple-600">●</span> {t('common.volumeProfile.help.poc')}</p>
+                  <p><span className="font-medium text-amber-600">●</span> {t('common.volumeProfile.help.poc')}</p>
                   <p><span className="font-medium text-blue-600">●</span> {t('common.volumeProfile.help.valueArea')}</p>
                   <p>{t('common.volumeProfile.help.totalVolume')}</p>
                   <p><span className="font-medium text-green-600">●</span> {t('common.volumeProfile.help.hvn')}</p>
-                  <p><span className="font-medium text-orange-500">●</span> {t('common.volumeProfile.help.lvn')}</p>
+                  <p><span className="font-medium text-slate-500">●</span> {t('common.volumeProfile.help.lvn')}</p>
                   <p className="text-muted-foreground">{t('common.volumeProfile.help.colors')}</p>
                 </div>
               </div>
@@ -309,11 +314,11 @@ function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRow
   // Determine bar color
   let barColor = 'bg-gray-400'
   if (isPOC) {
-    barColor = 'bg-purple-500'
+    barColor = 'bg-amber-500'
   } else if (isHVN) {
     barColor = 'bg-green-500'
   } else if (isLVN) {
-    barColor = 'bg-orange-400'
+    barColor = 'bg-slate-500'
   }
 
   // Background for value area
@@ -324,7 +329,7 @@ function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRow
       {/* Row 1: Price + Bar */}
       <div className="flex items-center gap-2">
         <div
-          className={`w-20 text-xs font-mono text-right font-semibold ${isPOC ? 'text-purple-700 dark:text-purple-400' : 'text-gray-700 dark:text-gray-300'}`}
+          className={`w-20 text-xs font-mono text-right font-semibold ${isPOC ? 'text-amber-700 dark:text-amber-400' : 'text-gray-700 dark:text-gray-300'}`}
         >
           {formatPrice(level.price, { mode: 'vn' } as any)}
         </div>
@@ -343,8 +348,8 @@ function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRow
         <span className="flex items-center gap-1">
           {isPOC && (
             <>
-              <span className="text-purple-600 mr-1">⭐</span>
-              <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 rounded font-semibold">
+              <span className="text-amber-600 mr-1">⭐</span>
+              <span className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 rounded font-semibold">
                 POC
               </span>
             </>

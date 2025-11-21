@@ -247,6 +247,7 @@ function ChartPage() {
 					<VolumeProfileWidget
 						ticker={activeChartTicker}
 						onTickerChange={handleSelectTicker}
+						maxHeight="600px"
 					/>
 				</div>
 			</div>

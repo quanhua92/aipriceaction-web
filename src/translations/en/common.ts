@@ -153,7 +153,7 @@ export default {
       totalVolume: 'Total Volume: Sum of all trading volume for the session.',
       hvn: 'HVN (High Volume Node): Strong support/resistance levels (≥3% of volume). Price tends to slow down here.',
       lvn: 'LVN (Low Volume Node): Fast price movement areas (<1% volume). Price gaps through these quickly.',
-      colors: 'Colors: Purple = POC, Green = HVN (≥3%), Gray = Normal (1-3%), Orange = LVN (<1%), Blue background = Value Area.',
+      colors: 'Colors: Gold = POC, Green = HVN (≥3%), Gray = Normal (1-3%), Slate = LVN (<1%), Blue background = Value Area.',
     },
   },
 }
