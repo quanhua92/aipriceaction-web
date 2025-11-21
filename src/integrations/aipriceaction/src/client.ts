@@ -467,26 +467,41 @@ export class AIPriceActionClient {
       );
     }
 
-    if (!params.date) {
+    // Validate date params - need either date or start_date
+    if (!params.date && !params.start_date) {
       throw new ValidationError(
-        "date parameter is required (YYYY-MM-DD format)",
+        "Either 'date' or 'start_date' parameter is required (YYYY-MM-DD format)",
         "date"
       );
     }
 
-    // Validate date format
-    if (!isValidDate(params.date)) {
+    // Validate date format(s)
+    if (params.date && !isValidDate(params.date)) {
       throw new ValidationError(
         `Invalid date format: ${params.date}. Expected YYYY-MM-DD`,
         "date"
       );
     }
 
-    // Validate bins parameter (optional, 5-200 range)
+    if (params.start_date && !isValidDate(params.start_date)) {
+      throw new ValidationError(
+        `Invalid start_date format: ${params.start_date}. Expected YYYY-MM-DD`,
+        "start_date"
+      );
+    }
+
+    if (params.end_date && !isValidDate(params.end_date)) {
+      throw new ValidationError(
+        `Invalid end_date format: ${params.end_date}. Expected YYYY-MM-DD`,
+        "end_date"
+      );
+    }
+
+    // Validate bins parameter (optional, 2-200 range)
     if (params.bins !== undefined) {
-      if (params.bins < 5 || params.bins > 200) {
+      if (params.bins < 2 || params.bins > 200) {
         throw new ValidationError(
-          `Invalid bins: ${params.bins}. Must be between 5 and 200`,
+          `Invalid bins: ${params.bins}. Must be between 2 and 200`,
           "bins"
         );
       }

@@ -112,7 +112,23 @@ async function main() {
     console.log(`   VA Range: ${customVAProfile.data.value_area.low.toLocaleString()} - ${customVAProfile.data.value_area.high.toLocaleString()} VND`);
     console.log();
 
-    // Example 5: Trading insights
+    // Example 5: Multi-day volume profile (date range)
+    console.log("📅 Multi-Day Volume Profile (3 days):");
+    const weeklyProfile = await client.getVolumeProfile({
+      symbol: "VJC",
+      start_date: "2025-11-18",
+      end_date: "2025-11-20",
+      bins: 100,
+    });
+
+    console.log(`   Analysis Period: ${weeklyProfile.analysis_date}`);
+    console.log(`   Total Minutes: ${weeklyProfile.data.total_minutes} (across multiple days)`);
+    console.log(`   Total Volume: ${weeklyProfile.data.total_volume.toLocaleString()}`);
+    console.log(`   Composite POC: ${weeklyProfile.data.poc.price.toLocaleString()} VND`);
+    console.log(`   Value Area: ${weeklyProfile.data.value_area.low.toLocaleString()} - ${weeklyProfile.data.value_area.high.toLocaleString()} VND`);
+    console.log();
+
+    // Example 6: Trading insights
     console.log("💡 Trading Insights:");
     const currentPrice = vjcProfile.data.poc.price;
     const vaHigh = vjcProfile.data.value_area.high;

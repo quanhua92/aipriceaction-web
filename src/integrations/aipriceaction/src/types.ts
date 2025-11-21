@@ -259,11 +259,15 @@ export interface MAScoresBySectorQueryParams {
 export interface VolumeProfileQueryParams {
   /** Ticker symbol (required) */
   symbol: string;
-  /** Date to analyze in YYYY-MM-DD format (required) */
-  date: string;
+  /** Single date to analyze in YYYY-MM-DD format (backward compatible) */
+  date?: string;
+  /** Start date for multi-day analysis in YYYY-MM-DD format */
+  start_date?: string;
+  /** End date for multi-day analysis in YYYY-MM-DD format (defaults to start_date) */
+  end_date?: string;
   /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (default: 'vn') */
   mode?: 'vn' | 'crypto' | string;
-  /** Number of price bins for aggregation (default: 50, range: 10-200) */
+  /** Number of price bins for aggregation (default: 50, range: 2-200) */
   bins?: number;
   /** Value area percentage (default: 70.0, range: 60-90) */
   value_area_pct?: number;
