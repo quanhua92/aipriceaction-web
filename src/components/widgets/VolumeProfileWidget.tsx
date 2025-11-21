@@ -170,7 +170,7 @@ export function VolumeProfileWidget({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 pb-4 border-b">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.poc')}</p>
-            <p className="text-sm font-semibold text-yellow-600 dark:text-yellow-500">
+            <p className="text-sm font-semibold text-purple-600 dark:text-purple-500">
               {formatPrice(poc.price, { mode: 'vn' } as any)}
             </p>
           </div>
@@ -245,7 +245,7 @@ export function VolumeProfileWidget({
                 <h4 className="font-semibold">{t('common.volumeProfile.help.title')}</h4>
                 <p className="text-muted-foreground text-xs">{t('common.volumeProfile.help.description')}</p>
                 <div className="space-y-2 text-xs">
-                  <p><span className="font-medium text-yellow-600">●</span> {t('common.volumeProfile.help.poc')}</p>
+                  <p><span className="font-medium text-purple-600">●</span> {t('common.volumeProfile.help.poc')}</p>
                   <p><span className="font-medium text-blue-600">●</span> {t('common.volumeProfile.help.valueArea')}</p>
                   <p>{t('common.volumeProfile.help.totalVolume')}</p>
                   <p><span className="font-medium text-green-600">●</span> {t('common.volumeProfile.help.hvn')}</p>
@@ -307,9 +307,9 @@ function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRow
   const displayWidth = Math.max(level.volume > 0 ? 2 : 0, barWidth)
 
   // Determine bar color
-  let barColor = 'bg-indigo-500'
+  let barColor = 'bg-gray-400'
   if (isPOC) {
-    barColor = 'bg-yellow-500'
+    barColor = 'bg-purple-500'
   } else if (isHVN) {
     barColor = 'bg-green-500'
   } else if (isLVN) {
@@ -324,7 +324,7 @@ function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRow
       {/* Row 1: Price + Bar */}
       <div className="flex items-center gap-2">
         <div
-          className={`w-20 text-xs font-mono text-right font-semibold ${isPOC ? 'text-yellow-700 dark:text-yellow-500' : 'text-gray-700 dark:text-gray-300'}`}
+          className={`w-20 text-xs font-mono text-right font-semibold ${isPOC ? 'text-purple-700 dark:text-purple-400' : 'text-gray-700 dark:text-gray-300'}`}
         >
           {formatPrice(level.price, { mode: 'vn' } as any)}
         </div>
@@ -343,8 +343,8 @@ function VolumeProfileRow({ level, maxVolume, poc, valueArea }: VolumeProfileRow
         <span className="flex items-center gap-1">
           {isPOC && (
             <>
-              <span className="text-yellow-600 mr-1">⭐</span>
-              <span className="px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 rounded font-semibold">
+              <span className="text-purple-600 mr-1">⭐</span>
+              <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 rounded font-semibold">
                 POC
               </span>
             </>
