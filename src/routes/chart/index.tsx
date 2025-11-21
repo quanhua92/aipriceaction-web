@@ -3,6 +3,7 @@ import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
+import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import type { Ticker } from "@/components/lists/SortableTickerList";
@@ -238,8 +239,11 @@ function ChartPage() {
 				<div className="flex items-center justify-between mb-2 lg:mb-4">
 					<h2 className="text-base lg:text-lg font-semibold">Ticker Info</h2>
 				</div>
-				<div className="overflow-auto">
+				<div className="overflow-auto space-y-4">
 					<BasicTickerWidget
+						ticker={activeChartTicker}
+					/>
+					<VolumeProfileWidget
 						ticker={activeChartTicker}
 					/>
 				</div>
