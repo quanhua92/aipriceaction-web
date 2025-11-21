@@ -145,6 +145,10 @@ export default {
     hvn: 'HVN',
     lvn: 'LVN',
     bins: 'Bins',
+    singleDay: 'Single Day',
+    dateRange: 'Date Range',
+    startDate: 'Start Date',
+    endDate: 'End Date',
     help: {
       title: 'Volume Profile Guide',
       description: 'Volume Profile shows where trading activity happened at each price level.',
@@ -154,6 +158,7 @@ export default {
       hvn: 'HVN (High Volume Node): Strong support/resistance levels (≥3% of volume). Price tends to slow down here.',
       lvn: 'LVN (Low Volume Node): Fast price movement areas (<1% volume). Price gaps through these quickly.',
       colors: 'Colors: Gold = POC, Green = HVN (≥3%), Gray = Normal (1-3%), Slate = LVN (<1%), Blue background = Value Area.',
+      dateMode: 'Date Mode: Click the calendar icon to toggle between single day and date range analysis.',
     },
   },
 }

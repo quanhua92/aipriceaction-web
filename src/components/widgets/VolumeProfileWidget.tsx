@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star, HelpCircle } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star, HelpCircle, CalendarRange } from 'lucide-react'
 import { formatPrice, formatVolume, formatPercent } from '@/lib/format'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
@@ -20,6 +20,13 @@ interface VolumeProfileWidgetProps {
   onTickerChange?: (ticker: string) => void
   onDateChange?: (date: string) => void
   maxHeight?: string // e.g. "400px", "calc(100vh - 200px)"
+  // Date range mode props
+  initialStartDate?: string
+  initialEndDate?: string
+  startDate?: string
+  endDate?: string
+  onStartDateChange?: (date: string) => void
+  onEndDateChange?: (date: string) => void
 }
 
 function getTodayDate(): string {
@@ -35,6 +42,12 @@ export function VolumeProfileWidget({
   onTickerChange,
   onDateChange,
   maxHeight,
+  initialStartDate,
+  initialEndDate,
+  startDate,
+  endDate,
+  onStartDateChange,
+  onEndDateChange,
 }: VolumeProfileWidgetProps) {
   const { t } = useTranslation()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
@@ -43,6 +56,11 @@ export function VolumeProfileWidget({
   const [error, setError] = React.useState<string | null>(null)
   const [profileData, setProfileData] = React.useState<VolumeProfileData | null>(null)
   const [bins, setBins] = React.useState(10)
+
+  // Date range mode state
+  const [isRangeMode, setIsRangeMode] = React.useState(false)
+  const [selectedStartDate, setSelectedStartDate] = React.useState(startDate ?? initialStartDate ?? getTodayDate())
+  const [selectedEndDate, setSelectedEndDate] = React.useState(endDate ?? initialEndDate ?? getTodayDate())
 
   // Sync with external ticker prop
   React.useEffect(() => {
@@ -58,6 +76,19 @@ export function VolumeProfileWidget({
     }
   }, [date, selectedDate])
 
+  // Sync with external start/end date props
+  React.useEffect(() => {
+    if (startDate !== undefined && startDate !== selectedStartDate) {
+      setSelectedStartDate(startDate)
+    }
+  }, [startDate, selectedStartDate])
+
+  React.useEffect(() => {
+    if (endDate !== undefined && endDate !== selectedEndDate) {
+      setSelectedEndDate(endDate)
+    }
+  }, [endDate, selectedEndDate])
+
   // Fetch volume profile data
   React.useEffect(() => {
     let cancelled = false
@@ -67,11 +98,12 @@ export function VolumeProfileWidget({
       setError(null)
 
       try {
-        const response = await getVolumeProfile({
-          symbol: selectedTicker,
-          date: selectedDate,
-          bins,
-        })
+        // Use date range params if in range mode, otherwise single date
+        const params = isRangeMode
+          ? { symbol: selectedTicker, start_date: selectedStartDate, end_date: selectedEndDate, bins }
+          : { symbol: selectedTicker, date: selectedDate, bins }
+
+        const response = await getVolumeProfile(params)
 
         if (!cancelled) {
           setProfileData(response.data)
@@ -93,7 +125,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, selectedDate, bins])
+  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)
@@ -120,6 +152,19 @@ export function VolumeProfileWidget({
     const newDate = current.toISOString().split('T')[0]
     setSelectedDate(newDate)
     onDateChange?.(newDate)
+  }
+
+  // Date range handlers
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value
+    setSelectedStartDate(newDate)
+    onStartDateChange?.(newDate)
+  }
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value
+    setSelectedEndDate(newDate)
+    onEndDateChange?.(newDate)
   }
 
   // Loading state
@@ -228,6 +273,15 @@ export function VolumeProfileWidget({
               <span className="sr-only">Add to watchlist</span>
             </Button>
           </QuickAddWatchListDialog>
+          <Button
+            variant={isRangeMode ? 'default' : 'ghost'}
+            size="sm"
+            className="h-6 w-6 p-0 hover:bg-muted/50"
+            onClick={() => setIsRangeMode(!isRangeMode)}
+            title={isRangeMode ? t('common.volumeProfile.singleDay') : t('common.volumeProfile.dateRange')}
+          >
+            <CalendarRange className="h-3.5 w-3.5" />
+          </Button>
           <Select value={String(bins)} onValueChange={(v) => setBins(Number(v))}>
             <SelectTrigger className="w-16 h-7 text-xs">
               <SelectValue />
@@ -256,6 +310,7 @@ export function VolumeProfileWidget({
                   <p><span className="font-medium text-green-600">●</span> {t('common.volumeProfile.help.hvn')}</p>
                   <p><span className="font-medium text-slate-500">●</span> {t('common.volumeProfile.help.lvn')}</p>
                   <p className="text-muted-foreground">{t('common.volumeProfile.help.colors')}</p>
+                  <p className="text-muted-foreground">{t('common.volumeProfile.help.dateMode')}</p>
                 </div>
               </div>
             </PopoverContent>
@@ -265,28 +320,68 @@ export function VolumeProfileWidget({
 
       {/* Date Navigation Row */}
       <div className="flex items-center justify-center gap-1 mb-4">
-        <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={handlePrevDate}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
-              <Calendar className="mr-2 h-4 w-4" />
-              {selectedDate}
+        {isRangeMode ? (
+          // Date range mode
+          <>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs">
+                  {selectedStartDate}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-2" align="center">
+                <Input
+                  type="date"
+                  value={selectedStartDate}
+                  onChange={handleStartDateChange}
+                  className="w-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            <span className="text-xs text-muted-foreground">→</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs">
+                  {selectedEndDate}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-2" align="center">
+                <Input
+                  type="date"
+                  value={selectedEndDate}
+                  onChange={handleEndDateChange}
+                  className="w-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </>
+        ) : (
+          // Single date mode
+          <>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={handlePrevDate}>
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-2" align="center">
-            <Input
-              type="date"
-              value={selectedDate}
-              onChange={handleDateChange}
-              className="w-auto"
-            />
-          </PopoverContent>
-        </Popover>
-        <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={handleNextDate}>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {selectedDate}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-2" align="center">
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  className="w-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={handleNextDate}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </>
+        )}
       </div>
 
       {renderContent()}
