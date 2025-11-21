@@ -482,11 +482,11 @@ export class AIPriceActionClient {
       );
     }
 
-    // Validate bins parameter (optional, 10-200 range)
+    // Validate bins parameter (optional, 5-200 range)
     if (params.bins !== undefined) {
-      if (params.bins < 10 || params.bins > 200) {
+      if (params.bins < 5 || params.bins > 200) {
         throw new ValidationError(
-          `Invalid bins: ${params.bins}. Must be between 10 and 200`,
+          `Invalid bins: ${params.bins}. Must be between 5 and 200`,
           "bins"
         );
       }

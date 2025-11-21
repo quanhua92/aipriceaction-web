@@ -15,9 +15,10 @@ import { SortableTickerList } from '@/components/lists'
 interface SelectTickerDialogProps {
   children: React.ReactNode
   onSelectTicker: (ticker: string) => void
+  defaultSectionFilter?: 'all' | 'stocks' | 'crypto'
 }
 
-export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDialogProps) {
+export function SelectTickerDialog({ children, onSelectTicker, defaultSectionFilter = 'all' }: SelectTickerDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
   const {
@@ -69,7 +70,7 @@ export function SelectTickerDialog({ children, onSelectTicker }: SelectTickerDia
             className="h-full"
             cryptoTickers={cryptoTickers}
             allCryptoTickersLastData={allCryptoTickersLastData}
-            defaultSectionFilter="all"
+            defaultSectionFilter={defaultSectionFilter}
           />
         </div>
       </DialogContent>

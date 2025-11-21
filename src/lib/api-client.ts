@@ -256,6 +256,13 @@ export async function getHealth() {
   return apiClient.getHealth()
 }
 
+/**
+ * Get volume profile analysis for a specific symbol and date
+ */
+export async function getVolumeProfile(params: Parameters<typeof apiClient.getVolumeProfile>[0]) {
+  return apiClient.getVolumeProfile(params)
+}
+
 // Re-export types and enums from the SDK
 export type {
   TickerGroups,
@@ -269,6 +276,14 @@ export type {
   MAScoresBySectorResponse,
   SectorMAScore,
   HealthResponse,
+  VolumeProfileQueryParams,
+  VolumeProfileResponse,
+  VolumeProfileData,
+  PriceLevelVolume,
+  PointOfControl,
+  ValueArea,
+  PriceRange,
+  VolumeStatistics,
 } from '@/integrations/aipriceaction/src'
 
 export { Interval } from '@/integrations/aipriceaction/src'

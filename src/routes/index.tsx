@@ -3,6 +3,8 @@ import * as React from "react";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
+import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
+import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -14,6 +16,9 @@ export const Route = createFileRoute("/")({ component: HomePage });
 
 function HomePage() {
 	const { t } = useTranslation();
+
+	// Synced ticker state for BasicTickerWidget + VolumeProfileWidget
+	const [syncedTicker, setSyncedTicker] = React.useState("VNINDEX");
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
@@ -65,8 +70,23 @@ function HomePage() {
 					</div>
 				</div>
 			</div>
-			{/* Section 1: Charts Grid */}
+
+			{/* Section: Ticker Info + Volume Profile */}
 			<div className="p-4 md:p-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<BasicTickerWidget
+						ticker={syncedTicker}
+						onTickerChange={setSyncedTicker}
+					/>
+					<VolumeProfileWidget
+						ticker={syncedTicker}
+						onTickerChange={setSyncedTicker}
+					/>
+				</div>
+			</div>
+
+			{/* Section 1: Charts Grid */}
+			<div className="p-4 md:p-6 border-t">
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 					<TradingViewChart initialTicker="VNINDEX" />
 					<TradingViewChart initialTicker="VIC" />
