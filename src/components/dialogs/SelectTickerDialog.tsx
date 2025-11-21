@@ -18,7 +18,7 @@ interface SelectTickerDialogProps {
   defaultSectionFilter?: 'all' | 'stocks' | 'crypto'
 }
 
-export function SelectTickerDialog({ children, onSelectTicker, defaultSectionFilter = 'all' }: SelectTickerDialogProps) {
+export function SelectTickerDialog({ children, onSelectTicker, defaultSectionFilter = 'stocks' }: SelectTickerDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
   const {
