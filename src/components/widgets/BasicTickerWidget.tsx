@@ -140,7 +140,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
           </div>
 
           {/* OHLCV and MA Grid Container */}
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-4">
             {/* OHLCV Grid */}
             <div className="flex-1">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
