@@ -41,6 +41,19 @@ export default {
     triggerMessage: 'Cảnh báo kích hoạt tại',
     save: 'Lưu Cảnh Báo',
     cancel: 'Hủy',
+    tabs: {
+      details: 'Chi Tiết Cảnh Báo',
+      existing: 'Cảnh Báo Hiện Có',
+    },
+    note: {
+      label: 'Ghi chú (tùy chọn)',
+      placeholder: 'Thêm ghi chú cho cảnh báo này...',
+    },
+    existingAlerts: {
+      empty: 'Chưa có cảnh báo nào cho mã này',
+      active: 'Đang hoạt động',
+      triggered: 'Đã kích hoạt',
+    },
     validation: {
       required: 'Vui lòng nhập giá mục tiêu',
       positive: 'Giá mục tiêu phải lớn hơn 0',

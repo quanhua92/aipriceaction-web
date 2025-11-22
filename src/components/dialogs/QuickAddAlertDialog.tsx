@@ -159,15 +159,15 @@ export function QuickAddAlertDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col">
-          <TabsList className="mx-4">
-            <TabsTrigger value="details">Alert Details</TabsTrigger>
+        <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col gap-0">
+          <TabsList className="mx-4 mb-4">
+            <TabsTrigger value="details">{t('dialogs.quickAddAlert.tabs.details')}</TabsTrigger>
             <TabsTrigger value="existing">
-              Existing Alerts ({existingAlerts.length})
+              {t('dialogs.quickAddAlert.tabs.existing')} ({existingAlerts.length})
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-4 py-4">
+          <TabsContent value="details" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-4 pb-4">
             {/* Ticker Display - Centered at Top */}
             <div className="text-center mb-2">
               <div className="font-mono font-bold text-2xl">{ticker}</div>
@@ -234,7 +234,7 @@ export function QuickAddAlertDialog({
             {/* Note Input */}
             <div className="space-y-2">
               <label htmlFor="note" className="text-sm font-medium text-muted-foreground">
-                Note (optional)
+                {t('dialogs.quickAddAlert.note.label')}
               </label>
               <Textarea
                 id="note"
@@ -244,7 +244,7 @@ export function QuickAddAlertDialog({
                     setNote(e.target.value)
                   }
                 }}
-                placeholder="Add a note for this alert..."
+                placeholder={t('dialogs.quickAddAlert.note.placeholder')}
                 rows={3}
                 className="resize-none"
               />
@@ -269,10 +269,10 @@ export function QuickAddAlertDialog({
             )}
           </TabsContent>
 
-          <TabsContent value="existing" className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+          <TabsContent value="existing" className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
             {existingAlerts.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
-                No existing alerts for this ticker
+                {t('dialogs.quickAddAlert.existingAlerts.empty')}
               </div>
             ) : (
               <div className="space-y-2">
@@ -309,7 +309,7 @@ export function QuickAddAlertDialog({
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {alert.triggered ? 'Triggered' : 'Active'}
+                          {alert.triggered ? t('dialogs.quickAddAlert.existingAlerts.triggered') : t('dialogs.quickAddAlert.existingAlerts.active')}
                         </div>
                       </div>
                       {alert.note && alert.note.trim() && (

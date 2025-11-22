@@ -41,6 +41,19 @@ export default {
     triggerMessage: 'Alert triggers at',
     save: 'Save Alert',
     cancel: 'Cancel',
+    tabs: {
+      details: 'Alert Details',
+      existing: 'Existing Alerts',
+    },
+    note: {
+      label: 'Note (optional)',
+      placeholder: 'Add a note for this alert...',
+    },
+    existingAlerts: {
+      empty: 'No existing alerts for this ticker',
+      active: 'Active',
+      triggered: 'Triggered',
+    },
     validation: {
       required: 'Target price is required',
       positive: 'Target price must be greater than 0',
