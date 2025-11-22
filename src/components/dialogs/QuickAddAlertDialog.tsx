@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -40,6 +41,7 @@ export function QuickAddAlertDialog({
   const [open, setOpen] = React.useState(false)
   const [targetPrice, setTargetPrice] = React.useState('')
   const [alertType, setAlertType] = React.useState<Alert['alert_type']>(ALERT_TYPES.PRICE_HITS)
+  const [note, setNote] = React.useState('')
   const [error, setError] = React.useState('')
 
   // Get current price for reference
@@ -104,10 +106,12 @@ export function QuickAddAlertDialog({
         ticker,
         target_price: target,
         alert_type: alertType,
+        note: note.trim() || undefined,
       })
 
       // Reset and close
       setTargetPrice('')
+      setNote('')
       setError('')
       setOpen(false)
     } catch (err) {
@@ -119,6 +123,7 @@ export function QuickAddAlertDialog({
 
   const handleCancel = () => {
     setTargetPrice('')
+    setNote('')
     setError('')
     setOpen(false)
   }
@@ -128,6 +133,7 @@ export function QuickAddAlertDialog({
     if (!newOpen) {
       // Reset state when dialog closes
       setTargetPrice('')
+      setNote('')
       setError('')
     }
   }
@@ -214,6 +220,28 @@ export function QuickAddAlertDialog({
                 </SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Note Input */}
+          <div className="space-y-2">
+            <label htmlFor="note" className="text-sm font-medium text-muted-foreground">
+              Note (optional)
+            </label>
+            <Textarea
+              id="note"
+              value={note}
+              onChange={(e) => {
+                if (e.target.value.length <= 500) {
+                  setNote(e.target.value)
+                }
+              }}
+              placeholder="Add a note for this alert..."
+              rows={3}
+              className="resize-none"
+            />
+            <div className="text-xs text-muted-foreground text-right">
+              {note.length}/500
+            </div>
           </div>
 
           {/* Distance Display */}

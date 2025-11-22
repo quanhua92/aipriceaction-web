@@ -8,6 +8,7 @@ export interface Alert {
   alert_type: 'price_hits'
   triggered: boolean
   triggered_at?: string
+  note?: string
 }
 
 /**

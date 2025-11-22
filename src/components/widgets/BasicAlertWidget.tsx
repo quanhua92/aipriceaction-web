@@ -335,6 +335,15 @@ export function BasicAlertWidget({
                   </div>
                 )}
 
+                {/* Note Display */}
+                {alert.note && alert.note.trim() && (
+                  <div className="mb-2">
+                    <div className="text-xs text-muted-foreground italic line-clamp-2">
+                      {alert.note}
+                    </div>
+                  </div>
+                )}
+
                 {/* Meta Info */}
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>{getRelativeTime(alert.created_at)}</span>

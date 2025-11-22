@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -43,6 +44,7 @@ export function EditAlertDialog({
   const [open, setOpen] = React.useState(false)
   const [targetPrice, setTargetPrice] = React.useState(String(alert.target_price))
   const [alertType, setAlertType] = React.useState<Alert['alert_type']>(alert.alert_type)
+  const [note, setNote] = React.useState(alert.note || '')
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
   const [error, setError] = React.useState('')
 
@@ -51,6 +53,7 @@ export function EditAlertDialog({
     if (open) {
       setTargetPrice(String(alert.target_price))
       setAlertType(alert.alert_type)
+      setNote(alert.note || '')
       setShowDeleteConfirm(false)
       setError('')
     }
@@ -73,6 +76,7 @@ export function EditAlertDialog({
       updateAlert(alert.id, {
         target_price: target,
         alert_type: alertType,
+        note: note.trim() || undefined,
       })
 
       setOpen(false)
@@ -187,6 +191,28 @@ export function EditAlertDialog({
                 </SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Note Input */}
+          <div className="space-y-2">
+            <label htmlFor="edit-note" className="text-sm font-medium text-muted-foreground">
+              Note (optional)
+            </label>
+            <Textarea
+              id="edit-note"
+              value={note}
+              onChange={(e) => {
+                if (e.target.value.length <= 500) {
+                  setNote(e.target.value)
+                }
+              }}
+              placeholder="Add a note for this alert..."
+              rows={3}
+              className="resize-none"
+            />
+            <div className="text-xs text-muted-foreground text-right">
+              {note.length}/500
+            </div>
           </div>
         </div>
 
