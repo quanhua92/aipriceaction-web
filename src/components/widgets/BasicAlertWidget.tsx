@@ -330,7 +330,7 @@ export function BasicAlertWidget({
                   <div className="mb-2">
                     <span className="text-sm text-muted-foreground">{t('widgets.basicAlert.columns.distance')}: </span>
                     <span className={`text-sm font-bold ${getDistanceColor(alert.absDistance)}`}>
-                      {alert.distance >= 0 ? '+' : ''}{formatPercent(alert.distance)} ({alert.distance >= 0 ? '+' : ''}{formatPrice(Math.abs(alert.target_price - alert.currentPrice!), alert.tickerData)})
+                      {formatPercent(alert.distance)} ({alert.distance >= 0 ? '+' : ''}{formatPrice(alert.target_price - alert.currentPrice!, alert.tickerData)})
                     </span>
                   </div>
                 )}

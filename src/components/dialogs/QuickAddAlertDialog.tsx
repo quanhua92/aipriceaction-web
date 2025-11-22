@@ -251,7 +251,7 @@ export function QuickAddAlertDialog({
                 {t('dialogs.quickAddAlert.distance')}
               </div>
               <div className={`text-sm font-bold ${getDistanceColor(distance.percent)}`}>
-                {distance.percent >= 0 ? '+' : ''}{formatPercent(distance.percent)} ({distance.absolute >= 0 ? '+' : ''}{formatPrice(Math.abs(distance.absolute), tickerData)})
+                {formatPercent(distance.percent)} ({distance.absolute >= 0 ? '+' : ''}{formatPrice(distance.absolute, tickerData)})
               </div>
               <div className="text-xs text-muted-foreground">
                 ⚠️ {t('dialogs.quickAddAlert.triggerMessage')} {formatPrice(Number(targetPrice), tickerData)}
@@ -305,7 +305,7 @@ export function QuickAddAlertDialog({
                             Math.abs(alertDistance) < 10 ? 'text-yellow-600 dark:text-yellow-500' :
                             'text-green-600 dark:text-green-500'
                           }`}>
-                            {alertDistance >= 0 ? '+' : ''}{formatPercent(alertDistance)}
+                            {formatPercent(alertDistance)}
                           </span>
                         )}
                       </div>
