@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -158,126 +159,123 @@ export function QuickAddAlertDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 py-4">
-          {/* Ticker Display - Centered at Top */}
-          <div className="text-center mb-2">
-            <div className="font-mono font-bold text-2xl">{ticker}</div>
-          </div>
+        <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col">
+          <TabsList className="mx-4">
+            <TabsTrigger value="details">Alert Details</TabsTrigger>
+            <TabsTrigger value="existing">
+              Existing Alerts ({existingAlerts.length})
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Price Fields - 2 Column Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Current Price - Left Column */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">
-                {t('dialogs.quickAddAlert.currentPrice')}
-              </label>
-              <div className="px-3 py-2 rounded-md border bg-muted/30 h-10 flex items-center">
-                <span className="font-bold tabular-nums text-sm">
-                  {currentPrice !== null && tickerData ? formatPrice(currentPrice, tickerData) : '-'}
-                </span>
+          <TabsContent value="details" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-4 py-4">
+            {/* Ticker Display - Centered at Top */}
+            <div className="text-center mb-2">
+              <div className="font-mono font-bold text-2xl">{ticker}</div>
+            </div>
+
+            {/* Price Fields - 2 Column Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Current Price - Left Column */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">
+                  {t('dialogs.quickAddAlert.currentPrice')}
+                </label>
+                <div className="px-3 py-2 rounded-md border bg-muted/30 h-10 flex items-center">
+                  <span className="font-bold tabular-nums text-sm">
+                    {currentPrice !== null && tickerData ? formatPrice(currentPrice, tickerData) : '-'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Target Price - Right Column */}
+              <div className="space-y-2">
+                <label htmlFor="target-price" className="text-sm font-medium">
+                  {t('dialogs.quickAddAlert.targetPrice')} *
+                </label>
+                <Input
+                  id="target-price"
+                  type="number"
+                  value={targetPrice}
+                  onChange={(e) => {
+                    setTargetPrice(e.target.value)
+                    setError('')
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="e.g., 25000"
+                  autoFocus
+                  step="any"
+                  className="h-10"
+                />
               </div>
             </div>
 
-            {/* Target Price - Right Column */}
+            {/* Error Message */}
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
+
+            {/* Alert Type Selector */}
             <div className="space-y-2">
-              <label htmlFor="target-price" className="text-sm font-medium">
-                {t('dialogs.quickAddAlert.targetPrice')} *
+              <label htmlFor="alert-type" className="text-sm font-medium">
+                {t('dialogs.quickAddAlert.alertType')}
               </label>
-              <Input
-                id="target-price"
-                type="number"
-                value={targetPrice}
+              <Select value={alertType} onValueChange={(value) => setAlertType(value as Alert['alert_type'])}>
+                <SelectTrigger id="alert-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALERT_TYPES.PRICE_HITS}>
+                    {t('widgets.basicAlert.alertTypes.price_hits')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Note Input */}
+            <div className="space-y-2">
+              <label htmlFor="note" className="text-sm font-medium text-muted-foreground">
+                Note (optional)
+              </label>
+              <Textarea
+                id="note"
+                value={note}
                 onChange={(e) => {
-                  setTargetPrice(e.target.value)
-                  setError('')
+                  if (e.target.value.length <= 500) {
+                    setNote(e.target.value)
+                  }
                 }}
-                onKeyDown={handleKeyDown}
-                placeholder="e.g., 25000"
-                autoFocus
-                step="any"
-                className="h-10"
+                placeholder="Add a note for this alert..."
+                rows={3}
+                className="resize-none"
               />
-            </div>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-
-          {/* Alert Type Selector */}
-          <div className="space-y-2">
-            <label htmlFor="alert-type" className="text-sm font-medium">
-              {t('dialogs.quickAddAlert.alertType')}
-            </label>
-            <Select value={alertType} onValueChange={(value) => setAlertType(value as Alert['alert_type'])}>
-              <SelectTrigger id="alert-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALERT_TYPES.PRICE_HITS}>
-                  {t('widgets.basicAlert.alertTypes.price_hits')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Note Input */}
-          <div className="space-y-2">
-            <label htmlFor="note" className="text-sm font-medium text-muted-foreground">
-              Note (optional)
-            </label>
-            <Textarea
-              id="note"
-              value={note}
-              onChange={(e) => {
-                if (e.target.value.length <= 500) {
-                  setNote(e.target.value)
-                }
-              }}
-              placeholder="Add a note for this alert..."
-              rows={3}
-              className="resize-none"
-            />
-            <div className="text-xs text-muted-foreground text-right">
-              {note.length}/500
-            </div>
-          </div>
-
-          {/* Distance Display */}
-          {distance && tickerData && (
-            <div className="p-3 rounded-md border bg-muted/30 space-y-1">
-              <div className="text-sm font-medium text-muted-foreground">
-                {t('dialogs.quickAddAlert.distance')}
-              </div>
-              <div className={`text-sm font-bold ${getDistanceColor(distance.percent)}`}>
-                {formatPercent(distance.percent)} ({distance.absolute >= 0 ? '+' : ''}{formatPrice(distance.absolute, tickerData)})
-              </div>
-              <div className="text-xs text-muted-foreground">
-                ⚠️ {t('dialogs.quickAddAlert.triggerMessage')} {formatPrice(Number(targetPrice), tickerData)}
+              <div className="text-xs text-muted-foreground text-right">
+                {note.length}/500
               </div>
             </div>
-          )}
-        </div>
 
-        <DialogFooter className="flex-shrink-0 flex-col sm:flex-col gap-2 border-t pt-2">
-          {/* Action Buttons */}
-          <div className="flex gap-2 w-full">
-            <Button variant="outline" onClick={handleCancel} className="flex-1">
-              {t('dialogs.quickAddAlert.cancel')}
-            </Button>
-            <Button onClick={handleSave} className="flex-1">
-              {t('dialogs.quickAddAlert.save')}
-            </Button>
-          </div>
-
-          {/* Existing Alerts Section */}
-          {existingAlerts.length > 0 && (
-            <div className="w-full border-t pt-2 mt-2">
-              <div className="text-xs font-semibold text-muted-foreground mb-2">
-                Existing Alerts ({existingAlerts.length})
+            {/* Distance Display */}
+            {distance && tickerData && (
+              <div className="p-3 rounded-md border bg-muted/30 space-y-1">
+                <div className="text-sm font-medium text-muted-foreground">
+                  {t('dialogs.quickAddAlert.distance')}
+                </div>
+                <div className={`text-sm font-bold ${getDistanceColor(distance.percent)}`}>
+                  {formatPercent(distance.percent)} ({distance.absolute >= 0 ? '+' : ''}{formatPrice(distance.absolute, tickerData)})
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  ⚠️ {t('dialogs.quickAddAlert.triggerMessage')} {formatPrice(Number(targetPrice), tickerData)}
+                </div>
               </div>
-              <div className="max-h-[120px] overflow-y-auto space-y-1">
+            )}
+          </TabsContent>
+
+          <TabsContent value="existing" className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+            {existingAlerts.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                No existing alerts for this ticker
+              </div>
+            ) : (
+              <div className="space-y-2">
                 {existingAlerts.map((alert) => {
                   const alertCurrentPrice = allTickersLastData[ticker]?.[allTickersLastData[ticker].length - 1]?.close
                   const alertDistance = alertCurrentPrice
@@ -287,37 +285,55 @@ export function QuickAddAlertDialog({
                   return (
                     <div
                       key={alert.id}
-                      className="p-2 rounded-md border bg-muted/30 text-xs flex items-center justify-between"
+                      className="p-3 rounded-md border bg-muted/30 text-sm space-y-2"
                     >
-                      <div className="flex items-center gap-2">
-                        {alert.triggered ? (
-                          <span className="text-green-600 dark:text-green-500">✓</span>
-                        ) : (
-                          <span className="text-blue-600 dark:text-blue-500">🔔</span>
-                        )}
-                        <span className="font-semibold">
-                          {tickerData ? formatPrice(alert.target_price, tickerData) : alert.target_price}
-                        </span>
-                        {alertDistance !== null && !alert.triggered && (
-                          <span className={`${
-                            Math.abs(alertDistance) < 2 ? 'text-red-600 dark:text-red-500' :
-                            Math.abs(alertDistance) < 5 ? 'text-orange-600 dark:text-orange-500' :
-                            Math.abs(alertDistance) < 10 ? 'text-yellow-600 dark:text-yellow-500' :
-                            'text-green-600 dark:text-green-500'
-                          }`}>
-                            {formatPercent(alertDistance)}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {alert.triggered ? (
+                            <span className="text-green-600 dark:text-green-500">✓</span>
+                          ) : (
+                            <span className="text-blue-600 dark:text-blue-500">🔔</span>
+                          )}
+                          <span className="font-semibold">
+                            {tickerData ? formatPrice(alert.target_price, tickerData) : alert.target_price}
                           </span>
-                        )}
+                          {alertDistance !== null && !alert.triggered && (
+                            <span className={`${
+                              Math.abs(alertDistance) < 2 ? 'text-red-600 dark:text-red-500' :
+                              Math.abs(alertDistance) < 5 ? 'text-orange-600 dark:text-orange-500' :
+                              Math.abs(alertDistance) < 10 ? 'text-yellow-600 dark:text-yellow-500' :
+                              'text-green-600 dark:text-green-500'
+                            }`}>
+                              {formatPercent(alertDistance)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {alert.triggered ? 'Triggered' : 'Active'}
+                        </div>
                       </div>
-                      <div className="text-muted-foreground">
-                        {alert.triggered ? 'Triggered' : 'Active'}
-                      </div>
+                      {alert.note && alert.note.trim() && (
+                        <div className="text-xs text-muted-foreground italic">
+                          {alert.note}
+                        </div>
+                      )}
                     </div>
                   )
                 })}
               </div>
-            </div>
-          )}
+            )}
+          </TabsContent>
+        </Tabs>
+
+        <DialogFooter className="flex-shrink-0 border-t pt-2">
+          <div className="flex gap-2 w-full">
+            <Button variant="outline" onClick={handleCancel} className="flex-1">
+              {t('dialogs.quickAddAlert.cancel')}
+            </Button>
+            <Button onClick={handleSave} className="flex-1">
+              {t('dialogs.quickAddAlert.save')}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
