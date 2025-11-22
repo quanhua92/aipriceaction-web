@@ -1,12 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 import * as React from 'react'
+import { Download, Upload } from 'lucide-react'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
+import { useLogs } from '@/contexts/LogsContext'
 import { useTranslation } from '@/hooks/useTranslation'
 import { BasicAlertWidget } from '@/components/widgets/BasicAlertWidget'
 import { BasicTickerWidget } from '@/components/widgets/BasicTickerWidget'
 import { TradingViewChart } from '@/components/charts/TradingViewChart'
-import { ALERT_DISTANCE_THRESHOLDS } from '@/lib/constants'
+import { Button } from '@/components/ui/button'
+import { ALERT_DISTANCE_THRESHOLDS, ALERTS_STORAGE_KEY } from '@/lib/constants'
+import { getAlerts, type Alert } from '@/lib/alert-storage'
 
 export const Route = createFileRoute('/alert')({
   component: AlertPage,
@@ -14,11 +18,15 @@ export const Route = createFileRoute('/alert')({
 
 function AlertPage() {
   const { t } = useTranslation()
-  const { alerts, activeAlerts, triggeredAlerts } = useAlert()
+  const { alerts, activeAlerts, triggeredAlerts, refreshAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
+  const { info, error: logError } = useLogs()
 
   // State for selected ticker (from clicking alert row)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>('VNINDEX')
+
+  // File input ref for import
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   // Calculate closest alert
   const closestAlert = React.useMemo(() => {
@@ -46,14 +54,119 @@ function AlertPage() {
     return withDistance.sort((a, b) => a.distance! - b.distance!)[0]
   }, [activeAlerts, allTickersLastData])
 
+  // Export alerts to JSON file
+  const handleExport = () => {
+    try {
+      const allAlerts = getAlerts()
+      const dataStr = JSON.stringify(allAlerts, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement('a')
+      link.href = url
+      const now = new Date()
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`
+      link.download = `alerts-${timestamp}.json`
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      info('Alerts', `Exported ${allAlerts.length} alerts`)
+    } catch (err) {
+      console.error('Export failed:', err)
+      logError('Alerts', 'Failed to export alerts')
+    }
+  }
+
+  // Import alerts from JSON file
+  const handleImport = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const importedAlerts = JSON.parse(text) as Alert[]
+
+      // Validate structure
+      if (!Array.isArray(importedAlerts)) {
+        throw new Error('Invalid file format: expected array of alerts')
+      }
+
+      // Get existing alerts
+      const existingAlerts = getAlerts()
+      const existingIds = new Set(existingAlerts.map(a => a.id))
+
+      // Filter out duplicates (alerts with IDs that already exist)
+      const newAlerts = importedAlerts.filter(alert => !existingIds.has(alert.id))
+
+      if (newAlerts.length === 0) {
+        info('Alerts', 'No new alerts to import (all already exist)')
+        return
+      }
+
+      // Merge with existing alerts
+      const merged = [...existingAlerts, ...newAlerts]
+      localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(merged))
+
+      // Refresh UI
+      refreshAlerts()
+
+      info('Alerts', `Imported ${newAlerts.length} new alerts (skipped ${importedAlerts.length - newAlerts.length} duplicates)`)
+    } catch (err) {
+      console.error('Import failed:', err)
+      logError('Alerts', `Failed to import alerts: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="p-4 md:p-6">
-        <h1 className="text-2xl font-bold">{t('common.alerts.title')}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold">{t('common.alerts.title')}</h1>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleImport}
+              className="flex items-center gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Import
+            </Button>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">
           {t('common.alerts.description')}
         </p>
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileChange}
+          className="hidden"
+        />
       </div>
 
       {/* Statistics Panel */}
