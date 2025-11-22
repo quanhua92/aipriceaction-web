@@ -315,21 +315,21 @@ export function VolumeProfileWidget({
     <div className="border rounded-lg p-4 bg-card">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <div>
+        <div className="flex items-center gap-1">
           <SelectTickerDialog onSelectTicker={handleSelectTicker} defaultSectionFilter="stocks">
             <div className="text-lg font-bold hover:bg-muted/50 transition-colors duration-200 inline-flex items-center cursor-pointer px-1 -ml-1">
               {selectedTicker}
               <ChevronDown className="ml-1 h-4 w-4 opacity-60" />
             </div>
           </SelectTickerDialog>
-        </div>
-        <div className="flex items-center gap-2">
           <QuickAddWatchListDialog ticker={selectedTicker}>
             <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted/50">
               <Star className="h-3.5 w-3.5" />
               <span className="sr-only">Add to watchlist</span>
             </Button>
           </QuickAddWatchListDialog>
+        </div>
+        <div className="flex items-center gap-2">
           <Button
             variant={isRangeMode ? 'default' : 'ghost'}
             size="sm"
