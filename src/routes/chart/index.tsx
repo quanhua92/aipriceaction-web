@@ -15,27 +15,21 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import {
-	LayoutGrid,
-	LayoutList,
-	MoreVertical,
-} from "lucide-react";
+import { MoreVertical } from "lucide-react";
 
 export const Route = createFileRoute("/chart/")({
 	component: ChartPage,
 });
 
-type LayoutMode = "grid" | "vertical";
-
 interface ChartPageLayout {
 	chartCount: number;
-	layoutMode: LayoutMode;
+	gridColumns: number;
 	chartTickers: string[];
 }
 
 const DEFAULT_LAYOUT: ChartPageLayout = {
 	chartCount: 2,
-	layoutMode: "grid",
+	gridColumns: 1,
 	chartTickers: ["VIC", "VNINDEX", "ACB", "BCM", "BID", "CTG", "DGC", "FPT", "GAS", "GVR"],
 };
 
@@ -82,40 +76,16 @@ function ChartPage() {
 		setSortedTickers(tickers);
 	};
 
-	// Get grid columns class based on chart count and layout mode
+	// Get grid columns class based on gridColumns setting
 	const getGridClass = () => {
-		if (layout.layoutMode === "vertical") {
-			return "grid grid-cols-1";
-		}
-
-		switch (layout.chartCount) {
-			case 1:
-				return "grid grid-cols-1";
-			case 2:
-				return "grid grid-cols-1 md:grid-cols-2";
-			case 3:
-				return "grid grid-cols-1 md:grid-cols-2";
-			case 4:
-				return "grid grid-cols-1 md:grid-cols-2";
-			case 5:
-			case 6:
-				return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
-			case 7:
-			case 8:
-			case 9:
-				return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
-			case 10:
-				return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4";
-			default:
-				return "grid grid-cols-1 md:grid-cols-2";
-		}
+		return `grid grid-cols-${layout.gridColumns}`;
 	};
 
 	// Get first chart ticker for syncing with BasicTickerWidget
 	const activeChartTicker = layout.chartTickers[0] || "VNINDEX";
 
 	return (
-		<div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_380px] min-h-screen lg:h-[calc(100vh-4rem)] overflow-auto lg:overflow-hidden">
+		<div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_380px] min-h-screen">
 			{/* Left Sidebar - BasicWatchList */}
 			<div className="h-auto lg:h-full border-r bg-background p-2 lg:p-4 flex flex-col overflow-hidden">
 				<div className="flex items-center justify-between mb-2 lg:mb-4">
@@ -178,34 +148,36 @@ function ChartPage() {
 
 						<Separator orientation="vertical" className="h-4 lg:h-6 hidden sm:block" />
 
-						{/* Layout mode toggle */}
+						{/* Column selector */}
 						<div className="flex items-center gap-1">
-							<Button
-								variant={layout.layoutMode === "grid" ? "default" : "outline"}
-								size="sm"
-								onClick={() => updateLayout({ layoutMode: "grid" })}
-								disabled={layout.chartCount === 1}
-								className="h-7 lg:h-8 px-2 lg:px-3 text-xs lg:text-sm"
-							>
-								<LayoutGrid className="h-3.5 w-3.5 lg:h-4 lg:w-4 lg:mr-1" />
-								<span className="hidden sm:inline">Grid</span>
-							</Button>
-							<Button
-								variant={layout.layoutMode === "vertical" ? "default" : "outline"}
-								size="sm"
-								onClick={() => updateLayout({ layoutMode: "vertical" })}
-								disabled={layout.chartCount === 1}
-								className="h-7 lg:h-8 px-2 lg:px-3 text-xs lg:text-sm"
-							>
-								<LayoutList className="h-3.5 w-3.5 lg:h-4 lg:w-4 lg:mr-1" />
-								<span className="hidden sm:inline">Vertical</span>
-							</Button>
+							<span className="text-xs lg:text-sm text-muted-foreground mr-1 lg:mr-2 hidden sm:inline">Columns:</span>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="outline"
+										size="sm"
+										className="h-7 lg:h-8 px-2 lg:px-3 text-xs lg:text-sm"
+									>
+										{layout.gridColumns} Col{layout.gridColumns !== 1 ? 's' : ''}
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="start">
+									{[1, 2, 3, 4, 5, 6].map((cols) => (
+										<DropdownMenuItem
+											key={cols}
+											onClick={() => updateLayout({ gridColumns: cols })}
+										>
+											{cols} Column{cols !== 1 ? 's' : ''}
+										</DropdownMenuItem>
+									))}
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</div>
 					</div>
 				</div>
 
 				{/* Charts Grid */}
-				<div className="overflow-auto p-2 lg:p-4 min-h-[400px]">
+				<div className="flex-1 p-2 lg:p-4">
 					<div className={`${getGridClass()} gap-2 lg:gap-4 auto-rows-fr`}>
 						{Array.from({ length: layout.chartCount }).map((_, index) => {
 							const ticker = layout.chartTickers[index] || "VNINDEX";
