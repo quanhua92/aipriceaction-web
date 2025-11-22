@@ -150,15 +150,15 @@ export function QuickAddAlertDialog({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
             {t('dialogs.quickAddAlert.title')}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 py-4">
           {/* Ticker Display - Centered at Top */}
           <div className="text-center mb-2">
             <div className="font-mono font-bold text-2xl">{ticker}</div>
@@ -260,7 +260,7 @@ export function QuickAddAlertDialog({
           )}
         </div>
 
-        <DialogFooter className="flex-col sm:flex-col gap-2">
+        <DialogFooter className="flex-shrink-0 flex-col sm:flex-col gap-2 border-t pt-2">
           {/* Action Buttons */}
           <div className="flex gap-2 w-full">
             <Button variant="outline" onClick={handleCancel} className="flex-1">
@@ -277,7 +277,7 @@ export function QuickAddAlertDialog({
               <div className="text-xs font-semibold text-muted-foreground mb-2">
                 Existing Alerts ({existingAlerts.length})
               </div>
-              <div className="max-h-[150px] overflow-y-auto space-y-1">
+              <div className="max-h-[120px] overflow-y-auto space-y-1">
                 {existingAlerts.map((alert) => {
                   const alertCurrentPrice = allTickersLastData[ticker]?.[allTickersLastData[ticker].length - 1]?.close
                   const alertDistance = alertCurrentPrice

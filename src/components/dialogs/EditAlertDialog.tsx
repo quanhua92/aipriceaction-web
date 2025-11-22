@@ -3,7 +3,6 @@ import { Trash2, Bell } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -163,18 +162,15 @@ export function EditAlertDialog({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
             {t('dialogs.editAlert.title')}: {alert.ticker}
           </DialogTitle>
-          <DialogDescription>
-            Modify or delete this price alert.
-          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 py-4">
           {/* Ticker Display - Centered at Top */}
           <div className="text-center mb-2">
             <div className="font-mono font-bold text-2xl">{alert.ticker}</div>
@@ -311,7 +307,7 @@ export function EditAlertDialog({
           )}
         </div>
 
-        <DialogFooter className="flex-col sm:flex-col gap-2">
+        <DialogFooter className="flex-shrink-0 flex-col sm:flex-col gap-2 border-t pt-2">
           <div className="flex gap-2 w-full">
             <Button variant="outline" onClick={handleCancel} className="flex-1">
               {t('dialogs.quickAddAlert.cancel')}
@@ -366,7 +362,7 @@ export function EditAlertDialog({
               <div className="text-xs font-semibold text-muted-foreground mb-2">
                 Existing Alerts ({existingAlerts.length})
               </div>
-              <div className="max-h-[150px] overflow-y-auto space-y-1">
+              <div className="max-h-[120px] overflow-y-auto space-y-1">
                 {existingAlerts.map((existingAlert) => {
                   const alertCurrentPrice = allTickersLastData[alert.ticker]?.[allTickersLastData[alert.ticker].length - 1]?.close
                   const alertDistance = alertCurrentPrice
