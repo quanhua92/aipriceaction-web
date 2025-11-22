@@ -1,8 +1,9 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star, HelpCircle, CalendarRange } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star, HelpCircle, CalendarRange, Bell } from 'lucide-react'
 import { formatPrice, formatVolume, formatPercent } from '@/lib/format'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
+import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -328,6 +329,12 @@ export function VolumeProfileWidget({
               <span className="sr-only">Add to watchlist</span>
             </Button>
           </QuickAddWatchListDialog>
+          <QuickAddAlertDialog ticker={selectedTicker}>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted/50">
+              <Bell className="h-3.5 w-3.5" />
+              <span className="sr-only">Add price alert</span>
+            </Button>
+          </QuickAddAlertDialog>
         </div>
         <div className="flex items-center gap-2">
           <Button
