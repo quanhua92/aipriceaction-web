@@ -2,6 +2,7 @@ import { Interval } from '@/lib/api-client'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
+import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTicker } from '@/contexts/TickerContext'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -13,7 +14,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star } from 'lucide-react'
+import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star, Bell } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -120,11 +121,15 @@ export function ChartControlBar({
 			{showTickerSelect && (
 				<>
 					<SelectTickerDialog onSelectTicker={onTickerChange}>
-						<Button variant="outline" size="sm" className="h-7 text-xs">
+						<Button
+							variant="outline"
+							size="sm"
+							className={`h-7 ${ticker.length > 4 ? 'text-[10px] px-1.5' : 'text-xs px-3'}`}
+						>
 							{ticker}
 						</Button>
 					</SelectTickerDialog>
-					<Separator orientation="vertical" className="h-6 mx-1" />
+					<Separator orientation="vertical" className="h-6" />
 				</>
 			)}
 
@@ -236,6 +241,14 @@ export function ChartControlBar({
 						<span className="sr-only">Add to watchlist</span>
 					</Button>
 				</QuickAddWatchListDialog>
+
+				{/* Bell Button - Add Alert */}
+				<QuickAddAlertDialog ticker={ticker}>
+					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add price alert">
+						<Bell className="h-4 w-4" />
+						<span className="sr-only">Add price alert</span>
+					</Button>
+				</QuickAddAlertDialog>
 
 				{/* Fullscreen Button (if provided) */}
 				{onFullscreenClick && (
