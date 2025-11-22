@@ -9,6 +9,8 @@ export interface Alert {
   triggered: boolean
   triggered_at?: string
   note?: string
+  price_at_creation?: number // Price when alert was created
+  last_checked_bar_time?: string // Last bar timestamp checked (ISO string)
 }
 
 /**
