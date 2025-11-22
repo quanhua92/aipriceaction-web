@@ -52,9 +52,9 @@ export function VolumeProfileWidget({
   onEndDateChange,
 }: VolumeProfileWidgetProps) {
   const { t } = useTranslation()
-  const { tickers: stockTickers, cryptoTickers } = useAPI()
+  const { tickers: stockTickers, cryptoTickers, getTickers } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
-  const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? getTodayDate())
+  const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [profileData, setProfileData] = React.useState<VolumeProfileData | null>(null)
@@ -70,6 +70,45 @@ export function VolumeProfileWidget({
     return isCryptoTicker(selectedTicker, stockTickers, cryptoTickers) ? 'crypto' : 'vn'
   }, [selectedTicker, stockTickers, cryptoTickers])
   const priceFormatData = { mode: currentMode as 'vn' | 'crypto', symbol: selectedTicker }
+
+  // Fetch last trading day for default date if not provided
+  React.useEffect(() => {
+    if (selectedDate !== null) return // Already have a date
+
+    let cancelled = false
+
+    async function fetchLastTradingDay() {
+      try {
+        const isCrypto = isCryptoTicker(selectedTicker, stockTickers, cryptoTickers)
+        const mode = isCrypto ? 'crypto' : 'vn'
+        const response = await getTickers('VolumeProfileWidget.lastTradingDay', { symbol: selectedTicker, limit: 1, mode })
+
+        console.log(`[VolumeProfileWidget] Response:`, response)
+        console.log(`[VolumeProfileWidget] Response[${selectedTicker}]:`, response[selectedTicker])
+
+        if (!cancelled && response[selectedTicker] && response[selectedTicker].length > 0) {
+          const latestBar = response[selectedTicker][0]
+          const latestDate = (latestBar.time || latestBar.timestamp).split('T')[0]
+          console.log(`[VolumeProfileWidget] Setting selectedDate to last trading day: ${latestDate}`)
+          setSelectedDate(latestDate)
+        } else if (!cancelled) {
+          console.log(`[VolumeProfileWidget] No data found, falling back to today: ${getTodayDate()}`)
+          setSelectedDate(getTodayDate())
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error(`[VolumeProfileWidget] Fetch failed:`, err)
+          setSelectedDate(getTodayDate())
+        }
+      }
+    }
+
+    fetchLastTradingDay()
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedTicker, stockTickers, cryptoTickers, getTickers, selectedDate])
 
   // Sync with external ticker prop
   React.useEffect(() => {
@@ -100,6 +139,8 @@ export function VolumeProfileWidget({
 
   // Fetch volume profile data
   React.useEffect(() => {
+    if (!selectedDate) return // Wait for date to be set
+
     let cancelled = false
 
     async function fetchData() {
@@ -114,7 +155,9 @@ export function VolumeProfileWidget({
         // Use date range params if in range mode, otherwise single date
         const params = isRangeMode
           ? { symbol: selectedTicker, start_date: selectedStartDate, end_date: selectedEndDate, bins, mode }
-          : { symbol: selectedTicker, date: selectedDate, bins, mode }
+          : { symbol: selectedTicker, date: selectedDate!, bins, mode }
+
+        console.log(`[VolumeProfileWidget] Fetching volume profile with date: ${selectedDate}`)
 
         const response = await getVolumeProfile(params)
 

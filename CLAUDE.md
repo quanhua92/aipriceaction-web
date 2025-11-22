@@ -137,6 +137,15 @@ useEffect(() => {
 
 **Why**: Vietnam timezone conversion happens in UI components (`src/lib/format.ts`), not during API fetch.
 
+**Important**: After normalization, `StockData` objects use the field name `time` (not `timestamp`):
+```typescript
+// ✅ Correct
+const date = stockData.time.split('T')[0]
+
+// ❌ Wrong
+const date = stockData.timestamp.split('T')[0]  // undefined!
+```
+
 ## Vietnamese Stock Market Domain
 
 ### Market Indices
@@ -216,6 +225,25 @@ const { getTickers } = useAPI()  // ✅ Logged
 // vs
 import { getTickers } from '@/lib/api-client'  // ❌ Not logged (use only in routes)
 ```
+
+**Signature & Response:**
+```typescript
+// APIContext.getTickers signature
+getTickers(source: string, params?: TickersQueryParams) => Promise<Record<string, StockData[]>>
+
+// Usage example
+const response = await getTickers('ComponentName.action', {
+  symbol: 'VNINDEX',
+  limit: 1,
+  mode: 'vn'
+})
+const data = response['VNINDEX'] // Access by ticker symbol
+```
+
+**Common mistakes:**
+- ❌ Missing source string: `getTickers({ symbol: 'VNINDEX' })`
+- ❌ Wrong response access: `response.data`
+- ✅ Correct: `getTickers('Source', { symbol: 'VNINDEX' })` then `response['VNINDEX']`
 
 ### 2. Smart Caching in TickerContext
 - Tracks recent requests: `Map<"ticker:interval", timestamp>`
