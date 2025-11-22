@@ -11,6 +11,7 @@ import {
   Eye,
   Globe,
   Coins,
+  Bell,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
@@ -90,6 +91,19 @@ export default function Header() {
                   >
                     <Eye size={20} />
                     <span className="font-medium">Watch</span>
+                  </Link>
+
+                  <Link
+                    to="/alert"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                    activeProps={{
+                      className:
+                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+                    }}
+                  >
+                    <Bell size={20} />
+                    <span className="font-medium">Alerts</span>
                   </Link>
 
                   <Link
@@ -178,6 +192,18 @@ export default function Header() {
             >
               <Eye size={18} />
               <span className="font-medium">Watch</span>
+            </Link>
+
+            <Link
+              to="/alert"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
+              }}
+            >
+              <Bell size={18} />
+              <span className="font-medium">Alerts</span>
             </Link>
 
             <Link

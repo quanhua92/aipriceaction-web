@@ -55,6 +55,11 @@ export const MATRIX_OPEN_SECTORS_STORAGE_KEY = 'matrix-open-sectors'
 export const API_BASE_URL_OVERRIDE_STORAGE_KEY = 'api-base-url-override'
 
 /**
+ * LocalStorage key for price alerts
+ */
+export const ALERTS_STORAGE_KEY = 'alerts'
+
+/**
  * Special watchlist name for showing all tickers
  */
 export const ALL_WATCHLIST_NAME = 'ALL'
@@ -144,3 +149,29 @@ export const SECTOR_ABBREVIATIONS: Record<string, string> = {
 	VLXD: 'VLXD',
 	XAY_LAP_DIEN: 'XLD',
 }
+
+/**
+ * Alert types
+ */
+export const ALERT_TYPES = {
+	PRICE_HITS: 'price_hits',
+	// Future: PRICE_ABOVE, PRICE_BELOW, VOLUME_SPIKE
+} as const
+
+export type AlertType = typeof ALERT_TYPES[keyof typeof ALERT_TYPES]
+
+/**
+ * Distance thresholds for alert color coding (in percent)
+ */
+export const ALERT_DISTANCE_THRESHOLDS = {
+	RED: 2,      // < 2%
+	ORANGE: 5,   // 2-5%
+	YELLOW: 10,  // 5-10%
+	GREEN: 999,  // > 10%
+} as const
+
+/**
+ * Alert trigger threshold (in percent)
+ * Alert is considered triggered when price is within this % of target
+ */
+export const ALERT_TRIGGER_THRESHOLD = 0.5 // 0.5%

@@ -31,4 +31,25 @@ export default {
       noTickersFound: 'No tickers found',
     },
   },
+  quickAddAlert: {
+    title: 'Add Price Alert',
+    ticker: 'Ticker',
+    currentPrice: 'Current Price',
+    targetPrice: 'Target Price',
+    alertType: 'Alert Type',
+    distance: 'Distance',
+    triggerMessage: 'Alert triggers at',
+    save: 'Save Alert',
+    cancel: 'Cancel',
+    validation: {
+      required: 'Target price is required',
+      positive: 'Target price must be greater than 0',
+    },
+  },
+  editAlert: {
+    title: 'Edit Alert',
+    created: 'Created',
+    status: 'Status',
+    deleteConfirm: 'Are you sure? This cannot be undone.',
+  },
 }

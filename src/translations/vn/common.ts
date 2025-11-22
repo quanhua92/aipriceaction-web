@@ -161,4 +161,13 @@ export default {
       dateMode: 'Chế độ ngày: Nhấn biểu tượng lịch để chuyển đổi giữa phân tích một ngày và khoảng ngày.',
     },
   },
+  alerts: {
+    title: 'Cảnh Báo Giá',
+    description: 'Theo dõi cảnh báo giá cho các mã cổ phiếu yêu thích',
+    addAlert: 'Thêm Cảnh Báo',
+    editAlert: 'Sửa Cảnh Báo',
+    deleteAlert: 'Xóa Cảnh Báo',
+    noAlerts: 'Chưa có cảnh báo',
+    noAlertsDescription: 'Nhấn biểu tượng chuông trên biểu đồ để thêm cảnh báo đầu tiên',
+  },
 }

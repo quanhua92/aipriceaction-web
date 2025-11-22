@@ -161,4 +161,13 @@ export default {
       dateMode: 'Date Mode: Click the calendar icon to toggle between single day and date range analysis.',
     },
   },
+  alerts: {
+    title: 'Price Alerts',
+    description: 'Track price alerts for your favorite tickers',
+    addAlert: 'Add Alert',
+    editAlert: 'Edit Alert',
+    deleteAlert: 'Delete Alert',
+    noAlerts: 'No alerts yet',
+    noAlertsDescription: 'Click the bell icon on any chart to add your first alert',
+  },
 }

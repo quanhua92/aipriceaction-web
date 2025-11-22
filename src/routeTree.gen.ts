@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchRouteImport } from './routes/watch'
 import { Route as MatrixRouteImport } from './routes/matrix'
 import { Route as CryptoRouteImport } from './routes/crypto'
+import { Route as AlertRouteImport } from './routes/alert'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
@@ -42,6 +43,11 @@ const MatrixRoute = MatrixRouteImport.update({
 const CryptoRoute = CryptoRouteImport.update({
   id: '/crypto',
   path: '/crypto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertRoute = AlertRouteImport.update({
+  id: '/alert',
+  path: '/alert',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AiRoute = AiRouteImport.update({
@@ -128,6 +134,7 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
+  '/alert': typeof AlertRoute
   '/crypto': typeof CryptoRoute
   '/matrix': typeof MatrixRoute
   '/watch': typeof WatchRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
+  '/alert': typeof AlertRoute
   '/crypto': typeof CryptoRoute
   '/matrix': typeof MatrixRoute
   '/watch': typeof WatchRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
+  '/alert': typeof AlertRoute
   '/crypto': typeof CryptoRoute
   '/matrix': typeof MatrixRoute
   '/watch': typeof WatchRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/ai'
+    | '/alert'
     | '/crypto'
     | '/matrix'
     | '/watch'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/ai'
+    | '/alert'
     | '/crypto'
     | '/matrix'
     | '/watch'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/ai'
+    | '/alert'
     | '/crypto'
     | '/matrix'
     | '/watch'
@@ -258,6 +270,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AiRoute: typeof AiRoute
+  AlertRoute: typeof AlertRoute
   CryptoRoute: typeof CryptoRoute
   MatrixRoute: typeof MatrixRoute
   WatchRoute: typeof WatchRoute
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       path: '/crypto'
       fullPath: '/crypto'
       preLoaderRoute: typeof CryptoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alert': {
+      id: '/alert'
+      path: '/alert'
+      fullPath: '/alert'
+      preLoaderRoute: typeof AlertRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ai': {
@@ -418,6 +438,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AiRoute: AiRoute,
+  AlertRoute: AlertRoute,
   CryptoRoute: CryptoRoute,
   MatrixRoute: MatrixRoute,
   WatchRoute: WatchRoute,

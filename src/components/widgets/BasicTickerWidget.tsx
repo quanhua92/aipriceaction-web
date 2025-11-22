@@ -1,9 +1,10 @@
-import { TrendingUp, TrendingDown, ChevronDown, Star } from 'lucide-react'
+import { TrendingUp, TrendingDown, ChevronDown, Star, Bell } from 'lucide-react'
 import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
+import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { TickerProvider } from '@/contexts/TickerContext'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -117,6 +118,12 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                     <span className="sr-only">Add to watchlist</span>
                   </Button>
                 </QuickAddWatchListDialog>
+                <QuickAddAlertDialog ticker={selectedTicker}>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted/50">
+                    <Bell className="h-3.5 w-3.5" />
+                    <span className="sr-only">Add price alert</span>
+                  </Button>
+                </QuickAddAlertDialog>
               </div>
               <p className="text-xs text-muted-foreground">{formatToVietnamDate(parseUTCISOString(data.time))}</p>
             </div>
