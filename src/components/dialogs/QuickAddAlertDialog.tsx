@@ -151,23 +151,23 @@ export function QuickAddAlertDialog({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6">
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
             {t('dialogs.quickAddAlert.title')}
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col gap-0">
-          <TabsList className="mx-4 mb-4">
+        <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col gap-0 pt-6">
+          <TabsList className="mx-6 mb-4">
             <TabsTrigger value="details">{t('dialogs.quickAddAlert.tabs.details')}</TabsTrigger>
             <TabsTrigger value="existing">
               {t('dialogs.quickAddAlert.tabs.existing')} ({existingAlerts.length})
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-4 pb-4">
+          <TabsContent value="details" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 pb-4">
             {/* Ticker Display - Centered at Top */}
             <div className="text-center mb-2">
               <div className="font-mono font-bold text-2xl">{ticker}</div>
@@ -269,7 +269,7 @@ export function QuickAddAlertDialog({
             )}
           </TabsContent>
 
-          <TabsContent value="existing" className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
+          <TabsContent value="existing" className="flex-1 min-h-0 overflow-y-auto px-6 pb-4">
             {existingAlerts.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 {t('dialogs.quickAddAlert.existingAlerts.empty')}
@@ -325,7 +325,7 @@ export function QuickAddAlertDialog({
           </TabsContent>
         </Tabs>
 
-        <DialogFooter className="flex-shrink-0 border-t pt-2">
+        <DialogFooter className="flex-shrink-0 border-t pt-4 px-6 pb-6">
           <div className="flex gap-2 w-full">
             <Button variant="outline" onClick={handleCancel} className="flex-1">
               {t('dialogs.quickAddAlert.cancel')}
