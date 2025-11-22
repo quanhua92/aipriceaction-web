@@ -315,7 +315,7 @@ export function BaseTradingViewChart({
 			box-sizing: border-box;
 			font-size: 11px;
 			text-align: left;
-			z-index: 1000;
+			z-index: 10;
 			pointer-events: none;
 			border: 1px solid #27272a;
 			border-radius: 4px;
