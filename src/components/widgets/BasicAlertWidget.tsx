@@ -30,7 +30,7 @@ export function BasicAlertWidget({
 
   const [searchQuery, setSearchQuery] = React.useState('')
   const [sortBy, setSortBy] = React.useState<AlertSortBy>('distance')
-  const [filterBy, setFilterBy] = React.useState<AlertFilter>('active')
+  const [filterBy, setFilterBy] = React.useState<AlertFilter>('all')
   const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
 
   // Calculate distance for each alert
