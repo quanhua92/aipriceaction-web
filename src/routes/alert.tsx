@@ -100,24 +100,24 @@ function AlertPage() {
 
       // Get existing alerts
       const existingAlerts = getAlerts()
+      const importedIds = new Set(importedAlerts.map(a => a.id))
       const existingIds = new Set(existingAlerts.map(a => a.id))
 
-      // Filter out duplicates (alerts with IDs that already exist)
-      const newAlerts = importedAlerts.filter(alert => !existingIds.has(alert.id))
+      // Track new vs overwritten counts
+      const overwrittenCount = importedAlerts.filter(alert => existingIds.has(alert.id)).length
+      const newCount = importedAlerts.length - overwrittenCount
 
-      if (newAlerts.length === 0) {
-        info('Alerts', 'No new alerts to import (all already exist)')
-        return
-      }
+      // Filter out existing alerts that will be overwritten
+      const nonDuplicateExisting = existingAlerts.filter(alert => !importedIds.has(alert.id))
 
-      // Merge with existing alerts
-      const merged = [...existingAlerts, ...newAlerts]
+      // Merge with all imported alerts (includes both new and overwrites)
+      const merged = [...nonDuplicateExisting, ...importedAlerts]
       localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(merged))
 
       // Refresh UI
       refreshAlerts()
 
-      info('Alerts', `Imported ${newAlerts.length} new alerts (skipped ${importedAlerts.length - newAlerts.length} duplicates)`)
+      info('Alerts', `Imported ${importedAlerts.length} alerts (${newCount} new, ${overwrittenCount} overwritten)`)
     } catch (err) {
       console.error('Import failed:', err)
       logError('Alerts', `Failed to import alerts: ${err instanceof Error ? err.message : 'Unknown error'}`)
