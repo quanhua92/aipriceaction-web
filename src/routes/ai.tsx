@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Plus, Trash2, Loader2 } from "lucide-react";
+import { Copy, Check, Plus, Trash2, Loader2, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { buildAIContext } from "@/lib/ai-context-builder";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -11,18 +11,22 @@ import { useAPI } from "@/contexts/APIContext";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { loadTranslations } from "@/translations";
 import { AI_SELECTED_TICKERS_STORAGE_KEY } from "@/lib/constants";
+import { TickerGroupSelector } from "@/components/TickerGroupSelector";
+import { getTickersForGroup } from "@/lib/ticker-group-utils";
+import { getWatchlistNames } from "@/lib/watchlist-storage";
 
 export const Route = createFileRoute("/ai")({ component: AIContextPage });
 
-const MAX_TICKERS = 20;
+const MAX_TICKERS = 100;
 
 function AIContextPage() {
 	const { t, language } = useTranslation();
 	const translations = loadTranslations(language);
-	const { getTickers, getHealth, cryptoTickers } = useAPI();
+	const { getTickers, getHealth, cryptoTickers, tickerGroups } = useAPI();
 	const { lastRefresh } = useRefresh();
 	const [copied, setCopied] = React.useState(false);
 	const [copiedTemplate, setCopiedTemplate] = React.useState<number | null>(null);
+	const [customWatchlistNames, setCustomWatchlistNames] = React.useState<string[]>([]);
 	const [selectedTickers, setSelectedTickers] = React.useState<string[]>(() => {
 		// Load from localStorage on initialization
 		try {
@@ -54,6 +58,11 @@ function AIContextPage() {
 			console.error("Failed to save tickers to localStorage:", error);
 		}
 	}, [selectedTickers]);
+
+	// Load custom watchlist names
+	React.useEffect(() => {
+		setCustomWatchlistNames(getWatchlistNames());
+	}, []);
 
 	// Fetch health status to check trading hours
 	React.useEffect(() => {
@@ -105,6 +114,23 @@ function AIContextPage() {
 
 	const handleRemoveTicker = (ticker: string) => {
 		setSelectedTickers(selectedTickers.filter(t => t !== ticker));
+	}
+
+	const handleGroupChange = (groupName: string) => {
+		if (!groupName) return;
+
+		const groupInfo = getTickersForGroup(
+			groupName,
+			tickerGroups,
+			cryptoTickers || [],
+			customWatchlistNames
+		);
+
+		setSelectedTickers(groupInfo.tickers);
+	}
+
+	const handleClearTickers = () => {
+		setSelectedTickers(['VNINDEX']);
 	}
 
 	// Split selected tickers into stocks and crypto
@@ -215,6 +241,23 @@ function AIContextPage() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="p-3 md:p-6 space-y-4">
+					{/* Load Watchlist/Group */}
+					<div className="space-y-2">
+						<h3 className="text-sm font-medium">
+							{t("common.aiContext.loadGroup.title")}
+						</h3>
+						<TickerGroupSelector
+							value=""
+							onValueChange={handleGroupChange}
+							showAll={false}
+							showCrypto={false}
+							showPredefined={true}
+							showCustom={true}
+							showSectors={true}
+							placeholder={t("common.aiContext.loadGroup.placeholder")}
+						/>
+					</div>
+
 					{/* Settings Row */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{/* Limit Selector */}
@@ -272,6 +315,19 @@ function AIContextPage() {
 								{!canAddMoreTickers && ` (${t("common.aiContext.tickerSelection.maxTickersReached")})`}
 							</Button>
 						</SelectTickerDialog>
+					</div>
+
+					{/* Clear Button */}
+					<div>
+						<Button
+							variant="outline"
+							size="sm"
+							className="w-full"
+							onClick={handleClearTickers}
+						>
+							<X className="h-4 w-4 mr-2" />
+							{t("common.aiContext.tickerSelection.clearTickers")}
+						</Button>
 					</div>
 
 					{/* Selected Tickers List */}

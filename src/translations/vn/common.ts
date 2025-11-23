@@ -56,6 +56,10 @@ export default {
       step3: 'Đặt câu hỏi về phân tích thị trường chứng khoán Việt Nam',
       step4: 'AI sẽ sử dụng ngữ cảnh này để cung cấp thông tin dựa trên dữ liệu',
     },
+    loadGroup: {
+      title: 'Tải Danh Mục hoặc Ngành',
+      placeholder: 'Chọn nhóm',
+    },
     tickerSelection: {
       title: 'Dữ Liệu Thị Trường (Tùy Chọn)',
       description: 'Thêm mã cổ phiếu để bao gồm dữ liệu lịch sử vào ngữ cảnh AI',
@@ -63,9 +67,10 @@ export default {
       records: 'bản ghi',
       interval: 'Khoảng Thời Gian',
       addTicker: 'Thêm Mã',
+      clearTickers: 'Xóa Hết',
       selectedTickers: 'Mã Đã Chọn',
       noTickersSelected: 'Chưa chọn mã nào',
-      maxTickersReached: 'Tối đa 20 mã',
+      maxTickersReached: 'Tối đa 100 mã',
       fetchData: 'Lấy Dữ Liệu & Tạo Ngữ Cảnh',
       fetching: 'Đang lấy dữ liệu...',
       fetchError: 'Không thể lấy dữ liệu thị trường',

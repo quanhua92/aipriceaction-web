@@ -56,6 +56,10 @@ export default {
       step3: 'Ask your questions about Vietnamese stock market analysis',
       step4: 'The AI will use this context to provide informed, data-driven insights',
     },
+    loadGroup: {
+      title: 'Load Watchlist or Sector',
+      placeholder: 'Select group',
+    },
     tickerSelection: {
       title: 'Market Data (Optional)',
       description: 'Add tickers to include their historical data in the AI context',
@@ -63,9 +67,10 @@ export default {
       records: 'records',
       interval: 'Interval',
       addTicker: 'Add Ticker',
+      clearTickers: 'Clear',
       selectedTickers: 'Selected Tickers',
       noTickersSelected: 'No tickers selected',
-      maxTickersReached: 'Maximum 20 tickers allowed',
+      maxTickersReached: 'Maximum 100 tickers allowed',
       fetchData: 'Fetch Data & Generate Context',
       fetching: 'Fetching data...',
       fetchError: 'Failed to fetch market data',
