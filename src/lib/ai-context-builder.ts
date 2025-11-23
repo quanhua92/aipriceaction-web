@@ -61,6 +61,16 @@ OHLCV (Open, High, Low, Close, Volume) data for recent trading sessions. Analyze
 ### 3. Question
 The specific investment question or analysis request from the user.
 
+## Analysis Priorities
+
+When analyzing market data, prioritize the following approaches:
+
+1. **Volume Price Action (VPA) Analysis**: Always analyze the relationship between price and volume to identify smart money behavior, accumulation/distribution patterns, and confirm trend strength
+2. **Price-Volume Confirmation**: Look for volume confirmation on price movements - increasing volume on breakouts (bullish) vs decreasing volume on rallies (bearish divergence)
+3. **Wyckoff Phases**: Identify market phases (Accumulation, Markup, Distribution, Markdown) based on price-volume patterns
+4. **Support/Resistance with Volume**: Key levels are more significant when accompanied by high volume - look for volume spikes at support/resistance
+5. **Volume Trends**: Compare current volume to recent average volume to gauge conviction behind price moves
+
 ## Communication Style
 
 - Provide clear, actionable insights in Vietnamese or English as appropriate
@@ -93,6 +103,16 @@ Dữ liệu OHLCV (Mở, Cao, Thấp, Đóng, Khối lượng) cho các phiên g
 
 ### 3. Câu Hỏi
 Câu hỏi đầu tư cụ thể hoặc yêu cầu phân tích từ người dùng.
+
+## Ưu Tiên Phân Tích
+
+Khi phân tích dữ liệu thị trường, ưu tiên các cách tiếp cận sau:
+
+1. **Phân Tích Volume Price Action (VPA)**: Luôn phân tích mối quan hệ giữa giá và khối lượng để xác định hành vi tiền thông minh, các mô hình tích lũy/phân phối, và xác nhận sức mạnh xu hướng
+2. **Xác Nhận Giá-Khối Lượng**: Tìm kiếm sự xác nhận khối lượng trên các chuyển động giá - khối lượng tăng khi breakout (tăng giá) vs khối lượng giảm khi rally (phân kỳ giảm giá)
+3. **Các Giai Đoạn Wyckoff**: Xác định các giai đoạn thị trường (Tích lũy, Tăng giá, Phân phối, Giảm giá) dựa trên các mô hình giá-khối lượng
+4. **Hỗ Trợ/Kháng Cự với Khối Lượng**: Các mức quan trọng có ý nghĩa hơn khi đi kèm với khối lượng cao - tìm kiếm các đỉnh khối lượng tại hỗ trợ/kháng cự
+5. **Xu Hướng Khối Lượng**: So sánh khối lượng hiện tại với khối lượng trung bình gần đây để đánh giá sự tin tưởng đằng sau các chuyển động giá
 
 ## Phong Cách Giao Tiếp
 
