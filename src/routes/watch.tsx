@@ -263,13 +263,12 @@ function WatchPage() {
 				{paginatedTickers.length > 0 ? (
 					<div className={`grid ${gridColsClass} gap-4`}>
 						{paginatedTickers.map((ticker) => (
-							<div key={ticker.symbol} className="border rounded-lg p-3 bg-card">
-								<TradingViewChart
-									initialTicker={ticker.symbol}
-									showControls={true}
-									height={300}
-								/>
-							</div>
+							<TradingViewChart
+								key={ticker.symbol}
+								initialTicker={ticker.symbol}
+								showControls={true}
+								height={300}
+							/>
 						))}
 					</div>
 				) : (
