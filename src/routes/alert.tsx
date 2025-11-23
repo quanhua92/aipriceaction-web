@@ -23,7 +23,12 @@ function AlertPage() {
   const { info, error: logError } = useLogs()
 
   // State for selected ticker (from clicking alert row)
-  const [selectedTicker, setSelectedTicker] = React.useState<string | null>('VNINDEX')
+  const [selectedTicker, setSelectedTicker] = React.useState<string>('VNINDEX')
+
+  // Responsive chart height: 600px desktop (lg+), 400px mobile
+  const [chartHeight, setChartHeight] = React.useState<number>(
+    typeof window !== 'undefined' && window.innerWidth >= 1024 ? 600 : 400
+  )
 
   // File input ref for import
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -53,6 +58,15 @@ function AlertPage() {
 
     return withDistance.sort((a, b) => a.distance! - b.distance!)[0]
   }, [activeAlerts, allTickersLastData])
+
+  // Update chart height on window resize
+  React.useEffect(() => {
+    const handleResize = () => {
+      setChartHeight(window.innerWidth >= 1024 ? 600 : 400)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Export alerts to JSON file
   const handleExport = () => {
@@ -169,100 +183,93 @@ function AlertPage() {
         />
       </div>
 
-      {/* Statistics Panel */}
+      {/* Main Content Grid - 3 columns on desktop, 1 column on mobile */}
       <div className="p-4 md:p-6 border-t">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Total Alerts */}
-          <div className="p-4 border rounded-lg bg-card">
-            <div className="text-sm text-muted-foreground mb-1">
-              {t('widgets.basicAlert.stats.total')}
-            </div>
-            <div className="text-2xl font-bold">{alerts.length}</div>
-          </div>
-
-          {/* Active Alerts */}
-          <div className="p-4 border rounded-lg bg-card">
-            <div className="text-sm text-muted-foreground mb-1">
-              {t('widgets.basicAlert.stats.active')}
-            </div>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-500">
-              {activeAlerts.length}
-            </div>
-          </div>
-
-          {/* Triggered Alerts */}
-          <div className="p-4 border rounded-lg bg-card">
-            <div className="text-sm text-muted-foreground mb-1">
-              {t('widgets.basicAlert.stats.triggered')}
-            </div>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-500">
-              {triggeredAlerts.length}
-            </div>
-          </div>
-
-          {/* Closest Alert */}
-          <div className="p-4 border rounded-lg bg-card">
-            <div className="text-sm text-muted-foreground mb-1">
-              {t('widgets.basicAlert.stats.closest')}
-            </div>
-            <div className="text-2xl font-bold">
-              {closestAlert ? (
-                <div className="flex flex-col">
-                  <span className="text-base font-mono">{closestAlert.ticker}</span>
-                  <span
-                    className={`text-sm ${
-                      closestAlert.distance! < ALERT_DISTANCE_THRESHOLDS.RED
-                        ? 'text-red-600 dark:text-red-500'
-                        : closestAlert.distance! < ALERT_DISTANCE_THRESHOLDS.ORANGE
-                        ? 'text-orange-600 dark:text-orange-500'
-                        : closestAlert.distance! < ALERT_DISTANCE_THRESHOLDS.YELLOW
-                        ? 'text-yellow-600 dark:text-yellow-500'
-                        : 'text-green-600 dark:text-green-500'
-                    }`}
-                  >
-                    {closestAlert.distance!.toFixed(2)}% away
-                  </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: Statistics + Alert Widget */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Statistics Panel */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Total Alerts */}
+              <div className="p-4 border rounded-lg bg-card">
+                <div className="text-sm text-muted-foreground mb-1">
+                  {t('widgets.basicAlert.stats.total')}
                 </div>
-              ) : (
-                <span className="text-muted-foreground text-base">-</span>
-              )}
+                <div className="text-2xl font-bold">{alerts.length}</div>
+              </div>
+
+              {/* Active Alerts */}
+              <div className="p-4 border rounded-lg bg-card">
+                <div className="text-sm text-muted-foreground mb-1">
+                  {t('widgets.basicAlert.stats.active')}
+                </div>
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-500">
+                  {activeAlerts.length}
+                </div>
+              </div>
+
+              {/* Triggered Alerts */}
+              <div className="p-4 border rounded-lg bg-card">
+                <div className="text-sm text-muted-foreground mb-1">
+                  {t('widgets.basicAlert.stats.triggered')}
+                </div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-500">
+                  {triggeredAlerts.length}
+                </div>
+              </div>
+
+              {/* Closest Alert */}
+              <div className="p-4 border rounded-lg bg-card">
+                <div className="text-sm text-muted-foreground mb-1">
+                  {t('widgets.basicAlert.stats.closest')}
+                </div>
+                <div className="text-2xl font-bold">
+                  {closestAlert ? (
+                    <div className="flex flex-col">
+                      <span className="text-base font-mono">{closestAlert.ticker}</span>
+                      <span
+                        className={`text-sm ${
+                          closestAlert.distance! < ALERT_DISTANCE_THRESHOLDS.RED
+                            ? 'text-red-600 dark:text-red-500'
+                            : closestAlert.distance! < ALERT_DISTANCE_THRESHOLDS.ORANGE
+                            ? 'text-orange-600 dark:text-orange-500'
+                            : closestAlert.distance! < ALERT_DISTANCE_THRESHOLDS.YELLOW
+                            ? 'text-yellow-600 dark:text-yellow-500'
+                            : 'text-green-600 dark:text-green-500'
+                        }`}
+                      >
+                        {closestAlert.distance!.toFixed(2)}% away
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-base">-</span>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {/* Alert Widget */}
+            <BasicAlertWidget
+              maxHeight="calc(100vh - 500px)"
+              onSelectAlert={(alert) => setSelectedTicker(alert.ticker)}
+            />
+          </div>
+
+          {/* Right Columns: Ticker Details */}
+          <div className="lg:col-span-2 space-y-6">
+            <BasicTickerWidget
+              ticker={selectedTicker}
+              onTickerChange={setSelectedTicker}
+            />
+            <TradingViewChart
+              ticker={selectedTicker}
+              onTickerChange={setSelectedTicker}
+              showControls={true}
+              height={chartHeight}
+            />
           </div>
         </div>
       </div>
-
-      {/* Alert Widget */}
-      <div className="p-4 md:p-6 border-t">
-        <BasicAlertWidget
-          maxHeight="calc(100vh - 500px)"
-          onSelectAlert={(alert) => setSelectedTicker(alert.ticker)}
-        />
-      </div>
-
-      {/* Ticker Details + Chart Section - shown when alert selected */}
-      {selectedTicker && (
-        <div className="p-4 md:p-6 border-t">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left: BasicTickerWidget */}
-            <div>
-              <BasicTickerWidget
-                ticker={selectedTicker}
-                onTickerChange={setSelectedTicker}
-              />
-            </div>
-
-            {/* Right: TradingViewChart */}
-            <div>
-              <TradingViewChart
-                ticker={selectedTicker}
-                onTickerChange={setSelectedTicker}
-                showControls={true}
-                height={400}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
