@@ -1,26 +1,18 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, Star, Plus, Edit2, Bookmark } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit2 } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { SortableTickerList, type Ticker } from './SortableTickerList'
 import { CreateWatchListDialog } from '@/components/dialogs/CreateWatchListDialog'
 import { EditWatchListDialog } from '@/components/dialogs/EditWatchListDialog'
+import { TickerGroupSelector } from '@/components/TickerGroupSelector'
 import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
 import {
-  getPredefinedWatchlistNames,
   getPredefinedWatchlistTickers,
   isPredefinedWatchlist as checkIsPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
-import { getSectorDisplayName } from '@/lib/sector-names'
 import { useTranslation } from '@/hooks/useTranslation'
 
 export interface BasicWatchListProps {
@@ -55,14 +47,11 @@ export function BasicWatchList({
     allCryptoTickersLastData
   } = useAPI()
   const { prefetchTickers } = usePrefetchTicker()
-  const { t, language } = useTranslation()
+  const { t } = useTranslation()
 
   // State to track custom watchlists and trigger re-renders
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
   const [refreshKey, setRefreshKey] = React.useState(0)
-
-  // Get predefined watchlist names
-  const predefinedWatchlists = React.useMemo(() => getPredefinedWatchlistNames(), [])
 
   // Load custom watchlists from localStorage
   React.useEffect(() => {
@@ -72,50 +61,6 @@ export function BasicWatchList({
     }
     loadCustomWatchlists()
   }, [refreshKey])
-
-  // Helper to check if a group is a custom watchlist
-  const isCustomWatchlist = React.useCallback((group: string) => {
-    return customWatchlists.includes(group)
-  }, [customWatchlists])
-
-  // Helper to check if a group is a predefined watchlist
-  const isPredefinedWatchlist = React.useCallback((group: string) => {
-    return checkIsPredefinedWatchlist(group)
-  }, [])
-
-  // Helper to check if a group is the ALL watchlist
-  const isAllWatchlist = React.useCallback((group: string) => {
-    return group === ALL_WATCHLIST_NAME
-  }, [])
-
-  // Helper to check if a group is the CRYPTO watchlist
-  const isCryptoWatchlist = React.useCallback((group: string) => {
-    return group === CRYPTO_WATCHLIST_NAME
-  }, [])
-
-  // Get available sector groups (exclude market indices)
-  const sectorGroups = React.useMemo(() => {
-    if (!tickerGroups) return []
-    return Object.keys(tickerGroups).filter(group =>
-      !['VNINDEX', 'VN30'].includes(group)
-    )
-  }, [tickerGroups])
-
-  // Get all available groups (ALL, CRYPTO, predefined, custom watchlists, then sectors)
-  const allGroups = React.useMemo(() => {
-    return [ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
-  }, [predefinedWatchlists, customWatchlists, sectorGroups])
-
-  // Helper to get display name for dropdown (readable names only for sectors)
-  const getDropdownDisplayName = React.useCallback((group: string): string => {
-    // Check if it's a sector group (not ALL, not predefined, not custom)
-    const isSector = sectorGroups.includes(group)
-    if (isSector) {
-      return getSectorDisplayName(group, language)
-    }
-    // Keep ALL, predefined, and custom watchlist names as-is
-    return group
-  }, [sectorGroups, language])
 
   // Track if user has explicitly changed the group
   const [hasUserChangedGroup, setHasUserChangedGroup] = React.useState(false)
@@ -138,10 +83,10 @@ export function BasicWatchList({
 
     if (defaultGroup) {
       setSelectedGroup(defaultGroup)
-    } else if (allGroups.length > 0 && !selectedGroup) {
-      setSelectedGroup(allGroups[0])
+    } else if (!selectedGroup) {
+      setSelectedGroup(ALL_WATCHLIST_NAME)
     }
-  }, [allGroups, defaultGroup, hasUserChangedGroup, selectedGroup])
+  }, [defaultGroup, hasUserChangedGroup, selectedGroup])
 
   // Transform ticker group data for SortableTickerList
   const tickers: Ticker[] = React.useMemo(() => {
@@ -150,7 +95,7 @@ export function BasicWatchList({
     }
 
     // Check if this is the ALL watchlist
-    if (isAllWatchlist(selectedGroup)) {
+    if (selectedGroup === ALL_WATCHLIST_NAME) {
       if (!tickerGroups) return []
 
       // Get all tickers from all sector groups
@@ -173,12 +118,12 @@ export function BasicWatchList({
 
     // Check if this is the CRYPTO watchlist - return empty array for tickers
     // Crypto will be passed separately via cryptoTickers prop to SortableTickerList
-    if (isCryptoWatchlist(selectedGroup)) {
+    if (selectedGroup === CRYPTO_WATCHLIST_NAME) {
       return []
     }
 
     // Check if this is a predefined watchlist
-    if (isPredefinedWatchlist(selectedGroup)) {
+    if (checkIsPredefinedWatchlist(selectedGroup)) {
       const watchlistTickers = getPredefinedWatchlistTickers(selectedGroup)
       return watchlistTickers.map(symbol => ({
         symbol,
@@ -187,7 +132,7 @@ export function BasicWatchList({
     }
 
     // Check if this is a custom watchlist
-    if (isCustomWatchlist(selectedGroup)) {
+    if (customWatchlists.includes(selectedGroup)) {
       const watchlistTickers = getWatchlistTickers(selectedGroup)
       // Filter out crypto symbols to prevent duplicates (crypto is passed separately via cryptoTickers prop)
       const cryptoSymbolSet = new Set(cryptoTickers.map(t => t.symbol))
@@ -208,7 +153,7 @@ export function BasicWatchList({
       symbol,
       sector: selectedGroup
     }))
-  }, [selectedGroup, tickerGroups, isCustomWatchlist, isPredefinedWatchlist, isAllWatchlist, isCryptoWatchlist, refreshKey, cryptoTickers])
+  }, [selectedGroup, tickerGroups, customWatchlists, refreshKey, cryptoTickers])
 
   // Navigation state - use sorted tickers from SortableTickerList
   const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
@@ -272,7 +217,8 @@ export function BasicWatchList({
     // Remove from custom watchlists state
     setCustomWatchlists(prev => prev.filter(w => w !== selectedGroup))
     // Select the first available group
-    const remainingGroups = [...customWatchlists.filter(w => w !== selectedGroup), ...sectorGroups]
+    const sectors = tickerGroups ? Object.keys(tickerGroups).filter(group => !MARKET_INDICES.includes(group as any)) : []
+    const remainingGroups = [...customWatchlists.filter(w => w !== selectedGroup), ...sectors]
     if (remainingGroups.length > 0) {
       setHasUserChangedGroup(true)
       setSelectedGroup(remainingGroups[0])
@@ -363,28 +309,13 @@ export function BasicWatchList({
           <span className="text-sm font-medium text-muted-foreground">
             Watchlist:
           </span>
-          <Select value={selectedGroup} onValueChange={handleGroupChange}>
-            <SelectTrigger className="w-40 h-8 text-sm font-bold hover:bg-muted/50 transition-colors duration-200">
-              <SelectValue placeholder="Select group" />
-            </SelectTrigger>
-            <SelectContent>
-              {allGroups.map((group) => (
-                <SelectItem key={group} value={group}>
-                  <div className="flex items-center gap-2">
-                    {isPredefinedWatchlist(group) && (
-                      <Bookmark className="h-3.5 w-3.5 fill-purple-500 text-purple-500" />
-                    )}
-                    {isCustomWatchlist(group) && (
-                      <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-                    )}
-                    <span className={isAllWatchlist(group) ? 'font-bold' : ''}>
-                      {getDropdownDisplayName(group)}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <TickerGroupSelector
+            value={selectedGroup}
+            onValueChange={handleGroupChange}
+            placeholder="Select group"
+            className="w-40 h-8 text-sm font-bold hover:bg-muted/50 transition-colors duration-200"
+            refreshKey={refreshKey}
+          />
           {/* New button - right next to dropdown */}
           <CreateWatchListDialog onWatchlistCreated={handleWatchlistCreated}>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
@@ -394,7 +325,7 @@ export function BasicWatchList({
           </CreateWatchListDialog>
         </div>
         {/* Edit button - aligned far right */}
-        {selectedGroup && isCustomWatchlist(selectedGroup) && (
+        {selectedGroup && customWatchlists.includes(selectedGroup) && (
           <EditWatchListDialog
             watchlistName={selectedGroup}
             onWatchlistUpdated={handleWatchlistUpdated}
@@ -425,19 +356,19 @@ export function BasicWatchList({
         className="h-full"
         defaultSectionFilter={
           // Custom watchlists and CRYPTO watchlist default to 'all'
-          isCustomWatchlist(selectedGroup) || isCryptoWatchlist(selectedGroup)
+          customWatchlists.includes(selectedGroup) || selectedGroup === CRYPTO_WATCHLIST_NAME
             ? 'all'
             : 'stocks'
         }
         cryptoTickers={
           // ALL: show all crypto
-          isAllWatchlist(selectedGroup)
+          selectedGroup === ALL_WATCHLIST_NAME
             ? cryptoTickers
           // CRYPTO: show all crypto
-          : isCryptoWatchlist(selectedGroup)
+          : selectedGroup === CRYPTO_WATCHLIST_NAME
             ? cryptoTickers
           // Custom watchlist: only show crypto symbols that are IN the watchlist
-          : isCustomWatchlist(selectedGroup)
+          : customWatchlists.includes(selectedGroup)
             ? (() => {
                 const watchlistSymbols = getWatchlistTickers(selectedGroup)
                 return cryptoTickers.filter(ticker => watchlistSymbols.includes(ticker.symbol))
@@ -447,7 +378,7 @@ export function BasicWatchList({
         }
         allCryptoTickersLastData={
           // Only pass crypto data when crypto might be shown
-          isAllWatchlist(selectedGroup) || isCryptoWatchlist(selectedGroup) || isCustomWatchlist(selectedGroup)
+          selectedGroup === ALL_WATCHLIST_NAME || selectedGroup === CRYPTO_WATCHLIST_NAME || customWatchlists.includes(selectedGroup)
             ? allCryptoTickersLastData
             : {}
         }
@@ -455,7 +386,7 @@ export function BasicWatchList({
       </div>
 
       {/* Edit Watchlist Button - only show for custom watchlists */}
-      {selectedGroup && isCustomWatchlist(selectedGroup) && (
+      {selectedGroup && customWatchlists.includes(selectedGroup) && (
         <div className="px-3 mt-2">
           <EditWatchListDialog
             watchlistName={selectedGroup}

@@ -29,6 +29,7 @@ export interface TickerGroupSelectorProps {
 	showSectors?: boolean
 	placeholder?: string
 	className?: string
+	refreshKey?: number
 }
 
 export function TickerGroupSelector({
@@ -41,6 +42,7 @@ export function TickerGroupSelector({
 	showSectors = true,
 	placeholder = 'Select ticker group',
 	className,
+	refreshKey,
 }: TickerGroupSelectorProps) {
 	const { tickerGroups } = useAPI()
 	const { language } = useTranslation()
@@ -50,7 +52,7 @@ export function TickerGroupSelector({
 	// Load custom watchlists
 	React.useEffect(() => {
 		setCustomWatchlists(getWatchlistNames())
-	}, [])
+	}, [refreshKey])
 
 	// Get predefined watchlist names
 	const predefinedWatchlists = React.useMemo(
@@ -122,7 +124,9 @@ export function TickerGroupSelector({
 							{customWatchlists.includes(group) && (
 								<Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
 							)}
-							<span>{getDropdownDisplayName(group)}</span>
+							<span className={group === ALL_WATCHLIST_NAME ? 'font-bold' : ''}>
+								{getDropdownDisplayName(group)}
+							</span>
 						</div>
 					</SelectItem>
 				))}

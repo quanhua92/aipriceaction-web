@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, ChevronDown, Repeat, Star, Bookmark } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, Repeat } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { type StockData } from '@/lib/api-client'
@@ -14,18 +14,10 @@ import {
   PRIORITY_GROUPS,
   SECTOR_ABBREVIATIONS,
 } from '@/lib/constants'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
 import {
-  getPredefinedWatchlistNames,
   getPredefinedWatchlistTickers,
   isPredefinedWatchlist as checkIsPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
@@ -33,6 +25,7 @@ import { getSectorDisplayName } from '@/lib/sector-names'
 import { ChartFullscreenDialog } from './ChartFullscreenDialog'
 import type { SortBy } from '@/components/lists/SortableTickerList'
 import { useTranslation } from '@/hooks/useTranslation'
+import { TickerGroupSelector } from '@/components/TickerGroupSelector'
 
 type ViewMode = 'close_changed' | 'ma20_score'
 
@@ -114,6 +107,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   })
 
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
+  const [refreshKey, _setRefreshKey] = React.useState(0)
   const [matrixData, setMatrixData] = React.useState<MatrixData | null>(null)
   const [sortReferenceData, setSortReferenceData] = React.useState<Record<string, StockData>>({})
   const [loading, setLoading] = React.useState(false)
@@ -126,7 +120,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   // Load custom watchlists
   React.useEffect(() => {
     setCustomWatchlists(getWatchlistNames())
-  }, [])
+  }, [refreshKey])
 
   // Save open sectors to localStorage whenever they change (client-side only)
   // BUT: Don't save when viewing predefined watchlists OR small watchlists
@@ -153,44 +147,6 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       }
     }
   }, [openSectors, selectedWatchlist, matrixData])
-
-  // Get predefined watchlist names
-  const predefinedWatchlists = React.useMemo(() => getPredefinedWatchlistNames(), [])
-
-  // Get available sector groups
-  const sectorGroups = React.useMemo(() => {
-    if (!tickerGroups) return []
-    return Object.keys(tickerGroups)
-      .filter((group) => !MARKET_INDICES.includes(group as any))
-      .sort((a, b) => {
-        const priorityA = PRIORITY_GROUPS.indexOf(a as any)
-        const priorityB = PRIORITY_GROUPS.indexOf(b as any)
-
-        if (priorityA !== -1 && priorityB !== -1) {
-          return priorityA - priorityB
-        }
-        if (priorityA !== -1) return -1
-        if (priorityB !== -1) return 1
-
-        return a.localeCompare(b)
-      })
-  }, [tickerGroups])
-
-  // Get all available groups (ALL, CRYPTO, predefined, custom, then sectors)
-  const allGroups = React.useMemo(() => {
-    return [ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, ...predefinedWatchlists, ...customWatchlists, ...sectorGroups]
-  }, [predefinedWatchlists, customWatchlists, sectorGroups])
-
-  // Helper to get display name for dropdown (readable names only for sectors)
-  const getDropdownDisplayName = React.useCallback((group: string): string => {
-    // Check if it's a sector group (not ALL, not predefined, not custom)
-    const isSector = sectorGroups.includes(group)
-    if (isSector) {
-      return getSectorDisplayName(group, language)
-    }
-    // Keep ALL, predefined, and custom watchlist names as-is
-    return group
-  }, [sectorGroups, language])
 
   // Get tickers for selected watchlist
   const selectedTickers = React.useMemo(() => {
@@ -643,26 +599,13 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
             <div className="flex flex-wrap items-center gap-2">
               {/* Watchlist Selector */}
-              <Select value={selectedWatchlist} onValueChange={handleWatchlistChange}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Select watchlist" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allGroups.map((group) => (
-                    <SelectItem key={group} value={group}>
-                      <div className="flex items-center gap-2">
-                        {checkIsPredefinedWatchlist(group) && (
-                          <Bookmark className="h-3 w-3 fill-purple-500 text-purple-500" />
-                        )}
-                        {customWatchlists.includes(group) && (
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        )}
-                        <span>{getDropdownDisplayName(group)}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <TickerGroupSelector
+                value={selectedWatchlist}
+                onValueChange={handleWatchlistChange}
+                placeholder="Select watchlist"
+                className="w-[200px]"
+                refreshKey={refreshKey}
+              />
 
               {/* View Mode Toggle */}
               <Button
