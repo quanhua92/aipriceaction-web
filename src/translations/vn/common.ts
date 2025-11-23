@@ -42,7 +42,7 @@ export default {
     score: 'Điểm',
   },
   aiContext: {
-    title: 'Xem Trước Ngữ Cảnh AI',
+    title: 'Xây Dựng Ngữ Cảnh AI',
     description: 'Xây dựng ngữ cảnh AI toàn diện bằng cách chọn nhiều cổ phiếu, cấu hình khoảng thời gian và giới hạn dữ liệu, sau đó sao chép các lời nhắc phân tích được định dạng sẵn cùng dữ liệu thị trường trực tiếp đến trợ lý AI của bạn',
     cardTitle: 'Ngữ Cảnh Hỏi AI',
     cardDescription: 'Ngữ cảnh này bao gồm lời nhắc hệ thống AIPriceAction Investment Advisor, giải thích MA Score, và tuyên bố miễn trừ trách nhiệm đầu tư. Sao chép để sử dụng với trợ lý AI của bạn.',

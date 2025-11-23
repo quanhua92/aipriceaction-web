@@ -42,7 +42,7 @@ export default {
     score: 'Score',
   },
   aiContext: {
-    title: 'AI Context Preview',
+    title: 'Build AI Context',
     description: 'Build comprehensive AI contexts by selecting multiple stocks, configuring data intervals and limits, then copying pre-formatted analysis prompts with live market data to your AI assistant',
     cardTitle: 'Ask AI Context',
     cardDescription: 'This context includes the AIPriceAction Investment Advisor system prompt, MA Score explanation, and investment disclaimer. Copy this to use with your AI assistant.',
