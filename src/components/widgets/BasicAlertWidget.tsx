@@ -235,7 +235,7 @@ export function BasicAlertWidget({
       </div>
 
       {/* Alert Table */}
-      <div className="overflow-auto" style={{ maxHeight }}>
+      <div className="overflow-auto flex-1 min-h-0" style={{ maxHeight }}>
         {sortedAlerts.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <p className="text-sm">{t('common.alerts.noAlerts')}</p>

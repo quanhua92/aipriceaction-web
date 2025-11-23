@@ -187,9 +187,9 @@ function AlertPage() {
       <div className="p-4 md:p-6 border-t">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column: Statistics + Alert Widget */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-6 lg:space-y-0 lg:flex lg:flex-col lg:gap-6 lg:h-[calc(100vh-12rem)]">
             {/* Statistics Panel */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 lg:shrink-0">
               {/* Total Alerts */}
               <div className="p-4 border rounded-lg bg-card">
                 <div className="text-sm text-muted-foreground mb-1">
@@ -249,10 +249,13 @@ function AlertPage() {
             </div>
 
             {/* Alert Widget */}
-            <BasicAlertWidget
-              maxHeight="calc(100vh - 500px)"
-              onSelectAlert={(alert) => setSelectedTicker(alert.ticker)}
-            />
+            <div className="lg:flex-1 lg:min-h-0">
+              <BasicAlertWidget
+                maxHeight="600px"
+                className="lg:h-full"
+                onSelectAlert={(alert) => setSelectedTicker(alert.ticker)}
+              />
+            </div>
           </div>
 
           {/* Right Columns: Ticker Details */}
