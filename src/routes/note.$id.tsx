@@ -25,14 +25,43 @@ export const Route = createFileRoute('/note/$id')({
 	},
 
 	// Dynamic meta tags for SSR
-	head: ({ params }) => ({
-		meta: [
-			{ title: `Note ${params.id.slice(0, 8)} - AIPriceAction` },
-			{ property: 'og:title', content: `Note - AIPriceAction` },
-			{ property: 'og:type', content: 'article' },
-			{ name: 'description', content: 'Markdown note' },
-		],
-	}),
+	head: ({ loaderData }) => {
+		// Extract title from first H1 heading
+		const h1Match = loaderData?.content?.match(/^#\s+(.+)$/m)
+		const title = h1Match ? h1Match[1].trim() : 'Markdown Note'
+
+		// Extract description from first paragraph (skip headings)
+		const lines = loaderData?.content?.split('\n') || []
+		let description = ''
+		for (const line of lines) {
+			const trimmed = line.trim()
+			// Skip empty lines and headings
+			if (!trimmed || trimmed.startsWith('#')) continue
+			// Clean markdown formatting
+			const cleaned = trimmed
+				.replace(/[*_~`]/g, '') // Remove markdown formatting
+				.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // Convert links to text
+				.substring(0, 160) // Limit length
+			if (cleaned) {
+				description = cleaned
+				break
+			}
+		}
+
+		if (!description) {
+			description = 'View markdown note on AIPriceAction'
+		}
+
+		return {
+			meta: [
+				{ title: `${title} | AIPriceAction` },
+				{ property: 'og:title', content: title },
+				{ property: 'og:type', content: 'article' },
+				{ name: 'description', content: description },
+				{ property: 'og:description', content: description },
+			],
+		}
+	},
 
 	component: NoteReadPage,
 })
