@@ -3,9 +3,10 @@ import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
-import { ALL_WATCHLIST_NAME } from "@/lib/constants";
+import { ALL_WATCHLIST_NAME, CUSTOM_WATCHLISTS_STORAGE_KEY } from "@/lib/constants";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useLogs } from "@/contexts/LogsContext";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -14,9 +15,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Upload } from "lucide-react";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 import type { Interval } from "@/lib/api-client";
+import { getCustomWatchlists, type CustomWatchlists } from "@/lib/watchlist-storage";
 
 export const Route = createFileRoute("/watch")({
 	component: WatchPage,
@@ -25,10 +27,14 @@ export const Route = createFileRoute("/watch")({
 function WatchPage() {
 	const { t } = useTranslation();
 	const globalSettings = useChartSettings();
+	const { info, error: logError } = useLogs();
 
 	// State for watchlist
 	const [selectedSector, setSelectedSector] = React.useState(ALL_WATCHLIST_NAME);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
+
+	// File input ref for import
+	const fileInputRef = React.useRef<HTMLInputElement>(null);
 
 	// Pagination state
 	const [currentPage, setCurrentPage] = React.useState(0);
@@ -98,6 +104,83 @@ function WatchPage() {
 		setFullscreenTicker(null);
 	};
 
+	// Export watchlists to JSON file
+	const handleExport = () => {
+		try {
+			const customWatchlists = getCustomWatchlists();
+			const dataStr = JSON.stringify(customWatchlists, null, 2);
+			const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+			const url = URL.createObjectURL(dataBlob);
+			const link = document.createElement('a');
+			link.href = url;
+			const now = new Date();
+			const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+			link.download = `watchlists-${timestamp}.json`;
+
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
+
+			const watchlistCount = Object.keys(customWatchlists).length;
+			info('Watchlists', `Exported ${watchlistCount} watchlist${watchlistCount !== 1 ? 's' : ''}`);
+		} catch (err) {
+			console.error('Export failed:', err);
+			logError('Watchlists', 'Failed to export watchlists');
+		}
+	};
+
+	// Import watchlists from JSON file
+	const handleImport = () => {
+		fileInputRef.current?.click();
+	};
+
+	const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		try {
+			const text = await file.text();
+			const importedWatchlists = JSON.parse(text) as CustomWatchlists;
+
+			// Validate structure
+			if (typeof importedWatchlists !== 'object' || importedWatchlists === null || Array.isArray(importedWatchlists)) {
+				throw new Error('Invalid file format: expected object with watchlist names as keys');
+			}
+
+			// Validate all values are strings
+			for (const [name, tickers] of Object.entries(importedWatchlists)) {
+				if (typeof tickers !== 'string') {
+					throw new Error(`Invalid watchlist format: "${name}" should have comma-separated tickers as string`);
+				}
+			}
+
+			// Get existing watchlists
+			const existingWatchlists = getCustomWatchlists();
+			const importedNames = Object.keys(importedWatchlists);
+			const existingNames = Object.keys(existingWatchlists);
+
+			// Track new vs overwritten counts
+			const overwrittenCount = importedNames.filter(name => existingNames.includes(name)).length;
+			const newCount = importedNames.length - overwrittenCount;
+
+			// Merge: existing + imported (imported takes precedence)
+			const merged = { ...existingWatchlists, ...importedWatchlists };
+			localStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(merged));
+
+			info('Watchlists', `Imported ${importedNames.length} watchlist${importedNames.length !== 1 ? 's' : ''} (${newCount} new, ${overwrittenCount} overwritten)`);
+		} catch (err) {
+			console.error('Import failed:', err);
+			logError('Watchlists', `Failed to import watchlists: ${err instanceof Error ? err.message : 'Unknown error'}`);
+		} finally {
+			// Reset file input
+			if (fileInputRef.current) {
+				fileInputRef.current.value = '';
+			}
+		}
+	};
+
 	// Get ticker symbols array for navigation in fullscreen dialog
 	const tickerSymbols = React.useMemo(() => {
 		return sortedTickers.map(t => t.symbol);
@@ -124,10 +207,40 @@ function WatchPage() {
 		<div className="space-y-6">
 			{/* Header */}
 			<div className="p-4 md:p-6">
-				<h1 className="text-2xl font-bold">{t('common.watch.title')}</h1>
-				<p className="text-sm text-muted-foreground mt-1">
+				<div className="flex items-center justify-between mb-2">
+					<h1 className="text-2xl font-bold">{t('common.watch.title')}</h1>
+					<div className="flex gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleExport}
+							className="flex items-center gap-2"
+						>
+							<Download className="h-4 w-4" />
+							Export
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleImport}
+							className="flex items-center gap-2"
+						>
+							<Upload className="h-4 w-4" />
+							Import
+						</Button>
+					</div>
+				</div>
+				<p className="text-sm text-muted-foreground">
 					{t('common.watch.description')}
 				</p>
+				{/* Hidden file input */}
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept=".json"
+					onChange={handleFileChange}
+					className="hidden"
+				/>
 			</div>
 
 			{/* Watchlist + Controls Section */}
