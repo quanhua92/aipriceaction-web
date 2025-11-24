@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, ChevronDown, Repeat } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, Repeat, MoreVertical } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { type StockData } from '@/lib/api-client'
@@ -16,6 +16,12 @@ import {
 } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
 import {
   getPredefinedWatchlistTickers,
@@ -567,6 +573,15 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
     })
   }
 
+  const expandAllSectors = () => {
+    const allSectors = Object.keys(rowsBySector)
+    setOpenSectors(new Set(allSectors))
+  }
+
+  const collapseAllSectors = () => {
+    setOpenSectors(new Set())
+  }
+
   const handleCellClick = (ticker: string) => {
     if (!matrixData) return
 
@@ -620,6 +635,23 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                   {viewMode === 'close_changed' ? 'CLOSE %' : 'MA20'}
                 </span>
               </Button>
+
+              {/* Sector Actions Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={expandAllSectors}>
+                    {t('common.matrix.expandAll')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={collapseAllSectors}>
+                    {t('common.matrix.collapseAll')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 

@@ -166,6 +166,10 @@ export default {
       dateMode: 'Chế độ ngày: Nhấn biểu tượng lịch để chuyển đổi giữa phân tích một ngày và khoảng ngày.',
     },
   },
+  matrix: {
+    expandAll: 'Mở Tất Cả',
+    collapseAll: 'Thu Gọn Tất Cả',
+  },
   alerts: {
     title: 'Cảnh Báo Giá',
     description: 'Theo dõi cảnh báo giá cho các mã cổ phiếu yêu thích',

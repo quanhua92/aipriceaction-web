@@ -166,6 +166,10 @@ export default {
       dateMode: 'Date Mode: Click the calendar icon to toggle between single day and date range analysis.',
     },
   },
+  matrix: {
+    expandAll: 'Expand All',
+    collapseAll: 'Collapse All',
+  },
   alerts: {
     title: 'Price Alerts',
     description: 'Track price alerts for your favorite tickers',
