@@ -60,6 +60,16 @@ export const API_BASE_URL_OVERRIDE_STORAGE_KEY = 'api-base-url-override'
 export const ALERTS_STORAGE_KEY = 'alerts'
 
 /**
+ * LocalStorage key for markdown notes
+ */
+export const NOTES_STORAGE_KEY = 'aipriceaction-notes'
+
+/**
+ * Fixed filename for markdown content
+ */
+export const MARKDOWN_FILENAME = 'content.md'
+
+/**
  * Special watchlist name for showing all tickers
  */
 export const ALL_WATCHLIST_NAME = 'ALL'

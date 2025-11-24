@@ -13,6 +13,7 @@ import { APIProvider } from '../contexts/APIContext'
 import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
 import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
 import { AlertProvider } from '../contexts/AlertContext'
+import { NoteProvider } from '../contexts/NoteContext'
 import { RefreshProvider } from '../contexts/RefreshContext'
 import { GoogleAnalyticsProvider } from '../contexts/GoogleAnalyticsProvider'
 import { LogsProvider } from '../contexts/LogsContext'
@@ -109,26 +110,28 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <RefreshProvider>
                 <APIProvider>
                   <AlertProvider>
-                    <ChartSettingsProvider>
-                      <Header />
-                      {children}
-                      <StatusBar />
-                      <DebugFooter />
-                    {import.meta.env.DEV && (
-                      <TanStackDevtools
-                        config={{
-                          position: 'bottom-right',
-                        }}
-                        plugins={[
-                          {
-                            name: 'Tanstack Router',
-                            render: <TanStackRouterDevtoolsPanel />,
-                          },
-                          TanStackQueryDevtools,
-                        ]}
-                      />
-                    )}
-                    </ChartSettingsProvider>
+                    <NoteProvider>
+                      <ChartSettingsProvider>
+                        <Header />
+                        {children}
+                        <StatusBar />
+                        <DebugFooter />
+                      {import.meta.env.DEV && (
+                        <TanStackDevtools
+                          config={{
+                            position: 'bottom-right',
+                          }}
+                          plugins={[
+                            {
+                              name: 'Tanstack Router',
+                              render: <TanStackRouterDevtoolsPanel />,
+                            },
+                            TanStackQueryDevtools,
+                          ]}
+                        />
+                      )}
+                      </ChartSettingsProvider>
+                    </NoteProvider>
                   </AlertProvider>
                 </APIProvider>
               </RefreshProvider>

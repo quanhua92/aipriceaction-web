@@ -12,6 +12,7 @@ import {
   Globe,
   Coins,
   Bell,
+  FileText,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
@@ -144,6 +145,19 @@ export default function Header() {
                     <Brain size={20} />
                     <span className="font-medium">AI Context</span>
                   </Link>
+
+                  <Link
+                    to="/notes"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                    activeProps={{
+                      className:
+                        'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+                    }}
+                  >
+                    <FileText size={20} />
+                    <span className="font-medium">Notes</span>
+                  </Link>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -240,6 +254,18 @@ export default function Header() {
             >
               <Brain size={18} />
               <span className="font-medium">AI Context</span>
+            </Link>
+
+            <Link
+              to="/notes"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
+              }}
+            >
+              <FileText size={18} />
+              <span className="font-medium">Notes</span>
             </Link>
           </nav>
         </div>

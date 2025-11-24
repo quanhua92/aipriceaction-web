@@ -114,7 +114,7 @@ export async function getCryptoTickerGroups() {
  */
 export async function getTickers(params: Parameters<typeof apiClient.getTickers>[0]) {
   const response = await apiClient.getTickers(params)
-  const mode = params?.mode || 'vn'
+  const mode = (params?.mode || 'vn') as 'vn' | 'crypto'
 
   // Normalize all ticker data timestamps to UTC ISO format and inject mode
   const normalizedResponse: TickersResponse = {}
@@ -142,7 +142,8 @@ export async function getTickersWithLogging(
 ) {
   try {
     // Ensure mode is set (default to 'vn' if not specified)
-    const paramsWithMode = { ...params, mode: params?.mode || 'vn' }
+    const mode = (params?.mode || 'vn') as 'vn' | 'crypto'
+    const paramsWithMode = { ...params, mode }
     const response = await apiClientWithMetadata.getTickers(paramsWithMode) as unknown as RequestResult<TickersResponse>
 
     // Calculate raw API response bars (before normalization)
@@ -151,7 +152,7 @@ export async function getTickersWithLogging(
     // Normalize all ticker data timestamps to UTC ISO format and inject mode
     const normalizedResponse: TickersResponse = {}
     for (const [ticker, data] of Object.entries(response.data)) {
-      normalizedResponse[ticker] = normalizeStockDataTimestamps(data, paramsWithMode.mode)
+      normalizedResponse[ticker] = normalizeStockDataTimestamps(data, mode)
     }
 
     // Log success
@@ -287,3 +288,134 @@ export type {
 } from '@/integrations/aipriceaction/src'
 
 export { Interval } from '@/integrations/aipriceaction/src'
+
+/**
+ * Upload API helpers
+ */
+import { MARKDOWN_FILENAME } from './constants'
+
+/**
+ * Get upload API base URL dynamically based on environment
+ * Server-side (SSR): Use absolute URL (http://localhost:3000 in dev)
+ * Client-side (browser): Use Vite proxy (/aipriceaction-api in dev)
+ */
+function getUploadAPIBaseURL(): string {
+	if (import.meta.env.MODE === 'production') {
+		return 'https://api.aipriceaction.com'
+	}
+	// Development mode
+	if (typeof window === 'undefined') {
+		// SSR server needs absolute URL
+		return 'http://127.0.0.1:3000'
+	}
+	// Browser can use Vite proxy
+	return '/aipriceaction-api'
+}
+
+export interface UploadResponse {
+	success: boolean
+	session_id: string
+	files: Array<{
+		original_name: string
+		stored_name: string
+		size_bytes: number
+		content_type: string
+		url: string
+	}>
+}
+
+/**
+ * Upload markdown content to the API
+ * @param sessionId - UUID session identifier
+ * @param secret - Session secret for authentication
+ * @param content - Markdown content to upload
+ * @returns Upload response with file URL
+ */
+export async function uploadMarkdown(
+	sessionId: string,
+	secret: string,
+	content: string
+): Promise<UploadResponse> {
+	const formData = new FormData()
+	const blob = new Blob([content], { type: 'text/markdown' })
+	formData.append('file', blob, MARKDOWN_FILENAME)
+
+	const baseURL = getUploadAPIBaseURL()
+	const response = await fetch(
+		`${baseURL}/upload/markdown?session_id=${sessionId}&secret=${secret}`,
+		{
+			method: 'POST',
+			body: formData,
+		}
+	)
+
+	if (!response.ok) {
+		const error = await response.json()
+		throw new Error(error.error || `Upload failed: ${response.statusText}`)
+	}
+
+	return response.json()
+}
+
+/**
+ * Fetch markdown content from the API
+ * @param sessionId - UUID session identifier
+ * @returns Markdown content as string
+ */
+export async function fetchMarkdown(sessionId: string): Promise<string> {
+	const baseURL = getUploadAPIBaseURL()
+	const response = await fetch(
+		`${baseURL}/uploads/${sessionId}/markdown/${MARKDOWN_FILENAME}`
+	)
+
+	if (!response.ok) {
+		if (response.status === 404) {
+			throw new Error('Note not found')
+		}
+		throw new Error(`Failed to fetch note: ${response.statusText}`)
+	}
+
+	return response.text()
+}
+
+export interface DeleteSessionResponse {
+	success: boolean
+	message: string
+	session_id: string
+	files_deleted: {
+		markdown: number
+		images: number
+	}
+}
+
+/**
+ * Delete entire session (all files + metadata)
+ * @param sessionId - UUID session identifier
+ * @param secret - Session secret for authentication
+ * @returns Delete response with files count
+ */
+export async function deleteSession(
+	sessionId: string,
+	secret: string
+): Promise<DeleteSessionResponse> {
+	const baseURL = getUploadAPIBaseURL()
+	const response = await fetch(
+		`${baseURL}/uploads/${sessionId}?secret=${secret}`,
+		{
+			method: 'DELETE',
+		}
+	)
+
+	if (!response.ok) {
+		if (response.status === 403) {
+			throw new Error('Invalid secret - cannot delete session')
+		}
+		if (response.status === 404) {
+			throw new Error('Session not found')
+		}
+		const error = await response.json().catch(() => ({ error: response.statusText }))
+		throw new Error(error.error || `Delete failed: ${response.statusText}`)
+	}
+
+	return response.json()
+}

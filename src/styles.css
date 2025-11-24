@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 
 @import 'tw-animate-css';
 
@@ -135,4 +136,34 @@ code {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Markdown table styling */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.prose thead {
+  background-color: var(--muted);
+}
+
+.prose tbody tr:hover {
+  background-color: var(--accent);
+}
+
+.prose th,
+.prose td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+}
+
+.prose th {
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Add some spacing around tables */
+.prose table {
+  margin: 1.5rem 0;
 }

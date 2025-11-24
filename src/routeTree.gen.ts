@@ -15,8 +15,11 @@ import { Route as CryptoRouteImport } from './routes/crypto'
 import { Route as AlertRouteImport } from './routes/alert'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NotesIndexRouteImport } from './routes/notes/index'
 import { Route as DemoIndexRouteImport } from './routes/demo/index'
 import { Route as ChartIndexRouteImport } from './routes/chart/index'
+import { Route as NotesNewRouteImport } from './routes/notes/new'
+import { Route as NoteIdRouteImport } from './routes/note.$id'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as DemoTableRouteImport } from './routes/demo/table'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
@@ -60,6 +63,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotesIndexRoute = NotesIndexRouteImport.update({
+  id: '/notes/',
+  path: '/notes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoIndexRoute = DemoIndexRouteImport.update({
   id: '/demo/',
   path: '/demo/',
@@ -68,6 +76,16 @@ const DemoIndexRoute = DemoIndexRouteImport.update({
 const ChartIndexRoute = ChartIndexRouteImport.update({
   id: '/chart/',
   path: '/chart/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotesNewRoute = NotesNewRouteImport.update({
+  id: '/notes/new',
+  path: '/notes/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NoteIdRoute = NoteIdRouteImport.update({
+  id: '/note/$id',
+  path: '/note/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
@@ -140,8 +158,11 @@ export interface FileRoutesByFullPath {
   '/watch': typeof WatchRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/note/$id': typeof NoteIdRoute
+  '/notes/new': typeof NotesNewRoute
   '/chart': typeof ChartIndexRoute
   '/demo': typeof DemoIndexRoute
+  '/notes': typeof NotesIndexRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/form/address': typeof DemoFormAddressRoute
@@ -162,8 +183,11 @@ export interface FileRoutesByTo {
   '/watch': typeof WatchRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/note/$id': typeof NoteIdRoute
+  '/notes/new': typeof NotesNewRoute
   '/chart': typeof ChartIndexRoute
   '/demo': typeof DemoIndexRoute
+  '/notes': typeof NotesIndexRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/form/address': typeof DemoFormAddressRoute
@@ -185,8 +209,11 @@ export interface FileRoutesById {
   '/watch': typeof WatchRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/note/$id': typeof NoteIdRoute
+  '/notes/new': typeof NotesNewRoute
   '/chart/': typeof ChartIndexRoute
   '/demo/': typeof DemoIndexRoute
+  '/notes/': typeof NotesIndexRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/form/address': typeof DemoFormAddressRoute
@@ -209,8 +236,11 @@ export interface FileRouteTypes {
     | '/watch'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/note/$id'
+    | '/notes/new'
     | '/chart'
     | '/demo'
+    | '/notes'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/form/address'
@@ -231,8 +261,11 @@ export interface FileRouteTypes {
     | '/watch'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/note/$id'
+    | '/notes/new'
     | '/chart'
     | '/demo'
+    | '/notes'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/form/address'
@@ -253,8 +286,11 @@ export interface FileRouteTypes {
     | '/watch'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/note/$id'
+    | '/notes/new'
     | '/chart/'
     | '/demo/'
+    | '/notes/'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/form/address'
@@ -276,8 +312,11 @@ export interface RootRouteChildren {
   WatchRoute: typeof WatchRoute
   DemoTableRoute: typeof DemoTableRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  NoteIdRoute: typeof NoteIdRoute
+  NotesNewRoute: typeof NotesNewRoute
   ChartIndexRoute: typeof ChartIndexRoute
   DemoIndexRoute: typeof DemoIndexRoute
+  NotesIndexRoute: typeof NotesIndexRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoApiTqTodosRoute: typeof DemoApiTqTodosRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
@@ -334,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notes/': {
+      id: '/notes/'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof NotesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/': {
       id: '/demo/'
       path: '/demo'
@@ -346,6 +392,20 @@ declare module '@tanstack/react-router' {
       path: '/chart'
       fullPath: '/chart'
       preLoaderRoute: typeof ChartIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notes/new': {
+      id: '/notes/new'
+      path: '/notes/new'
+      fullPath: '/notes/new'
+      preLoaderRoute: typeof NotesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/note/$id': {
+      id: '/note/$id'
+      path: '/note/$id'
+      fullPath: '/note/$id'
+      preLoaderRoute: typeof NoteIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tanstack-query': {
@@ -444,8 +504,11 @@ const rootRouteChildren: RootRouteChildren = {
   WatchRoute: WatchRoute,
   DemoTableRoute: DemoTableRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  NoteIdRoute: NoteIdRoute,
+  NotesNewRoute: NotesNewRoute,
   ChartIndexRoute: ChartIndexRoute,
   DemoIndexRoute: DemoIndexRoute,
+  NotesIndexRoute: NotesIndexRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoApiTqTodosRoute: DemoApiTqTodosRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
