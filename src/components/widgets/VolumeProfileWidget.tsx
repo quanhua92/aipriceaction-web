@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star, HelpCircle, CalendarRange, Bell } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star, HelpCircle, CalendarRange, Bell, Info } from 'lucide-react'
 import { formatPrice, formatVolume, formatPercent } from '@/lib/format'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
@@ -59,6 +59,7 @@ export function VolumeProfileWidget({
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [profileData, setProfileData] = React.useState<VolumeProfileData | null>(null)
+  const [dailyData, setDailyData] = React.useState<any | null>(null)
   const [bins, setBins] = React.useState(10)
 
   // Date range mode state
@@ -89,7 +90,7 @@ export function VolumeProfileWidget({
 
         if (!cancelled && response[selectedTicker] && response[selectedTicker].length > 0) {
           const latestBar = response[selectedTicker][0]
-          const latestDate = (latestBar.time || latestBar.timestamp).split('T')[0]
+          const latestDate = latestBar.time.split('T')[0]
           console.log(`[VolumeProfileWidget] Setting selectedDate to last trading day: ${latestDate}`)
           setSelectedDate(latestDate)
         } else if (!cancelled) {
@@ -147,6 +148,7 @@ export function VolumeProfileWidget({
     async function fetchData() {
       setLoading(true)
       setError(null)
+      setDailyData(null) // Reset daily data
 
       try {
         // Determine if ticker is crypto
@@ -164,6 +166,27 @@ export function VolumeProfileWidget({
 
         if (!cancelled) {
           setProfileData(response.data)
+
+          // If no volume profile data and in single-day mode, fetch daily data as fallback
+          if (!response.data && !isRangeMode) {
+            console.log(`[VolumeProfileWidget] No volume profile data, fetching daily data as fallback`)
+            try {
+              const dailyResponse = await getTickers('VolumeProfileWidget.dailyFallback', {
+                symbol: selectedTicker,
+                end_date: selectedDate!,
+                limit: 1,
+                mode
+              })
+
+              if (!cancelled && dailyResponse[selectedTicker] && dailyResponse[selectedTicker].length > 0) {
+                setDailyData(dailyResponse[selectedTicker][0])
+                console.log(`[VolumeProfileWidget] Daily fallback data:`, dailyResponse[selectedTicker][0])
+              }
+            } catch (dailyErr) {
+              console.error(`[VolumeProfileWidget] Failed to fetch daily fallback:`, dailyErr)
+              // Don't set error, just leave dailyData as null
+            }
+          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -182,7 +205,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins, stockTickers, cryptoTickers])
+  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins, stockTickers, cryptoTickers, getTickers])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)
@@ -196,6 +219,7 @@ export function VolumeProfileWidget({
   }
 
   const handlePrevDate = () => {
+    if (!selectedDate) return
     const current = new Date(selectedDate)
     current.setDate(current.getDate() - 1)
     const newDate = current.toISOString().split('T')[0]
@@ -204,6 +228,7 @@ export function VolumeProfileWidget({
   }
 
   const handleNextDate = () => {
+    if (!selectedDate) return
     const current = new Date(selectedDate)
     current.setDate(current.getDate() + 1)
     const newDate = current.toISOString().split('T')[0]
@@ -258,9 +283,61 @@ export function VolumeProfileWidget({
     }
 
     if (!profileData) {
+      // If we have daily data as fallback (single-day mode only)
+      if (dailyData && !isRangeMode) {
+        const changeAmount = dailyData.close - dailyData.open
+        const changePercent = (changeAmount / dailyData.open) * 100
+        const isPositive = changeAmount >= 0
+
+        return (
+          <>
+            {/* Info banner */}
+            <div className="flex items-start gap-2 p-3 mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="text-xs text-blue-900 dark:text-blue-100">
+                <p className="font-semibold mb-1">{t('common.volumeProfile.noMinuteData')}</p>
+                <p className="text-blue-700 dark:text-blue-300">{t('common.volumeProfile.showingDailySummary')}</p>
+              </div>
+            </div>
+
+            {/* Daily OHLCV Summary */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.dailyOpen')}</p>
+                <p className="text-sm font-semibold">{formatPrice(dailyData.open, priceFormatData)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.dailyHigh')}</p>
+                <p className="text-sm font-semibold">{formatPrice(dailyData.high, priceFormatData)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.dailyLow')}</p>
+                <p className="text-sm font-semibold">{formatPrice(dailyData.low, priceFormatData)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.dailyClose')}</p>
+                <p className="text-sm font-semibold">{formatPrice(dailyData.close, priceFormatData)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.dailyVolume')}</p>
+                <p className="text-sm font-semibold">{formatVolume(dailyData.volume)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.volumeProfile.dailyChange')}</p>
+                <p className={`text-sm font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {isPositive ? '+' : ''}{formatPrice(changeAmount, priceFormatData)} ({isPositive ? '+' : ''}{formatPercent(changePercent)})
+                </p>
+              </div>
+            </div>
+          </>
+        )
+      }
+
+      // No data at all
       return (
         <div className="text-center text-muted-foreground py-8">
-          <p className="text-sm">No data available</p>
+          <p className="text-sm font-semibold mb-2">{t('common.volumeProfile.noDataAvailable')}</p>
+          <p className="text-xs">{t('common.volumeProfile.noDataDescription')}</p>
         </div>
       )
     }
@@ -435,7 +512,7 @@ export function VolumeProfileWidget({
               <PopoverContent className="w-auto p-2" align="center">
                 <Input
                   type="date"
-                  value={selectedDate}
+                  value={selectedDate || ''}
                   onChange={handleDateChange}
                   className="w-auto"
                 />
