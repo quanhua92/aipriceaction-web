@@ -373,10 +373,10 @@ function WatchPage() {
 												handleChartClick(ticker.symbol);
 											}
 										}}
-										className={`cursor-pointer rounded-lg transition-all ${
+										className={`rounded-lg overflow-hidden cursor-pointer transition-all ${
 											activeTicker === ticker.symbol
-												? 'ring-2 ring-primary ring-offset-2'
-												: 'hover:ring-1 hover:ring-muted-foreground/30'
+												? 'shadow-sm shadow-primary/10'
+												: 'hover:shadow-xs'
 										}`}
 									>
 										<TradingViewChart

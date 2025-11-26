@@ -42,6 +42,9 @@ function ChartPage() {
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
 
+	// Track which chart index is active for right sidebar
+	const [activeChartIndex, setActiveChartIndex] = React.useState<number>(0);
+
 	// Get ticker symbols array for navigation in fullscreen dialog
 	const tickerSymbols = React.useMemo(() => {
 		return sortedTickers.map((t) => t.symbol);
@@ -76,13 +79,25 @@ function ChartPage() {
 		setSortedTickers(tickers);
 	};
 
+	// Handler for clicking on a chart (updates right sidebar)
+	const handleChartClick = (index: number) => {
+		setActiveChartIndex(index);
+	};
+
 	// Get grid columns class based on gridColumns setting
 	const getGridClass = () => {
 		return `grid grid-cols-${layout.gridColumns}`;
 	};
 
-	// Get first chart ticker for syncing with BasicTickerWidget
-	const activeChartTicker = layout.chartTickers[0] || "VNINDEX";
+	// Get active chart ticker for syncing with BasicTickerWidget
+	const activeChartTicker = layout.chartTickers[activeChartIndex] || layout.chartTickers[0] || "VNINDEX";
+
+	// Reset activeChartIndex when chart count decreases below it
+	React.useEffect(() => {
+		if (activeChartIndex >= layout.chartCount) {
+			setActiveChartIndex(0);
+		}
+	}, [layout.chartCount, activeChartIndex]);
 
 	return (
 		<div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_380px] min-h-screen">
@@ -185,7 +200,17 @@ function ChartPage() {
 							return (
 								<div
 									key={index}
-									className="rounded-lg overflow-hidden min-h-[250px] lg:min-h-[300px]"
+									onClick={() => handleChartClick(index)}
+									onKeyDown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											handleChartClick(index);
+										}
+									}}
+									className={`rounded-lg overflow-hidden min-h-[250px] lg:min-h-[300px] cursor-pointer transition-all ${
+										activeChartIndex === index
+											? 'shadow-sm shadow-primary/10'
+											: 'hover:shadow-xs'
+									}`}
 								>
 									<TradingViewChart
 										ticker={ticker}
