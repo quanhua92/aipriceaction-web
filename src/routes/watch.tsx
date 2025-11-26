@@ -3,6 +3,8 @@ import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
+import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
+import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { ALL_WATCHLIST_NAME, CUSTOM_WATCHLISTS_STORAGE_KEY } from "@/lib/constants";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -15,6 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Upload } from "lucide-react";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 import type { Interval } from "@/lib/api-client";
@@ -45,6 +48,9 @@ function WatchPage() {
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
+
+	// Active ticker for right sidebar (last clicked/interacted)
+	const [activeTicker, setActiveTicker] = React.useState<string>("VNINDEX");
 
 	// Calculate pagination
 	const totalPages = Math.ceil(sortedTickers.length / pageSize);
@@ -97,7 +103,13 @@ function WatchPage() {
 	};
 
 	const handleSelectTicker = (symbol: string) => {
-		setFullscreenTicker(symbol);
+		setActiveTicker(symbol); // Update right sidebar
+		setFullscreenTicker(symbol); // Open fullscreen dialog
+	};
+
+	// Handler for clicking on a chart (updates right sidebar only, no fullscreen)
+	const handleChartClick = (symbol: string) => {
+		setActiveTicker(symbol);
 	};
 
 	const handleCloseFullscreen = () => {
@@ -204,9 +216,9 @@ function WatchPage() {
 	}[columns];
 
 	return (
-		<div className="space-y-6">
-			{/* Header */}
-			<div className="p-4 md:p-6">
+		<div className="flex flex-col min-h-screen">
+			{/* Header - Full Width */}
+			<div className="p-4 md:p-6 border-b">
 				<div className="flex items-center justify-between mb-2">
 					<h1 className="text-2xl font-bold">{t('common.watch.title')}</h1>
 					<div className="flex gap-2">
@@ -243,166 +255,184 @@ function WatchPage() {
 				/>
 			</div>
 
-			{/* Watchlist + Controls Section */}
-			<div className="p-4 md:p-6 border-t">
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-					{/* Left: BasicWatchList */}
-					<div className="lg:col-span-1">
-						<BasicWatchList
-							defaultGroup={ALL_WATCHLIST_NAME}
-							maxHeight="500px"
-							showMarketIndices={true}
-							showControls={false}
-							onSelectTicker={handleSelectTicker}
-							onSectorChange={handleSectorChange}
-							onSortedTickersChange={handleSortedTickersChange}
-						/>
+			{/* 3-Column Layout */}
+			<div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_380px] flex-1">
+				{/* Left Sidebar - Watchlist */}
+				<div className="h-auto lg:h-full border-r bg-background p-2 lg:p-4 flex flex-col overflow-hidden">
+					<div className="flex items-center justify-between mb-2 lg:mb-4">
+						<h2 className="text-base lg:text-lg font-semibold">Watchlist</h2>
+					</div>
+					<BasicWatchList
+						defaultGroup={ALL_WATCHLIST_NAME}
+						maxHeight="calc(100vh - 12rem)"
+						showMarketIndices={true}
+						showControls={false}
+						onSelectTicker={handleSelectTicker}
+						onSectorChange={handleSectorChange}
+						onSortedTickersChange={handleSortedTickersChange}
+						className="flex-1"
+					/>
+				</div>
+
+				{/* Middle Column - Charts */}
+				<div className="flex flex-col overflow-hidden">
+					{/* Chart Controls Header */}
+					<div className="border-b bg-background p-2 lg:p-4">
+						<div className="flex flex-wrap items-center gap-2 lg:gap-4">
+							{/* Charts per page selector */}
+							<div className="flex items-center gap-1">
+								<span className="text-xs lg:text-sm text-muted-foreground mr-1 lg:mr-2 hidden sm:inline">
+									Charts:
+								</span>
+								{[10, 20, 30].map((size) => (
+									<Button
+										key={size}
+										variant={pageSize === size ? "default" : "outline"}
+										size="sm"
+										onClick={() => handlePageSizeChange(String(size))}
+										className="h-7 w-10 lg:h-8 lg:w-12 p-0 text-xs lg:text-sm"
+									>
+										{size}
+									</Button>
+								))}
+							</div>
+
+							<Separator orientation="vertical" className="h-4 lg:h-6 hidden sm:block" />
+
+							{/* Column selector */}
+							<div className="flex items-center gap-1">
+								<span className="text-xs lg:text-sm text-muted-foreground mr-1 lg:mr-2 hidden sm:inline">
+									Columns:
+								</span>
+								{[1, 2, 3, 4, 5, 6].map((col) => (
+									<Button
+										key={col}
+										variant={columns === col ? "default" : "outline"}
+										size="sm"
+										onClick={() => handleColumnsChange(String(col))}
+										className="h-7 w-7 lg:h-8 lg:w-8 p-0 text-xs lg:text-sm"
+									>
+										{col}
+									</Button>
+								))}
+							</div>
+
+							<Separator orientation="vertical" className="h-4 lg:h-6 hidden sm:block" />
+
+							{/* Interval selector */}
+							<div className="flex items-center gap-1">
+								<span className="text-xs lg:text-sm text-muted-foreground mr-1 lg:mr-2 hidden sm:inline">
+									Interval:
+								</span>
+								<Select
+									value={globalSettings.interval}
+									onValueChange={handleIntervalChange}
+								>
+									<SelectTrigger className="w-24 h-7 lg:h-8 text-xs lg:text-sm">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="1m">1m</SelectItem>
+										<SelectItem value="5m">5m</SelectItem>
+										<SelectItem value="15m">15m</SelectItem>
+										<SelectItem value="30m">30m</SelectItem>
+										<SelectItem value="1H">1H</SelectItem>
+										<SelectItem value="4H">4H</SelectItem>
+										<SelectItem value="1D">1D</SelectItem>
+										<SelectItem value="1W">1W</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
 					</div>
 
-					{/* Right: Controls Panel */}
-					<div className="lg:col-span-2 space-y-4">
-						{/* Global Interval Control */}
-						<div className="p-4 border rounded-lg bg-muted/30">
-							<h3 className="text-sm font-semibold mb-3">{t('common.watch.globalSettings')}</h3>
-							<div className="flex flex-wrap items-center gap-4">
-								<div className="flex items-center gap-2">
-									<span className="text-sm font-medium text-muted-foreground">{t('common.watch.interval')}:</span>
-									<Select
-										value={globalSettings.interval}
-										onValueChange={handleIntervalChange}
+					{/* Charts Area */}
+					<div className="flex-1 p-2 lg:p-4 overflow-auto">
+						{/* Pagination Top */}
+						<div className="mb-4">
+							<PaginationControls
+								currentPage={currentPage}
+								totalPages={totalPages}
+								onPrevious={handlePreviousPage}
+								onNext={handleNextPage}
+								onFirst={handleFirstPage}
+								onLast={handleLastPage}
+								t={t}
+							/>
+						</div>
+
+						{/* Chart Grid */}
+						{paginatedTickers.length > 0 ? (
+							<div className={`grid ${gridColsClass} gap-4`}>
+								{paginatedTickers.map((ticker) => (
+									<div
+										key={ticker.symbol}
+										onClick={() => handleChartClick(ticker.symbol)}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') {
+												handleChartClick(ticker.symbol);
+											}
+										}}
+										className={`cursor-pointer rounded-lg transition-all ${
+											activeTicker === ticker.symbol
+												? 'ring-2 ring-primary ring-offset-2'
+												: 'hover:ring-1 hover:ring-muted-foreground/30'
+										}`}
 									>
-										<SelectTrigger className="w-28 h-8">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="1m">1 Minute</SelectItem>
-											<SelectItem value="5m">5 Minutes</SelectItem>
-											<SelectItem value="15m">15 Minutes</SelectItem>
-											<SelectItem value="30m">30 Minutes</SelectItem>
-											<SelectItem value="1H">1 Hour</SelectItem>
-											<SelectItem value="4H">4 Hours</SelectItem>
-											<SelectItem value="1D">1 Day</SelectItem>
-											<SelectItem value="1W">1 Week</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
+										<TradingViewChart
+											initialTicker={ticker.symbol}
+											showControls={true}
+											height={300}
+										/>
+									</div>
+								))}
 							</div>
+						) : (
+							<div className="text-center py-12 text-muted-foreground">
+								<p>{t('common.watch.noTickersToDisplay')}</p>
+								<p className="text-sm mt-1">{t('common.watch.selectWatchlist')}</p>
+							</div>
+						)}
+
+						{/* Pagination Bottom */}
+						<div className="mt-4">
+							<PaginationControls
+								currentPage={currentPage}
+								totalPages={totalPages}
+								onPrevious={handlePreviousPage}
+								onNext={handleNextPage}
+								onFirst={handleFirstPage}
+								onLast={handleLastPage}
+								t={t}
+							/>
 						</div>
 
-						{/* Page Size + Columns Controls */}
-						<div className="p-4 border rounded-lg bg-muted/30">
-							<h3 className="text-sm font-semibold mb-3">{t('common.watch.gridLayout')}</h3>
-							<div className="space-y-3">
-								{/* Page Size */}
-								<div className="flex items-center gap-2">
-									<span className="text-sm font-medium text-muted-foreground min-w-[100px]">
-										{t('common.watch.chartsPerPage')}:
-									</span>
-									<div className="flex gap-1">
-										{[10, 20, 30].map((size) => (
-											<Button
-												key={size}
-												variant={pageSize === size ? "default" : "outline"}
-												size="sm"
-												onClick={() => handlePageSizeChange(String(size))}
-												className="h-8 px-4"
-											>
-												{size}
-											</Button>
-										))}
-									</div>
-								</div>
-
-								{/* Columns - hidden on mobile */}
-								<div className="hidden md:flex items-center gap-2">
-									<span className="text-sm font-medium text-muted-foreground min-w-[100px]">
-										{t('common.watch.columns')}:
-									</span>
-									<div className="flex gap-1">
-										{[1, 2, 3, 4, 5, 6].map((col) => (
-											<Button
-												key={col}
-												variant={columns === col ? "default" : "outline"}
-												size="sm"
-												onClick={() => handleColumnsChange(String(col))}
-												className="h-8 px-3"
-											>
-												{col}
-											</Button>
-										))}
-									</div>
-								</div>
-							</div>
-						</div>
-
-						{/* Stats */}
-						<div className="p-4 border rounded-lg bg-muted/30">
-							<div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-								<div>
-									<span className="text-muted-foreground">{t('common.watch.sector')}: </span>
-									<span className="font-semibold">{selectedSector}</span>
-								</div>
-								<div>
-									<span className="text-muted-foreground">{t('common.watch.totalTickers')}: </span>
-									<span className="font-semibold">{sortedTickers.length}</span>
-								</div>
-								<div>
-									<span className="text-muted-foreground">{t('common.watch.page')}: </span>
-									<span className="font-semibold">
-										{totalPages > 0 ? currentPage + 1 : 0} / {totalPages}
-									</span>
-								</div>
-							</div>
+						{/* Stats Bar */}
+						<div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground mt-4">
+							<span>{t('common.watch.sector')}: <strong className="text-foreground">{selectedSector}</strong></span>
+							<span>{t('common.watch.totalTickers')}: <strong className="text-foreground">{sortedTickers.length}</strong></span>
+							<span>{t('common.watch.page')}: <strong className="text-foreground">{totalPages > 0 ? currentPage + 1 : 0}/{totalPages}</strong></span>
 						</div>
 					</div>
 				</div>
-			</div>
 
-			{/* Pagination Controls - Top */}
-			<div className="px-4 md:px-6">
-				<PaginationControls
-					currentPage={currentPage}
-					totalPages={totalPages}
-					onPrevious={handlePreviousPage}
-					onNext={handleNextPage}
-					onFirst={handleFirstPage}
-					onLast={handleLastPage}
-					t={t}
-				/>
-			</div>
-
-			{/* Chart Grid */}
-			<div className="p-4 md:p-6 border-t">
-				{paginatedTickers.length > 0 ? (
-					<div className={`grid ${gridColsClass} gap-4`}>
-						{paginatedTickers.map((ticker) => (
-							<TradingViewChart
-								key={ticker.symbol}
-								initialTicker={ticker.symbol}
-								showControls={true}
-								height={300}
-							/>
-						))}
+				{/* Right Sidebar - Ticker Info */}
+				<div className="h-auto lg:h-full border-l bg-background p-2 lg:p-4 flex flex-col overflow-hidden">
+					<div className="flex items-center justify-between mb-2 lg:mb-4">
+						<h2 className="text-base lg:text-lg font-semibold">Ticker Info</h2>
 					</div>
-				) : (
-					<div className="text-center py-12 text-muted-foreground">
-						<p>{t('common.watch.noTickersToDisplay')}</p>
-						<p className="text-sm mt-1">{t('common.watch.selectWatchlist')}</p>
+					<div className="overflow-auto space-y-4">
+						<BasicTickerWidget
+							ticker={activeTicker}
+							onTickerChange={handleSelectTicker}
+						/>
+						<VolumeProfileWidget
+							ticker={activeTicker}
+							onTickerChange={handleSelectTicker}
+							maxHeight="600px"
+						/>
 					</div>
-				)}
-			</div>
-
-			{/* Pagination Controls - Bottom */}
-			<div className="px-4 md:px-6 pb-6">
-				<PaginationControls
-					currentPage={currentPage}
-					totalPages={totalPages}
-					onPrevious={handlePreviousPage}
-					onNext={handleNextPage}
-					onFirst={handleFirstPage}
-					onLast={handleLastPage}
-					t={t}
-				/>
+				</div>
 			</div>
 
 			{/* Fullscreen Dialog */}
