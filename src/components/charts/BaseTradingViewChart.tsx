@@ -296,7 +296,7 @@ export function BaseTradingViewChart({
 			vertAlign: 'center',
 			lines: [{
 				text: 'aipriceaction.com',
-				color: 'rgba(255, 255, 255, 0.12)',
+				color: 'rgba(113, 113, 122, 0.15)',
 				fontSize: 20,
 			}],
 		})
