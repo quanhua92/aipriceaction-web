@@ -15,6 +15,7 @@ import {
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort } from '@/lib/format'
+import { type StockData } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -89,6 +90,7 @@ export function BaseTradingViewChart({
 		to: Time
 	} | null>(null)
 	const [isDataInitialized, setIsDataInitialized] = useState(false)
+	const [crosshairData, setCrosshairData] = useState<StockData | null>(null)
 
 	// Reset data initialization flag when data changes
 	// Note: We intentionally preserve viewport position for comparison across tickers
@@ -365,6 +367,7 @@ export function BaseTradingViewChart({
 				param.point.y > chartContainerRef.current.clientHeight
 			) {
 				tooltip.style.display = 'none'
+				setCrosshairData(null)
 				return
 			}
 
@@ -395,6 +398,7 @@ export function BaseTradingViewChart({
 
 			if (!candleData) {
 				tooltip.style.display = 'none'
+				setCrosshairData(null)
 				return
 			}
 
@@ -425,6 +429,9 @@ export function BaseTradingViewChart({
 				(d) => d.time === param.time,
 			)
 			const currentDataPoint = currentIndex >= 0 ? data[currentIndex] : null
+
+			// Update crosshair data for overlay
+			setCrosshairData(currentDataPoint)
 
 			// Use close_changed from StockData
 			let priceChangePercent = ''
@@ -676,31 +683,35 @@ export function BaseTradingViewChart({
 					className="absolute inset-0"
 				/>
 				
-				{/* Overlay for current data */}
-				{latestData && (
-					<div
-						className="absolute top-3 left-3 text-zinc-100 text-xs z-10 pointer-events-none"
-						style={{
-							WebkitFontSmoothing: 'antialiased',
-							MozOsxFontSmoothing: 'grayscale',
-						}}
-					>
-						<span className={cn("font-semibold", (latestData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{latestData.symbol}</span> <span className={cn((latestData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(latestData.close, latestData)}</span> <span className={cn((latestData.close_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.close_changed ?? 0)}</span>
-						<span className="mx-1"></span>
-						<span className={cn((latestData.volume_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(latestData.volume)}</span> <span className={cn((latestData.volume_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(latestData.volume_changed ?? 0)}</span>
-						<span className="text-zinc-400 ml-2 text-xs">
-							{(() => {
-								try {
-									if (!latestData.time || typeof latestData.time !== 'string') return '--'
-									const date = parseUTCISOString(latestData.time)
-									return formatToVietnamDateShort(date)
-								} catch {
-									return '--'
-								}
-							})()}
-						</span>
-					</div>
-				)}
+				{/* Overlay for current/crosshair data */}
+				{(() => {
+					const displayData = crosshairData ?? latestData
+					if (!displayData) return null
+					return (
+						<div
+							className="absolute top-3 left-3 text-zinc-100 text-xs z-10 pointer-events-none"
+							style={{
+								WebkitFontSmoothing: 'antialiased',
+								MozOsxFontSmoothing: 'grayscale',
+							}}
+						>
+							<span className={cn("font-semibold", (displayData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{displayData.symbol}</span> <span className={cn((displayData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(displayData.close, displayData)}</span> <span className={cn((displayData.close_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(displayData.close_changed ?? 0)}</span>
+							<span className="mx-1"></span>
+							<span className={cn((displayData.volume_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(displayData.volume)}</span> <span className={cn((displayData.volume_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(displayData.volume_changed ?? 0)}</span>
+							<span className="text-zinc-400 ml-2 text-xs">
+								{(() => {
+									try {
+										if (!displayData.time || typeof displayData.time !== 'string') return '--'
+										const date = parseUTCISOString(displayData.time)
+										return formatToVietnamDateShort(date)
+									} catch {
+										return '--'
+									}
+								})()}
+							</span>
+						</div>
+					)
+				})()}
 			</div>
 		</div>
 	)
