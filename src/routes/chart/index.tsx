@@ -42,8 +42,8 @@ function ChartPage() {
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
 
-	// Track which chart index is active for right sidebar
-	const [activeChartIndex, setActiveChartIndex] = React.useState<number>(0);
+	// Track active ticker for right sidebar (by symbol, like Watch page)
+	const [activeTicker, setActiveTicker] = React.useState<string>("VNINDEX");
 
 	// Get ticker symbols array for navigation in fullscreen dialog
 	const tickerSymbols = React.useMemo(() => {
@@ -64,6 +64,7 @@ function ChartPage() {
 
 	// Handler for watchlist ticker selection - always update first chart
 	const handleSelectTicker = (symbol: string) => {
+		setActiveTicker(symbol); // Update right sidebar
 		setLayout((prev) => {
 			const newTickers = [...prev.chartTickers];
 			newTickers[0] = symbol; // Always update first chart
@@ -80,8 +81,8 @@ function ChartPage() {
 	};
 
 	// Handler for clicking on a chart (updates right sidebar)
-	const handleChartClick = (index: number) => {
-		setActiveChartIndex(index);
+	const handleChartClick = (ticker: string) => {
+		setActiveTicker(ticker);
 	};
 
 	// Get grid columns class based on gridColumns setting
@@ -89,15 +90,13 @@ function ChartPage() {
 		return `grid grid-cols-${layout.gridColumns}`;
 	};
 
-	// Get active chart ticker for syncing with BasicTickerWidget
-	const activeChartTicker = layout.chartTickers[activeChartIndex] || layout.chartTickers[0] || "VNINDEX";
-
-	// Reset activeChartIndex when chart count decreases below it
+	// Reset activeTicker when it's no longer in displayed charts
 	React.useEffect(() => {
-		if (activeChartIndex >= layout.chartCount) {
-			setActiveChartIndex(0);
+		const currentTickers = layout.chartTickers.slice(0, layout.chartCount);
+		if (!currentTickers.includes(activeTicker)) {
+			setActiveTicker(layout.chartTickers[0] || "VNINDEX");
 		}
-	}, [layout.chartCount, activeChartIndex]);
+	}, [layout.chartCount, layout.chartTickers, activeTicker]);
 
 	return (
 		<div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_380px] min-h-screen">
@@ -200,14 +199,14 @@ function ChartPage() {
 							return (
 								<div
 									key={index}
-									onClick={() => handleChartClick(index)}
+									onClick={() => handleChartClick(ticker)}
 									onKeyDown={(e) => {
 										if (e.key === 'Enter' || e.key === ' ') {
-											handleChartClick(index);
+											handleChartClick(ticker);
 										}
 									}}
 									className={`rounded-lg overflow-hidden min-h-[250px] lg:min-h-[300px] cursor-pointer transition-all ${
-										activeChartIndex === index
+										activeTicker === ticker
 											? 'shadow-sm shadow-primary/10'
 											: 'hover:shadow-xs'
 									}`}
@@ -238,11 +237,11 @@ function ChartPage() {
 				</div>
 				<div className="overflow-auto space-y-4">
 					<BasicTickerWidget
-						ticker={activeChartTicker}
+						ticker={activeTicker}
 						onTickerChange={handleSelectTicker}
 					/>
 					<VolumeProfileWidget
-						ticker={activeChartTicker}
+						ticker={activeTicker}
 						onTickerChange={handleSelectTicker}
 						maxHeight="600px"
 					/>
