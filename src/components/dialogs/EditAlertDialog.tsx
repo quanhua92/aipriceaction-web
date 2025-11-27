@@ -224,6 +224,18 @@ export function EditAlertDialog({
               </div>
             </div>
 
+            {/* Triggered Info */}
+            {alert.triggered && alert.triggered_at && (
+              <div className="p-3 rounded-md border border-green-500/30 bg-green-500/10 space-y-1">
+                <div className="text-xs text-green-700 dark:text-green-400">
+                  ✓ {t('dialogs.editAlert.triggeredAt')}: {formatToVietnamDate(parseUTCISOString(alert.triggered_at))}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('dialogs.editAlert.triggeredReason')} {tickerData ? formatPrice(alert.target_price, tickerData) : alert.target_price}
+                </div>
+              </div>
+            )}
+
             {/* Price Fields - 2 Column Grid */}
             <div className="grid grid-cols-2 gap-3">
               {/* Current Price - Left Column */}

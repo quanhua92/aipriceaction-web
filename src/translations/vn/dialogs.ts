@@ -64,5 +64,7 @@ export default {
     created: 'Tạo Lúc',
     status: 'Trạng Thái',
     deleteConfirm: 'Bạn có chắc chắn? Không thể hoàn tác.',
+    triggeredAt: 'Kích hoạt lúc',
+    triggeredReason: 'Giá chạm mục tiêu tại',
   },
 }

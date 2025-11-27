@@ -64,5 +64,7 @@ export default {
     created: 'Created',
     status: 'Status',
     deleteConfirm: 'Are you sure? This cannot be undone.',
+    triggeredAt: 'Triggered',
+    triggeredReason: 'Price hit target at',
   },
 }
