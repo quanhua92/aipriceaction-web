@@ -186,6 +186,7 @@ export default {
     addAlert: 'Thêm Cảnh Báo',
     editAlert: 'Sửa Cảnh Báo',
     deleteAlert: 'Xóa Cảnh Báo',
+    resetAlert: 'Đặt Lại',
     noAlerts: 'Chưa có cảnh báo',
     noAlertsDescription: 'Nhấn biểu tượng chuông trên biểu đồ để thêm cảnh báo đầu tiên',
   },

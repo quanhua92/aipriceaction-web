@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Trash2, Bell } from 'lucide-react'
+import { Trash2, Bell, RotateCcw } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -47,7 +47,6 @@ export function EditAlertDialog({
   const [targetPrice, setTargetPrice] = React.useState(String(alert.target_price))
   const [alertType, setAlertType] = React.useState<Alert['alert_type']>(alert.alert_type)
   const [note, setNote] = React.useState(alert.note || '')
-  const [triggered, setTriggered] = React.useState(alert.triggered)
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
   const [error, setError] = React.useState('')
 
@@ -101,7 +100,6 @@ export function EditAlertDialog({
       setTargetPrice(String(alert.target_price))
       setAlertType(alert.alert_type)
       setNote(alert.note || '')
-      setTriggered(alert.triggered)
       setShowDeleteConfirm(false)
       setError('')
     }
@@ -125,8 +123,6 @@ export function EditAlertDialog({
         target_price: target,
         alert_type: alertType,
         note: note.trim() || undefined,
-        triggered,
-        triggered_at: triggered ? alert.triggered_at : undefined,
       })
 
       setOpen(false)
@@ -148,6 +144,27 @@ export function EditAlertDialog({
       }
     } catch (err) {
       console.error('Failed to delete alert:', err)
+    }
+  }
+
+  const handleReset = () => {
+    if (!currentPrice) return
+
+    try {
+      updateAlert(alert.id, {
+        triggered: false,
+        triggered_at: undefined,
+        created_at: new Date().toISOString(),
+        price_at_creation: currentPrice,
+        last_checked_bar_time: undefined,
+      })
+
+      setOpen(false)
+      if (onAlertUpdated) {
+        onAlertUpdated()
+      }
+    } catch (err) {
+      console.error('Failed to reset alert:', err)
     }
   }
 
@@ -201,26 +218,22 @@ export function EditAlertDialog({
                 </div>
               </div>
 
-              {/* Status (Toggleable) */}
+              {/* Status (Read-only) */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">
+                <label className="text-sm font-medium text-muted-foreground">
                   {t('dialogs.editAlert.status')}
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setTriggered(!triggered)}
-                  className="w-full px-3 py-2 rounded-md border bg-muted/30 hover:bg-muted/50 transition-colors text-left"
-                >
-                  {triggered ? (
-                    <span className="text-xs font-medium text-green-600 dark:text-green-500">
+                <div className="px-3 py-2 rounded-md border bg-muted/30 text-xs">
+                  {alert.triggered ? (
+                    <span className="font-medium text-green-600 dark:text-green-500">
                       ✓ {t('widgets.basicAlert.status.triggered')}
                     </span>
                   ) : (
-                    <span className="text-xs font-medium">
+                    <span className="font-medium">
                       🔔 {t('widgets.basicAlert.status.active')}
                     </span>
                   )}
-                </button>
+                </div>
               </div>
             </div>
 
@@ -397,18 +410,33 @@ export function EditAlertDialog({
             </Button>
           </div>
 
-          {/* Delete Alert Section */}
+          {/* Reset & Delete Alert Section */}
           <div className="w-full border-t pt-4">
             {!showDeleteConfirm ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-2" />
-                {t('common.alerts.deleteAlert')}
-              </Button>
+              <div className="flex gap-2">
+                {/* Reset Alert - only show for triggered alerts */}
+                {alert.triggered && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleReset}
+                    disabled={!currentPrice}
+                    className="flex-1 text-blue-600 hover:text-blue-600 hover:bg-blue-600/10"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5 mr-2" />
+                    {t('common.alerts.resetAlert')}
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className={`${alert.triggered ? 'flex-1' : 'w-full'} text-destructive hover:text-destructive hover:bg-destructive/10`}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-2" />
+                  {t('common.alerts.deleteAlert')}
+                </Button>
+              </div>
             ) : (
               <div className="space-y-2">
                 <p className="text-xs text-center text-muted-foreground">

@@ -186,6 +186,7 @@ export default {
     addAlert: 'Add Alert',
     editAlert: 'Edit Alert',
     deleteAlert: 'Delete Alert',
+    resetAlert: 'Reset Alert',
     noAlerts: 'No alerts yet',
     noAlertsDescription: 'Click the bell icon on any chart to add your first alert',
   },
