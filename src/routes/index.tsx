@@ -116,7 +116,7 @@ function HomePage() {
 
 			{/* Section 1: Charts Grid */}
 			<div className="p-4 md:p-6 border-t">
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+				<div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-4">
 					<TradingViewChart ticker={chartTickers[0]} onTickerChange={handleChartTickerChange(0)} />
 					<TradingViewChart ticker={chartTickers[1]} onTickerChange={handleChartTickerChange(1)} />
 					<TradingViewChart ticker={chartTickers[2]} onTickerChange={handleChartTickerChange(2)} />
