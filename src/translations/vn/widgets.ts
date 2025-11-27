@@ -1,4 +1,7 @@
 export default {
+  recentAlerts: {
+    title: 'Cảnh báo gần đây',
+  },
   basicAlert: {
     search: 'Tìm cảnh báo...',
     filters: {

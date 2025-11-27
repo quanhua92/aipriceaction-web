@@ -5,6 +5,7 @@ import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
+import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { ALL_WATCHLIST_NAME, HOME_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -95,6 +96,9 @@ function HomePage() {
 					</div>
 				</div>
 			</div>
+
+			{/* Section: Recent Triggered Alerts */}
+			<RecentAlertsWidget />
 
 			{/* Section: Ticker Info + Volume Profile */}
 			<div className="p-4 md:p-6">

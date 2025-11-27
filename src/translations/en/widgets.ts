@@ -1,4 +1,7 @@
 export default {
+  recentAlerts: {
+    title: 'Recent Alerts',
+  },
   basicAlert: {
     search: 'Search alerts...',
     filters: {
