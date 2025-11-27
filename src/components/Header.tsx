@@ -9,10 +9,10 @@ import {
   Zap,
   Brain,
   Eye,
-  Globe,
   Coins,
   Bell,
   FileText,
+  Settings,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
@@ -24,6 +24,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Toggle } from '@/components/ui/toggle'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -281,15 +283,35 @@ export default function Header() {
             <Zap size={18} />
           </Toggle>
 
-          <Toggle
-            pressed={false}
-            onClick={toggleLanguage}
-            className="border border-gray-600"
-            aria-label="Toggle language"
-          >
-            <Globe size={18} />
-            <span className="ml-1.5 text-xs font-medium">{language.toUpperCase()}</span>
-          </Toggle>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Toggle
+                pressed={false}
+                className="border border-gray-600"
+                aria-label="Settings"
+                title="Settings"
+              >
+                <Settings size={18} />
+              </Toggle>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-48 p-2">
+              <div className="space-y-1">
+                <ChartSettingsDialog>
+                  <button className="w-full flex items-center justify-between px-3 py-2 text-sm rounded hover:bg-muted transition-colors">
+                    <span>Chart Settings</span>
+                    <Settings size={16} />
+                  </button>
+                </ChartSettingsDialog>
+                <button
+                  onClick={toggleLanguage}
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm rounded hover:bg-muted transition-colors"
+                >
+                  <span>Language</span>
+                  <span className="font-medium">{language.toUpperCase()}</span>
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </header>
     </>
