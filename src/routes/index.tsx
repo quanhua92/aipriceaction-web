@@ -15,7 +15,7 @@ import type { Ticker } from "@/components/lists/SortableTickerList";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
-const DEFAULT_HOME_TICKERS = ['VNINDEX', 'VIC', 'STB', 'VIX'] as const;
+const DEFAULT_HOME_TICKERS = ['VNINDEX', 'VIC', 'STB', 'MSB'] as const;
 
 function HomePage() {
 	const { t } = useTranslation();
@@ -31,8 +31,7 @@ function HomePage() {
 				}
 			} catch {}
 		}
-		// Save defaults on first load
-		localStorage.setItem(HOME_CHART_TICKERS_STORAGE_KEY, JSON.stringify(DEFAULT_HOME_TICKERS));
+		// Don't save defaults - only save when user changes a ticker
 		return [...DEFAULT_HOME_TICKERS];
 	});
 
