@@ -65,6 +65,11 @@ export const ALERTS_STORAGE_KEY = 'alerts'
 export const NOTES_STORAGE_KEY = 'aipriceaction-notes'
 
 /**
+ * LocalStorage key for home page chart tickers
+ */
+export const HOME_CHART_TICKERS_STORAGE_KEY = 'home-chart-tickers'
+
+/**
  * Fixed filename for markdown content
  */
 export const MARKDOWN_FILENAME = 'content.md'
