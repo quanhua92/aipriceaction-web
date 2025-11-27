@@ -47,6 +47,7 @@ export function EditAlertDialog({
   const [targetPrice, setTargetPrice] = React.useState(String(alert.target_price))
   const [alertType, setAlertType] = React.useState<Alert['alert_type']>(alert.alert_type)
   const [note, setNote] = React.useState(alert.note || '')
+  const [triggered, setTriggered] = React.useState(alert.triggered)
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
   const [error, setError] = React.useState('')
 
@@ -100,6 +101,7 @@ export function EditAlertDialog({
       setTargetPrice(String(alert.target_price))
       setAlertType(alert.alert_type)
       setNote(alert.note || '')
+      setTriggered(alert.triggered)
       setShowDeleteConfirm(false)
       setError('')
     }
@@ -123,6 +125,8 @@ export function EditAlertDialog({
         target_price: target,
         alert_type: alertType,
         note: note.trim() || undefined,
+        triggered,
+        triggered_at: triggered ? alert.triggered_at : undefined,
       })
 
       setOpen(false)
@@ -197,27 +201,26 @@ export function EditAlertDialog({
                 </div>
               </div>
 
-              {/* Status (Read-only) */}
+              {/* Status (Toggleable) */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-sm font-medium">
                   {t('dialogs.editAlert.status')}
                 </label>
-                <div className="px-3 py-2 rounded-md border bg-muted/30">
-                  {alert.triggered ? (
+                <button
+                  type="button"
+                  onClick={() => setTriggered(!triggered)}
+                  className="w-full px-3 py-2 rounded-md border bg-muted/30 hover:bg-muted/50 transition-colors text-left"
+                >
+                  {triggered ? (
                     <span className="text-xs font-medium text-green-600 dark:text-green-500">
                       ✓ {t('widgets.basicAlert.status.triggered')}
-                      {alert.triggered_at && (
-                        <span className="text-xs text-muted-foreground block mt-1">
-                          ({formatToVietnamDate(parseUTCISOString(alert.triggered_at))})
-                        </span>
-                      )}
                     </span>
                   ) : (
                     <span className="text-xs font-medium">
                       🔔 {t('widgets.basicAlert.status.active')}
                     </span>
                   )}
-                </div>
+                </button>
               </div>
             </div>
 
