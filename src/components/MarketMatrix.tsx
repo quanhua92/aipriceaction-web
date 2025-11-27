@@ -620,7 +620,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                 value={selectedWatchlist}
                 onValueChange={handleWatchlistChange}
                 placeholder="Select watchlist"
-                className="w-[200px]"
+                className="w-36"
                 refreshKey={refreshKey}
               />
 

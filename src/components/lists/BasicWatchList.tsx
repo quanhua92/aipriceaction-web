@@ -313,7 +313,7 @@ export function BasicWatchList({
             value={selectedGroup}
             onValueChange={handleGroupChange}
             placeholder="Select group"
-            className="w-40 h-8 text-sm font-bold hover:bg-muted/50 transition-colors duration-200"
+            className="w-36 h-8 text-sm font-bold hover:bg-muted/50 transition-colors duration-200"
             refreshKey={refreshKey}
           />
           {/* New button - right next to dropdown */}
