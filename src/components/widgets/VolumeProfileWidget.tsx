@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Calendar, Star, HelpCircle, CalendarRange, Bell, Info } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Star, HelpCircle, CalendarRange, Bell, Info } from 'lucide-react'
 import { formatPrice, formatVolume, formatPercent } from '@/lib/format'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
 import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { DateInput } from '@/components/DateInput'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getVolumeProfile } from '@/lib/api-client'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -466,32 +466,40 @@ export function VolumeProfileWidget({
           <>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs">
+                <Button variant="outline" size="sm" className="h-8 text-xs font-mono">
                   {selectedStartDate}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-2" align="center">
-                <Input
-                  type="date"
+                <DateInput
                   value={selectedStartDate}
-                  onChange={handleStartDateChange}
-                  className="w-auto"
+                  onChange={(val) => {
+                    if (val) {
+                      setSelectedStartDate(val)
+                      onStartDateChange?.(val)
+                    }
+                  }}
+                  clearable={false}
                 />
               </PopoverContent>
             </Popover>
             <span className="text-xs text-muted-foreground">→</span>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs">
+                <Button variant="outline" size="sm" className="h-8 text-xs font-mono">
                   {selectedEndDate}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-2" align="center">
-                <Input
-                  type="date"
+                <DateInput
                   value={selectedEndDate}
-                  onChange={handleEndDateChange}
-                  className="w-auto"
+                  onChange={(val) => {
+                    if (val) {
+                      setSelectedEndDate(val)
+                      onEndDateChange?.(val)
+                    }
+                  }}
+                  clearable={false}
                 />
               </PopoverContent>
             </Popover>
@@ -504,17 +512,18 @@ export function VolumeProfileWidget({
             </Button>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8">
-                  <Calendar className="mr-2 h-4 w-4" />
+                <Button variant="outline" size="sm" className="h-8 font-mono">
                   {selectedDate}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-2" align="center">
-                <Input
-                  type="date"
-                  value={selectedDate || ''}
-                  onChange={handleDateChange}
-                  className="w-auto"
+                <DateInput
+                  value={selectedDate || undefined}
+                  onChange={(val) => {
+                    setSelectedDate(val || null)
+                    if (val) onDateChange?.(val)
+                  }}
+                  clearable={false}
                 />
               </PopoverContent>
             </Popover>

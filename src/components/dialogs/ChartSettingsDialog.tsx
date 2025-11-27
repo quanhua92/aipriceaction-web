@@ -10,12 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Calendar } from '@/components/ui/calendar'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '@/components/ui/popover'
+import { DateInput } from '@/components/DateInput'
 import {
 	Select,
 	SelectContent,
@@ -23,8 +18,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select'
-import { CalendarIcon, X } from 'lucide-react'
-import { format } from 'date-fns'
 import { DEFAULT_CHART_LIMIT } from '@/lib/constants'
 
 interface ChartSettingsDialogProps {
@@ -76,19 +69,6 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 		setStartDate(undefined)
 		setEndDate(undefined)
 		setLimit(DEFAULT_CHART_LIMIT)
-	}
-
-	// Convert string date to Date object for calendar
-	const startDateObj = startDate ? new Date(startDate) : undefined
-	const endDateObj = endDate ? new Date(endDate) : undefined
-
-	// Handle date selection from calendar
-	const handleStartDateSelect = (date: Date | undefined) => {
-		setStartDate(date ? format(date, 'yyyy-MM-dd') : undefined)
-	}
-
-	const handleEndDateSelect = (date: Date | undefined) => {
-		setEndDate(date ? format(date, 'yyyy-MM-dd') : undefined)
 	}
 
 	return (
@@ -217,39 +197,11 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 									<Label htmlFor="start-date" className="text-sm">
 										Start Date
 									</Label>
-									<Popover>
-										<PopoverTrigger asChild>
-											<Button
-												id="start-date"
-												variant="outline"
-												className="w-full justify-start text-left font-normal"
-											>
-												<CalendarIcon className="mr-2 h-4 w-4" />
-												{startDateObj ? (
-													format(startDateObj, 'PPP')
-												) : (
-													<span className="text-muted-foreground">Pick a date</span>
-												)}
-												{startDateObj && (
-													<X
-														className="ml-auto h-4 w-4 opacity-50 hover:opacity-100"
-														onClick={(e) => {
-															e.stopPropagation()
-															handleStartDateSelect(undefined)
-														}}
-													/>
-												)}
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className="w-auto p-0" align="start">
-											<Calendar
-												mode="single"
-												selected={startDateObj}
-												onSelect={handleStartDateSelect}
-												initialFocus
-											/>
-										</PopoverContent>
-									</Popover>
+									<DateInput
+										id="start-date"
+										value={startDate}
+										onChange={setStartDate}
+									/>
 								</div>
 
 								{/* End Date */}
@@ -257,39 +209,11 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 									<Label htmlFor="end-date" className="text-sm">
 										End Date
 									</Label>
-									<Popover>
-										<PopoverTrigger asChild>
-											<Button
-												id="end-date"
-												variant="outline"
-												className="w-full justify-start text-left font-normal"
-											>
-												<CalendarIcon className="mr-2 h-4 w-4" />
-												{endDateObj ? (
-													format(endDateObj, 'PPP')
-												) : (
-													<span className="text-muted-foreground">Pick a date</span>
-												)}
-												{endDateObj && (
-													<X
-														className="ml-auto h-4 w-4 opacity-50 hover:opacity-100"
-														onClick={(e) => {
-															e.stopPropagation()
-															handleEndDateSelect(undefined)
-														}}
-													/>
-												)}
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className="w-auto p-0" align="start">
-											<Calendar
-												mode="single"
-												selected={endDateObj}
-												onSelect={handleEndDateSelect}
-												initialFocus
-											/>
-										</PopoverContent>
-									</Popover>
+									<DateInput
+										id="end-date"
+										value={endDate}
+										onChange={setEndDate}
+									/>
 								</div>
 
 								{/* Limit */}

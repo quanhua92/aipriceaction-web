@@ -1,5 +1,10 @@
 "use client"
 
+/**
+ * @deprecated This component is no longer used. Use DateInput from '@/components/DateInput' instead.
+ * DateInput provides a text field with YYYY-MM-DD format and a calendar button that opens the native date picker.
+ */
+
 import * as React from "react"
 import {
   ChevronDownIcon,
