@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getVolumeProfile } from '@/lib/api-client'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useAPI } from '@/contexts/APIContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { isCryptoTicker } from '@/lib/ticker-utils'
 import type { VolumeProfileData, PriceLevelVolume } from '@/lib/api-client'
 
@@ -54,6 +55,7 @@ export function VolumeProfileWidget({
 }: VolumeProfileWidgetProps) {
   const { t } = useTranslation()
   const { tickers: stockTickers, cryptoTickers, getTickers } = useAPI()
+  const { startDate: globalStartDate, endDate: globalEndDate } = useChartSettings()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? null)
   const [loading, setLoading] = React.useState(true)
@@ -138,6 +140,26 @@ export function VolumeProfileWidget({
       setSelectedEndDate(endDate)
     }
   }, [endDate, selectedEndDate])
+
+  // Sync with global ChartSettingsContext dates (one-way: global → widget)
+  React.useEffect(() => {
+    if (globalStartDate && globalStartDate !== selectedStartDate) {
+      setSelectedStartDate(globalStartDate)
+    }
+  }, [globalStartDate])
+
+  React.useEffect(() => {
+    if (globalEndDate && globalEndDate !== selectedEndDate) {
+      setSelectedEndDate(globalEndDate)
+    }
+  }, [globalEndDate])
+
+  // For single-date mode, sync with globalEndDate
+  React.useEffect(() => {
+    if (globalEndDate && !isRangeMode && globalEndDate !== selectedDate) {
+      setSelectedDate(globalEndDate)
+    }
+  }, [globalEndDate, isRangeMode])
 
   // Fetch volume profile data
   React.useEffect(() => {

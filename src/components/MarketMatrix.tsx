@@ -28,6 +28,7 @@ import {
   isPredefinedWatchlist as checkIsPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
 import { getSectorDisplayName } from '@/lib/sector-names'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { ChartFullscreenDialog } from './ChartFullscreenDialog'
 import type { SortBy } from '@/components/lists/SortableTickerList'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -74,6 +75,7 @@ interface MarketMatrixProps {
 export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers } = useAPI()
   const { lastRefresh } = useRefresh()
+  const { endDate: globalEndDate } = useChartSettings()
   const { t, language } = useTranslation()
 
   // Helper to detect if watchlist contains both stocks and crypto
@@ -231,11 +233,11 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       setError(null)
 
       try {
-        // Calculate end_date for API: use today for page 0, or oldest date from previous page
+        // Calculate end_date for API: use globalEndDate (or today) for page 0, or oldest date from previous page
         const endDateForAPI =
           currentPage === 0
-            ? format(new Date(), 'yyyy-MM-dd')
-            : matrixData?.dates[matrixData.dates.length - 1] || format(new Date(), 'yyyy-MM-dd')
+            ? globalEndDate || format(new Date(), 'yyyy-MM-dd')
+            : matrixData?.dates[matrixData.dates.length - 1] || globalEndDate || format(new Date(), 'yyyy-MM-dd')
 
         // Determine if this is a mixed, crypto-only, or stock-only watchlist
         const isMixed = watchlistType === 'mixed'
@@ -423,7 +425,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTickers, stockSymbols, cryptoSymbols, watchlistType, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, lastRefresh])
+  }, [selectedTickers, stockSymbols, cryptoSymbols, watchlistType, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, lastRefresh, globalEndDate])
 
   // Group rows by sector and sort within each sector
   const rowsBySector = React.useMemo(() => {

@@ -3,6 +3,7 @@ import { getTickerGroups, getCryptoTickerGroups, getTickersWithLogging, getCrypt
 import { PRIORITY_GROUPS } from '@/lib/constants'
 import { useLogs } from './LogsContext'
 import { useRefresh } from './RefreshContext'
+import { useChartSettings } from './ChartSettingsContext'
 
 const sortTickerGroups = (groups: TickerGroups): TickerGroups => {
   const sortedEntries = Object.entries(groups)
@@ -57,6 +58,7 @@ const APIContext = React.createContext<APIContextValue | undefined>(undefined)
 export function APIProvider({ children }: { children: React.ReactNode }) {
   const { info, error: logError } = useLogs()
   const { lastRefresh } = useRefresh()
+  const { endDate: globalEndDate } = useChartSettings()
 
   // VN stocks state
   const [tickerGroups, setTickerGroups] = React.useState<TickerGroups | null>(null)
@@ -81,7 +83,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       // Fetch both ticker groups and all tickers data in parallel
       const [groups, tickersData] = await Promise.all([
         getTickerGroups(),
-        getTickersWithLogging('APIContext.init.stock', { limit: 1 }, { info, warn: info, error: logError })
+        getTickersWithLogging('APIContext.init.stock', { limit: 1, end_date: globalEndDate }, { info, warn: info, error: logError })
       ])
 
       const duration = Date.now() - startTime
@@ -115,7 +117,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setStockLoading(false)
     }
-  }, [info, logError])
+  }, [info, logError, globalEndDate])
 
   const fetchCryptoData = React.useCallback(async () => {
     setCryptoLoading(true)
@@ -126,7 +128,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       // Fetch both crypto ticker groups and all crypto tickers data in parallel
       const [groups, tickersData] = await Promise.all([
         getCryptoTickerGroups(),
-        getCryptoTickersWithLogging('APIContext.init.crypto', { limit: 1 }, { info, warn: info, error: logError })
+        getCryptoTickersWithLogging('APIContext.init.crypto', { limit: 1, end_date: globalEndDate }, { info, warn: info, error: logError })
       ])
 
       const duration = Date.now() - startTime
@@ -160,13 +162,13 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setCryptoLoading(false)
     }
-  }, [info, logError])
+  }, [info, logError, globalEndDate])
 
-  // Fetch both stock and crypto data in parallel on mount and when refresh is triggered
+  // Fetch both stock and crypto data in parallel on mount and when refresh/date changes
   React.useEffect(() => {
     Promise.all([fetchStockData(), fetchCryptoData()])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastRefresh])
+  }, [lastRefresh, globalEndDate])
 
   // Provide logged API methods
   const getTickers = React.useCallback(

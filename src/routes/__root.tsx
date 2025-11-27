@@ -108,10 +108,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <LogsProvider>
             <SiteSettingsProvider>
               <RefreshProvider>
-                <APIProvider>
-                  <AlertProvider>
-                    <NoteProvider>
-                      <ChartSettingsProvider>
+                <ChartSettingsProvider>
+                  <APIProvider>
+                    <AlertProvider>
+                      <NoteProvider>
                         <Header />
                         {children}
                         <StatusBar />
@@ -130,10 +130,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                           ]}
                         />
                       )}
-                      </ChartSettingsProvider>
-                    </NoteProvider>
-                  </AlertProvider>
-                </APIProvider>
+                      </NoteProvider>
+                    </AlertProvider>
+                  </APIProvider>
+                </ChartSettingsProvider>
               </RefreshProvider>
             </SiteSettingsProvider>
           </LogsProvider>
