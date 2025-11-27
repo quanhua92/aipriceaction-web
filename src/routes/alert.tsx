@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import * as React from 'react'
-import { Download, Upload } from 'lucide-react'
+import { Download, Upload, AlertTriangle } from 'lucide-react'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useLogs } from '@/contexts/LogsContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTranslation } from '@/hooks/useTranslation'
 import { BasicAlertWidget } from '@/components/widgets/BasicAlertWidget'
 import { BasicTickerWidget } from '@/components/widgets/BasicTickerWidget'
@@ -21,6 +22,7 @@ function AlertPage() {
   const { alerts, activeAlerts, triggeredAlerts, refreshAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
   const { info, error: logError } = useLogs()
+  const { endDate: globalEndDate } = useChartSettings()
 
   // State for selected ticker (from clicking alert row)
   const [selectedTicker, setSelectedTicker] = React.useState<string>('VNINDEX')
@@ -182,6 +184,17 @@ function AlertPage() {
           className="hidden"
         />
       </div>
+
+      {/* Warning when viewing historical data */}
+      {globalEndDate && (
+        <div className="mx-4 md:mx-6 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span className="text-sm">
+            Alert checking is paused while viewing historical data ({globalEndDate}).
+            Clear the end date in Chart Settings to resume.
+          </span>
+        </div>
+      )}
 
       {/* Main Content Grid - 3 columns on desktop, 1 column on mobile */}
       <div className="p-4 md:p-6 border-t">

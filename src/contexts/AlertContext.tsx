@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useAPI } from './APIContext'
 import { useRefresh } from './RefreshContext'
 import { useLogs } from './LogsContext'
+import { useChartSettings } from './ChartSettingsContext'
 import {
   getAlerts,
   addAlert as addAlertToStorage,
@@ -33,6 +34,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
   const { allTickersLastData, allCryptoTickersLastData, getTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { info } = useLogs()
+  const { endDate: globalEndDate } = useChartSettings()
 
   const [alerts, setAlerts] = React.useState<Alert[]>([])
   const [lastChecked, setLastChecked] = React.useState<Date | null>(null)
@@ -303,11 +305,17 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
 
   // Auto-check alerts when data refreshes OR on initial load
   React.useEffect(() => {
+    // Only check alerts if using current data (no historical date filter)
+    if (globalEndDate) {
+      info('Alerts', `⏸️ Alert checking paused - viewing historical data (${globalEndDate})`)
+      return
+    }
+
     // Run check if we have data (either from refresh or initial load)
     if (Object.keys(allMarketsData).length > 0) {
       checkAlerts()
     }
-  }, [lastRefresh, allMarketsData, checkAlerts])
+  }, [lastRefresh, allMarketsData, checkAlerts, globalEndDate, info])
 
   const value: AlertContextValue = {
     alerts,
