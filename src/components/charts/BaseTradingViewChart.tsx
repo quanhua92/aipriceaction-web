@@ -14,7 +14,8 @@ import {
 	LineSeries,
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort, formatToVietnamDateTimeShort } from '@/lib/format'
+import { INTRADAY_INTERVALS } from '@/lib/constants'
 import { type StockData } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
@@ -687,9 +688,14 @@ export function BaseTradingViewChart({
 				{(() => {
 					const displayData = crosshairData ?? latestData
 					if (!displayData) return null
+					const isLongSymbol = (displayData.symbol?.length ?? 0) > 4
+					const isIntradayInterval = INTRADAY_INTERVALS.includes(globalSettings.interval as typeof INTRADAY_INTERVALS[number])
 					return (
 						<div
-							className="absolute top-3 left-3 text-zinc-100 text-xs z-10 pointer-events-none"
+							className={cn(
+								"absolute top-3 left-3 text-zinc-100 z-10 pointer-events-none",
+								isLongSymbol && isIntradayInterval ? "text-[10px]" : "text-xs"
+							)}
 							style={{
 								WebkitFontSmoothing: 'antialiased',
 								MozOsxFontSmoothing: 'grayscale',
@@ -698,12 +704,14 @@ export function BaseTradingViewChart({
 							<span className={cn("font-semibold", (displayData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{displayData.symbol}</span> <span className={cn((displayData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(displayData.close, displayData)}</span> <span className={cn((displayData.close_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(displayData.close_changed ?? 0)}</span>
 							<span className="mx-1"></span>
 							<span className={cn((displayData.volume_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(displayData.volume)}</span> <span className={cn((displayData.volume_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(displayData.volume_changed ?? 0)}</span>
-							<span className="text-zinc-400 ml-2 text-xs">
+							<span className="text-zinc-400 ml-2">
 								{(() => {
 									try {
 										if (!displayData.time || typeof displayData.time !== 'string') return '--'
 										const date = parseUTCISOString(displayData.time)
-										return formatToVietnamDateShort(date)
+										return isIntradayInterval
+											? formatToVietnamDateTimeShort(date)
+											: formatToVietnamDateShort(date)
 									} catch {
 										return '--'
 									}

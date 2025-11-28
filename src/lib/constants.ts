@@ -193,3 +193,8 @@ export const ALERT_DISTANCE_THRESHOLDS = {
  * Alert is considered triggered when price is within this % of target
  */
 export const ALERT_TRIGGER_THRESHOLD = 0.5 // 0.5%
+
+/**
+ * Intraday intervals that show time in chart overlay
+ */
+export const INTRADAY_INTERVALS = ['1m', '5m', '15m', '30m', '1H'] as const
