@@ -4,6 +4,7 @@ import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
+import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import type { Ticker } from "@/components/lists/SortableTickerList";
@@ -114,6 +115,7 @@ function ChartPage() {
 					onSortedTickersChange={handleSortedTickersChange}
 					className="flex-1"
 				/>
+				<DateControlWidget className="mt-4" />
 			</div>
 
 			{/* Middle Column - Charts */}

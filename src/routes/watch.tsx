@@ -5,6 +5,7 @@ import { BasicWatchList } from "@/components/lists";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
+import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { ALL_WATCHLIST_NAME, CUSTOM_WATCHLISTS_STORAGE_KEY } from "@/lib/constants";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -272,6 +273,7 @@ function WatchPage() {
 						onSortedTickersChange={handleSortedTickersChange}
 						className="flex-1"
 					/>
+					<DateControlWidget className="mt-4" />
 				</div>
 
 				{/* Middle Column - Charts */}
