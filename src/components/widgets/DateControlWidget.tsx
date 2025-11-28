@@ -181,13 +181,13 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 			<DateInput value={endDate || today} onChange={handleDateChange} />
 
 			{/* Navigation buttons */}
-			<div className="flex items-center justify-center gap-1">
+			<div className="flex items-center justify-center gap-3">
 				<Button
 					variant="outline"
 					size="sm"
 					onClick={() => moveDate(-5)}
 					disabled={isAtStart}
-					className="h-8 w-8 p-0"
+					className="h-10 w-10 p-0"
 					title="Back 5 trading days"
 				>
 					<ChevronsLeft className="h-4 w-4" />
@@ -197,7 +197,7 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 					size="sm"
 					onClick={() => moveDate(-1)}
 					disabled={isAtStart}
-					className="h-8 w-8 p-0"
+					className="h-10 w-10 p-0"
 					title="Previous trading day"
 				>
 					<ChevronLeft className="h-4 w-4" />
@@ -207,7 +207,7 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 					size="sm"
 					onClick={() => moveDate(1)}
 					disabled={isAtEnd}
-					className="h-8 w-8 p-0"
+					className="h-10 w-10 p-0"
 					title="Next trading day"
 				>
 					<ChevronRight className="h-4 w-4" />
@@ -217,7 +217,7 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 					size="sm"
 					onClick={() => moveDate(5)}
 					disabled={isAtEnd}
-					className="h-8 w-8 p-0"
+					className="h-10 w-10 p-0"
 					title="Forward 5 trading days"
 				>
 					<ChevronsRight className="h-4 w-4" />
