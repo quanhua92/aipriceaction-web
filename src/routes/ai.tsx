@@ -9,11 +9,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
 import { useAPI } from "@/contexts/APIContext";
 import { useRefresh } from "@/contexts/RefreshContext";
+import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { loadTranslations } from "@/translations";
 import { AI_SELECTED_TICKERS_STORAGE_KEY } from "@/lib/constants";
 import { TickerGroupSelector } from "@/components/TickerGroupSelector";
 import { getTickersForGroup } from "@/lib/ticker-group-utils";
 import { getWatchlistNames } from "@/lib/watchlist-storage";
+import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 
 export const Route = createFileRoute("/ai")({ component: AIContextPage });
 
@@ -24,6 +26,7 @@ function AIContextPage() {
 	const translations = loadTranslations(language);
 	const { getTickers, getHealth, cryptoTickers, tickerGroups } = useAPI();
 	const { lastRefresh } = useRefresh();
+	const { endDate } = useChartSettings();
 	const [copied, setCopied] = React.useState(false);
 	const [copiedTemplate, setCopiedTemplate] = React.useState<number | null>(null);
 	const [customWatchlistNames, setCustomWatchlistNames] = React.useState<string[]>([]);
@@ -180,12 +183,14 @@ function AIContextPage() {
 							symbol: stockSymbols,
 							limit: limit,
 							interval: interval,
+							end_date: endDate,
 							mode: 'vn'
 						}),
 						getTickers('AIRoute.marketData.crypto', {
 							symbol: cryptoSymbols,
 							limit: limit,
 							interval: interval,
+							end_date: endDate,
 							mode: 'crypto'
 						})
 					]);
@@ -195,6 +200,7 @@ function AIContextPage() {
 						symbol: cryptoSymbols,
 						limit: limit,
 						interval: interval,
+						end_date: endDate,
 						mode: 'crypto'
 					});
 				} else {
@@ -203,6 +209,7 @@ function AIContextPage() {
 						symbol: stockSymbols,
 						limit: limit,
 						interval: interval,
+						end_date: endDate,
 						mode: 'vn'
 					});
 				}
@@ -219,7 +226,7 @@ function AIContextPage() {
 		}
 
 		fetchData();
-	}, [selectedTickers, stockSymbols, cryptoSymbols, limit, interval, getTickers, lastRefresh]);
+	}, [selectedTickers, stockSymbols, cryptoSymbols, limit, interval, getTickers, lastRefresh, endDate]);
 
 	const canAddMoreTickers = selectedTickers.length < MAX_TICKERS;
 
@@ -231,6 +238,9 @@ function AIContextPage() {
 					{t("common.aiContext.description")}
 				</p>
 			</div>
+
+			{/* Date Control Widget */}
+			<DateControlWidget />
 
 			{/* Ticker Selection Card */}
 			<Card>
