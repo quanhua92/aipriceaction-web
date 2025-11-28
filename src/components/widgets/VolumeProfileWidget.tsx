@@ -85,7 +85,7 @@ export function VolumeProfileWidget({
       try {
         const isCrypto = isCryptoTicker(selectedTicker, stockTickers, cryptoTickers)
         const mode = isCrypto ? 'crypto' : 'vn'
-        const response = await getTickers('VolumeProfileWidget.lastTradingDay', { symbol: selectedTicker, limit: 1, mode })
+        const response = await getTickers('VolumeProfileWidget.lastTradingDay', { symbol: selectedTicker, limit: 1, end_date: globalEndDate, mode })
 
         console.log(`[VolumeProfileWidget] Response:`, response)
         console.log(`[VolumeProfileWidget] Response[${selectedTicker}]:`, response[selectedTicker])
@@ -112,7 +112,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, stockTickers, cryptoTickers, getTickers, selectedDate])
+  }, [selectedTicker, stockTickers, cryptoTickers, getTickers, selectedDate, globalEndDate])
 
   // Sync with external ticker prop
   React.useEffect(() => {
