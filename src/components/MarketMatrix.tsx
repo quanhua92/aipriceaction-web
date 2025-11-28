@@ -8,6 +8,7 @@ import { parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import {
   ALL_WATCHLIST_NAME,
   CRYPTO_WATCHLIST_NAME,
+  MAJOR_CRYPTO,
   MARKET_INDICES,
   MATRIX_DAYS_PER_PAGE,
   MATRIX_OPEN_SECTORS_STORAGE_KEY,
@@ -331,8 +332,11 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
           // Find sector for this ticker
           if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
-            // Use cryptoTickerGroups for crypto
-            if (cryptoTickerGroups) {
+            // Check if this is a major crypto first (BTC, ETH, XRP, TON)
+            if (MAJOR_CRYPTO.includes(ticker as any)) {
+              sector = 'MAJOR_CRYPTO'
+            } else if (cryptoTickerGroups) {
+              // Use cryptoTickerGroups for other crypto
               for (const [sectorName, symbols] of Object.entries(cryptoTickerGroups)) {
                 if (symbols.includes(ticker)) {
                   sector = sectorName
@@ -494,6 +498,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
     const tickers: string[] = []
     // Sort sectors in the same order as displayed in the matrix
     const sortedSectors = Object.keys(rowsBySector).sort((a, b) => {
+      // MAJOR_CRYPTO goes first for CRYPTO watchlist
+      if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
+        if (a === 'MAJOR_CRYPTO') return -1
+        if (b === 'MAJOR_CRYPTO') return 1
+      }
+
       const priorityA = PRIORITY_GROUPS.indexOf(a as any)
       const priorityB = PRIORITY_GROUPS.indexOf(b as any)
 
@@ -518,7 +528,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
     })
 
     return tickers
-  }, [rowsBySector, openSectors])
+  }, [rowsBySector, openSectors, selectedWatchlist])
 
   // Find current ticker index in the list
   const currentTickerIndex = React.useMemo(() => {
@@ -784,6 +794,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                 {/* Sector rows */}
                 {Object.keys(rowsBySector)
                   .sort((a, b) => {
+                    // MAJOR_CRYPTO goes first for CRYPTO watchlist
+                    if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
+                      if (a === 'MAJOR_CRYPTO') return -1
+                      if (b === 'MAJOR_CRYPTO') return 1
+                    }
+
                     const priorityA = PRIORITY_GROUPS.indexOf(a as any)
                     const priorityB = PRIORITY_GROUPS.indexOf(b as any)
 
@@ -869,6 +885,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                 {/* Data rows */}
                 {Object.keys(rowsBySector)
                   .sort((a, b) => {
+                    // MAJOR_CRYPTO goes first for CRYPTO watchlist
+                    if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
+                      if (a === 'MAJOR_CRYPTO') return -1
+                      if (b === 'MAJOR_CRYPTO') return 1
+                    }
+
                     const priorityA = PRIORITY_GROUPS.indexOf(a as any)
                     const priorityB = PRIORITY_GROUPS.indexOf(b as any)
 

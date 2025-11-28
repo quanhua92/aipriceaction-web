@@ -133,6 +133,9 @@ export const API_RECENT_CALLS_LIMIT = 10
  * Based on real API sectors from https://api.aipriceaction.com/tickers/group
  */
 export const SECTOR_ABBREVIATIONS: Record<string, string> = {
+	// Major crypto (for CRYPTO watchlist)
+	MAJOR_CRYPTO: 'MAJOR',
+
 	// Priority sectors
 	NGAN_HANG: 'NH',
 	CHUNG_KHOAN: 'CK',
