@@ -237,12 +237,12 @@ function ChartPage() {
 			{/* Right Sidebar - Tabs */}
 			<div className="h-auto lg:h-full border-l bg-background flex flex-col overflow-hidden">
 				<Tabs defaultValue="ticker" className="flex-1 flex flex-col min-h-0">
-					<TabsList className="mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0">
-						<TabsTrigger value="ticker">Ticker Info</TabsTrigger>
-						<TabsTrigger value="matrix">Market Matrix</TabsTrigger>
+					<TabsList className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0 h-9 lg:h-10">
+						<TabsTrigger value="ticker" className="flex-1 text-xs lg:text-sm">Ticker Info</TabsTrigger>
+						<TabsTrigger value="matrix" className="flex-1 text-xs lg:text-sm">Market Matrix</TabsTrigger>
 					</TabsList>
 
-					<TabsContent value="ticker" className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4">
+					<TabsContent value="ticker" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4 data-[state=inactive]:hidden">
 						<BasicTickerWidget
 							ticker={activeTicker}
 							onTickerChange={handleSelectTicker}
@@ -254,7 +254,7 @@ function ChartPage() {
 						/>
 					</TabsContent>
 
-					<TabsContent value="matrix" className="flex-1 min-h-0 overflow-auto p-2 lg:p-4">
+					<TabsContent value="matrix" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
 						<MarketMatrix />
 					</TabsContent>
 				</Tabs>
