@@ -6,6 +6,7 @@ import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
+import { MarketMatrix } from "@/components/MarketMatrix";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MoreVertical } from "lucide-react";
 
 export const Route = createFileRoute("/chart/")({
@@ -232,22 +234,30 @@ function ChartPage() {
 				</div>
 			</div>
 
-			{/* Right Sidebar - BasicTickerWidget */}
-			<div className="h-auto lg:h-full border-l bg-background p-2 lg:p-4 flex flex-col overflow-hidden">
-				<div className="flex items-center justify-between mb-2 lg:mb-4">
-					<h2 className="text-base lg:text-lg font-semibold">Ticker Info</h2>
-				</div>
-				<div className="overflow-auto space-y-4">
-					<BasicTickerWidget
-						ticker={activeTicker}
-						onTickerChange={handleSelectTicker}
-					/>
-					<VolumeProfileWidget
-						ticker={activeTicker}
-						onTickerChange={handleSelectTicker}
-						maxHeight="600px"
-					/>
-				</div>
+			{/* Right Sidebar - Tabs */}
+			<div className="h-auto lg:h-full border-l bg-background flex flex-col overflow-hidden">
+				<Tabs defaultValue="ticker" className="flex-1 flex flex-col min-h-0">
+					<TabsList className="mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0">
+						<TabsTrigger value="ticker">Ticker Info</TabsTrigger>
+						<TabsTrigger value="matrix">Market Matrix</TabsTrigger>
+					</TabsList>
+
+					<TabsContent value="ticker" className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4">
+						<BasicTickerWidget
+							ticker={activeTicker}
+							onTickerChange={handleSelectTicker}
+						/>
+						<VolumeProfileWidget
+							ticker={activeTicker}
+							onTickerChange={handleSelectTicker}
+							maxHeight="600px"
+						/>
+					</TabsContent>
+
+					<TabsContent value="matrix" className="flex-1 min-h-0 overflow-auto p-2 lg:p-4">
+						<MarketMatrix />
+					</TabsContent>
+				</Tabs>
 			</div>
 
 			{/* Fullscreen Dialog */}
