@@ -8,7 +8,7 @@ import {
 	ChevronRight,
 	ChevronsLeft,
 	ChevronsRight,
-	RotateCcw,
+	Dices,
 } from 'lucide-react'
 
 interface DateControlWidgetProps {
@@ -133,6 +133,25 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 		[setEndDate]
 	)
 
+	// Generate random date between 2016-01-01 and today
+	const generateRandomDate = React.useCallback(() => {
+		const startDate = new Date('2016-01-01')
+		const endDate = new Date()
+
+		// Calculate random timestamp between start and end
+		const randomTimestamp = startDate.getTime() +
+			Math.random() * (endDate.getTime() - startDate.getTime())
+
+		const randomDate = new Date(randomTimestamp)
+		return randomDate.toISOString().split('T')[0]
+	}, [])
+
+	// Handle random date button click
+	const handleRandomDate = React.useCallback(() => {
+		const randomDate = generateRandomDate()
+		handleDateChange(randomDate)
+	}, [generateRandomDate, handleDateChange])
+
 	// Snap to nearest trading day after trading days are loaded
 	React.useEffect(() => {
 		if (!endDate || tradingDays.length === 0) return
@@ -164,17 +183,16 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 			{/* Header */}
 			<div className="flex items-center justify-between">
 				<h3 className="text-sm font-medium">Date Control</h3>
-				{endDate && (
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => setEndDate(undefined)}
-						className="h-7 text-xs"
-					>
-						<RotateCcw className="h-3.5 w-3.5 mr-1" />
-						Live
-					</Button>
-				)}
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={handleRandomDate}
+					className="h-7 text-xs"
+					title="Pick random trading day (2016-present)"
+				>
+					<Dices className="h-3.5 w-3.5 mr-1" />
+					Random
+				</Button>
 			</div>
 
 			{/* DateInput with calendar picker - show today as default */}
