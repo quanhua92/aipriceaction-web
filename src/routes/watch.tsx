@@ -275,7 +275,7 @@ function WatchPage() {
 						onSortedTickersChange={handleSortedTickersChange}
 						className="flex-1"
 					/>
-					<DateControlWidget className="mt-4" />
+					<DateControlWidget className="mt-4 lg:order-first lg:mt-0" />
 				</div>
 
 				{/* Middle Column - Charts */}
