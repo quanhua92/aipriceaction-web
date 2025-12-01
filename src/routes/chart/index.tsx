@@ -66,12 +66,13 @@ function ChartPage() {
 		setLayout((prev) => ({ ...prev, ...updates }));
 	};
 
-	// Handler for watchlist ticker selection - always update first chart
+	// Handler for watchlist ticker selection - open fullscreen dialog + sync chart + sidebar
 	const handleSelectTicker = (symbol: string) => {
-		setActiveTicker(symbol); // Update right sidebar
+		setActiveTicker(symbol); // Update right sidebar widgets
+		setFullscreenTicker(symbol); // Open fullscreen dialog
 		setLayout((prev) => {
 			const newTickers = [...prev.chartTickers];
-			newTickers[0] = symbol; // Always update first chart
+			newTickers[0] = symbol; // Update FIRST chart to match selection
 			return { ...prev, chartTickers: newTickers };
 		});
 	};
