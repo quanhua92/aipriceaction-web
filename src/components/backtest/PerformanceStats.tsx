@@ -4,6 +4,7 @@ import { getPriceChangeColor } from '@/lib/colors'
 import { PortfolioStats } from '@/lib/backtest-calculations'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown, Target, Wallet, DollarSign, BarChart3 } from 'lucide-react'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface PerformanceStatsProps {
   stats: PortfolioStats | null
@@ -12,6 +13,8 @@ interface PerformanceStatsProps {
 }
 
 export function PerformanceStats({ stats, loading, className }: PerformanceStatsProps) {
+  const { t } = useTranslation()
+
   if (loading) {
     return (
       <div className={`space-y-4 ${className || ''}`}>
@@ -36,8 +39,8 @@ export function PerformanceStats({ stats, loading, className }: PerformanceStats
     return (
       <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
         <BarChart3 className="h-8 w-8 mb-2 opacity-50" />
-        <p className="text-sm font-medium mb-1">No portfolio data</p>
-        <p className="text-xs">Start trading to see performance statistics</p>
+        <p className="text-sm font-medium mb-1">{t('common.backtest.noPortfolioData')}</p>
+        <p className="text-xs">{t('common.backtest.startTrading')}</p>
       </div>
     )
   }
@@ -82,19 +85,19 @@ export function PerformanceStats({ stats, loading, className }: PerformanceStats
       {/* Main Statistics */}
       <div className="space-y-2">
         <StatCard
-          title="Portfolio Value"
+          title={t('common.backtest.portfolioValue')}
           value={formatPrice(stats.totalValue, { mode: 'vn' })}
           icon={Wallet}
         />
 
         <StatCard
-          title="Total Invested"
+          title={t('common.backtest.totalInvested')}
           value={formatPrice(stats.totalCost, { mode: 'vn' })}
           icon={DollarSign}
         />
 
         <StatCard
-          title="Total P&L"
+          title={t('common.backtest.totalPnL')}
           value={
             <div className="flex items-center gap-1">
               {isPositive ? (
@@ -112,7 +115,7 @@ export function PerformanceStats({ stats, loading, className }: PerformanceStats
         />
 
         <StatCard
-          title="P&L %"
+          title={t('common.backtest.pnlPercent')}
           value={
             <div className="flex items-center gap-1">
               {stats.totalPnLPercent >= 0 ? (
@@ -134,17 +137,17 @@ export function PerformanceStats({ stats, loading, className }: PerformanceStats
       <div className="space-y-2">
         <Card className="py-3 gap-2">
           <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-sm font-medium">Performance Breakdown</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('common.backtest.performanceBreakdown')}</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-3 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Realized P&L</span>
+              <span className="text-sm text-muted-foreground">{t('common.backtest.realizedPnL')}</span>
               <span className={`text-sm font-medium ${getPriceChangeColor(stats.realizedPnL)}`}>
                 {formatPrice(stats.realizedPnL, { mode: 'vn' })}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Unrealized P&L</span>
+              <span className="text-sm text-muted-foreground">{t('common.backtest.unrealizedPnL')}</span>
               <span className={`text-sm font-medium ${getPriceChangeColor(stats.unrealizedPnL)}`}>
                 {formatPrice(stats.unrealizedPnL, { mode: 'vn' })}
               </span>
@@ -154,27 +157,27 @@ export function PerformanceStats({ stats, loading, className }: PerformanceStats
 
         <Card className="py-3 gap-2">
           <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-sm font-medium">Position Analysis</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('common.backtest.positionAnalysis')}</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-3 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Total Positions</span>
+              <span className="text-sm text-muted-foreground">{t('common.backtest.totalPositions')}</span>
               <span className="text-sm font-medium">{stats.totalPositions}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Winning</span>
+              <span className="text-sm text-muted-foreground">{t('common.backtest.winning')}</span>
               <span className="text-sm font-medium text-green-600 dark:text-green-500">
                 {stats.winningPositions}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Losing</span>
+              <span className="text-sm text-muted-foreground">{t('common.backtest.losing')}</span>
               <span className="text-sm font-medium text-red-600 dark:text-red-500">
                 {stats.losingPositions}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Win Rate</span>
+              <span className="text-sm text-muted-foreground">{t('common.backtest.winRate')}</span>
               <span className="text-sm font-medium">
                 {stats.totalPositions > 0
                   ? formatPercent((stats.winningPositions / stats.totalPositions) * 100)
@@ -187,11 +190,11 @@ export function PerformanceStats({ stats, loading, className }: PerformanceStats
 
         <Card className="py-3 gap-2">
           <CardHeader className="pb-2 px-4">
-            <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('common.backtest.topPerformers')}</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-3 space-y-2">
             <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">Best</div>
+              <div className="text-xs text-muted-foreground">{t('common.backtest.best')}</div>
               {stats.bestPerformer ? (
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">{stats.bestPerformer.ticker}</span>
@@ -205,7 +208,7 @@ export function PerformanceStats({ stats, loading, className }: PerformanceStats
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">Worst</div>
+              <div className="text-xs text-muted-foreground">{t('common.backtest.worst')}</div>
               {stats.worstPerformer ? (
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">{stats.worstPerformer.ticker}</span>

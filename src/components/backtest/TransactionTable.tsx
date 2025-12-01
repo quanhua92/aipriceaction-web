@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Trash2, TrendingUp, TrendingDown } from 'lucide-react'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface TransactionTableProps {
   transactions: Transaction[]
@@ -30,6 +31,8 @@ export function TransactionTable({
   maxHeight = "400px",
   className
 }: TransactionTableProps) {
+  const { t } = useTranslation()
+
   // Sort transactions by date (newest first)
   const sortedTransactions = React.useMemo(() => {
     return [...transactions].sort((a, b) =>
@@ -99,7 +102,7 @@ export function TransactionTable({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Badge variant={isBuy ? "default" : "secondary"} className="text-xs">
-                {isBuy ? "BUY" : "SELL"}
+                {isBuy ? t('common.backtest.buy') : t('common.backtest.sell')}
               </Badge>
               <span className="font-semibold">{transaction.ticker}</span>
             </div>
@@ -117,24 +120,24 @@ export function TransactionTable({
 
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-muted-foreground text-xs">Date</p>
+              <p className="text-muted-foreground text-xs">{t('common.backtest.date')}</p>
               <p className="font-medium">{formatToVietnamDate(parseUTCISOString(transaction.date))}</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Quantity</p>
+              <p className="text-muted-foreground text-xs">{t('common.backtest.quantity')}</p>
               <p className="font-medium">{transaction.quantity.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Price</p>
+              <p className="text-muted-foreground text-xs">{t('common.backtest.price')}</p>
               <p className="font-medium">{formatPrice(transaction.price, { mode: 'vn' })}</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Total</p>
+              <p className="text-muted-foreground text-xs">{t('common.backtest.total')}</p>
               <p className="font-medium">{formatPrice(transaction.total, { mode: 'vn' })}</p>
             </div>
             {!isBuy && gainLossInfo && (
               <div className="col-span-2">
-                <p className="text-muted-foreground text-xs">Gain/Loss</p>
+                <p className="text-muted-foreground text-xs">{t('common.backtest.gainLoss')}</p>
                 <div className="flex items-center gap-1">
                   {gainLossInfo.amount >= 0 ? (
                     <TrendingUp className="h-3.5 w-3.5 text-green-600 dark:text-green-500" />
@@ -163,8 +166,8 @@ export function TransactionTable({
     return (
       <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
         <div className="text-center">
-          <p className="text-sm font-medium mb-1">No transactions yet</p>
-          <p className="text-xs">Start by buying or selling securities</p>
+          <p className="text-sm font-medium mb-1">{t('common.backtest.noTransactions')}</p>
+          <p className="text-xs">{t('common.backtest.startTrading')}</p>
         </div>
       </div>
     )
@@ -179,13 +182,14 @@ export function TransactionTable({
             <Table>
               <TableHeader className="sticky top-0 bg-background">
                 <TableRow>
-                  <TableHead className="w-24">Type</TableHead>
-                  <TableHead>Ticker</TableHead>
-                  <TableHead className="text-right">Date</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Gain/Loss %</TableHead>
+                  <TableHead className="w-24">{t('common.backtest.type')}</TableHead>
+                  <TableHead>{t('common.backtest.ticker')}</TableHead>
+                  <TableHead className="text-right">{t('common.backtest.date')}</TableHead>
+                  <TableHead className="text-right">{t('common.backtest.quantity')}</TableHead>
+                  <TableHead className="text-right">{t('common.backtest.price')}</TableHead>
+                  <TableHead className="text-right">{t('common.backtest.total')}</TableHead>
+                  <TableHead className="text-right">{t('common.backtest.gainLoss')} %</TableHead>
+                  <TableHead className="w-32">{t('common.backtest.notes')}</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -198,7 +202,7 @@ export function TransactionTable({
                     <TableRow key={transaction.id} className="hover:bg-muted/50">
                       <TableCell>
                         <Badge variant={isBuy ? "default" : "secondary"} className="text-xs">
-                          {isBuy ? "BUY" : "SELL"}
+                          {isBuy ? t('common.backtest.buy') : t('common.backtest.sell')}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">{transaction.ticker}</TableCell>
@@ -228,6 +232,18 @@ export function TransactionTable({
                           </div>
                         ) : (
                           <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-32 truncate">
+                        {transaction.notes ? (
+                          <span
+                            className="text-sm text-muted-foreground cursor-help"
+                            title={transaction.notes}
+                          >
+                            {transaction.notes}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-sm italic">—</span>
                         )}
                       </TableCell>
                       <TableCell>

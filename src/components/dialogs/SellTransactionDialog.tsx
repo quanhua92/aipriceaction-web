@@ -16,6 +16,7 @@ import { getBacktestData, Position } from '@/lib/backtest-storage'
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface SellTransactionDialogProps {
   children: React.ReactNode
@@ -40,6 +41,7 @@ export function SellTransactionDialog({
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
+  const { t } = useTranslation()
   const [internalOpen, setInternalOpen] = React.useState(false)
   const isControlled = open !== undefined
   const dialogOpen = isControlled ? open : internalOpen
@@ -252,12 +254,12 @@ export function SellTransactionDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Minus className="h-5 w-5" />
-              No Positions to Sell
+              {t('common.backtest.noPositions')}
             </DialogTitle>
           </DialogHeader>
           <div className="text-center py-6 text-muted-foreground">
-            <p className="text-sm">You don't have any open positions to sell.</p>
-            <p className="text-xs mt-1">Start by buying some securities first.</p>
+            <p className="text-sm">{t('common.backtest.noPositionsDescription')}</p>
+            <p className="text-xs mt-1">{t('common.backtest.noPositionsAction')}</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -273,12 +275,12 @@ export function SellTransactionDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Minus className="h-5 w-5" />
-              Sell Transaction
+              {t('common.backtest.sellTransaction')}
             </DialogTitle>
           </DialogHeader>
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-3"></div>
-            <p className="text-sm text-muted-foreground">Loading current prices...</p>
+            <p className="text-sm text-muted-foreground">{t('common.backtest.loadingPrices')}</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -290,51 +292,16 @@ export function SellTransactionDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex justify-between items-center">
-            <DialogTitle className="flex items-center gap-2">
-              <Minus className="h-5 w-5" />
-              Sell Transaction
-            </DialogTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                // Reset retry count and force price resolution refresh
-                setRetryCount(0)
-                const resolvePrices = async () => {
-                  setPriceLoading(true)
-                  const newPrices: Record<string, number> = {}
-                  const newErrors: Record<string, string> = {}
-                  const newSources: Record<string, string> = {}
-
-                  for (const position of positions) {
-                    const priceResult = getRobustPrice(position.ticker)
-                    newPrices[position.ticker] = priceResult.price
-                    newSources[position.ticker] = priceResult.source
-
-                    if (priceResult.price === 0) {
-                      newErrors[position.ticker] = 'Price data unavailable'
-                    }
-                  }
-
-                  setCurrentPrices(newPrices)
-                  setPriceErrors(newErrors)
-                  setPriceSources(newSources)
-                  setPriceLoading(false)
-                }
-                resolvePrices()
-              }}
-              disabled={loading || priceLoading}
-            >
-              Refresh Prices
-            </Button>
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <Minus className="h-5 w-5" />
+            {t('common.backtest.sellTransaction')}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Position Selection */}
           <div className="space-y-2">
-            <Label>Select Position</Label>
+            <Label>{t('common.backtest.selectPosition')}</Label>
             <div className="space-y-2">
               {availablePositions.map((position) => {
                 const currentPrice = currentPrices[position.ticker] || 0
@@ -363,20 +330,20 @@ export function SellTransactionDialog({
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{position.ticker}</span>
                         <Badge variant="secondary" className="text-xs">
-                          {position.totalShares.toLocaleString()} shares
+                          {position.totalShares.toLocaleString()} {t('common.backtest.shares')}
                         </Badge>
                         {priceSources[position.ticker] === 'transaction' && (
-                          <Badge variant="outline" className="text-xs">Historical</Badge>
+                          <Badge variant="outline" className="text-xs">{t('common.backtest.historical')}</Badge>
                         )}
                         {priceSources[position.ticker] === 'fallback' && (
-                          <Badge variant="secondary" className="text-xs">Estimated</Badge>
+                          <Badge variant="secondary" className="text-xs">{t('common.backtest.estimated')}</Badge>
                         )}
                         {priceErrors[position.ticker] && (
-                          <Badge variant="destructive" className="text-xs">Error</Badge>
+                          <Badge variant="destructive" className="text-xs">{t('common.error')}</Badge>
                         )}
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">{formatPrice(currentValue)}</div>
+                        <div className="font-medium">{formatPrice(currentValue, { mode: 'vn' })}</div>
                         <div className={`text-xs ${getPriceChangeColor(unrealizedPnLPercent)}`}>
                           {formatPercent(unrealizedPnLPercent)}
                         </div>
@@ -392,7 +359,7 @@ export function SellTransactionDialog({
           {priceErrors[selectedTicker] && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                ⚠️ {priceErrors[selectedTicker]} - using estimated price for calculations
+                ⚠️ {priceErrors[selectedTicker]} - {t('common.backtest.usingEstimatedPrice')}
               </p>
             </div>
           )}
@@ -402,27 +369,27 @@ export function SellTransactionDialog({
             <div className="bg-muted/50 p-3 rounded-lg space-y-2">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Current Price</span>
+                  <span className="text-sm text-muted-foreground">{t('common.backtest.currentPrice')}</span>
                   {priceSources[selectedTicker] && (
                     <Badge variant="outline" className="text-xs">
-                      {priceSources[selectedTicker] === 'api' ? 'Live' :
-                       priceSources[selectedTicker] === 'transaction' ? 'Historical' : 'Estimated'}
+                      {priceSources[selectedTicker] === 'api' ? t('common.backtest.live') :
+                       priceSources[selectedTicker] === 'transaction' ? t('common.backtest.historical') : t('common.backtest.estimated')}
                     </Badge>
                   )}
                 </div>
                 <div className="text-right">
-                  <span className="font-semibold">{formatPrice(sellDetails.currentPrice)}</span>
+                  <span className="font-semibold">{formatPrice(sellDetails.currentPrice, { mode: 'vn' })}</span>
                   <span className="text-xs text-muted-foreground ml-2">
                     {selectedTicker || 'NO TICKER'}
                   </span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Average Cost</span>
-                <span className="font-medium">{formatPrice(sellDetails.averageCost)}</span>
+                <span className="text-sm text-muted-foreground">{t('common.backtest.averageCost')}</span>
+                <span className="font-medium">{formatPrice(sellDetails.averageCost, { mode: 'vn' })}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Total Shares</span>
+                <span className="text-sm text-muted-foreground">{t('common.backtest.totalShares')}</span>
                 <span className="font-medium">{sellDetails.totalShares.toLocaleString()}</span>
               </div>
             </div>
@@ -431,7 +398,7 @@ export function SellTransactionDialog({
           {/* Sell Percentage Selection */}
           {selectedPosition && (
             <div className="space-y-2">
-              <Label>Sell Amount</Label>
+              <Label>{t('common.backtest.sellAmount')}</Label>
               <div className="grid grid-cols-4 gap-2">
                 {SELL_PERCENTAGES.map((option) => (
                   <Button
@@ -454,16 +421,16 @@ export function SellTransactionDialog({
             <div className="space-y-2">
               <div className="bg-primary/5 p-3 rounded-lg border border-primary/20 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Shares to Sell</span>
+                  <span className="text-sm font-medium">{t('common.backtest.sharesToSell')}</span>
                   <span className="font-bold text-primary">{sellDetails.sellQuantity.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Sell Value</span>
-                  <span className="font-medium">{formatPrice(sellDetails.sellValue)}</span>
+                  <span className="text-sm text-muted-foreground">{t('common.backtest.sellValue')}</span>
+                  <span className="font-medium">{formatPrice(sellDetails.sellValue, { mode: 'vn' })}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Cost Basis</span>
-                  <span className="font-medium">{formatPrice(sellDetails.costBasis)}</span>
+                  <span className="text-sm text-muted-foreground">{t('common.backtest.costBasis')}</span>
+                  <span className="font-medium">{formatPrice(sellDetails.costBasis, { mode: 'vn' })}</span>
                 </div>
                 <div className="border-t pt-2">
                   <div className="flex justify-between items-center">
@@ -473,11 +440,11 @@ export function SellTransactionDialog({
                       ) : (
                         <TrendingDown className="h-3.5 w-3.5 text-red-600 dark:text-red-500" />
                       )}
-                      Realized P&L
+                      {t('common.backtest.realizedPnL')}
                     </span>
                     <div className="text-right">
                       <div className={`font-bold ${getPriceChangeColor(sellDetails.realizedPnLPercent)}`}>
-                        {formatPrice(sellDetails.realizedPnL)}
+                        {formatPrice(sellDetails.realizedPnL, { mode: 'vn' })}
                       </div>
                       <div className={`text-xs ${getPriceChangeColor(sellDetails.realizedPnLPercent)}`}>
                         {formatPercent(sellDetails.realizedPnLPercent)}
@@ -491,10 +458,10 @@ export function SellTransactionDialog({
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
+            <Label htmlFor="notes">{t('common.backtest.notesOptional')}</Label>
             <Textarea
               id="notes"
-              placeholder="Add any notes about this transaction..."
+              placeholder={t('common.backtest.notesPlaceholder')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               disabled={loading}
@@ -506,11 +473,11 @@ export function SellTransactionDialog({
           <div className="flex gap-3 pt-2">
             <Button
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => setDialogOpen(false)}
               disabled={loading}
               className="flex-1"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleSell}
@@ -518,7 +485,7 @@ export function SellTransactionDialog({
               className="flex-1"
               variant={sellDetails?.realizedPnL && sellDetails.realizedPnL > 0 ? "default" : "destructive"}
             >
-              {loading ? 'Processing...' : `Sell ${selectedTicker || ''}`}
+              {loading ? t('common.backtest.processing') : `${t('common.backtest.sell')} ${selectedTicker || ''}`}
             </Button>
           </div>
         </div>

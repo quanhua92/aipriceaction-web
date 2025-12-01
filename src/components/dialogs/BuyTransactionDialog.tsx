@@ -15,6 +15,7 @@ import { formatPrice } from '@/lib/format'
 import { Plus } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface BuyTransactionDialogProps {
   children: React.ReactNode
@@ -32,6 +33,7 @@ export function BuyTransactionDialog({
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
+  const { t } = useTranslation()
   const [internalOpen, setInternalOpen] = React.useState(false)
   const isControlled = open !== undefined
   const dialogOpen = isControlled ? open : internalOpen
@@ -188,21 +190,21 @@ export function BuyTransactionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Buy Transaction
+            {t('common.backtest.buyTransaction')}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Ticker Selection */}
           <div className="space-y-2">
-            <Label htmlFor="ticker">Ticker</Label>
+            <Label htmlFor="ticker">{t('common.backtest.ticker')}</Label>
             <SelectTickerDialog onSelectTicker={handleTickerSelect}>
               <Button
                 variant="outline"
                 className="w-full justify-start font-normal"
                 disabled={loading}
               >
-                {selectedTicker || 'Select ticker...'}
+                {selectedTicker || t('common.backtest.selectTicker')}
               </Button>
             </SelectTickerDialog>
           </div>
@@ -211,7 +213,7 @@ export function BuyTransactionDialog({
           {selectedTicker && currentTickerPrice > 0 && (
             <div className="bg-muted/50 p-3 rounded-lg">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Current Price</span>
+                <span className="text-sm text-muted-foreground">{t('common.backtest.currentPrice')}</span>
                 <span className="font-semibold">{formatPrice(currentTickerPrice, { mode: 'vn' })}</span>
               </div>
             </div>
@@ -219,7 +221,7 @@ export function BuyTransactionDialog({
 
           {/* Quantity Input */}
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity (shares)</Label>
+            <Label htmlFor="quantity">{t('common.backtest.quantityShares')}</Label>
             <Input
               id="quantity"
               placeholder="100"
@@ -228,7 +230,7 @@ export function BuyTransactionDialog({
               disabled={loading}
             />
             <p className="text-xs text-muted-foreground">
-              Enter the number of shares you want to buy
+              {t('common.backtest.enterQuantity')}
             </p>
           </div>
 
@@ -236,13 +238,13 @@ export function BuyTransactionDialog({
           {totalCost > 0 && (
             <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Total Cost</span>
+                <span className="text-sm font-medium">{t('common.backtest.totalCost')}</span>
                 <span className="font-bold text-primary">{formatPrice(totalCost, { mode: 'vn' })}</span>
               </div>
               <div className="flex justify-between items-center mt-1">
-                <span className="text-xs text-muted-foreground">Quantity</span>
+                <span className="text-xs text-muted-foreground">{t('common.backtest.quantity')}</span>
                 <span className="text-sm font-medium">
-                  {parseInt(quantity.replace(/,/g, '')).toLocaleString()} shares
+                  {parseInt(quantity.replace(/,/g, '')).toLocaleString()} {t('common.backtest.shares')}
                 </span>
               </div>
             </div>
@@ -250,10 +252,10 @@ export function BuyTransactionDialog({
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
+            <Label htmlFor="notes">{t('common.backtest.notesOptional')}</Label>
             <Textarea
               id="notes"
-              placeholder="Add any notes about this transaction..."
+              placeholder={t('common.backtest.notesPlaceholder')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               disabled={loading}
@@ -269,21 +271,21 @@ export function BuyTransactionDialog({
               disabled={loading}
               className="flex-1"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleBuy}
               disabled={!isValid || loading}
               className="flex-1"
             >
-              {loading ? 'Processing...' : `Buy ${selectedTicker || ''}`}
+              {loading ? t('common.backtest.processing') : `${t('common.backtest.buy')} ${selectedTicker || ''}`}
             </Button>
           </div>
 
           {/* Warning */}
           {totalCost === 0 && quantity && currentTickerPrice > 0 && (
             <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-              Quantity too small
+              {t('common.backtest.quantityTooSmall')}
             </div>
           )}
         </div>

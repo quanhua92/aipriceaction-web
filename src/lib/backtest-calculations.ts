@@ -1,4 +1,4 @@
-import { Transaction, Position, CalculationMethod } from '@/lib/backtest-storage'
+import { Transaction, Position } from '@/lib/backtest-storage'
 
 export interface BuyLot {
   id: string
@@ -118,18 +118,19 @@ export function calculateFIFOSell(
 }
 
 /**
- * Calculate LIFO (Last In, First Out) sell transaction
+ * Calculate FIFO (First In, First Out) sell transaction
+ * This is the only calculation method used in the system
  */
-export function calculateLIFOSell(
+export function calculateSell(
   position: Position,
   sellQuantity: number,
   sellPrice: number,
   allTransactions: Transaction[]
 ): SellCalculation {
-  // Get all buy transactions for this ticker, sorted by date (newest first)
+  // Get all buy transactions for this ticker, sorted by date (oldest first)
   const buyLots: BuyLot[] = allTransactions
     .filter(t => t.type === 'buy' && t.ticker === position.ticker)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .map(t => ({
       id: t.id,
       quantity: t.quantity,
@@ -137,103 +138,83 @@ export function calculateLIFOSell(
       date: t.date
     }))
 
-  // Account for previous sells (need to process in reverse for LIFO)
+  // Account for previous sells
   const sellTransactions = allTransactions
     .filter(t => t.type === 'sell' && t.ticker === position.ticker)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Reverse order
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   let remainingLots = [...buyLots]
   const soldLots: Array<BuyLot & { soldQuantity: number; soldPrice: number }> = []
 
-  // For LIFO, we need to track which shares have been sold from which lots
-  // This is complex for historical tracking, so we'll use a simplified approach
-  // that focuses on the current sell calculation
+  // Apply previous sells to get current state
+  for (const sell of sellTransactions) {
+    let quantityToSell = sell.quantity
+    const tempSoldLots: typeof soldLots = []
 
-  // Calculate using current position average cost as fallback for simplicity
-  // In a full implementation, you'd need to track lot allocations precisely
-  const totalSoldAmount = sellQuantity * sellPrice
-  const totalCostAmount = sellQuantity * position.averageCost
-  const realizedPnL = totalSoldAmount - totalCostAmount
-  const realizedPnLPercent = position.averageCost > 0 ? (realizedPnL / totalCostAmount) * 100 : 0
+    for (let i = 0; i < remainingLots.length && quantityToSell > 0; i++) {
+      const lot = remainingLots[i]
+      const sellFromThisLot = Math.min(lot.quantity, quantityToSell)
 
-  // Update remaining shares (simplified)
-  const newTotalShares = Math.max(0, position.totalShares - sellQuantity)
-  const remainingQuantity = newTotalShares
+      tempSoldLots.push({
+        id: lot.id,
+        quantity: lot.quantity,
+        price: lot.price,
+        date: lot.date,
+        soldQuantity: sellFromThisLot,
+        soldPrice: sell.price
+      })
+
+      remainingLots[i] = {
+        ...lot,
+        quantity: lot.quantity - sellFromThisLot
+      }
+
+      quantityToSell -= sellFromThisLot
+    }
+
+    soldLots.push(...tempSoldLots)
+    remainingLots = remainingLots.filter(lot => lot.quantity > 0)
+  }
+
+  // Calculate current sell
+  let remainingQuantity = sellQuantity
+  let totalCostBasis = 0
+  const tempSoldLots: typeof soldLots = []
+
+  for (let i = 0; i < remainingLots.length && remainingQuantity > 0; i++) {
+    const lot = remainingLots[i]
+    const sellFromThisLot = Math.min(lot.quantity, remainingQuantity)
+
+    totalCostBasis += sellFromThisLot * lot.price
+
+    tempSoldLots.push({
+      id: lot.id,
+      quantity: lot.quantity,
+      price: lot.price,
+      date: lot.date,
+      soldQuantity: sellFromThisLot,
+      soldPrice: sellPrice
+    })
+
+    remainingLots[i] = {
+      ...lot,
+      quantity: lot.quantity - sellFromThisLot
+    }
+
+    remainingQuantity -= sellFromThisLot
+  }
+
+  const sellValue = sellQuantity * sellPrice
+  const realizedPnL = sellValue - totalCostBasis
+  const realizedPnLPercent = totalCostBasis > 0 ? (realizedPnL / totalCostBasis) * 100 : 0
+
+  const finalRemainingLots = remainingLots.filter(lot => lot.quantity > 0)
 
   return {
     realizedPnL,
     realizedPnLPercent,
-    remainingLots: remainingQuantity > 0 ? [{
-      id: 'remaining',
-      quantity: remainingQuantity,
-      price: position.averageCost,
-      date: new Date().toISOString()
-    }] : [],
-    soldLots: [{
-      id: 'sold',
-      quantity: sellQuantity,
-      price: position.averageCost,
-      date: new Date().toISOString(),
-      soldQuantity: sellQuantity,
-      soldPrice: sellPrice
-    }]
-  }
-}
-
-/**
- * Calculate Average Cost sell transaction
- */
-export function calculateAverageCostSell(
-  position: Position,
-  sellQuantity: number,
-  sellPrice: number
-): SellCalculation {
-  const totalSoldAmount = sellQuantity * sellPrice
-  const totalCostAmount = sellQuantity * position.averageCost
-  const realizedPnL = totalSoldAmount - totalCostAmount
-  const realizedPnLPercent = position.averageCost > 0 ? (realizedPnL / totalCostAmount) * 100 : 0
-
-  const newTotalShares = Math.max(0, position.totalShares - sellQuantity)
-
-  return {
-    realizedPnL,
-    realizedPnLPercent,
-    remainingLots: newTotalShares > 0 ? [{
-      id: 'remaining',
-      quantity: newTotalShares,
-      price: position.averageCost,
-      date: new Date().toISOString()
-    }] : [],
-    soldLots: [{
-      id: 'sold',
-      quantity: sellQuantity,
-      price: position.averageCost,
-      date: new Date().toISOString(),
-      soldQuantity: sellQuantity,
-      soldPrice: sellPrice
-    }]
-  }
-}
-
-/**
- * Generic sell calculation based on method
- */
-export function calculateSell(
-  position: Position,
-  sellQuantity: number,
-  sellPrice: number,
-  calculationMethod: CalculationMethod,
-  allTransactions: Transaction[]
-): SellCalculation {
-  switch (calculationMethod) {
-    case 'fifo':
-      return calculateFIFOSell(position, sellQuantity, sellPrice, allTransactions)
-    case 'lifo':
-      return calculateLIFOSell(position, sellQuantity, sellPrice, allTransactions)
-    case 'average':
-      return calculateAverageCostSell(position, sellQuantity, sellPrice)
-    default:
-      return calculateFIFOSell(position, sellQuantity, sellPrice, allTransactions)
+    remainingLots: finalRemainingLots,
+    soldLots: [...soldLots, ...tempSoldLots]
   }
 }
 

@@ -1,10 +1,6 @@
 import { BACKTEST_STORAGE_KEY } from '@/lib/constants'
 
-export type CalculationMethod = 'fifo' | 'lifo' | 'average'
-
 export interface BacktestSettings {
-  calculationMethod: CalculationMethod
-  defaultBuyAmount: number
   currency: 'VND' | 'USD'
 }
 
@@ -50,8 +46,6 @@ export interface BacktestExport {
 }
 
 const DEFAULT_SETTINGS: BacktestSettings = {
-  calculationMethod: 'fifo',
-  defaultBuyAmount: 10000000, // 10M VND default
   currency: 'VND'
 }
 

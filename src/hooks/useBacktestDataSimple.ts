@@ -37,8 +37,6 @@ export function useBacktestDataSimple() {
   // State for backtest data
   const [data, setData] = React.useState<BacktestData>({
     settings: {
-      calculationMethod: 'fifo',
-      defaultBuyAmount: 10000000,
       currency: 'VND'
     },
     transactions: [],
@@ -264,7 +262,6 @@ export function useBacktestDataSimple() {
         position,
         sellQuantity,
         price,
-        data.settings.calculationMethod,
         data.transactions
       )
 

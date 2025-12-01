@@ -97,7 +97,7 @@ const handleResetData = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium">Backtesting</h3>
+          <h3 className="text-sm font-medium">{t('common.backtest.title')}</h3>
           {data.transactions.length > 0 && (
             <Badge variant="secondary" className="text-xs">
               {data.transactions.length} transaction{data.transactions.length !== 1 ? 's' : ''}
@@ -155,7 +155,7 @@ const handleResetData = () => {
 
       {/* Transaction Table */}
       <div className="space-y-3">
-        <h4 className="text-sm font-medium">Transaction History</h4>
+        <h4 className="text-sm font-medium">{t('common.backtest.transactionHistory')}</h4>
         <TransactionTable
           transactions={data.transactions}
           currentPrices={currentPrices}
@@ -187,13 +187,6 @@ const handleResetData = () => {
         </SellTransactionDialog>
       )}
 
-      {/* Settings info */}
-      <div className="text-xs text-muted-foreground pt-2 border-t">
-        <div className="flex items-center justify-between">
-          <span>Calculation Method: <strong>{data.settings.calculationMethod.toUpperCase()}</strong></span>
-          <span>Historical prices based on selected date</span>
-        </div>
       </div>
-    </div>
   )
 }
