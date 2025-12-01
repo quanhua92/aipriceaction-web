@@ -198,3 +198,8 @@ export const ALERT_TRIGGER_THRESHOLD = 0.5 // 0.5%
  * Intraday intervals that show time in chart overlay
  */
 export const INTRADAY_INTERVALS = ['1m', '5m', '15m', '30m', '1H'] as const
+
+/**
+ * LocalStorage key for basic backtest data
+ */
+export const BACKTEST_STORAGE_KEY = 'basic-backtest-data'

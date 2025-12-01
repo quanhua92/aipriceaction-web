@@ -6,6 +6,7 @@ import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
+import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { ALL_WATCHLIST_NAME, CUSTOM_WATCHLISTS_STORAGE_KEY } from "@/lib/constants";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
@@ -426,6 +427,7 @@ function WatchPage() {
 						<TabsList className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0 h-9 lg:h-10">
 							<TabsTrigger value="ticker" className="flex-1 text-xs lg:text-sm">Ticker Info</TabsTrigger>
 							<TabsTrigger value="matrix" className="flex-1 text-xs lg:text-sm">Market Matrix</TabsTrigger>
+							<TabsTrigger value="backtest" className="flex-1 text-xs lg:text-sm">Backtesting</TabsTrigger>
 						</TabsList>
 
 						<TabsContent value="ticker" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4 data-[state=inactive]:hidden">
@@ -442,6 +444,10 @@ function WatchPage() {
 
 						<TabsContent value="matrix" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
 							<MarketMatrix />
+						</TabsContent>
+
+						<TabsContent value="backtest" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
+							<BasicBackTestWidget />
 						</TabsContent>
 					</Tabs>
 				</div>

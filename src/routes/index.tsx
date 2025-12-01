@@ -20,20 +20,25 @@ const DEFAULT_HOME_TICKERS = ['VNINDEX', 'VIC', 'STB', 'MSB'] as const;
 function HomePage() {
 	const { t } = useTranslation();
 
-	// Chart tickers state with localStorage persistence
-	const [chartTickers, setChartTickers] = React.useState<string[]>(() => {
-		const stored = localStorage.getItem(HOME_CHART_TICKERS_STORAGE_KEY);
-		if (stored) {
-			try {
-				const parsed = JSON.parse(stored);
-				if (Array.isArray(parsed) && parsed.length === 4) {
-					return parsed;
+	// Chart tickers state with localStorage persistence - SSR-safe initialization
+	const [chartTickers, setChartTickers] = React.useState<string[]>([...DEFAULT_HOME_TICKERS]);
+
+	// Load stored chart tickers on client-side mount
+	React.useEffect(() => {
+		if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+			const stored = localStorage.getItem(HOME_CHART_TICKERS_STORAGE_KEY);
+			if (stored) {
+				try {
+					const parsed = JSON.parse(stored);
+					if (Array.isArray(parsed) && parsed.length === 4) {
+						setChartTickers(parsed);
+					}
+				} catch (error) {
+					console.error("Failed to parse stored chart tickers:", error);
 				}
-			} catch {}
+			}
 		}
-		// Don't save defaults - only save when user changes a ticker
-		return [...DEFAULT_HOME_TICKERS];
-	});
+	}, []);
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
