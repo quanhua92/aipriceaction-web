@@ -154,7 +154,13 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 
 	// Snap to nearest trading day after trading days are loaded
 	React.useEffect(() => {
-		if (!endDate || tradingDays.length === 0) return
+		if (tradingDays.length === 0) return
+
+		// If endDate is undefined, set to the last trading day
+		if (!endDate) {
+			setEndDate(tradingDays[tradingDays.length - 1])
+			return
+		}
 
 		// Check if current endDate is already a trading day
 		if (tradingDays.includes(endDate)) return
@@ -167,7 +173,7 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 			// If date is after all trading days, use the last one
 			setEndDate(tradingDays[tradingDays.length - 1])
 		}
-	}, [tradingDays]) // Only run when tradingDays changes, not endDate
+	}, [tradingDays, setEndDate]) // Only run when tradingDays changes, not endDate
 
 	// Compute navigation constraints
 	// Only disable forward when at today or future (not at array boundary)
@@ -195,8 +201,8 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 				</Button>
 			</div>
 
-			{/* DateInput with calendar picker - show today as default */}
-			<DateInput value={endDate || today} onChange={handleDateChange} />
+			{/* DateInput with calendar picker - no initial value, will snap to last trading day */}
+			<DateInput value={endDate} onChange={handleDateChange} placeholder="Select date" />
 
 			{/* Navigation buttons */}
 			<div className="flex items-center justify-center gap-3">
