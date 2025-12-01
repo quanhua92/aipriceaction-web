@@ -238,10 +238,25 @@ function ChartPage() {
 			{/* Right Sidebar - Tabs */}
 			<div className="h-auto lg:h-full border-l bg-background flex flex-col overflow-hidden">
 				<Tabs defaultValue="ticker" className="flex-1 flex flex-col min-h-0">
-					<TabsList className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0 h-9 lg:h-10">
-						<TabsTrigger value="ticker" className="flex-1 text-xs lg:text-sm">Ticker Info</TabsTrigger>
-						<TabsTrigger value="matrix" className="flex-1 text-xs lg:text-sm">Market Matrix</TabsTrigger>
-						<TabsTrigger value="backtest" className="flex-1 text-xs lg:text-sm">Backtesting</TabsTrigger>
+					<TabsList className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0 h-9 lg:h-10 gap-1.5">
+						<TabsTrigger
+							value="ticker"
+							className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+						>
+							Ticker Info
+						</TabsTrigger>
+						<TabsTrigger
+							value="matrix"
+							className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+						>
+							Market Matrix
+						</TabsTrigger>
+						<TabsTrigger
+							value="backtest"
+							className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+						>
+							Backtesting
+						</TabsTrigger>
 					</TabsList>
 
 					<TabsContent value="ticker" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4 data-[state=inactive]:hidden">
