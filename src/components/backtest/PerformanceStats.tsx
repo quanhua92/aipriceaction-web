@@ -199,7 +199,7 @@ export function PerformanceStats({ stats, loading, className }: PerformanceStats
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">{stats.bestPerformer.ticker}</span>
                   <span className={`text-sm font-medium ${getPriceChangeColor(stats.bestPerformer.percent)}`}>
-                    +{stats.bestPerformer.percent.toFixed(2)}%
+                    {stats.bestPerformer.percent.toFixed(2)}%
                   </span>
                 </div>
               ) : (
