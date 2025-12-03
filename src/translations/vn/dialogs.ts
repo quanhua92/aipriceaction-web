@@ -42,8 +42,9 @@ export default {
     save: 'Lưu Cảnh Báo',
     cancel: 'Hủy',
     tabs: {
-      details: 'Chi Tiết Cảnh Báo',
-      existing: 'Cảnh Báo Hiện Có',
+      details: 'Chi Tiết',
+      existing: 'Tất Cả',
+      chart: 'Biểu Đồ',
     },
     note: {
       label: 'Ghi chú (tùy chọn)',

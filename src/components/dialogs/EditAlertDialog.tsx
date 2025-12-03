@@ -25,6 +25,7 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { formatPrice, formatPercent, formatToVietnamDate, parseUTCISOString } from '@/lib/format'
 import { ALERT_TYPES } from '@/lib/constants'
 import type { Alert } from '@/lib/alert-storage'
+import { TradingViewChart } from '@/components/charts/TradingViewChart'
 
 export interface EditAlertDialogProps {
   children: React.ReactNode
@@ -193,8 +194,9 @@ export function EditAlertDialog({
         </DialogHeader>
 
         <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col gap-0 pt-6">
-          <TabsList className="mx-6 mb-4">
+          <TabsList className="mx-6 mb-4 grid grid-cols-3">
             <TabsTrigger value="details">{t('dialogs.quickAddAlert.tabs.details')}</TabsTrigger>
+            <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
             <TabsTrigger value="existing">
               {t('dialogs.quickAddAlert.tabs.existing')} ({existingAlerts.length})
             </TabsTrigger>
@@ -397,6 +399,15 @@ export function EditAlertDialog({
                 })}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden px-6 pb-4">
+            <TradingViewChart
+              title={alert.ticker}
+              initialTicker={alert.ticker}
+              height={400}
+              showControls={false}
+            />
           </TabsContent>
         </Tabs>
 

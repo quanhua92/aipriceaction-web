@@ -43,7 +43,8 @@ export default {
     cancel: 'Cancel',
     tabs: {
       details: 'Alert Details',
-      existing: 'Existing Alerts',
+      existing: 'All Alerts',
+      chart: 'Chart',
     },
     note: {
       label: 'Note (optional)',
