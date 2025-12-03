@@ -277,6 +277,7 @@ export default {
     quantityShares: 'Số Lượng (cổ phiếu)',
     enterQuantity: 'Nhập số lượng cổ phiếu bạn muốn mua',
     totalCost: 'Tổng Chi Phí',
+    percentChange: '% Thay Đổi',
     notesOptional: 'Ghi Chú (tùy chọn)',
     notesPlaceholder: 'Thêm ghi chú về giao dịch này...',
     quantityTooSmall: 'Số lượng quá nhỏ',

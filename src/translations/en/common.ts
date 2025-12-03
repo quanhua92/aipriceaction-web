@@ -277,6 +277,7 @@ export default {
     quantityShares: 'Quantity (shares)',
     enterQuantity: 'Enter the number of shares you want to buy',
     totalCost: 'Total Cost',
+    percentChange: '% Change',
     notesOptional: 'Notes (optional)',
     notesPlaceholder: 'Add any notes about this transaction...',
     quantityTooSmall: 'Quantity too small',

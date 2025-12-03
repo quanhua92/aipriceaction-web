@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { formatPrice, parseUTCISOString, formatToVietnamDate } from '@/lib/format'
+import { formatPrice, parseUTCISOString, formatToVietnamDate, calculatePriceDifference, formatPercent } from '@/lib/format'
 import { getPriceChangeColor } from '@/lib/colors'
 import { Transaction } from '@/lib/backtest-storage'
 import { Button } from '@/components/ui/button'
@@ -135,6 +135,41 @@ export function TransactionTable({
               <p className="text-muted-foreground text-xs">{t('common.backtest.total')}</p>
               <p className="font-medium">{formatPrice(transaction.total, { mode: 'vn' })}</p>
             </div>
+            <div>
+              <p className="text-muted-foreground text-xs">{t('common.backtest.currentPrice')}</p>
+              {(() => {
+                const currentPrice = currentPrices[transaction.ticker]
+                if (!currentPrice) {
+                  return <p className="font-medium text-muted-foreground">—</p>
+                }
+                return <p className="font-medium">{formatPrice(currentPrice, { mode: 'vn' })}</p>
+              })()}
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">{t('common.backtest.percentChange')}</p>
+              {(() => {
+                const currentPrice = currentPrices[transaction.ticker]
+                if (!currentPrice) {
+                  return <p className="font-medium text-muted-foreground">—</p>
+                }
+
+                const percentDiff = calculatePriceDifference(currentPrice, transaction.price)
+                const isProfitable = isBuy ? percentDiff > 0 : percentDiff < 0
+
+                return (
+                  <div className="flex items-center gap-1">
+                    {isProfitable ? (
+                      <TrendingUp className="h-3.5 w-3.5 text-green-600 dark:text-green-500" />
+                    ) : (
+                      <TrendingDown className="h-3.5 w-3.5 text-red-600 dark:text-red-500" />
+                    )}
+                    <span className={`font-medium text-sm ${getPriceChangeColor(percentDiff)}`}>
+                      {formatPercent(percentDiff)}
+                    </span>
+                  </div>
+                )
+              })()}
+            </div>
             {!isBuy && gainLossInfo && (
               <div className="col-span-2">
                 <p className="text-muted-foreground text-xs">{t('common.backtest.gainLoss')}</p>
@@ -188,6 +223,8 @@ export function TransactionTable({
                   <TableHead className="text-right">{t('common.backtest.quantity')}</TableHead>
                   <TableHead className="text-right">{t('common.backtest.price')}</TableHead>
                   <TableHead className="text-right">{t('common.backtest.total')}</TableHead>
+                  <TableHead className="text-right">{t('common.backtest.currentPrice')}</TableHead>
+                  <TableHead className="text-right w-20">{t('common.backtest.percentChange')}</TableHead>
                   <TableHead className="text-right">{t('common.backtest.gainLoss')} %</TableHead>
                   <TableHead className="w-32">{t('common.backtest.notes')}</TableHead>
                   <TableHead className="w-12"></TableHead>
@@ -217,6 +254,39 @@ export function TransactionTable({
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm font-medium">
                         {formatPrice(transaction.total, { mode: 'vn' })}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-sm">
+                        {(() => {
+                          const currentPrice = currentPrices[transaction.ticker]
+                          if (!currentPrice) {
+                            return <span className="text-muted-foreground text-sm">—</span>
+                          }
+                          return formatPrice(currentPrice, { mode: 'vn' })
+                        })()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {(() => {
+                          const currentPrice = currentPrices[transaction.ticker]
+                          if (!currentPrice) {
+                            return <span className="text-muted-foreground text-sm">—</span>
+                          }
+
+                          const percentDiff = calculatePriceDifference(currentPrice, transaction.price)
+                          const isProfitable = isBuy ? percentDiff > 0 : percentDiff < 0
+
+                          return (
+                            <div className="flex items-center justify-end gap-1">
+                              {isProfitable ? (
+                                <TrendingUp className="h-3.5 w-3.5 text-green-600 dark:text-green-500" />
+                              ) : (
+                                <TrendingDown className="h-3.5 w-3.5 text-red-600 dark:text-red-500" />
+                              )}
+                              <span className={`font-medium text-sm ${getPriceChangeColor(percentDiff)}`}>
+                                {formatPercent(percentDiff)}
+                              </span>
+                            </div>
+                          )
+                        })()}
                       </TableCell>
                       <TableCell className="text-right">
                         {!isBuy && gainLossInfo ? (

@@ -216,6 +216,19 @@ export function formatPercent(percent: number | null | undefined): string {
 }
 
 /**
+ * Calculate percentage difference between current price and transaction price
+ * @param currentPrice - Current market price
+ * @param transactionPrice - Original transaction price
+ * @returns Percentage difference (positive for profit, negative for loss)
+ * @example calculatePriceDifference(55000, 50000) => 10 (10% profit)
+ * @example calculatePriceDifference(45000, 50000) => -10 (10% loss)
+ */
+export function calculatePriceDifference(currentPrice: number, transactionPrice: number): number {
+  if (transactionPrice === 0) return 0
+  return ((currentPrice - transactionPrice) / transactionPrice) * 100
+}
+
+/**
  * Format volume with K/M suffix for readability
  * @example formatVolume(2400000) => "2.4M"
  * @example formatVolume(500000) => "500K"
