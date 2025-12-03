@@ -185,7 +185,7 @@ export function EditAlertDialog({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
+      <DialogContent className="sm:max-w-md w-[90vw] h-[90vh] h-[90dvh] flex flex-col overflow-hidden p-0">
         <DialogHeader className="flex-shrink-0 px-6 pt-6">
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />

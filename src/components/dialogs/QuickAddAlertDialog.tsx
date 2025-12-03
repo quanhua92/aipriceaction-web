@@ -25,6 +25,7 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { formatPrice, formatPercent } from '@/lib/format'
 import { ALERT_TYPES } from '@/lib/constants'
 import type { Alert } from '@/lib/alert-storage'
+import { TradingViewChart } from '@/components/charts/TradingViewChart'
 
 export interface QuickAddAlertDialogProps {
   children: React.ReactNode
@@ -151,7 +152,7 @@ export function QuickAddAlertDialog({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
+      <DialogContent className="sm:max-w-md w-[90vw] h-[90vh] h-[90dvh] flex flex-col overflow-hidden p-0">
         <DialogHeader className="flex-shrink-0 px-6 pt-6">
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
@@ -160,8 +161,9 @@ export function QuickAddAlertDialog({
         </DialogHeader>
 
         <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col gap-0 pt-6">
-          <TabsList className="mx-6 mb-4">
+          <TabsList className="mx-6 mb-4 grid grid-cols-3">
             <TabsTrigger value="details">{t('dialogs.quickAddAlert.tabs.details')}</TabsTrigger>
+            <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
             <TabsTrigger value="existing">
               {t('dialogs.quickAddAlert.tabs.existing')} ({existingAlerts.length})
             </TabsTrigger>
@@ -322,6 +324,15 @@ export function QuickAddAlertDialog({
                 })}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden px-6 pb-4">
+            <TradingViewChart
+              title={ticker}
+              initialTicker={ticker}
+              height={400}
+              showControls={false}
+            />
           </TabsContent>
         </Tabs>
 
