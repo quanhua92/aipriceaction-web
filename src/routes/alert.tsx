@@ -22,7 +22,7 @@ function AlertPage() {
   const { alerts, activeAlerts, triggeredAlerts, refreshAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
   const { info, error: logError } = useLogs()
-  const { endDate: globalEndDate } = useChartSettings()
+  const { endDate: globalEndDate, setEndDate } = useChartSettings()
 
   // State for selected ticker (from clicking alert row)
   const [selectedTicker, setSelectedTicker] = React.useState<string>('VNINDEX')
@@ -34,6 +34,23 @@ function AlertPage() {
 
   // File input ref for import
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  // Check if endDate is in the past
+  const isEndDateInPast = React.useMemo(() => {
+    if (!globalEndDate) return false
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Set to start of day for accurate comparison
+
+    const endDateTime = new Date(globalEndDate)
+
+    return endDateTime < today
+  }, [globalEndDate])
+
+  // Clear end date function
+  const handleClearEndDate = () => {
+    setEndDate(null)
+  }
 
   // Calculate closest alert
   const closestAlert = React.useMemo(() => {
@@ -186,12 +203,19 @@ function AlertPage() {
       </div>
 
       {/* Warning when viewing historical data */}
-      {globalEndDate && (
+      {isEndDateInPast && (
         <div className="mx-4 md:mx-6 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span className="text-sm">
             Alert checking is paused while viewing historical data ({globalEndDate}).
-            Clear the end date in Chart Settings to resume.
+            Click here to{' '}
+            <button
+              onClick={handleClearEndDate}
+              className="underline hover:text-yellow-700 dark:hover:text-yellow-400 font-medium"
+            >
+              clear the end date
+            </button>
+            {' '}and resume.
           </span>
         </div>
       )}
