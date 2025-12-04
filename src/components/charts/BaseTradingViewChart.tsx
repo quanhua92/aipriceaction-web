@@ -690,33 +690,86 @@ export function BaseTradingViewChart({
 					if (!displayData) return null
 					const isLongSymbol = (displayData.symbol?.length ?? 0) > 4
 					const isIntradayInterval = INTRADAY_INTERVALS.includes(globalSettings.interval as typeof INTRADAY_INTERVALS[number])
+
+					// Build MA values array for visible MAs only
+					const maValues = []
+					if (maVisibility.ma10 && displayData.ma10 != null) {
+						maValues.push({
+							label: 'MA10',
+							value: displayData.ma10,
+							color: '#dc2626'
+						})
+					}
+					if (maVisibility.ma20 && displayData.ma20 != null) {
+						maValues.push({
+							label: 'MA20',
+							value: displayData.ma20,
+							color: '#16a34a'
+						})
+					}
+					if (maVisibility.ma50 && displayData.ma50 != null) {
+						maValues.push({
+							label: 'MA50',
+							value: displayData.ma50,
+							color: '#2563eb'
+						})
+					}
+
 					return (
-						<div
-							className={cn(
-								"absolute top-3 left-3 text-zinc-100 z-10 pointer-events-none",
-								isLongSymbol && isIntradayInterval ? "text-[10px]" : "text-xs"
+						<div>
+							{/* First line - Symbol, Price, Volume, Timestamp */}
+							<div
+								className={cn(
+									"absolute top-3 left-3 text-zinc-100 z-10 pointer-events-none",
+									isLongSymbol && isIntradayInterval ? "text-[10px]" : "text-xs"
+								)}
+								style={{
+									WebkitFontSmoothing: 'antialiased',
+									MozOsxFontSmoothing: 'grayscale',
+								}}
+							>
+								<span className={cn("font-semibold", (displayData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{displayData.symbol}</span> <span className={cn((displayData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(displayData.close, displayData)}</span> <span className={cn((displayData.close_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(displayData.close_changed ?? 0)}</span>
+								<span className="mx-1"></span>
+								<span className={cn((displayData.volume_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(displayData.volume)}</span> <span className={cn((displayData.volume_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(displayData.volume_changed ?? 0)}</span>
+								<span className="text-zinc-400 ml-2">
+									{(() => {
+										try {
+											if (!displayData.time || typeof displayData.time !== 'string') return '--'
+											const date = parseUTCISOString(displayData.time)
+											return isIntradayInterval
+												? formatToVietnamDateTimeShort(date)
+												: formatToVietnamDateShort(date)
+										} catch {
+											return '--'
+										}
+									})()}
+								</span>
+							</div>
+
+							{/* Second line - MA values */}
+							{maValues.length > 0 && (
+								<div
+									className={cn(
+										"absolute top-7 left-3 text-zinc-100 z-10 pointer-events-none",
+										isLongSymbol && isIntradayInterval ? "text-[9px]" : "text-[10px]"
+									)}
+									style={{
+										WebkitFontSmoothing: 'antialiased',
+										MozOsxFontSmoothing: 'grayscale',
+										opacity: 0.8,
+									}}
+								>
+									{maValues.map((ma, index) => (
+										<span key={ma.label}>
+											<span style={{ color: ma.color }}>{ma.label}:</span>
+											<span style={{ color: ma.color, marginLeft: '2px' }}>
+												{formatPrice(ma.value, displayData)}
+											</span>
+											{index < maValues.length - 1 && <span className="mx-1"></span>}
+										</span>
+									))}
+								</div>
 							)}
-							style={{
-								WebkitFontSmoothing: 'antialiased',
-								MozOsxFontSmoothing: 'grayscale',
-							}}
-						>
-							<span className={cn("font-semibold", (displayData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{displayData.symbol}</span> <span className={cn((displayData.close_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatPrice(displayData.close, displayData)}</span> <span className={cn((displayData.close_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(displayData.close_changed ?? 0)}</span>
-							<span className="mx-1"></span>
-							<span className={cn((displayData.volume_changed ?? 0) >= 0 ? "text-green-400" : "text-red-400")}>{formatVolume(displayData.volume)}</span> <span className={cn((displayData.volume_changed ?? 0) >= 0 ? "text-green-600" : "text-red-600")}>{formatPercent(displayData.volume_changed ?? 0)}</span>
-							<span className="text-zinc-400 ml-2">
-								{(() => {
-									try {
-										if (!displayData.time || typeof displayData.time !== 'string') return '--'
-										const date = parseUTCISOString(displayData.time)
-										return isIntradayInterval
-											? formatToVietnamDateTimeShort(date)
-											: formatToVietnamDateShort(date)
-									} catch {
-										return '--'
-									}
-								})()}
-							</span>
 						</div>
 					)
 				})()}
