@@ -203,3 +203,13 @@ export const INTRADAY_INTERVALS = ['1m', '5m', '15m', '30m', '1H'] as const
  * LocalStorage key for basic backtest data
  */
 export const BACKTEST_STORAGE_KEY = 'basic-backtest-data'
+
+/**
+ * LocalStorage key for watch page left sidebar open state
+ */
+export const WATCH_LEFT_SIDEBAR_OPEN_KEY = 'watch-left-sidebar-open'
+
+/**
+ * LocalStorage key for watch page right sidebar open state
+ */
+export const WATCH_RIGHT_SIDEBAR_OPEN_KEY = 'watch-right-sidebar-open'

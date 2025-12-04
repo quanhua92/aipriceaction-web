@@ -8,7 +8,12 @@ import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
 import { MarketMatrix } from "@/components/MarketMatrix";
-import { ALL_WATCHLIST_NAME, CUSTOM_WATCHLISTS_STORAGE_KEY } from "@/lib/constants";
+import {
+	ALL_WATCHLIST_NAME,
+	CUSTOM_WATCHLISTS_STORAGE_KEY,
+	WATCH_LEFT_SIDEBAR_OPEN_KEY,
+	WATCH_RIGHT_SIDEBAR_OPEN_KEY,
+} from "@/lib/constants";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLogs } from "@/contexts/LogsContext";
@@ -22,7 +27,11 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Upload } from "lucide-react";
+import {
+	Collapsible,
+	CollapsibleContent,
+} from "@/components/ui/collapsible";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Upload, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 import type { Interval } from "@/lib/api-client";
 import { getCustomWatchlists, type CustomWatchlists } from "@/lib/watchlist-storage";
@@ -55,6 +64,10 @@ function WatchPage() {
 
 	// Active ticker for right sidebar (last clicked/interacted)
 	const [activeTicker, setActiveTicker] = React.useState<string>("VNINDEX");
+
+	// Sidebar visibility state
+	const [isLeftSidebarOpen, setIsLeftSidebarOpen] = React.useState(true);
+	const [isRightSidebarOpen, setIsRightSidebarOpen] = React.useState(true);
 
 	// Calculate pagination
 	const totalPages = Math.ceil(sortedTickers.length / pageSize);
@@ -209,7 +222,7 @@ function WatchPage() {
 		return index !== -1 ? index : 0;
 	}, [fullscreenTicker, tickerSymbols]);
 
-	// Grid column classes
+	// Grid column classes for chart area
 	const gridColsClass = {
 		1: "grid-cols-1",
 		2: "grid-cols-1 md:grid-cols-2",
@@ -218,6 +231,21 @@ function WatchPage() {
 		5: "grid-cols-1 md:grid-cols-5",
 		6: "grid-cols-1 md:grid-cols-6",
 	}[columns];
+
+	// Dynamic grid layout for main layout
+	const mainGridLayoutClass = React.useMemo(() => {
+		if (isLeftSidebarOpen && isRightSidebarOpen) {
+			return "grid-cols-1 lg:grid-cols-[320px_1fr_380px]";
+		} else if (isLeftSidebarOpen && !isRightSidebarOpen) {
+			return "grid-cols-1 lg:grid-cols-[320px_1fr_48px]";
+		} else if (!isLeftSidebarOpen && isRightSidebarOpen) {
+			return "grid-cols-1 lg:grid-cols-[48px_1fr_380px]";
+		} else if (!isLeftSidebarOpen && !isRightSidebarOpen) {
+			return "grid-cols-1 lg:grid-cols-[48px_1fr_48px]";
+		} else {
+			return "grid-cols-1";
+		}
+	}, [isLeftSidebarOpen, isRightSidebarOpen]);
 
 	return (
 		<div className="flex flex-col min-h-screen">
@@ -260,23 +288,56 @@ function WatchPage() {
 			</div>
 
 			{/* 3-Column Layout */}
-			<div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_380px] flex-1">
+			<div className={`grid ${mainGridLayoutClass} flex-1`}>
 				{/* Left Sidebar - Watchlist */}
-				<div className="h-auto lg:h-full border-r bg-background p-2 lg:p-4 flex flex-col overflow-hidden">
-					<div className="flex items-center justify-between mb-2 lg:mb-4">
-						<h2 className="text-base lg:text-lg font-semibold">Watchlist</h2>
-					</div>
-					<BasicWatchList
-						defaultGroup={ALL_WATCHLIST_NAME}
-						maxHeight="calc(100vh - 12rem)"
-						showMarketIndices={true}
-						showControls={false}
-						onSelectTicker={handleSelectTicker}
-						onSectorChange={handleSectorChange}
-						onSortedTickersChange={handleSortedTickersChange}
-						className="flex-1"
-					/>
-					<DateControlWidget className="mt-4 lg:order-first lg:mt-0" />
+				<div className={`h-auto lg:h-full border-r bg-background flex flex-col overflow-hidden transition-all duration-300 ${isLeftSidebarOpen ? 'p-2 lg:p-4' : 'p-2'}`}>
+					{isLeftSidebarOpen ? (
+						<>
+							<div className="flex justify-end mb-2 lg:mb-4">
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
+									className="h-8 w-8 p-0 hover:bg-muted transition-colors"
+									title="Collapse sidebar"
+								>
+									<PanelLeftClose className="h-4 w-4" />
+								</Button>
+							</div>
+						</>
+					) : (
+						<div className="flex justify-center">
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
+								className="h-8 w-8 p-0 hover:bg-muted transition-colors"
+								title="Expand sidebar"
+							>
+								<PanelLeftOpen className="h-4 w-4" />
+							</Button>
+						</div>
+					)}
+
+					<Collapsible open={isLeftSidebarOpen} onOpenChange={setIsLeftSidebarOpen}>
+						{isLeftSidebarOpen && (
+							<>
+								<CollapsibleContent className="flex-1 flex flex-col min-h-0">
+									<BasicWatchList
+										defaultGroup={ALL_WATCHLIST_NAME}
+										maxHeight="calc(100vh - 12rem)"
+										showMarketIndices={true}
+										showControls={false}
+										onSelectTicker={handleSelectTicker}
+										onSectorChange={handleSectorChange}
+										onSortedTickersChange={handleSortedTickersChange}
+										className="flex-1"
+									/>
+									<DateControlWidget className="mt-4 lg:order-first lg:mt-0" />
+								</CollapsibleContent>
+							</>
+						)}
+					</Collapsible>
 				</div>
 
 				{/* Middle Column - Charts */}
@@ -422,49 +483,67 @@ function WatchPage() {
 				</div>
 
 				{/* Right Sidebar - Tabs */}
-				<div className="h-auto lg:h-full border-l bg-background flex flex-col overflow-hidden">
-					<Tabs defaultValue="ticker" className="flex-1 flex flex-col min-h-0">
-						<TabsList className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0 h-9 lg:h-10 gap-1.5">
-							<TabsTrigger
-								value="ticker"
-								className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
-							>
-								Ticker Info
-							</TabsTrigger>
-							<TabsTrigger
-								value="matrix"
-								className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
-							>
-								Market Matrix
-							</TabsTrigger>
-							<TabsTrigger
-								value="backtest"
-								className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
-							>
-								Backtesting
-							</TabsTrigger>
-						</TabsList>
+				<div className="h-auto lg:h-full border-l bg-background flex flex-col overflow-hidden transition-all duration-300">
+					<div className="flex justify-start pt-2 px-2 lg:pt-4 lg:px-2">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+							className="h-8 w-8 p-0 hover:bg-muted transition-colors"
+							title={isRightSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+						>
+							{isRightSidebarOpen ? (
+								<PanelRightClose className="h-4 w-4" />
+							) : (
+								<PanelRightOpen className="h-4 w-4" />
+							)}
+						</Button>
+					</div>
 
-						<TabsContent value="ticker" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4 data-[state=inactive]:hidden">
-							<BasicTickerWidget
-								ticker={activeTicker}
-								onTickerChange={handleSelectTicker}
-							/>
-							<VolumeProfileWidget
-								ticker={activeTicker}
-								onTickerChange={handleSelectTicker}
-								maxHeight="600px"
-							/>
-						</TabsContent>
+					{isRightSidebarOpen && (
+	<Tabs defaultValue="ticker" className="flex-1 flex flex-col min-h-0">
+									<TabsList className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0 h-9 lg:h-10 gap-1.5">
+										<TabsTrigger
+											value="ticker"
+											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+										>
+											Ticker Info
+										</TabsTrigger>
+										<TabsTrigger
+											value="matrix"
+											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+										>
+											Market Matrix
+										</TabsTrigger>
+										<TabsTrigger
+											value="backtest"
+											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+										>
+											Backtesting
+										</TabsTrigger>
+									</TabsList>
 
-						<TabsContent value="matrix" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
-							<MarketMatrix />
-						</TabsContent>
+									<TabsContent value="ticker" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4 data-[state=inactive]:hidden">
+										<BasicTickerWidget
+											ticker={activeTicker}
+											onTickerChange={handleSelectTicker}
+										/>
+										<VolumeProfileWidget
+											ticker={activeTicker}
+											onTickerChange={handleSelectTicker}
+											maxHeight="600px"
+										/>
+									</TabsContent>
 
-						<TabsContent value="backtest" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
-							<BasicBackTestWidget />
-						</TabsContent>
-					</Tabs>
+									<TabsContent value="matrix" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
+										<MarketMatrix />
+									</TabsContent>
+
+									<TabsContent value="backtest" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
+										<BasicBackTestWidget />
+									</TabsContent>
+								</Tabs>
+	)}
 				</div>
 			</div>
 
