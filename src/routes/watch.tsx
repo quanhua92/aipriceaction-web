@@ -322,7 +322,7 @@ function WatchPage() {
 					<Collapsible open={isLeftSidebarOpen} onOpenChange={setIsLeftSidebarOpen}>
 						{isLeftSidebarOpen && (
 							<>
-								<CollapsibleContent className="flex-1 flex flex-col min-h-0">
+								<CollapsibleContent className="flex-1 flex flex-col min-h-0 gap-4">
 									<BasicWatchList
 										defaultGroup={ALL_WATCHLIST_NAME}
 										maxHeight="calc(100vh - 12rem)"
@@ -383,33 +383,7 @@ function WatchPage() {
 								))}
 							</div>
 
-							<Separator orientation="vertical" className="h-4 lg:h-6 hidden sm:block" />
-
-							{/* Interval selector */}
-							<div className="flex items-center gap-1">
-								<span className="text-xs lg:text-sm text-muted-foreground mr-1 lg:mr-2 hidden sm:inline">
-									Interval:
-								</span>
-								<Select
-									value={globalSettings.interval}
-									onValueChange={handleIntervalChange}
-								>
-									<SelectTrigger className="w-24 h-7 lg:h-8 text-xs lg:text-sm">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="1m">1m</SelectItem>
-										<SelectItem value="5m">5m</SelectItem>
-										<SelectItem value="15m">15m</SelectItem>
-										<SelectItem value="30m">30m</SelectItem>
-										<SelectItem value="1H">1H</SelectItem>
-										<SelectItem value="4H">4H</SelectItem>
-										<SelectItem value="1D">1D</SelectItem>
-										<SelectItem value="1W">1W</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
+													</div>
 					</div>
 
 					{/* Charts Area */}
