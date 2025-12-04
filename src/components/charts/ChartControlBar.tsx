@@ -14,7 +14,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star, Bell } from 'lucide-react'
+import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star, Bell, Download } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -199,41 +199,24 @@ export function ChartControlBar({
 				</div>
 			)}
 
-			{/* Load More Button - Icon + Text on Desktop */}
-			<Button
-				variant="outline"
-				size="sm"
-				className="hidden md:flex h-7 text-xs px-2 gap-1"
-				onClick={loadMoreHistoricalData}
-				disabled={loadingMore}
-				title="Load more historical bars"
-			>
-				{loadingMore ? (
-					<Loader2 className="h-3.5 w-3.5 animate-spin" />
-				) : (
-					<Plus className="h-3.5 w-3.5" />
-				)}
-				{loadingMore ? t('common.loading') : t('common.chart.loadMore')}
-			</Button>
-
-			{/* Load More Button - Icon Only on Mobile */}
-			<Button
-				variant="ghost"
-				size="sm"
-				className="flex md:hidden h-7 w-7 p-0"
-				onClick={loadMoreHistoricalData}
-				disabled={loadingMore}
-				title="Load more historical bars"
-			>
-				{loadingMore ? (
-					<Loader2 className="h-4 w-4 animate-spin" />
-				) : (
-					<Plus className="h-4 w-4" />
-				)}
-			</Button>
-
 			{/* Right-aligned buttons group */}
 			<div className="ml-auto flex items-center gap-1">
+				{/* Load More Button - Icon Only */}
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-7 w-7 p-0"
+					onClick={loadMoreHistoricalData}
+					disabled={loadingMore}
+					title="Load more historical bars"
+				>
+					{loadingMore ? (
+						<Loader2 className="h-4 w-4 animate-spin" />
+					) : (
+						<Download className="h-4 w-4" />
+					)}
+				</Button>
+
 				{/* Star Button - Add to Watchlist */}
 				<QuickAddWatchListDialog ticker={ticker}>
 					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add to watchlist">

@@ -136,7 +136,7 @@ export default {
     clickToViewFullscreen: 'Nhấn vào bất kỳ mã nào trong danh sách để xem biểu đồ toàn màn hình',
   },
   chart: {
-    loadMore: 'Tải Thêm',
+    loadMore: 'Nhiều Hơn',
     ending: 'Kết thúc',
   },
   watchlist: {
