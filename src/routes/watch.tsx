@@ -49,9 +49,7 @@ function WatchPage() {
 	const [selectedSector, setSelectedSector] = React.useState(ALL_WATCHLIST_NAME);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
 
-	// File input ref for import
-	const fileInputRef = React.useRef<HTMLInputElement>(null);
-
+	
 	// Pagination state
 	const [currentPage, setCurrentPage] = React.useState(0);
 	const [pageSize, setPageSize] = React.useState(10);
@@ -133,83 +131,7 @@ function WatchPage() {
 		setFullscreenTicker(null);
 	};
 
-	// Export watchlists to JSON file
-	const handleExport = () => {
-		try {
-			const customWatchlists = getCustomWatchlists();
-			const dataStr = JSON.stringify(customWatchlists, null, 2);
-			const dataBlob = new Blob([dataStr], { type: 'application/json' });
-
-			const url = URL.createObjectURL(dataBlob);
-			const link = document.createElement('a');
-			link.href = url;
-			const now = new Date();
-			const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
-			link.download = `watchlists-${timestamp}.json`;
-
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-			URL.revokeObjectURL(url);
-
-			const watchlistCount = Object.keys(customWatchlists).length;
-			info('Watchlists', `Exported ${watchlistCount} watchlist${watchlistCount !== 1 ? 's' : ''}`);
-		} catch (err) {
-			console.error('Export failed:', err);
-			logError('Watchlists', 'Failed to export watchlists');
-		}
-	};
-
-	// Import watchlists from JSON file
-	const handleImport = () => {
-		fileInputRef.current?.click();
-	};
-
-	const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
-		if (!file) return;
-
-		try {
-			const text = await file.text();
-			const importedWatchlists = JSON.parse(text) as CustomWatchlists;
-
-			// Validate structure
-			if (typeof importedWatchlists !== 'object' || importedWatchlists === null || Array.isArray(importedWatchlists)) {
-				throw new Error('Invalid file format: expected object with watchlist names as keys');
-			}
-
-			// Validate all values are strings
-			for (const [name, tickers] of Object.entries(importedWatchlists)) {
-				if (typeof tickers !== 'string') {
-					throw new Error(`Invalid watchlist format: "${name}" should have comma-separated tickers as string`);
-				}
-			}
-
-			// Get existing watchlists
-			const existingWatchlists = getCustomWatchlists();
-			const importedNames = Object.keys(importedWatchlists);
-			const existingNames = Object.keys(existingWatchlists);
-
-			// Track new vs overwritten counts
-			const overwrittenCount = importedNames.filter(name => existingNames.includes(name)).length;
-			const newCount = importedNames.length - overwrittenCount;
-
-			// Merge: existing + imported (imported takes precedence)
-			const merged = { ...existingWatchlists, ...importedWatchlists };
-			localStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(merged));
-
-			info('Watchlists', `Imported ${importedNames.length} watchlist${importedNames.length !== 1 ? 's' : ''} (${newCount} new, ${overwrittenCount} overwritten)`);
-		} catch (err) {
-			console.error('Import failed:', err);
-			logError('Watchlists', `Failed to import watchlists: ${err instanceof Error ? err.message : 'Unknown error'}`);
-		} finally {
-			// Reset file input
-			if (fileInputRef.current) {
-				fileInputRef.current.value = '';
-			}
-		}
-	};
-
+	
 	// Get ticker symbols array for navigation in fullscreen dialog
 	const tickerSymbols = React.useMemo(() => {
 		return sortedTickers.map(t => t.symbol);
@@ -249,44 +171,7 @@ function WatchPage() {
 
 	return (
 		<div className="flex flex-col min-h-screen">
-			{/* Header - Full Width */}
-			<div className="p-4 md:p-6 border-b">
-				<div className="flex items-center justify-between mb-2">
-					<h1 className="text-2xl font-bold">{t('common.watch.title')}</h1>
-					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleExport}
-							className="flex items-center gap-2"
-						>
-							<Download className="h-4 w-4" />
-							Export
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleImport}
-							className="flex items-center gap-2"
-						>
-							<Upload className="h-4 w-4" />
-							Import
-						</Button>
-					</div>
-				</div>
-				<p className="text-sm text-muted-foreground">
-					{t('common.watch.description')}
-				</p>
-				{/* Hidden file input */}
-				<input
-					ref={fileInputRef}
-					type="file"
-					accept=".json"
-					onChange={handleFileChange}
-					className="hidden"
-				/>
-			</div>
-
+			
 			{/* 3-Column Layout */}
 			<div className={`grid ${mainGridLayoutClass} flex-1`}>
 				{/* Left Sidebar - Watchlist */}
@@ -356,7 +241,7 @@ function WatchPage() {
 										variant={pageSize === size ? "default" : "outline"}
 										size="sm"
 										onClick={() => handlePageSizeChange(String(size))}
-										className="h-7 w-10 lg:h-8 lg:w-12 p-0 text-xs lg:text-sm"
+										className="h-7 w-7 lg:h-8 lg:w-8 p-0 text-xs lg:text-sm"
 									>
 										{size}
 									</Button>

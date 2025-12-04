@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, Plus, Edit2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit2, Download, Upload } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
@@ -8,12 +8,14 @@ import { SortableTickerList, type Ticker } from './SortableTickerList'
 import { CreateWatchListDialog } from '@/components/dialogs/CreateWatchListDialog'
 import { EditWatchListDialog } from '@/components/dialogs/EditWatchListDialog'
 import { TickerGroupSelector } from '@/components/TickerGroupSelector'
-import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
+import { getWatchlistNames, getWatchlistTickers, getCustomWatchlists } from '@/lib/watchlist-storage'
 import {
   getPredefinedWatchlistTickers,
   isPredefinedWatchlist as checkIsPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
 import { useTranslation } from '@/hooks/useTranslation'
+import { useLogs } from '@/contexts/LogsContext'
+import { CUSTOM_WATCHLISTS_STORAGE_KEY } from '@/lib/constants'
 
 export interface BasicWatchListProps {
   defaultGroup?: string
@@ -48,6 +50,8 @@ export function BasicWatchList({
   } = useAPI()
   const { prefetchTickers } = usePrefetchTicker()
   const { t } = useTranslation()
+  const { info, error: logError } = useLogs()
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   // State to track custom watchlists and trigger re-renders
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
@@ -230,6 +234,91 @@ export function BasicWatchList({
     }
   }
 
+  // Export watchlists to JSON file
+  const handleExport = () => {
+    try {
+      const customWatchlistsData = getCustomWatchlists()
+
+      const dataStr = JSON.stringify(customWatchlistsData, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement('a')
+      link.href = url
+      const now = new Date()
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`
+      link.download = `watchlists-${timestamp}.json`
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      const watchlistCount = Object.keys(customWatchlistsData).length
+      info('Watchlists', `Exported ${watchlistCount} watchlist${watchlistCount !== 1 ? 's' : ''}`)
+    } catch (err) {
+      console.error('Export failed:', err)
+      logError('Watchlists', 'Failed to export watchlists')
+    }
+  }
+
+  // Import watchlists from JSON file
+  const handleImport = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const importedWatchlists = JSON.parse(text)
+
+      // Validate structure
+      if (typeof importedWatchlists !== 'object' || importedWatchlists === null || Array.isArray(importedWatchlists)) {
+        throw new Error('Invalid file format: expected object with watchlist names as keys')
+      }
+
+      // Validate all values are strings
+      for (const [name, tickers] of Object.entries(importedWatchlists)) {
+        if (typeof tickers !== 'string') {
+          throw new Error(`Invalid watchlist format: "${name}" should have comma-separated tickers as string`)
+        }
+      }
+
+      // Get existing watchlists
+      const existingWatchlists = {}
+      customWatchlists.forEach(name => {
+        existingWatchlists[name] = getWatchlistTickers(name)
+      })
+
+      const importedNames = Object.keys(importedWatchlists)
+      const existingNames = Object.keys(existingWatchlists)
+
+      // Track new vs overwritten counts
+      const overwrittenCount = importedNames.filter(name => existingNames.includes(name)).length
+      const newCount = importedNames.length - overwrittenCount
+
+      // Merge: existing + imported (imported takes precedence)
+      const merged = { ...existingWatchlists, ...importedWatchlists }
+      localStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(merged))
+
+      info('Watchlists', `Imported ${importedNames.length} watchlist${importedNames.length !== 1 ? 's' : ''} (${newCount} new, ${overwrittenCount} overwritten)`)
+
+      // Refresh the watchlist
+      handleWatchlistUpdated()
+    } catch (err) {
+      console.error('Import failed:', err)
+      logError('Watchlists', `Failed to import watchlists: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
   // Navigation functions - use sorted tickers
   const navigateToPrevious = React.useCallback(() => {
     if (sortedTickers.length === 0) return
@@ -400,6 +489,40 @@ export function BasicWatchList({
           </EditWatchListDialog>
         </div>
       )}
+
+      {/* Export/Import Controls */}
+      <div className="px-3 mt-2">
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExport}
+            className="flex-1 h-8 text-xs hover:bg-muted/50"
+            title="Export watchlists"
+          >
+            <Download className="h-3.5 w-3.5 mr-1" />
+            Export
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleImport}
+            className="flex-1 h-8 text-xs hover:bg-muted/50"
+            title="Import watchlists"
+          >
+            <Upload className="h-3.5 w-3.5 mr-1" />
+            Import
+          </Button>
+        </div>
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
 
       {/* Navigation Controls */}
       {showControls && sortedTickers.length > 0 && (

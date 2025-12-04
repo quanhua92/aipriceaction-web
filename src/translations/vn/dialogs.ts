@@ -5,7 +5,7 @@ export default {
     filters: {
       all: 'Tất cả',
       stocks: 'Cổ phiếu',
-      crypto: 'Tiền mã hóa',
+      crypto: 'Crypto',
     },
     sortBy: {
       volume: 'KL GD',
@@ -18,7 +18,7 @@ export default {
     sections: {
       marketIndices: 'Chỉ Số Thị Trường',
       stocks: 'Cổ Phiếu',
-      crypto: 'Tiền Mã Hóa',
+      crypto: 'Crypto',
       majorCrypto: 'Tiền Mã Hóa Chính',
     },
     labels: {
