@@ -214,17 +214,26 @@ export function BaseTradingViewChart({
 				mouseWheel: true,
 				pinch: true,
 			},
-		})
+					})
 
 		chartRef.current = chart
 
-		// Add candlestick series
+		// Add candlestick series with custom price formatter
 		const candlestickSeries = chart.addSeries(CandlestickSeries, {
 			upColor: '#16a34a',
 			downColor: '#dc2626',
 			borderVisible: false,
 			wickUpColor: '#16a34a',
 			wickDownColor: '#dc2626',
+			priceFormat: {
+				type: 'custom',
+				formatter: (price: number) => {
+					// Use the latest data to determine format mode
+					const currentData = data && data.length > 0 ? data[data.length - 1] : null
+					return formatPrice(price, currentData)
+				},
+				minMove: 0.01,
+			},
 		})
 		candlestickSeriesRef.current = candlestickSeries
 
@@ -657,6 +666,22 @@ export function BaseTradingViewChart({
 		isDataInitialized,
 		maVisibility,
 	])
+
+	// Update candlestick series price format when data changes
+	useEffect(() => {
+		if (candlestickSeriesRef.current && data && data.length > 0) {
+			const currentData = data[data.length - 1]
+			candlestickSeriesRef.current.applyOptions({
+				priceFormat: {
+					type: 'custom',
+					formatter: (price: number) => {
+						return formatPrice(price, currentData)
+					},
+					minMove: currentData.mode === 'vn' ? 1 : 0.01,
+				},
+			})
+		}
+	}, [data])
 
 	if (!data || data.length === 0) {
 		return (
