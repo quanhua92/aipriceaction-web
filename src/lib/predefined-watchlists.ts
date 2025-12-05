@@ -44,6 +44,19 @@ const TM_TICKERS = [
 ]
 
 /**
+ * MASAN - Masan Group companies
+ */
+const MASAN_TICKERS = [
+  'MSN',  // Masan Consumer Corporation
+  'MCH',  // Masan Consumer Holdings
+  'MSR',  // CTCP Masan High-Tech Materials
+  'MML',  // Masan MeatLife Joint Stock Company
+  'VCF',  // Vinacafé Bien Hoa Joint Stock Company
+  'VSN',  // VISSAN Joint Stock Company
+  'NET'   // Net Detergent Joint Stock Company (NETCO)
+]
+
+/**
  * All predefined watchlists
  */
 export const PREDEFINED_WATCHLISTS: PredefinedWatchlist[] = [
@@ -61,6 +74,11 @@ export const PREDEFINED_WATCHLISTS: PredefinedWatchlist[] = [
     name: 'TM',
     tickers: TM_TICKERS,
     description: 'TM Group companies'
+  },
+  {
+    name: 'MASAN',
+    tickers: MASAN_TICKERS,
+    description: 'Masan Group companies'
   }
 ]
 
