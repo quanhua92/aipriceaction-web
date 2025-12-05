@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import * as React from "react";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
-import { BasicWatchList } from "@/components/lists";
+import { BasicWatchList } from "@/components/lists/BasicWatchList";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { CRYPTO_WATCHLIST_NAME } from "@/lib/constants";
 import { useTranslation } from "@/hooks/useTranslation";

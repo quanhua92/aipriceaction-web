@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import * as React from "react";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
-import { BasicWatchList } from "@/components/lists";
+import { BasicWatchList } from "@/components/lists/BasicWatchList";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";

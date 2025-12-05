@@ -10,7 +10,7 @@ import { Search } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { MARKET_INDICES } from '@/lib/constants'
 import { useTranslation } from '@/hooks/useTranslation'
-import { SortableTickerList } from '@/components/lists'
+import { SortableTickerList } from '@/components/lists/SortableTickerList'
 
 interface SelectTickerDialogProps {
   children: React.ReactNode

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
-import { BasicWatchList } from "@/components/lists";
+import { BasicWatchList } from "@/components/lists/BasicWatchList";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
