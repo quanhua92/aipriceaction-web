@@ -193,7 +193,7 @@ export function EditAlertDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col gap-0 pt-6">
+        <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col gap-0">
           <TabsList className="mx-6 mb-4 grid grid-cols-3">
             <TabsTrigger value="details">{t('dialogs.quickAddAlert.tabs.details')}</TabsTrigger>
             <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
@@ -403,7 +403,6 @@ export function EditAlertDialog({
 
           <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden px-6 pb-4">
             <TradingViewChart
-              title={alert.ticker}
               initialTicker={alert.ticker}
               height={400}
               showControls={false}
