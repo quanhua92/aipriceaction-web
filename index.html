@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPriceAction</title>
+    <script type="text/javascript">
+      // Vite replaces import.meta.env.VITE_GA_MEASUREMENT_ID at build time
+      window.GA_MEASUREMENT_ID = '${import.meta.env.VITE_GA_MEASUREMENT_ID || ''}';
+
+      if (window.GA_MEASUREMENT_ID && window.GA_MEASUREMENT_ID !== '' && !window.GA_MEASUREMENT_ID.includes('undefined')) {
+        // Google tag (gtag.js)
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', window.GA_MEASUREMENT_ID);
+
+        // Load gtag script
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=' + window.GA_MEASUREMENT_ID;
+        document.head.appendChild(script);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

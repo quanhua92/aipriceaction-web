@@ -1,9 +1,8 @@
 import { defineConfig } from 'vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
-import { nitroV2Plugin } from '@tanstack/nitro-v2-vite-plugin'
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 
 const config = defineConfig({
   plugins: [
@@ -12,12 +11,7 @@ const config = defineConfig({
       projects: ['./tsconfig.json'],
     }),
     tailwindcss(),
-    tanstackStart(),
-    nitroV2Plugin({
-      compatibilityDate: '2025-11-08',
-      // other nitro config goes here, e.g.
-      // preset: 'node-server'
-    }),
+    TanStackRouterVite(),
     viteReact(),
   ],
   server: {

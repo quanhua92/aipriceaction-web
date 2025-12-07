@@ -1,6 +1,5 @@
 import {
-  HeadContent,
-  Scripts,
+  Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
@@ -20,7 +19,7 @@ import { LogsProvider } from '../contexts/LogsContext'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
-import appCss from '../styles.css?url'
+import '../styles.css'
 
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -47,99 +46,47 @@ function NotFound() {
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-  head: () => ({
-    meta: [
-      {
-        charSet: 'utf-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
-      },
-      {
-        title: 'AIPriceAction',
-      },
-    ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
-    ],
-    scripts: [
-      {
-        type: 'text/javascript',
-        children: `
-          // Vite replaces import.meta.env.VITE_GA_MEASUREMENT_ID at build time
-          window.GA_MEASUREMENT_ID = '${import.meta.env.VITE_GA_MEASUREMENT_ID || ''}';
-
-          if (window.GA_MEASUREMENT_ID && window.GA_MEASUREMENT_ID !== '' && !window.GA_MEASUREMENT_ID.includes('undefined')) {
-            // Google tag (gtag.js)
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', window.GA_MEASUREMENT_ID);
-
-            // Load gtag script
-            var script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + window.GA_MEASUREMENT_ID;
-            document.head.appendChild(script);
-          }
-        `,
-      },
-    ],
-  }),
-
+  component: RootComponent,
   notFoundComponent: NotFound,
-  shellComponent: RootDocument,
 })
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootComponent() {
   const measurementId = typeof window !== 'undefined' ? window.GA_MEASUREMENT_ID : undefined;
 
   return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <GoogleAnalyticsProvider measurementId={measurementId}>
-          <LogsProvider>
-            <SiteSettingsProvider>
-              <RefreshProvider>
-                <ChartSettingsProvider>
-                  <APIProvider>
-                    <AlertProvider>
-                      <NoteProvider>
-                        <Header />
-                        {children}
-                        <StatusBar />
-                        <DebugFooter />
-                      {import.meta.env.DEV && (
-                        <TanStackDevtools
-                          config={{
-                            position: 'bottom-right',
-                          }}
-                          plugins={[
-                            {
-                              name: 'Tanstack Router',
-                              render: <TanStackRouterDevtoolsPanel />,
-                            },
-                            TanStackQueryDevtools,
-                          ]}
-                        />
-                      )}
-                      </NoteProvider>
-                    </AlertProvider>
-                  </APIProvider>
-                </ChartSettingsProvider>
-              </RefreshProvider>
-            </SiteSettingsProvider>
-          </LogsProvider>
-        </GoogleAnalyticsProvider>
-        <Scripts />
-      </body>
-    </html>
+    <GoogleAnalyticsProvider measurementId={measurementId}>
+      <LogsProvider>
+        <SiteSettingsProvider>
+          <RefreshProvider>
+            <ChartSettingsProvider>
+              <APIProvider>
+                <AlertProvider>
+                  <NoteProvider>
+                    <Header />
+                    <Outlet />
+                    <StatusBar />
+                    <DebugFooter />
+                    {import.meta.env.DEV && (
+                      <TanStackDevtools
+                        config={{
+                          position: 'bottom-right',
+                        }}
+                        plugins={[
+                          {
+                            name: 'Tanstack Router',
+                            render: <TanStackRouterDevtoolsPanel />,
+                          },
+                          TanStackQueryDevtools,
+                        ]}
+                      />
+                    )}
+                  </NoteProvider>
+                </AlertProvider>
+              </APIProvider>
+            </ChartSettingsProvider>
+          </RefreshProvider>
+        </SiteSettingsProvider>
+      </LogsProvider>
+    </GoogleAnalyticsProvider>
   )
 }
