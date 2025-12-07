@@ -18,6 +18,7 @@ import { GoogleAnalyticsProvider } from '../contexts/GoogleAnalyticsProvider'
 import { LogsProvider } from '../contexts/LogsContext'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
+import { PWAInstallButton } from '../components/PWAInstallButton'
 
 import '../styles.css'
 
@@ -66,6 +67,7 @@ function RootComponent() {
                     <Outlet />
                     <StatusBar />
                     <DebugFooter />
+                    <PWAInstallButton />
                     {import.meta.env.DEV && (
                       <TanStackDevtools
                         config={{

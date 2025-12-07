@@ -6,6 +6,26 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { getRouter } from './router'
 import { routeTree } from './routeTree.gen'
 
+// PWA Service Worker Registration
+import { registerSW } from 'virtual:pwa-register'
+
+// Register the service worker
+if ('serviceWorker' in navigator) {
+  registerSW({
+    onOfflineReady() {
+      console.log('App now works offline!')
+      // You could show a toast notification here
+    },
+    onNeedRefresh() {
+      console.log('New content available, please refresh')
+      // You could show a refresh prompt here
+    },
+    onRegisterError(error) {
+      console.error('Service worker registration error:', error)
+    }
+  })
+}
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {

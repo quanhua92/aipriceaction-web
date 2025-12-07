@@ -1,6 +1,7 @@
 {
   "short_name": "AIPriceAction",
   "name": "AIPriceAction - Vietnamese Stock Market",
+  "description": "Vietnamese stock market analysis and trading insights powered by AI",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,82 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["finance", "business", "productivity"],
+  "screenshots": [
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "AIPriceAction desktop view - Vietnamese stock market analysis"
+    },
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "375x667",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "AIPriceAction mobile view - Stock charts and analysis on the go"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Market Matrix",
+      "short_name": "Matrix",
+      "description": "View comprehensive market analysis matrix",
+      "url": "/matrix",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI Analysis",
+      "short_name": "AI",
+      "description": "Get AI-powered stock insights",
+      "url": "/ai",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Watchlist",
+      "short_name": "Watch",
+      "description": "Manage your stock watchlist",
+      "url": "/watch",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }

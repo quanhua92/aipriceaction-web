@@ -26,6 +26,7 @@ import {
 import { Toggle } from '@/components/ui/toggle'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
+import { PWAInstallButton } from './PWAInstallButton'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -160,6 +161,11 @@ export default function Header() {
                     <FileText size={20} />
                     <span className="font-medium">Notes</span>
                   </Link>
+
+                  {/* Mobile PWA Install Button */}
+                  <div className="md:hidden pt-4 mt-4 border-t border-gray-700">
+                    <PWAInstallButton />
+                  </div>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -273,6 +279,10 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="hidden md:block">
+            <PWAInstallButton />
+          </div>
+
           <Toggle
             pressed={isRefreshEnabled}
             onPressedChange={toggleRefresh}
