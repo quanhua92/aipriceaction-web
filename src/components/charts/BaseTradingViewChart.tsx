@@ -16,6 +16,7 @@ import {
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort, formatToVietnamDateTimeShort } from '@/lib/format'
 import { INTRADAY_INTERVALS } from '@/lib/constants'
+import { Interval } from '@/lib/api-client'
 import { type StockData } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
@@ -46,7 +47,10 @@ export function BaseTradingViewChart({
 	maVisibility: maVisibilityProp,
 }: BaseTradingViewChartProps) {
 	// Get global settings
-	const globalSettings = useChartSettings()
+	const { interval, ...globalSettings } = useChartSettings()
+
+	// Helper function to check if current interval is intraday
+	const isIntradayInterval = INTRADAY_INTERVALS.includes(interval)
 
 	// Always use context for data
 	const { loading, error, chartData: data } = useTicker()
@@ -713,9 +717,7 @@ export function BaseTradingViewChart({
 				{(() => {
 					const displayData = crosshairData ?? latestData
 					if (!displayData) return null
-					const isLongSymbol = (displayData.symbol?.length ?? 0) > 4
-					const isIntradayInterval = INTRADAY_INTERVALS.includes(globalSettings.interval as typeof INTRADAY_INTERVALS[number])
-
+	
 					// Build MA values array for visible MAs only
 					const maValues = []
 					if (maVisibility.ma10 && displayData.ma10 != null) {
@@ -746,7 +748,7 @@ export function BaseTradingViewChart({
 							<div
 								className={cn(
 									"absolute top-3 left-3 text-zinc-100 z-10 pointer-events-none",
-									isLongSymbol && isIntradayInterval ? "text-[10px]" : "text-xs"
+									"text-[10px]"
 								)}
 								style={{
 									WebkitFontSmoothing: 'antialiased',
@@ -776,7 +778,7 @@ export function BaseTradingViewChart({
 								<div
 									className={cn(
 										"absolute top-7 left-3 text-zinc-100 z-10 pointer-events-none",
-										isLongSymbol && isIntradayInterval ? "text-[9px]" : "text-[10px]"
+										"text-[9px]"
 									)}
 									style={{
 										WebkitFontSmoothing: 'antialiased',

@@ -105,7 +105,7 @@ export function ChartControlBar({
 			variant="ghost"
 			size="sm"
 			onClick={() => handleIntervalChange(int)}
-			className={`px-2 py-1 h-7 text-xs font-medium transition-colors ${
+			className={`px-1.5 py-1 h-7 text-xs font-medium transition-colors ${
 				currentInterval === int
 					? 'bg-primary text-primary-foreground hover:bg-primary/90'
 					: 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -124,7 +124,7 @@ export function ChartControlBar({
 						<Button
 							variant="outline"
 							size="sm"
-							className={`h-7 ${ticker.length > 4 ? 'text-[10px] px-1.5' : 'text-xs px-3'}`}
+							className={`h-7 ${ticker.length > 4 ? 'text-[10px] px-1' : 'text-xs px-2'}`}
 						>
 							{ticker}
 						</Button>

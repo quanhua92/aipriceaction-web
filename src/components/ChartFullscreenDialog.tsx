@@ -214,8 +214,8 @@ export function ChartFullscreenDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent ref={dialogContentRef} className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[90vh] h-[90dvh] p-3 gap-2 flex flex-col">
-        <DialogHeader data-slot="header" className="flex-shrink-0 pb-2">
+      <DialogContent ref={dialogContentRef} className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[90vh] h-[90dvh] p-2 gap-2 flex flex-col">
+        <DialogHeader data-slot="header" className="flex-shrink-0">
           <DialogTitle className="text-base">
             {displayTicker}
             {endDate && ` - ${t('common.chart.ending')} ${endDate}`}
