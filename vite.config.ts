@@ -15,12 +15,12 @@ const config = defineConfig({
     TanStackRouterVite(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'logo192.png', 'logo512.png'],
+      includeAssets: ['favicon.ico', 'favicon.png', 'logo.svg', 'logo-16.png', 'logo-32.png', 'logo-64.png', 'logo-128.png', 'logo-192.png', 'logo-256.png', 'logo-512.png'],
       manifest: {
         name: 'AIPriceAction - Vietnamese Stock Market',
         short_name: 'AIPriceAction',
         description: 'Vietnamese stock market analysis and trading insights powered by AI',
-        theme_color: '#000000',
+        theme_color: '#7c3aed',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
@@ -28,19 +28,46 @@ const config = defineConfig({
         start_url: '/',
         icons: [
           {
-            src: 'favicon.ico',
-            sizes: '64x64 32x32 24x24 16x16',
-            type: 'image/x-icon'
+            src: 'logo-16.png',
+            sizes: '16x16',
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: 'logo192.png',
+            src: 'logo-32.png',
+            sizes: '32x32',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'logo-64.png',
+            sizes: '64x64',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'logo-128.png',
+            sizes: '128x128',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'logo-192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            src: 'logo512.png',
+            src: 'logo-256.png',
+            sizes: '256x256',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'logo-512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ],
         categories: ['finance', 'business', 'productivity']
