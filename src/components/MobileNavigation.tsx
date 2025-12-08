@@ -148,7 +148,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
 
             {/* Mobile PWA Install Button */}
             <div className="pt-4 mt-4 border-t border-gray-700">
-              <PWAInstallButton />
+              <PWAInstallButton mobileStyle />
             </div>
           </nav>
         </SheetContent>

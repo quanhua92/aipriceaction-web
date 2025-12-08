@@ -11,7 +11,11 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
 }
 
-export function PWAInstallButton() {
+interface PWAInstallButtonProps {
+  mobileStyle?: boolean
+}
+
+export function PWAInstallButton({ mobileStyle = false }: PWAInstallButtonProps) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
@@ -83,8 +87,8 @@ export function PWAInstallButton() {
     localStorage.setItem('pwa-install-dismissed', 'true')
   }
 
-  // Don't show anything if already installed or no prompt available
-  if (isInstalled || !deferredPrompt) return null
+  // Don't show anything if already installed (unless mobileStyle is true)
+  if (!mobileStyle && (isInstalled || !deferredPrompt)) return null
 
   // Install prompt banner
   if (showInstallPrompt) {
@@ -130,15 +134,28 @@ export function PWAInstallButton() {
   }
 
   // Small install button (for integration in other components)
+  const handleButtonClick = () => {
+    if (deferredPrompt) {
+      handleInstallClick()
+    } else if (mobileStyle) {
+      // Show manual install instructions
+      alert('To install this app:\n\n' +
+        'Chrome: Click the install icon in the address bar\n' +
+        'Safari: Tap Share → Add to Home Screen\n' +
+        'Firefox: Follow your browser\'s PWA installation process')
+    }
+  }
+
   return (
     <Button
-      onClick={handleInstallClick}
-      variant="outline"
-      size="sm"
-      className="gap-2"
+      onClick={handleButtonClick}
+      variant={mobileStyle ? "ghost" : "outline"}
+      size={mobileStyle ? "default" : "sm"}
+      className={`${mobileStyle ? "w-full h-12 text-base justify-start hover:bg-gray-800 text-white" : "gap-2"}`}
+      disabled={isInstalled}
     >
-      <Download className="h-4 w-4" />
-      Install App
+      <Download className={`${mobileStyle ? "h-5 w-5 mr-3" : "h-4 w-4"}`} />
+      {isInstalled ? 'App Installed' : 'Install App'}
     </Button>
   )
 }
