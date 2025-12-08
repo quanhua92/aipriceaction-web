@@ -236,7 +236,7 @@ export function BaseTradingViewChart({
 					const currentData = data && data.length > 0 ? data[data.length - 1] : null
 					return formatPrice(price, currentData)
 				},
-				minMove: 0.01,
+				minMove: 0.001,
 			},
 		})
 		candlestickSeriesRef.current = candlestickSeries
@@ -681,7 +681,7 @@ export function BaseTradingViewChart({
 					formatter: (price: number) => {
 						return formatPrice(price, currentData)
 					},
-					minMove: currentData.mode === 'vn' ? 1 : 0.01,
+					minMove: currentData.mode === 'vn' ? 1 : 0.001,
 				},
 			})
 		}
