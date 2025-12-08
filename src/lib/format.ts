@@ -149,7 +149,38 @@ export function formatToVietnamDateTimeShort(utcDate: Date): string {
 }
 
 /**
- * Format a price value with comma separators
+ * Get optimal decimal places based on price magnitude
+ * Provides appropriate precision for different price ranges
+ */
+export function getOptimalDecimalPlaces(price: number): number {
+  if (price >= 1) return 2           // 1,250.45
+  if (price >= 0.01) return 4        // 0.1234
+  if (price >= 0.0001) return 6      // 0.001234
+  if (price >= 0.000001) return 8    // 0.00000123
+  return 10                          // 0.0000000123 (DeFi tokens, fractional shares)
+}
+
+/**
+ * Get market-specific decimal places override
+ */
+export function getMarketDecimalPlaces(mode?: string): number | undefined {
+  switch (mode) {
+    case 'vn':
+      return undefined // Vietnamese stocks use no decimals (handled separately)
+    case 'forex':
+      return 4 // Forex pairs: 4 decimal places (pip precision)
+    case 'commodity':
+      return 2 // Gold, oil: 2 decimal places
+    case 'stock':
+      return 2 // International stocks: 2 decimal places
+    case 'crypto':
+    default:
+      return undefined // Use dynamic precision based on price
+  }
+}
+
+/**
+ * Format a price value with comma separators and dynamic decimal precision
  * @param price - The price value to format
  * @param useDecimalsOrData - If boolean, explicit decimal control. If StockData, auto-detects from mode/symbol
  * @example formatPrice(145230.5) => "145,230.50" (default: with decimals)
@@ -157,39 +188,51 @@ export function formatToVietnamDateTimeShort(utcDate: Date): string {
  * @example formatPrice(145230.5, false) => "145,231" (VND - no decimals)
  * @example formatPrice(1000, false) => "1,000" (VND - no decimals)
  * @example formatPrice(1.83, dataWithModeCrypto) => "1.83" (auto-detect crypto)
+ * @example formatPrice(0.00001234, dataWithModeCrypto) => "0.00001234" (dynamic precision for small crypto)
  * @example formatPrice(50000, dataWithModeVN) => "50,000" (auto-detect VN stock)
  * @example formatPrice(1250.45, dataWithVNINDEX) => "1,250.45" (market indices show decimals)
+ * @example formatPrice(1.2345, dataWithModeForex) => "1.2345" (forex pip precision)
  */
 export function formatPrice(
   price: number | null | undefined,
-  useDecimalsOrData?: boolean | { symbol?: string; mode?: 'vn' | 'crypto' }
+  useDecimalsOrData?: boolean | { symbol?: string; mode?: 'vn' | 'crypto' | 'forex' | 'commodity' | 'stock' }
 ): string {
   const safePrice = price ?? 0
 
-  // Determine if we should use decimals
+  // Determine decimal strategy
   let useDecimals = true // default
+  let decimalPlaces: number | undefined
+
   if (typeof useDecimalsOrData === 'boolean') {
     useDecimals = useDecimalsOrData
   } else if (useDecimalsOrData && typeof useDecimalsOrData === 'object') {
-    // Check if symbol is a market index (VNINDEX, VN30) - these always show decimals
+    // Check if symbol is a market index (VNINDEX, VN30) - these always show 2 decimals
     if ('symbol' in useDecimalsOrData && useDecimalsOrData.symbol) {
       const isMarketIndex = MARKET_INDICES.includes(useDecimalsOrData.symbol as typeof MARKET_INDICES[number])
       if (isMarketIndex) {
         useDecimals = true
+        decimalPlaces = 2
       } else if ('mode' in useDecimalsOrData) {
-        // Auto-detect from data.mode: VN stocks = no decimals, crypto = decimals
-        useDecimals = useDecimalsOrData.mode !== 'vn'
+        // Get market-specific decimal places or use dynamic precision
+        const marketDecimals = getMarketDecimalPlaces(useDecimalsOrData.mode)
+        decimalPlaces = marketDecimals
+        useDecimals = useDecimalsOrData.mode !== 'vn' // VN stocks = no decimals
       }
     } else if ('mode' in useDecimalsOrData) {
-      // Auto-detect from data.mode: VN stocks = no decimals, crypto = decimals
-      useDecimals = useDecimalsOrData.mode !== 'vn'
+      // Get market-specific decimal places or use dynamic precision
+      const marketDecimals = getMarketDecimalPlaces(useDecimalsOrData.mode)
+      decimalPlaces = marketDecimals
+      useDecimals = useDecimalsOrData.mode !== 'vn' // VN stocks = no decimals
     }
   }
 
   if (useDecimals) {
+    // Use market-specific decimals or determine dynamically based on price
+    const finalDecimalPlaces = decimalPlaces ?? getOptimalDecimalPlaces(safePrice)
+
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: finalDecimalPlaces,
     }).format(safePrice)
   }
 

@@ -14,7 +14,7 @@ import {
 	LineSeries,
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort, formatToVietnamDateTimeShort } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort, formatToVietnamDateTimeShort, getOptimalDecimalPlaces, getMarketDecimalPlaces } from '@/lib/format'
 import { INTRADAY_INTERVALS } from '@/lib/constants'
 import { Interval } from '@/lib/api-client'
 import { type StockData } from '@/lib/api-client'
@@ -59,6 +59,20 @@ export function BaseTradingViewChart({
 
 	// Get latest data for overlay
 	const latestData = data && data.length > 0 ? data[data.length - 1] : null
+
+	// Helper function to calculate optimal minMove for chart
+	const getOptimalMinMove = (price: number, mode?: string): number => {
+		if (mode === 'vn') return 1 // Vietnamese stocks
+
+		const marketDecimals = getMarketDecimalPlaces(mode)
+		if (marketDecimals !== undefined) {
+			return Math.pow(10, -marketDecimals)
+		}
+
+		// Use dynamic precision for crypto and other markets
+		const decimalPlaces = getOptimalDecimalPlaces(price)
+		return Math.pow(10, -decimalPlaces)
+	}
 
 	// Show loading state when using context
 	if (loading) {
@@ -236,7 +250,7 @@ export function BaseTradingViewChart({
 					const currentData = data && data.length > 0 ? data[data.length - 1] : null
 					return formatPrice(price, currentData)
 				},
-				minMove: 0.001,
+				minMove: latestData ? getOptimalMinMove(latestData.close, latestData.mode) : 0.001,
 			},
 		})
 		candlestickSeriesRef.current = candlestickSeries
@@ -681,11 +695,11 @@ export function BaseTradingViewChart({
 					formatter: (price: number) => {
 						return formatPrice(price, currentData)
 					},
-					minMove: currentData.mode === 'vn' ? 1 : 0.001,
+					minMove: getOptimalMinMove(currentData.close, currentData.mode),
 				},
 			})
 		}
-	}, [data])
+	}, [data, getOptimalMinMove])
 
 	if (!data || data.length === 0) {
 		return (
