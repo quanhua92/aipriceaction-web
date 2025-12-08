@@ -297,7 +297,7 @@ export function QuickAddAlertDialog({
                             <span className="text-blue-600 dark:text-blue-500">🔔</span>
                           )}
                           <span className="font-semibold">
-                            {tickerData ? formatPrice(alert.target_price, tickerData) : alert.target_price}
+                            {formatPrice(alert.target_price, tickerData || { mode: 'vn' })}
                           </span>
                           {alertDistance !== null && !alert.triggered && (
                             <span className={`${

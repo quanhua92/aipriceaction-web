@@ -246,7 +246,7 @@ export function EditAlertDialog({
                   ✓ {t('dialogs.editAlert.triggeredAt')}: {formatToVietnamDate(parseUTCISOString(alert.triggered_at))}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {t('dialogs.editAlert.triggeredReason')} {tickerData ? formatPrice(alert.target_price, tickerData) : alert.target_price}
+                  {t('dialogs.editAlert.triggeredReason')} {formatPrice(alert.target_price, tickerData || { mode: 'vn' })}
                 </div>
               </div>
             )}
@@ -372,7 +372,7 @@ export function EditAlertDialog({
                             <span className="text-blue-600 dark:text-blue-500">🔔</span>
                           )}
                           <span className="font-semibold">
-                            {tickerData ? formatPrice(existingAlert.target_price, tickerData) : existingAlert.target_price}
+                            {formatPrice(existingAlert.target_price, tickerData || { mode: 'vn' })}
                           </span>
                           {alertDistance !== null && !existingAlert.triggered && (
                             <span className={`${
