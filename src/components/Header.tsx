@@ -129,7 +129,9 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2">
-          <PWAInstallButton />
+          <div className="max-md:hidden">
+            <PWAInstallButton />
+          </div>
 
           <Toggle
             pressed={isRefreshEnabled}

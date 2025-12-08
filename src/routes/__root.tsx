@@ -18,7 +18,7 @@ import { GoogleAnalyticsProvider } from '../contexts/GoogleAnalyticsProvider'
 import { LogsProvider } from '../contexts/LogsContext'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
-import { PWAInstallButton } from '../components/PWAInstallButton'
+import { PWAInstallProvider } from '../components/PWAInstallBanner'
 
 import '../styles.css'
 
@@ -63,25 +63,26 @@ function RootComponent() {
               <APIProvider>
                 <AlertProvider>
                   <NoteProvider>
-                    <Header />
-                    <Outlet />
-                    <StatusBar />
-                    <DebugFooter />
-                    <PWAInstallButton />
-                    {import.meta.env.DEV && (
-                      <TanStackDevtools
-                        config={{
-                          position: 'bottom-right',
-                        }}
-                        plugins={[
-                          {
-                            name: 'Tanstack Router',
-                            render: <TanStackRouterDevtoolsPanel />,
-                          },
-                          TanStackQueryDevtools,
-                        ]}
-                      />
-                    )}
+                    <PWAInstallProvider>
+                      <Header />
+                      <Outlet />
+                      <StatusBar />
+                      <DebugFooter />
+                      {import.meta.env.DEV && (
+                        <TanStackDevtools
+                          config={{
+                            position: 'bottom-right',
+                          }}
+                          plugins={[
+                            {
+                              name: 'Tanstack Router',
+                              render: <TanStackRouterDevtoolsPanel />,
+                            },
+                            TanStackQueryDevtools,
+                          ]}
+                        />
+                      )}
+                    </PWAInstallProvider>
                   </NoteProvider>
                 </AlertProvider>
               </APIProvider>
