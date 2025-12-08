@@ -81,7 +81,7 @@ export function RecentAlertsWidget({ className = '' }: RecentAlertsWidgetProps) 
                 <span className="text-green-600 dark:text-green-500">✓</span>
                 <span className="font-mono font-semibold">{alert.ticker}</span>
                 <span className="text-muted-foreground">
-                  {lastBar ? formatPrice(alert.target_price, lastBar) : alert.target_price}
+                  {formatPrice(alert.target_price, lastBar || { mode: 'vn' })}
                 </span>
                 {alert.triggered_at && (
                   <span className="text-xs text-muted-foreground">
