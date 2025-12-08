@@ -219,6 +219,16 @@ export default {
     emptyContent: 'Vui lòng nhập nội dung',
     invalidFileFormat: 'Định dạng file không hợp lệ: cần một mảng ghi chú',
   },
+  pwa: {
+    install: 'Cài Đặt Ứng Dụng',
+    appInstalled: 'Đã Cài Đặt',
+    installNow: 'Cài Đặt Ngay',
+    maybeLater: 'Để Sau',
+    installDescription: 'Cài đặt AIPriceAction trên thiết bị của bạn để truy cập nhanh và tính năng ngoại tuyến.',
+    installTitle: 'Cài Đặt Ứng Dụng',
+    noNativePrompt: 'Để cài đặt ứng dụng này:\n\nChrome: Nhấp vào biểu tượng cài đặt trong thanh địa chỉ\nSafari: Nhấn Chia sẻ → Thêm vào Màn Hình Chính\nFirefox: Làm theo quy trình cài đặt PWA của trình duyệt',
+    alreadyInstalled: 'Ứng dụng đã được cài đặt rồi!',
+  },
   backtest: {
     title: 'Backtesting',
     quickActions: 'Thao Tác Nhanh',

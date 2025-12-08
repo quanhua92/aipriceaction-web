@@ -219,6 +219,16 @@ export default {
     emptyContent: 'Please enter some content',
     invalidFileFormat: 'Invalid file format: expected array of notes',
   },
+  pwa: {
+    install: 'Install App',
+    appInstalled: 'App Installed',
+    installNow: 'Install Now',
+    maybeLater: 'Maybe Later',
+    installDescription: 'Install AIPriceAction on your device for quick access and offline features.',
+    installTitle: 'Install App',
+    noNativePrompt: 'To install this app:\n\nChrome: Click the install icon in the address bar\nSafari: Tap Share → Add to Home Screen\nFirefox: Follow your browser\'s PWA installation process',
+    alreadyInstalled: 'App is already installed!',
+  },
   backtest: {
     title: 'Backtesting',
     quickActions: 'Quick Actions',

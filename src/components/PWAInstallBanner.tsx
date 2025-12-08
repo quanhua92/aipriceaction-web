@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react'
 import { Download, X } from 'lucide-react'
 import { Button } from './ui/button'
 import { useLogs } from '../contexts/LogsContext'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]
@@ -34,6 +35,7 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
   const { info, debug, warn, error } = useLogs()
+  const { t } = useTranslation()
 
   // Show install banner
   const showInstallBanner = () => {
@@ -169,19 +171,12 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
 
     if (!deferredPrompt) {
       // Show manual instructions if no native prompt available
-      const message = isInstalled
-        ? 'App is already installed!'
-        : 'To install this app:\n\n' +
-          'Chrome: Click the install icon in the address bar\n' +
-          'Safari: Tap Share → Add to Home Screen\n' +
-          'Firefox: Follow your browser\'s PWA installation process'
-
       if (isInstalled) {
         info('User tried to install but app is already installed')
-        alert('App is already installed!')
+        alert(t('common.pwa.alreadyInstalled'))
       } else {
         info('No native PWA prompt available, showing manual instructions')
-        alert(message)
+        alert(t('common.pwa.noNativePrompt'))
       }
       return
     }
@@ -222,10 +217,10 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <Download className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-sm">Install App</h3>
+                <h3 className="font-semibold text-sm">{t('common.pwa.installTitle')}</h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                Install AIPriceAction on your device for quick access and offline features.
+                {t('common.pwa.installDescription')}
               </p>
             </div>
             <Button
@@ -243,14 +238,14 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
               size="sm"
               className="flex-1"
             >
-              Install Now
+              {t('common.pwa.installNow')}
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleDismiss}
             >
-              Maybe Later
+              {t('common.pwa.maybeLater')}
             </Button>
           </div>
         </div>
