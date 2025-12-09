@@ -407,8 +407,9 @@ export function BasicWatchList({
           />
           {/* New button - right next to dropdown */}
           <CreateWatchListDialog onWatchlistCreated={handleWatchlistCreated}>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+            <Button variant="ghost" size="sm" className="h-7 px-2">
               <Plus className="h-4 w-4" />
+              <span className="ml-1 text-xs">{t('common.watchlist.new')}</span>
               <span className="sr-only">Create new watchlist</span>
             </Button>
           </CreateWatchListDialog>

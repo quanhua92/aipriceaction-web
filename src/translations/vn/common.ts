@@ -141,6 +141,7 @@ export default {
   },
   watchlist: {
     editWatchlist: 'Chỉnh Sửa Danh Mục',
+    new: 'Tạo Mới',
   },
   volumeProfile: {
     poc: 'POC',

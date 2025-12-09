@@ -141,6 +141,7 @@ export default {
   },
   watchlist: {
     editWatchlist: 'Edit Watchlist',
+    new: 'New',
   },
   volumeProfile: {
     poc: 'POC',
