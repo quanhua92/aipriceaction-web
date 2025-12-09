@@ -72,6 +72,45 @@ const config = defineConfig({
         ],
         categories: ['finance', 'business', 'productivity']
       },
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\.aipriceaction\.com\/.*/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+              }
+            }
+          },
+          {
+            urlPattern: /^http:\/\/localhost:3000\/.*/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-dev-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 30 // 30 minutes for development
+              },
+              networkTimeoutSeconds: 3
+            }
+          },
+          {
+            urlPattern: /\/aipriceaction-api\/.*/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-proxy-cache',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours for proxy API
+              },
+              networkTimeoutSeconds: 5
+            }
+          }
+        ]
+      },
       devOptions: {
         enabled: true
       }
