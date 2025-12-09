@@ -223,7 +223,7 @@ export function ChartFullscreenDialog({
         </DialogHeader>
 
         {displayTicker && (
-          <div className="flex-1 min-h-0 w-full">
+          <div className="flex-1 min-h-0 w-full overflow-y-auto">
             <TradingViewChart
               ticker={displayTicker}
               onTickerChange={handleTickerChange}
