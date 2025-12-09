@@ -81,7 +81,7 @@ const config = defineConfig({
               cacheName: 'api-cache',
               expiration: {
                 maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                maxAgeSeconds: 60 * 15 // 15 minutes
               }
             }
           },
@@ -104,7 +104,7 @@ const config = defineConfig({
               cacheName: 'api-proxy-cache',
               expiration: {
                 maxEntries: 500,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours for proxy API
+                maxAgeSeconds: 60 * 15 // 15 minutes for proxy API
               },
               networkTimeoutSeconds: 5
             }
