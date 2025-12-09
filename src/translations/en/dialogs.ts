@@ -13,6 +13,7 @@ export default {
       losers: '↓ Losers',
       ma20: 'MA20 Score',
       ma50: 'MA50 Score',
+      value: 'Value',
       az: 'A-Z',
     },
     sections: {

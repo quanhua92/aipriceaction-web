@@ -484,6 +484,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             const bMA50 = bData?.ma50_score ?? -Infinity
             return bMA50 - aMA50
 
+          case 'value':
+            // Sort by value descending (highest traded value first)
+            const aValue = (aData?.close ?? 0) * (aData?.volume ?? 0)
+            const bValue = (bData?.close ?? 0) * (bData?.volume ?? 0)
+            return bValue - aValue
+
           default:
             return 0
         }
@@ -702,6 +708,16 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             </button>
             {/* Row 2 */}
             <button
+              onClick={() => setSortBy('value')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'value'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {t('dialogs.selectTicker.sortBy.value')}
+            </button>
+            <button
               onClick={() => setSortBy('ma20')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                 sortBy === 'ma20'
@@ -710,16 +726,6 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
               }`}
             >
               {t('dialogs.selectTicker.sortBy.ma20')}
-            </button>
-            <button
-              onClick={() => setSortBy('ma50')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                sortBy === 'ma50'
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t('dialogs.selectTicker.sortBy.ma50')}
             </button>
             <button
               onClick={() => setSortBy('az')}
