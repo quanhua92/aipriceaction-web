@@ -24,6 +24,13 @@ interface ChartSettingsState {
 	setStartDate: (date?: string) => void
 	endDate?: string
 	setEndDate: (date?: string) => void
+	rulerVisible: boolean
+	setRulerVisible: (visible: boolean) => void
+	rulerTimeA?: string
+	setRulerTimeA: (time?: string) => void
+	rulerTimeB?: string
+	setRulerTimeB: (time?: string) => void
+	clearRuler: () => void
 }
 
 const ChartSettingsContext = React.createContext<ChartSettingsState | undefined>(
@@ -66,6 +73,9 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 	)
 	const [startDate, setStartDate] = React.useState<string | undefined>(undefined)
 	const [endDate, setEndDate] = React.useState<string | undefined>(undefined)
+	const [rulerVisible, setRulerVisible] = React.useState<boolean>(false)
+	const [rulerTimeA, setRulerTimeA] = React.useState<string | undefined>(undefined)
+	const [rulerTimeB, setRulerTimeB] = React.useState<string | undefined>(undefined)
 
 	// Update MA visibility when interval changes
 	React.useEffect(() => {
@@ -75,6 +85,11 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 	const resetMaVisibility = React.useCallback(() => {
 		setMaVisibility(getDefaultMaVisibility(interval))
 	}, [interval])
+
+	const clearRuler = React.useCallback(() => {
+		setRulerTimeA(undefined)
+		setRulerTimeB(undefined)
+	}, [])
 
 	const value: ChartSettingsState = React.useMemo(() => ({
 		interval,
@@ -90,7 +105,14 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		setStartDate,
 		endDate,
 		setEndDate,
-	}), [interval, limit, height, maVisibility, startDate, endDate, resetMaVisibility])
+		rulerVisible,
+		setRulerVisible,
+		rulerTimeA,
+		setRulerTimeA,
+		rulerTimeB,
+		setRulerTimeB,
+		clearRuler,
+	}), [interval, limit, height, maVisibility, startDate, endDate, resetMaVisibility, rulerVisible, rulerTimeA, rulerTimeB, clearRuler])
 
 	return (
 		<ChartSettingsContext.Provider value={value}>

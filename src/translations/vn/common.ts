@@ -302,4 +302,12 @@ export default {
     priceDataUnavailable: 'Không có dữ liệu giá',
     usingEstimatedPrice: 'sử dụng giá ước tính để tính toán',
   },
+  ruler: {
+    setPointA: 'Đặt điểm A',
+    setPointB: 'Đặt điểm B',
+    pointA: 'Điểm A',
+    pointB: 'Điểm B',
+    difference: 'Chênh lệch',
+    clear: 'Xóa',
+  },
 }

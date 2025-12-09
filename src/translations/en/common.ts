@@ -302,4 +302,12 @@ export default {
     priceDataUnavailable: 'Price data unavailable',
     usingEstimatedPrice: 'using estimated price for calculations',
   },
+  ruler: {
+    setPointA: 'Set Point A',
+    setPointB: 'Set Point B',
+    pointA: 'Point A',
+    pointB: 'Point B',
+    difference: 'Difference',
+    clear: 'Clear',
+  },
 }

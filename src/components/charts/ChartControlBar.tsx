@@ -14,7 +14,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star, Bell, Download } from 'lucide-react'
+import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star, Bell, Download, Ruler } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -72,6 +72,8 @@ export function ChartControlBar({
 	const {
 		interval: globalInterval,
 		setInterval: setGlobalInterval,
+		rulerVisible,
+		setRulerVisible,
 	} = useChartSettings()
 
 	// Use global interval if no specific interval provided
@@ -99,24 +101,31 @@ export function ChartControlBar({
 		(i) => !dynamicMobileVisibleIntervals.includes(i),
 	)
 
-	const renderIntervalButton = (int: Interval, _isMobile: boolean = false) => (
-		<Button
-			key={int}
-			variant="ghost"
-			size="sm"
-			onClick={() => handleIntervalChange(int)}
-			className={`px-1.5 py-1 h-7 text-xs font-medium transition-colors ${
-				currentInterval === int
-					? 'bg-primary text-primary-foreground hover:bg-primary/90'
-					: 'text-muted-foreground hover:bg-muted hover:text-foreground'
-			}`}
-		>
-			{int}
-		</Button>
-	)
+	const renderIntervalButton = (int: Interval, _isMobile: boolean = false) => {
+		// Check if interval needs more padding (like 1H, 1D)
+		const needsMorePadding = int.length === 2 && (int.includes('H') || int.includes('D'))
+
+		return (
+			<Button
+				key={int}
+				variant="ghost"
+				size="sm"
+				onClick={() => handleIntervalChange(int)}
+				className={`${
+					needsMorePadding ? 'px-2' : 'px-1'
+				} py-1 h-7 text-xs font-medium transition-colors ${
+					currentInterval === int
+						? 'bg-primary text-primary-foreground hover:bg-primary/90'
+						: 'text-muted-foreground hover:bg-muted hover:text-foreground'
+				}`}
+			>
+				{int}
+			</Button>
+		)
+	}
 
 	return (
-		<div className={`flex items-center gap-1 ${className}`}>
+		<div className={`flex items-center gap-0.5 ${className}`}>
 			{/* Ticker Selection Button */}
 			{showTickerSelect && (
 				<>
@@ -124,7 +133,7 @@ export function ChartControlBar({
 						<Button
 							variant="outline"
 							size="sm"
-							className={`h-7 ${ticker.length > 4 ? 'text-[10px] px-1' : 'text-xs px-2'}`}
+							className={`h-7 ${ticker.length > 4 ? 'text-[10px] px-1' : 'text-xs px-1.5'}`}
 						>
 							{ticker}
 						</Button>
@@ -134,12 +143,12 @@ export function ChartControlBar({
 			)}
 
 			{/* Desktop Interval Buttons */}
-			<div className="hidden md:flex gap-0.5">
+			<div className="hidden md:flex gap-px">
 				{dynamicDesktopVisibleIntervals.map((int) => renderIntervalButton(int))}
 			</div>
 
 			{/* Mobile Interval Buttons */}
-			<div className="flex md:hidden gap-0.5">
+			<div className="flex md:hidden gap-px">
 				{dynamicMobileVisibleIntervals.map((int) => renderIntervalButton(int, true))}
 			</div>
 
@@ -200,7 +209,7 @@ export function ChartControlBar({
 			)}
 
 			{/* Right-aligned buttons group */}
-			<div className="ml-auto flex items-center gap-1">
+			<div className="ml-auto flex items-center gap-0.5">
 				{/* Load More Button - Icon Only */}
 				<Button
 					variant="ghost"
@@ -245,6 +254,17 @@ export function ChartControlBar({
 						<Maximize2 className="h-4 w-4" />
 					</Button>
 				)}
+
+				{/* Ruler Button */}
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-7 w-7 p-0"
+					title="Toggle ruler"
+					onClick={() => setRulerVisible(!rulerVisible)}
+				>
+					<Ruler className="h-4 w-4" />
+				</Button>
 
 				{/* Settings Button - Top Right */}
 				<ChartSettingsDialog>

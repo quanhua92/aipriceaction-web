@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils'
 import { useTicker } from '@/contexts/TickerContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Loader2 } from 'lucide-react'
+import { RulerSection } from './RulerSection'
 
 interface BaseTradingViewChartProps {
 	title?: string
@@ -47,7 +48,7 @@ export function BaseTradingViewChart({
 	maVisibility: maVisibilityProp,
 }: BaseTradingViewChartProps) {
 	// Get global settings
-	const { interval, ...globalSettings } = useChartSettings()
+	const { interval, rulerVisible, ...globalSettings } = useChartSettings()
 
 	// Helper function to check if current interval is intraday
 	const isIntradayInterval = INTRADAY_INTERVALS.includes(interval)
@@ -717,6 +718,17 @@ export function BaseTradingViewChart({
 			{showControls && title && (
 				<div className="mb-4">
 					<h3 className="font-semibold">{title}</h3>
+				</div>
+			)}
+
+			{/* Ruler Section - Above Chart */}
+			{rulerVisible && (
+				<div className="bg-muted/50 border-b p-2">
+					<RulerSection
+						data={data}
+						crosshairData={crosshairData}
+						latestData={latestData}
+					/>
 				</div>
 			)}
 
