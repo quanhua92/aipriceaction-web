@@ -89,6 +89,7 @@ export function TickerProvider({
 }: TickerProviderProps) {
     // Get global settings for API calls (only if fetching is enabled)
   const settings = enableFetching ? useChartSettings() : null
+  const { setLimit } = settings || {}
   const { lastRefresh } = useRefresh()
   const { getTickers, tickers, cryptoTickers } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
@@ -97,9 +98,7 @@ export function TickerProvider({
   const [error, setError] = React.useState<string | null>(null)
   const [loadingMore, setLoadingMore] = React.useState(false)
 
-  // Local limit state (independent of global settings)
-  const [localLimit, setLocalLimit] = React.useState<number | null>(null)
-
+  
   // Local endDate state (independent of global settings)
   const [localEndDate, setLocalEndDate] = React.useState<string | null>(null)
 
@@ -122,24 +121,23 @@ export function TickerProvider({
 
     loadingMoreRef.current = true
 
-    // Increase local limit - this will trigger main effect to refetch
-    const currentLimit = localLimit ?? (limit ?? settings.limit)
+    // Increase global limit - this will affect all charts
+    const currentLimit = limit ?? settings.limit
     const newLimit = currentLimit + DEFAULT_CHART_LIMIT
-    setLocalLimit(newLimit)
+    setLimit(newLimit)
 
     // Reset flag after state update
     await new Promise(resolve => setTimeout(resolve, 100))
     loadingMoreRef.current = false
-  }, [settings, localLimit, limit])
+  }, [settings, limit, setLimit])
 
   // Sync loadingMore with main loading state
   React.useEffect(() => {
     setLoadingMore(loading)
   }, [loading])
 
-  // Reset local limit and endDate when ticker or key settings change
+  // Reset local endDate when ticker or key settings change
   React.useEffect(() => {
-    setLocalLimit(null)
     // Only reset localEndDate if no endDate prop is provided
     if (endDate === undefined || endDate === null) {
       setLocalEndDate(null)
@@ -169,7 +167,6 @@ export function TickerProvider({
     endDate?: string | undefined
     limit?: number
     lastRefresh?: number
-    localLimit?: number | null
     localEndDate?: string | null
     tickers?: any[]
     cryptoTickers?: any[]
@@ -191,7 +188,6 @@ export function TickerProvider({
       endDate: settings?.endDate,
       limit: settings?.limit,
       lastRefresh,
-      localLimit,
       localEndDate,
       tickersLen: tickers?.length,
       cryptoTickersLen: cryptoTickers?.length,
@@ -239,7 +235,7 @@ export function TickerProvider({
             interval: settings.interval,
             start_date: settings.startDate,
             end_date: localEndDate ?? settings.endDate,
-            limit: localLimit ?? (limit ?? settings.limit),
+            limit: limit ?? settings.limit,
             mode,
           })
           const data = response[selectedTicker] || []
@@ -272,7 +268,7 @@ export function TickerProvider({
 
     fetchChartData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localLimit, localEndDate, getTickers])
+  }, [selectedTicker, enableFetching, settings?.interval, settings?.startDate, settings?.endDate, settings?.limit, lastRefresh, localEndDate, getTickers])
 
   const contextValue = {
     selectedTicker,
