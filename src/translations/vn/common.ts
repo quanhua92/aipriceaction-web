@@ -310,4 +310,12 @@ export default {
     difference: 'Chênh lệch',
     clear: 'Xóa',
   },
+  freshness: {
+    fresh: 'Dữ liệu ngày mới',
+    aging: 'Dữ liệu ngày đang cũ',
+    stale: 'Dữ liệu ngày đã cũ',
+    unknown: 'Không biết tình trạng dữ liệu',
+    dailySyncAge: 'Thời gian đồng bộ ngày',
+    widgetData: 'Ngày dữ liệu widget',
+  },
 }

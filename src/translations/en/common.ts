@@ -310,4 +310,12 @@ export default {
     difference: 'Difference',
     clear: 'Clear',
   },
+  freshness: {
+    fresh: 'Daily data is fresh',
+    aging: 'Daily data is aging',
+    stale: 'Daily data is stale',
+    unknown: 'Data freshness unknown',
+    dailySyncAge: 'Daily sync age',
+    widgetData: 'Widget data date',
+  },
 }

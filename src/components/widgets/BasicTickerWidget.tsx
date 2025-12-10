@@ -8,6 +8,7 @@ import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { TickerProvider } from '@/contexts/TickerContext'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { FreshnessIndicator } from './FreshnessIndicator'
 import * as React from 'react'
 
 interface BasicTickerWidgetProps {
@@ -125,7 +126,10 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                   </Button>
                 </QuickAddAlertDialog>
               </div>
-              <p className="text-xs text-muted-foreground">{formatToVietnamDate(parseUTCISOString(data.time))}</p>
+              <div className="flex items-center gap-1">
+                <FreshnessIndicator dataDate={data.time} />
+                <p className="text-xs text-muted-foreground">{formatToVietnamDate(parseUTCISOString(data.time))}</p>
+              </div>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold">{formatPrice(data.close, data)}</div>
