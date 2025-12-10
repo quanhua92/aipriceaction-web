@@ -242,13 +242,13 @@ export function ChartFullscreenDialog({
               size="sm"
               onClick={navigateToPrevious}
               disabled={tickerList.length <= 1}
-              className="h-8 px-3"
+              className="h-10 sm:h-8 px-6 sm:px-4"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Previous</span>
             </Button>
 
-            <div className="px-3 py-1 text-sm font-medium bg-muted rounded-md min-w-[80px] text-center">
+            <div className="px-6 py-3 sm:px-4 sm:py-2 text-sm font-medium bg-muted rounded-md min-w-[90px] text-center">
               {internalIndex + 1} / {tickerList.length}
             </div>
 
@@ -257,7 +257,7 @@ export function ChartFullscreenDialog({
               size="sm"
               onClick={navigateToNext}
               disabled={tickerList.length <= 1}
-              className="h-8 px-3"
+              className="h-10 sm:h-8 px-6 sm:px-4"
             >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4 ml-1" />
