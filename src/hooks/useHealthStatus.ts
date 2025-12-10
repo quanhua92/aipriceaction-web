@@ -21,7 +21,7 @@ export interface HealthStatus {
  */
 export function useHealthStatus(): HealthStatus {
   const { getHealth } = useAPI()
-  const { isRefreshEnabled } = useRefresh()
+  const { isRefreshEnabled, lastRefresh } = useRefresh()
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -41,10 +41,10 @@ export function useHealthStatus(): HealthStatus {
     }
   }
 
-  // Initial fetch on mount
+  // Initial fetch on mount and when lastRefresh changes
   useEffect(() => {
     fetchHealth()
-  }, [])
+  }, [lastRefresh])
 
   // Poll every 30 seconds when refresh is enabled
   useEffect(() => {
