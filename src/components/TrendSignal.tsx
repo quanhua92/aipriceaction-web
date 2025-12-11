@@ -39,6 +39,7 @@ import {
 import { getSectorDisplayName } from '@/lib/sector-names'
 import { format } from 'date-fns'
 import { Link } from '@tanstack/react-router'
+import type { SortBy } from '@/components/lists/SortableTickerList'
 
 // Default sectors to show expanded (matches PRIORITY_GROUPS)
 const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
@@ -60,6 +61,9 @@ interface TrendSignalData {
   sector: string
   currentPrice: number
   closeChange?: number
+  volume?: number
+  ma20_score?: number
+  ma50_score?: number
   highest20?: number // Highest close in last 20 periods
   lowest10?: number // Lowest close in last 10 periods
 }
@@ -158,6 +162,7 @@ export function TrendSignal({
   const [buyPeriod, setBuyPeriod] = React.useState<number>(defaultBuyPeriod)
   const [sellPeriod, setSellPeriod] = React.useState<number>(defaultSellPeriod)
   const [showAll, setShowAll] = React.useState(false) // Default to hide non-signals
+  const [sortBy, setSortBy] = React.useState<SortBy>('gainers')
   const [signals, setSignals] = React.useState<TrendSignalData[]>([])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -384,6 +389,9 @@ export function TrendSignal({
               sector,
               currentPrice: latest.close,
               closeChange: latest.close_changed,
+              volume: latest.volume,
+              ma20_score: latest.ma20_score,
+              ma50_score: latest.ma50_score,
               highest20: highestBuyPeriod,
               lowest10: lowestSellPeriod,
             })
@@ -461,28 +469,61 @@ export function TrendSignal({
       return a.localeCompare(b)
     })
 
-    // Sort signals within each sector by strength (signals first)
+    // Sort signals within each sector based on sortBy
     sortedSectors.forEach(sector => {
       grouped[sector].sort((a, b) => {
-        // Both have signals
-        if (a.signal && b.signal) {
-          return Math.abs(b.strength || 0) - Math.abs(a.strength || 0)
+        switch (sortBy) {
+          case 'az':
+            return a.ticker.localeCompare(b.ticker)
+
+          case 'gainers':
+            // Sort by price change descending (highest gain first)
+            const aChange = a.closeChange ?? -Infinity
+            const bChange = b.closeChange ?? -Infinity
+            return bChange - aChange
+
+          case 'losers':
+            // Sort by price change ascending (lowest/most negative first)
+            const aLoss = a.closeChange ?? Infinity
+            const bLoss = b.closeChange ?? Infinity
+            return aLoss - bLoss
+
+          case 'volume':
+            // Sort by volume descending (highest volume first)
+            const aVol = a.volume ?? 0
+            const bVol = b.volume ?? 0
+            return bVol - aVol
+
+          case 'ma20':
+            // Sort by MA20 score descending (highest/most bullish first)
+            const aMA20 = a.ma20_score ?? -Infinity
+            const bMA20 = b.ma20_score ?? -Infinity
+            return bMA20 - aMA20
+
+          case 'value':
+            // Sort by value descending (highest traded value first)
+            const aValue = (a.currentPrice ?? 0) * (a.volume ?? 0)
+            const bValue = (b.currentPrice ?? 0) * (b.volume ?? 0)
+            return bValue - aValue
+
+          default:
+            // Default sorting: signals first by strength
+            if (a.signal && b.signal) {
+              return Math.abs(b.strength || 0) - Math.abs(a.strength || 0)
+            }
+            if (a.signal && !b.signal) {
+              return -1
+            }
+            if (!a.signal && b.signal) {
+              return 1
+            }
+            return a.ticker.localeCompare(b.ticker)
         }
-        // Only a has signal
-        if (a.signal && !b.signal) {
-          return -1
-        }
-        // Only b has signal
-        if (!a.signal && b.signal) {
-          return 1
-        }
-        // Neither has signal, sort alphabetically
-        return a.ticker.localeCompare(b.ticker)
       })
     })
 
     return grouped
-  }, [filteredSignals, selectedWatchlist])
+  }, [filteredSignals, selectedWatchlist, sortBy])
 
   // Get all tickers in current view for navigation
   const allTickersInView = React.useMemo(() => {
@@ -732,6 +773,72 @@ export function TrendSignal({
                 {t('common.trendSignal.showAll')}
               </label>
             </div>
+          </div>
+
+          {/* Sort Buttons */}
+          <div className="grid grid-cols-3 gap-1.5 mt-3 shrink-0">
+            {/* Row 1 */}
+            <button
+              onClick={() => setSortBy('volume')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'volume'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {t('dialogs.selectTicker.sortBy.volume')}
+            </button>
+            <button
+              onClick={() => setSortBy('gainers')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'gainers'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {t('dialogs.selectTicker.sortBy.gainers')}
+            </button>
+            <button
+              onClick={() => setSortBy('losers')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'losers'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {t('dialogs.selectTicker.sortBy.losers')}
+            </button>
+            {/* Row 2 */}
+            <button
+              onClick={() => setSortBy('value')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'value'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {t('dialogs.selectTicker.sortBy.value')}
+            </button>
+            <button
+              onClick={() => setSortBy('ma20')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'ma20'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {t('dialogs.selectTicker.sortBy.ma20')}
+            </button>
+            <button
+              onClick={() => setSortBy('az')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                sortBy === 'az'
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {t('dialogs.selectTicker.sortBy.az')}
+            </button>
           </div>
         </div>
 
