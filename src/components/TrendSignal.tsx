@@ -14,7 +14,6 @@ import {
   TRENDSIGNAL_OPEN_SECTORS_STORAGE_KEY,
 } from '@/lib/constants'
 import { formatToVietnamDate, parseUTCISOString } from '@/lib/format'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -620,19 +619,16 @@ export function TrendSignal({
 
   if (apiLoading) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <p>Loading market data...</p>
-        </CardContent>
-      </Card>
+      <div className="p-8 text-center">
+        <p>Loading market data...</p>
+      </div>
     )
   }
 
   return (
     <>
-      <Card>
-        <CardHeader className="p-3 md:p-6">
-          <CardTitle className="text-lg font-semibold">{t('common.trendSignal.title')}</CardTitle>
+      <div className="p-3 md:p-6">
+        <h2 className="text-lg font-semibold">{t('common.trendSignal.title')}</h2>
 
           {/* Control Bar - Row 1: Watchlist, Interval, and Actions */}
           <div className="flex items-center gap-2 mt-4">
@@ -688,7 +684,7 @@ export function TrendSignal({
           <div className="flex items-center gap-2 mt-2">
             {/* Buy Period Selector */}
             <Select value={buyPeriod.toString()} onValueChange={(v) => setBuyPeriod(parseInt(v))}>
-              <SelectTrigger className="w-42 h-8">
+              <SelectTrigger className="w-40 h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -702,7 +698,7 @@ export function TrendSignal({
 
             {/* Sell Period Selector */}
             <Select value={sellPeriod.toString()} onValueChange={(v) => setSellPeriod(parseInt(v))}>
-              <SelectTrigger className="w-42 h-8">
+              <SelectTrigger className="w-40 h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -731,9 +727,9 @@ export function TrendSignal({
               </label>
             </div>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent className="p-0">
+        <div className="px-0">
           {loading && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">{t('common.trendSignal.loadingSignals')}</p>
@@ -877,8 +873,7 @@ export function TrendSignal({
                   })}
             </div>
           )}
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Chart Dialog */}
       <ChartFullscreenDialog
