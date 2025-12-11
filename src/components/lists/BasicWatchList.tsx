@@ -392,36 +392,39 @@ export function BasicWatchList({
 
   return (
     <div className={`flex flex-col ${className}`}>
+      {/* Title Header */}
+      <div className="flex items-center mb-3 shrink-0 px-3">
+        <h3 className="text-lg font-semibold">
+          Watchlist
+        </h3>
+      </div>
+
       {/* Group Selection Header */}
-      <div className="flex items-center mb-3 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">
-            Watchlist:
-          </span>
-          <TickerGroupSelector
-            value={selectedGroup}
-            onValueChange={handleGroupChange}
-            placeholder="Select group"
-            className="w-36 h-8 text-sm font-bold hover:bg-muted/50 transition-colors duration-200"
-            refreshKey={refreshKey}
-          />
-          {/* New button - right next to dropdown */}
-          <CreateWatchListDialog onWatchlistCreated={handleWatchlistCreated}>
-            <Button variant="ghost" size="sm" className="h-7 px-2">
-              <Plus className="h-4 w-4" />
-              <span className="ml-1 text-xs">{t('common.watchlist.new')}</span>
-              <span className="sr-only">Create new watchlist</span>
-            </Button>
-          </CreateWatchListDialog>
-        </div>
+      <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
+        <TickerGroupSelector
+          value={selectedGroup}
+          onValueChange={handleGroupChange}
+          placeholder="Select group"
+          className="w-36 h-8 text-sm font-bold hover:bg-muted/50 transition-colors duration-200"
+          refreshKey={refreshKey}
+        />
+        {/* New button - right next to dropdown */}
+        <CreateWatchListDialog onWatchlistCreated={handleWatchlistCreated}>
+          <Button variant="ghost" size="sm" className="h-7 px-2">
+            <Plus className="h-4 w-4" />
+            <span className="ml-1 text-xs">{t('common.watchlist.new')}</span>
+            <span className="sr-only">Create new watchlist</span>
+          </Button>
+        </CreateWatchListDialog>
         {/* Edit button - aligned far right */}
+        <div className="flex-1"></div>
         {selectedGroup && customWatchlists.includes(selectedGroup) && (
           <EditWatchListDialog
             watchlistName={selectedGroup}
             onWatchlistUpdated={handleWatchlistUpdated}
             onWatchlistDeleted={handleWatchlistDeleted}
           >
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 ml-auto">
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
               <Edit2 className="h-3.5 w-3.5" />
               <span className="sr-only">Edit watchlist</span>
             </Button>
@@ -527,7 +530,7 @@ export function BasicWatchList({
 
       {/* Navigation Controls */}
       {showControls && sortedTickers.length > 0 && (
-        <div className="flex items-center justify-center gap-2 mt-3 p-2 border-t">
+        <div className="flex items-center justify-center gap-2 mt-3 px-3 py-2 border-t">
           <Button
             variant="outline"
             size="sm"
