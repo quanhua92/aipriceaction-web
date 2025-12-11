@@ -3,6 +3,7 @@ import * as React from "react";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists/BasicWatchList";
+import { TrendSignal } from "@/components/TrendSignal";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
@@ -145,6 +146,11 @@ function HomePage() {
 						<MarketMatrix />
 					</div>
 				</div>
+			</div>
+
+			{/* Section 3: Trend Signals */}
+			<div className="p-4 md:p-6 border-t">
+				<TrendSignal />
 			</div>
 
 			{/* Fullscreen Dialog */}
