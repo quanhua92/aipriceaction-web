@@ -36,6 +36,7 @@ import {
   getPredefinedWatchlistTickers,
   isPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
+import { getSectorDisplayName } from '@/lib/sector-names'
 import { format } from 'date-fns'
 import { Link } from '@tanstack/react-router'
 
@@ -794,7 +795,7 @@ export function TrendSignal({
                             <ChevronDown className="h-3 w-3 flex-shrink-0" />
                           )}
                           <span className="truncate flex-1 text-left">
-                            {sector}
+                            {getSectorDisplayName(sector, language)}
                           </span>
                           <span className="opacity-70 flex-shrink-0">({sectorSignals.length})</span>
                         </button>
