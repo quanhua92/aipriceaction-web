@@ -8,8 +8,10 @@ export const Route = createFileRoute('/matrix')({
 
 function MatrixPage() {
   return (
-    <div className="p-4 md:p-6 space-y-4">
-      <DateControlWidget />
+    <div>
+      <div className="p-4 md:p-6">
+        <DateControlWidget />
+      </div>
       <MarketMatrix />
     </div>
   )
