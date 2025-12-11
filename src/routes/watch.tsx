@@ -8,6 +8,7 @@ import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
 import { MarketMatrix } from "@/components/MarketMatrix";
+import { TrendSignal } from "@/components/TrendSignal";
 import {
 	ALL_WATCHLIST_NAME,
 	CUSTOM_WATCHLISTS_STORAGE_KEY,
@@ -375,6 +376,12 @@ function WatchPage() {
 											Market Matrix
 										</TabsTrigger>
 										<TabsTrigger
+											value="signals"
+											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+										>
+											Signals
+										</TabsTrigger>
+										<TabsTrigger
 											value="backtest"
 											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
 										>
@@ -396,6 +403,10 @@ function WatchPage() {
 
 									<TabsContent value="matrix" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
 										<MarketMatrix />
+									</TabsContent>
+
+									<TabsContent value="signals" forceMount className="flex-1 min-h-0 overflow-auto data-[state=inactive]:hidden">
+										<TrendSignal />
 									</TabsContent>
 
 									<TabsContent value="backtest" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
