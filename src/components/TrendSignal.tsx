@@ -829,10 +829,10 @@ export function TrendSignal({
                               {signal.currentPrice.toLocaleString()}
                             </span>
                             {signal.closeChange !== undefined && signal.closeChange !== null && (
-                              <span className={`text-xs ${
+                              <span className={`text-xs font-medium ${
                                 signal.closeChange >= 0 ? 'text-green-600' : 'text-red-600'
                               }`}>
-                                ({signal.closeChange >= 0 ? '+' : ''}{signal.closeChange.toFixed(1)}%)
+                                {signal.closeChange >= 0 ? '+' : ''}{signal.closeChange.toFixed(1)}%
                               </span>
                             )}
                           </div>
