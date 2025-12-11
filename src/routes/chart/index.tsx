@@ -241,7 +241,7 @@ function ChartPage() {
 				</div>
 
 				{/* Charts Grid */}
-				<div className="flex-1 p-2 lg:p-4">
+				<div className="flex-1 p-4 md:p-6">
 					<div className={`${getGridClass()} gap-2 lg:gap-4 auto-rows-fr`}>
 						{Array.from({ length: layout.chartCount }).map((_, index) => {
 							const ticker = layout.chartTickers[index] || "VNINDEX";

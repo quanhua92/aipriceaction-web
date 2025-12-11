@@ -272,7 +272,7 @@ function WatchPage() {
 					</div>
 
 					{/* Charts Area */}
-					<div className="flex-1 p-2 lg:p-4 overflow-auto">
+					<div className="flex-1 p-4 md:p-6 overflow-auto">
 						{/* Pagination Top */}
 						<div className="mb-4">
 							<PaginationControls
