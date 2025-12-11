@@ -130,7 +130,7 @@ function HomePage() {
 			</div>
 
 			{/* Section 2: Watchlist + Market Matrix */}
-			<div className="p-4 md:p-6 border-t">
+			<div className="p-2 md:p-6 border-t">
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<div>
 						<BasicWatchList
@@ -149,7 +149,7 @@ function HomePage() {
 			</div>
 
 			{/* Section 3: Trend Signals */}
-			<div className="p-4 md:p-6 border-t">
+			<div className="p-2 md:p-6 border-t">
 				<TrendSignal />
 			</div>
 
