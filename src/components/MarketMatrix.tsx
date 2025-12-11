@@ -16,7 +16,6 @@ import {
   SECTOR_ABBREVIATIONS,
 } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -615,20 +614,17 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
   if (apiLoading) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <p>Loading market data...</p>
-        </CardContent>
-      </Card>
+      <div className="p-8 text-center">
+        <p>Loading market data...</p>
+      </div>
     )
   }
 
   return (
     <>
-      <Card>
-        <CardHeader className="p-3 md:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle className="text-lg font-semibold">Market Matrix</CardTitle>
+      <div className="p-3 md:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 className="text-lg font-semibold">Market Matrix</h2>
 
             <div className="flex flex-wrap items-center gap-2">
               {/* Watchlist Selector */}
@@ -773,9 +769,9 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
               </Button>
             </div>
           )}
-        </CardHeader>
+        </div>
 
-        <CardContent className="p-0">
+        <div className="px-0">
           {loading && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">Loading...</p>
@@ -988,8 +984,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Chart Dialog */}
       <ChartFullscreenDialog
