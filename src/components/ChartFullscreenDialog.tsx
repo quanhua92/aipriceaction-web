@@ -17,6 +17,7 @@ interface ChartFullscreenDialogProps {
   onClose: () => void
   tickerList?: string[]
   currentIndex?: number
+  title?: string
 }
 
 export function ChartFullscreenDialog({
@@ -25,6 +26,7 @@ export function ChartFullscreenDialog({
   onClose,
   tickerList,
   currentIndex = 0,
+  title,
 }: ChartFullscreenDialogProps) {
   const { t } = useTranslation()
   const isOpen = ticker !== null
@@ -217,7 +219,7 @@ export function ChartFullscreenDialog({
       <DialogContent ref={dialogContentRef} className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[90vh] h-[90dvh] p-2 gap-2 flex flex-col">
         <DialogHeader data-slot="header" className="flex-shrink-0">
           <DialogTitle className="text-base">
-            {displayTicker}
+            {title || displayTicker}
             {endDate && ` - ${t('common.chart.ending')} ${endDate}`}
           </DialogTitle>
         </DialogHeader>

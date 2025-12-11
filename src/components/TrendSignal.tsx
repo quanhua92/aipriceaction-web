@@ -170,7 +170,7 @@ export function TrendSignal({
 
   // Dialog state for chart viewing
   const [dialogTicker, setDialogTicker] = React.useState<string | null>(null)
-  const [dialogEndDate, setDialogEndDate] = React.useState<string | null>(null)
+  const [dialogTitle, setDialogTitle] = React.useState<string | null>(null)
 
   // Sector collapse state
   const [openSectors, setOpenSectors] = React.useState<Set<string>>(() => {
@@ -611,12 +611,26 @@ export function TrendSignal({
 
   const handleSignalClick = (signal: TrendSignalData) => {
     setDialogTicker(signal.ticker)
-    setDialogEndDate(signal.signalDate || globalEndDate || format(new Date(), 'yyyy-MM-dd'))
+
+    // Create custom title with signal reason (similar to row display)
+    let customTitle = signal.ticker
+    if (signal.signal && signal.strength !== undefined && signal.strength !== null) {
+      if (signal.signal === 'BUY' && signal.previousHigh) {
+        customTitle += ` - ${t('common.trendSignal.above', {
+          price: signal.previousHigh.toLocaleString()
+        })} ${Math.abs(signal.strength).toFixed(1)}%`
+      } else if (signal.signal === 'SELL' && signal.previousLow) {
+        customTitle += ` - ${t('common.trendSignal.below', {
+          price: signal.previousLow.toLocaleString()
+        })} ${Math.abs(signal.strength).toFixed(1)}%`
+      }
+    }
+    setDialogTitle(customTitle)
   }
 
   const handleCloseDialog = () => {
     setDialogTicker(null)
-    setDialogEndDate(null)
+    setDialogTitle(null)
   }
 
   // Auto-expand all sectors when:
@@ -1012,10 +1026,10 @@ export function TrendSignal({
       {/* Chart Dialog */}
       <ChartFullscreenDialog
         ticker={dialogTicker}
-        endDate={dialogEndDate}
         onClose={handleCloseDialog}
         tickerList={allTickersForNavigation}
         currentIndex={currentTickerIndex}
+        title={dialogTitle}
       />
     </>
   )
