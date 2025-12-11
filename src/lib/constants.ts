@@ -50,6 +50,11 @@ export const AI_SELECTED_TICKERS_STORAGE_KEY = 'ai-selected-tickers'
 export const MATRIX_OPEN_SECTORS_STORAGE_KEY = 'matrix-open-sectors'
 
 /**
+ * LocalStorage key for TrendSignal open sectors state
+ */
+export const TRENDSIGNAL_OPEN_SECTORS_STORAGE_KEY = 'trendsignal-open-sectors'
+
+/**
  * LocalStorage key for API base URL override
  */
 export const API_BASE_URL_OVERRIDE_STORAGE_KEY = 'api-base-url-override'
