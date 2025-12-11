@@ -19,6 +19,7 @@ import { LogsProvider } from '../contexts/LogsContext'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import { PWAInstallProvider } from '../components/PWAInstallBanner'
+import { useEffect, useState } from 'react'
 
 import '../styles.css'
 
@@ -35,12 +36,32 @@ interface MyRouterContext {
 }
 
 function NotFound() {
+  const [countdown, setCountdown] = useState(3)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          window.location.href = '/'
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
       <h1 className="text-4xl font-bold mb-4">404</h1>
-      <p className="text-xl text-muted-foreground mb-8">Page not found</p>
+      <p className="text-xl text-muted-foreground mb-4">Page not found</p>
+      <p className="text-sm text-muted-foreground mb-8">
+        Redirecting to home in {countdown} {countdown === 1 ? 'second' : 'seconds'}...
+      </p>
       <a href="/" className="text-primary hover:underline">
-        Go back home
+        Go back home now
       </a>
     </div>
   )
