@@ -122,7 +122,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             </Link>
 
             <Link
-              to="/signal"
+              to="/signals"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
               activeProps={{

@@ -37,6 +37,7 @@ import {
   isPredefinedWatchlist
 } from '@/lib/predefined-watchlists'
 import { format } from 'date-fns'
+import { Link } from '@tanstack/react-router'
 
 // Default sectors to show expanded (matches PRIORITY_GROUPS)
 const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
@@ -628,7 +629,11 @@ export function TrendSignal({
   return (
     <>
       <div className="p-3 md:p-6">
-        <h2 className="text-lg font-semibold">{t('common.trendSignal.title')}</h2>
+        <Link to="/signals" className="inline-block">
+          <h2 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
+            {t('common.trendSignal.title')}
+          </h2>
+        </Link>
 
           {/* Control Bar - Row 1: Watchlist, Interval, and Actions */}
           <div className="flex items-center gap-2 mt-4">

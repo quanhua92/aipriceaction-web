@@ -33,6 +33,7 @@ import { ChartFullscreenDialog } from './ChartFullscreenDialog'
 import type { SortBy } from '@/components/lists/SortableTickerList'
 import { useTranslation } from '@/hooks/useTranslation'
 import { TickerGroupSelector } from '@/components/TickerGroupSelector'
+import { Link } from '@tanstack/react-router'
 
 type ViewMode = 'close_changed' | 'ma20_score'
 
@@ -623,7 +624,11 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   return (
     <>
       <div className="p-3 md:p-6">
-          <h2 className="text-lg font-semibold">Market Matrix</h2>
+          <Link to="/matrix" className="inline-block">
+            <h2 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
+              Market Matrix
+            </h2>
+          </Link>
 
         {/* Control Bar - Row 1: Watchlist, View Mode, and Actions */}
         <div className="flex items-center gap-2 mt-4">
