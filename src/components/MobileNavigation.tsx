@@ -9,6 +9,7 @@ import {
   Bell,
   Coins,
   FileText,
+  TrendingUp,
 } from 'lucide-react'
 import {
   Sheet,
@@ -118,6 +119,19 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             >
               <Table size={20} />
               <span className="font-medium">Market Matrix</span>
+            </Link>
+
+            <Link
+              to="/signal"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+              }}
+            >
+              <TrendingUp size={20} />
+              <span className="font-medium">Signals</span>
             </Link>
 
             <Link
