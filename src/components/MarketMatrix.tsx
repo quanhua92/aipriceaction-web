@@ -623,51 +623,53 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   return (
     <>
       <div className="p-3 md:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 className="text-lg font-semibold">Market Matrix</h2>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Watchlist Selector */}
-              <TickerGroupSelector
-                value={selectedWatchlist}
-                onValueChange={handleWatchlistChange}
-                placeholder="Select watchlist"
-                className="w-36"
-                refreshKey={refreshKey}
-              />
+        {/* Control Bar - Row 1: Watchlist, View Mode, and Actions */}
+        <div className="flex items-center gap-2 mt-4">
+          {/* Watchlist Selector */}
+          <TickerGroupSelector
+            value={selectedWatchlist}
+            onValueChange={handleWatchlistChange}
+            placeholder="Select watchlist"
+            className="w-36"
+            refreshKey={refreshKey}
+          />
 
-              {/* View Mode Toggle */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleViewModeToggle}
-                className="flex items-center gap-1 h-8 px-3"
-                title={`Switch to ${viewMode === 'close_changed' ? 'MA20 Score' : 'Close Change'}`}
-              >
-                <Repeat className="h-3 w-3" />
-                <span className="text-xs font-medium">
-                  {viewMode === 'close_changed' ? 'CLOSE %' : 'MA20'}
-                </span>
+          {/* View Mode Toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewModeToggle}
+            className="flex items-center gap-1 h-8 px-3"
+            title={`Switch to ${viewMode === 'close_changed' ? 'MA20 Score' : 'Close Change'}`}
+          >
+            <Repeat className="h-3 w-3" />
+            <span className="text-xs font-medium">
+              {viewMode === 'close_changed' ? 'CLOSE %' : 'MA20'}
+            </span>
+          </Button>
+
+          {/* Spacer to push actions to the right */}
+          <div className="flex-1"></div>
+
+          {/* Sector Actions Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreVertical className="h-4 w-4" />
               </Button>
-
-              {/* Sector Actions Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={expandAllSectors}>
-                    {t('common.matrix.expandAll')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={collapseAllSectors}>
-                    {t('common.matrix.collapseAll')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={expandAllSectors}>
+                {t('common.matrix.expandAll')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={collapseAllSectors}>
+                {t('common.matrix.collapseAll')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
           {/* Sort Buttons */}
           <div className="grid grid-cols-3 gap-1.5 mt-3 shrink-0">
