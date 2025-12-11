@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, ChevronDown, MoreVertical } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -794,10 +794,31 @@ export function TrendSignal({
                           ) : (
                             <ChevronDown className="h-3 w-3 flex-shrink-0" />
                           )}
-                          <span className="truncate flex-1 text-left">
+                          <span className="truncate flex-1 text-left font-semibold text-sm">
                             {getSectorDisplayName(sector, language)}
                           </span>
-                          <span className="opacity-70 flex-shrink-0">({sectorSignals.length})</span>
+                          <div className="flex items-center gap-3 font-mono text-[10px]">
+                            {(() => {
+                              const buyCount = sectorSignals.filter(s => s.signal === 'BUY').length
+                              const sellCount = sectorSignals.filter(s => s.signal === 'SELL').length
+                              return (
+                                <>
+                                  {buyCount > 0 && (
+                                    <div className="flex items-center gap-1">
+                                      <ChevronUp className="h-3 w-3 text-green-600" />
+                                      <span className="opacity-70 w-2 text-right">{buyCount}</span>
+                                    </div>
+                                  )}
+                                  {sellCount > 0 && (
+                                    <div className="flex items-center gap-1">
+                                      <ChevronDown className="h-3 w-3 text-red-600" />
+                                      <span className="opacity-70 w-2 text-right">{sellCount}</span>
+                                    </div>
+                                  )}
+                                </>
+                              )
+                            })()}
+                          </div>
                         </button>
                       </div>
 
