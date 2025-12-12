@@ -28,13 +28,13 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
 
   const getBarColor = (color: string) => {
     const colors: Record<string, string> = {
-      purple: 'from-purple-600 to-purple-400',
-      green: 'from-green-600 to-green-400',
-      gray: 'from-gray-600 to-gray-400',
-      red: 'from-red-600 to-red-400',
-      cyan: 'from-cyan-600 to-cyan-400'
+      purple: 'bg-purple-600',
+      green: 'bg-green-600',
+      gray: 'bg-gray-600',
+      red: 'bg-red-600',
+      cyan: 'bg-cyan-600'
     }
-    return colors[color] || 'from-gray-600 to-gray-400'
+    return colors[color] || 'bg-gray-600'
   }
 
   const getTextColor = (color: string) => {
@@ -69,11 +69,11 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
       <div className="relative">
         {/* Background with iPhone-style appearance */}
         <div className="w-full h-10 rounded-lg overflow-hidden bg-black/5 backdrop-blur-sm border border-black/10 dark:bg-white/5 dark:border-white/10">
-          {/* Animated gradient segments */}
+          {/* Animated segments */}
           {segmentData.map((segment, index) => (
             <div
               key={segment.key}
-              className={`absolute top-0 h-full transition-all duration-700 ease-out bg-gradient-to-r ${getBarColor(segment.color)} hover:opacity-90`}
+              className={`absolute top-0 h-full transition-all duration-700 ease-out ${getBarColor(segment.color)} hover:opacity-90`}
               style={{
                 left: `${segment.start}%`,
                 width: `${segment.percentage}%`,
@@ -81,9 +81,7 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
                 animation: `slideIn 0.6s ease-out ${index * 0.1}s both`
               }}
             >
-              {/* iPhone-style shimmer effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-60" />
-            </div>
+                </div>
           ))}
         </div>
 

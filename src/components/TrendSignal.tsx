@@ -714,7 +714,7 @@ export function TrendSignal({
                           <span className="truncate flex-1 text-left font-semibold text-sm">
                             {getSectorDisplayName(sector, language)}
                           </span>
-                          <div className="flex items-center gap-3 font-mono text-[10px]">
+                          <div className="flex items-center gap-3 font-mono text-xs">
                             {(() => {
                               const buyCount = sectorSignals.filter(s => s.signal === 'BUY').length
                               const sellCount = sectorSignals.filter(s => s.signal === 'SELL').length
@@ -723,13 +723,13 @@ export function TrendSignal({
                                   {buyCount > 0 && (
                                     <div className="flex items-center gap-1">
                                       <ChevronUp className="h-3 w-3 text-green-600" />
-                                      <span className="opacity-70 w-2 text-right">{buyCount}</span>
+                                      <span className="w-2 text-right">{buyCount}</span>
                                     </div>
                                   )}
                                   {sellCount > 0 && (
                                     <div className="flex items-center gap-1">
                                       <ChevronDown className="h-3 w-3 text-red-600" />
-                                      <span className="opacity-70 w-2 text-right">{sellCount}</span>
+                                      <span className="w-2 text-right">{sellCount}</span>
                                     </div>
                                   )}
                                 </>
