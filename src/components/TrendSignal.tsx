@@ -29,7 +29,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { TickerGroupSelector } from '@/components/TickerGroupSelector'
-import { ChartFullscreenDialog } from './ChartFullscreenDialog'
+import { ChartFullscreenDialog, TitleGeneratorCallback } from './ChartFullscreenDialog'
 import { getWatchlistNames } from '@/lib/watchlist-storage'
 import { TrendSignalDistribution } from '@/components/TrendSignalDistribution'
 import {
@@ -90,7 +90,6 @@ export function TrendSignal({
 
   // Dialog state for chart viewing
   const [dialogTicker, setDialogTicker] = React.useState<string | null>(null)
-  const [dialogTitle, setDialogTitle] = React.useState<string | null>(null)
 
   // Sector collapse state
   const [openSectors, setOpenSectors] = React.useState<Set<string>>(() => {
@@ -384,6 +383,22 @@ export function TrendSignal({
 
   const handleSignalClick = (signal: TrendSignalData) => {
     setDialogTicker(signal.ticker)
+    // Title generation now handled by callback
+  }
+
+  const handleCloseDialog = () => {
+    setDialogTicker(null)
+  }
+
+  // getTitle callback for ChartFullscreenDialog
+  const getChartTitle = React.useCallback((ticker: string): string => {
+    // Find the signal data for this ticker
+    const signal = signals.find(s => s.ticker === ticker)
+
+    if (!signal) {
+      // No signal data available, return just the ticker
+      return ticker
+    }
 
     // Create custom title with signal reason (similar to row display)
     let customTitle = signal.ticker
@@ -398,13 +413,9 @@ export function TrendSignal({
         })} ${Math.abs(signal.strength).toFixed(1)}%`
       }
     }
-    setDialogTitle(customTitle)
-  }
 
-  const handleCloseDialog = () => {
-    setDialogTicker(null)
-    setDialogTitle(null)
-  }
+    return customTitle
+  }, [signals, t])
 
   // Auto-expand all sectors when:
   // 1. Viewing predefined watchlists (VN30, VINGROUP) OR
@@ -814,7 +825,7 @@ export function TrendSignal({
         onClose={handleCloseDialog}
         tickerList={allTickersForNavigation}
         currentIndex={currentTickerIndex}
-        title={dialogTitle}
+        getTitle={getChartTitle}
       />
     </>
   )

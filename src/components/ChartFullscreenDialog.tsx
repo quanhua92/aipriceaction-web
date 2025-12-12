@@ -11,6 +11,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { useTranslation } from '@/hooks/useTranslation'
 
+export type TitleGeneratorCallback = (ticker: string) => string | Promise<string>
+
 interface ChartFullscreenDialogProps {
   ticker: string | null
   endDate?: string | null
@@ -18,6 +20,7 @@ interface ChartFullscreenDialogProps {
   tickerList?: string[]
   currentIndex?: number
   title?: string
+  getTitle?: TitleGeneratorCallback
 }
 
 export function ChartFullscreenDialog({
@@ -27,12 +30,16 @@ export function ChartFullscreenDialog({
   tickerList,
   currentIndex = 0,
   title,
+  getTitle,
 }: ChartFullscreenDialogProps) {
   const { t } = useTranslation()
   const isOpen = ticker !== null
   const [chartHeight, setChartHeight] = React.useState(600)
   const dialogContentRef = React.useRef<HTMLDivElement>(null)
   const { prefetchTickers } = usePrefetchTicker()
+
+  // New state for dynamic title
+  const [dynamicTitle, setDynamicTitle] = React.useState<string | null>(null)
 
   // Internal state for navigation when tickerList is provided
   const [internalIndex, setInternalIndex] = React.useState(currentIndex)
@@ -54,6 +61,26 @@ export function ChartFullscreenDialog({
   const displayTicker = tickerList && tickerList.length > 0 && tickerList.includes(internalTicker ?? '')
     ? tickerList[internalIndex]
     : internalTicker
+
+  // Update title when displayTicker changes
+  React.useEffect(() => {
+    if (!displayTicker || !getTitle) {
+      setDynamicTitle(null)
+      return
+    }
+
+    const updateTitle = async () => {
+      try {
+        const newTitle = await getTitle(displayTicker)
+        setDynamicTitle(newTitle)
+      } catch (error) {
+        console.error('Error generating title:', error)
+        setDynamicTitle(null)
+      }
+    }
+
+    updateTitle()
+  }, [displayTicker, getTitle])
 
   // Helper function to get tickers to prefetch with wraparound
   const getTickersToPrefetch = React.useCallback((fromIndex: number, direction: 'next' | 'prev', count: number): string[] => {
@@ -219,7 +246,7 @@ export function ChartFullscreenDialog({
       <DialogContent ref={dialogContentRef} className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[90vh] h-[90dvh] p-2 gap-2 flex flex-col">
         <DialogHeader data-slot="header" className="flex-shrink-0">
           <DialogTitle className="text-base">
-            {title || displayTicker}
+            {dynamicTitle || title || displayTicker}
             {endDate && ` - ${t('common.chart.ending')} ${endDate}`}
           </DialogTitle>
         </DialogHeader>
