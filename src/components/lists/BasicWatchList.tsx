@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, Plus, Edit2, Download, Upload, TrendingUp, TrendingDown, Activity, Minus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit2, Download, Upload } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
@@ -8,6 +8,7 @@ import { SortableTickerList, type Ticker } from './SortableTickerList'
 import { CreateWatchListDialog } from '@/components/dialogs/CreateWatchListDialog'
 import { EditWatchListDialog } from '@/components/dialogs/EditWatchListDialog'
 import { TickerGroupSelector } from '@/components/TickerGroupSelector'
+import { PriceDistributionBars } from '@/components/PriceDistributionBars'
 import { getWatchlistNames, getWatchlistTickers, getCustomWatchlists } from '@/lib/watchlist-storage'
 import {
   getPredefinedWatchlistTickers,
@@ -449,6 +450,16 @@ export function BasicWatchList({
         </h3>
       </div>
 
+      {/* Price Change Distribution Summary */}
+      {!loading && !error && priceDistribution.totalTickers > 0 && (
+        <div className="px-3 mb-3">
+          <PriceDistributionBars
+            distribution={priceDistribution.distribution}
+            totalTickers={priceDistribution.totalTickers}
+          />
+        </div>
+      )}
+
       {/* Group Selection Header */}
       <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
         <TickerGroupSelector
@@ -482,221 +493,7 @@ export function BasicWatchList({
         )}
       </div>
 
-      {/* Price Change Distribution Summary */}
-      {!loading && !error && priceDistribution.totalTickers > 0 && (
-        <div className="px-3 mb-3 space-y-2">
-          {/* Extreme Gains Bar (>6.5%) */}
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-purple-600 flex-shrink-0" />
-            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
-              <div
-                className="bg-purple-500 h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${priceDistribution.totalTickers > 0
-                    ? (priceDistribution.distribution.extremeGains / priceDistribution.totalTickers) * 100
-                    : 0}%`
-                }}
-              />
-              {(() => {
-                const percentage = priceDistribution.totalTickers > 0
-                  ? (priceDistribution.distribution.extremeGains / priceDistribution.totalTickers) * 100
-                  : 0;
-                const isOver80 = percentage > 80;
-                return (
-                  <div
-                    className="absolute top-0 h-full flex items-center"
-                    style={{
-                      left: isOver80
-                        ? `${percentage - 8}%`  // Position 8% before the end
-                        : `${percentage}%`,
-                      transform: isOver80
-                        ? 'translateX(-100%)'  // Align to the left of the position
-                        : 'translateX(4px)',
-                      paddingRight: isOver80 ? '4px' : '0'
-                    }}
-                  >
-                    <span className="text-xs font-medium text-purple-600">
-                      {priceDistribution.distribution.extremeGains}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({Math.round(percentage)}%)
-                    </span>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-
-          {/* Normal Gains Bar (0% to 6.5%) */}
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-green-600 flex-shrink-0" />
-            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
-              <div
-                className="bg-green-500 h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${priceDistribution.totalTickers > 0
-                    ? (priceDistribution.distribution.normalGains / priceDistribution.totalTickers) * 100
-                    : 0}%`
-                }}
-              />
-              {(() => {
-                const percentage = priceDistribution.totalTickers > 0
-                  ? (priceDistribution.distribution.normalGains / priceDistribution.totalTickers) * 100
-                  : 0;
-                const isOver80 = percentage > 80;
-                return (
-                  <div
-                    className="absolute top-0 h-full flex items-center"
-                    style={{
-                      left: isOver80
-                        ? `${percentage - 8}%`  // Position 8% before the end
-                        : `${percentage}%`,
-                      transform: isOver80
-                        ? 'translateX(-100%)'  // Align to the left of the position
-                        : 'translateX(4px)',
-                      paddingRight: isOver80 ? '4px' : '0'
-                    }}
-                  >
-                    <span className="text-xs font-medium text-green-600">
-                      {priceDistribution.distribution.normalGains}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({Math.round(percentage)}%)
-                    </span>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-
-          {/* Neutral Bar (exactly 0%) */}
-          <div className="flex items-center gap-2">
-            <Minus className="h-4 w-4 text-yellow-600 flex-shrink-0" />
-            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
-              <div
-                className="bg-yellow-500 h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${priceDistribution.totalTickers > 0
-                    ? (priceDistribution.distribution.neutral / priceDistribution.totalTickers) * 100
-                    : 0}%`
-                }}
-              />
-              {(() => {
-                const percentage = priceDistribution.totalTickers > 0
-                  ? (priceDistribution.distribution.neutral / priceDistribution.totalTickers) * 100
-                  : 0;
-                const isOver80 = percentage > 80;
-                return (
-                  <div
-                    className="absolute top-0 h-full flex items-center"
-                    style={{
-                      left: isOver80
-                        ? `${percentage - 8}%`  // Position 8% before the end
-                        : `${percentage}%`,
-                      transform: isOver80
-                        ? 'translateX(-100%)'  // Align to the left of the position
-                        : 'translateX(4px)',
-                      paddingRight: isOver80 ? '4px' : '0'
-                    }}
-                  >
-                    <span className="text-xs font-medium text-yellow-600">
-                      {priceDistribution.distribution.neutral}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({Math.round(percentage)}%)
-                    </span>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-
-          {/* Normal Losses Bar (-6.5% to 0%) */}
-          <div className="flex items-center gap-2">
-            <TrendingDown className="h-4 w-4 text-red-600 flex-shrink-0" />
-            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
-              <div
-                className="bg-red-500 h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${priceDistribution.totalTickers > 0
-                    ? (priceDistribution.distribution.normalLosses / priceDistribution.totalTickers) * 100
-                    : 0}%`
-                }}
-              />
-              {(() => {
-                const percentage = priceDistribution.totalTickers > 0
-                  ? (priceDistribution.distribution.normalLosses / priceDistribution.totalTickers) * 100
-                  : 0;
-                const isOver80 = percentage > 80;
-                return (
-                  <div
-                    className="absolute top-0 h-full flex items-center"
-                    style={{
-                      left: isOver80
-                        ? `${percentage - 8}%`  // Position 8% before the end
-                        : `${percentage}%`,
-                      transform: isOver80
-                        ? 'translateX(-100%)'  // Align to the left of the position
-                        : 'translateX(4px)',
-                      paddingRight: isOver80 ? '4px' : '0'
-                    }}
-                  >
-                    <span className="text-xs font-medium text-red-600">
-                      {priceDistribution.distribution.normalLosses}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({Math.round(percentage)}%)
-                    </span>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-
-          {/* Extreme Losses Bar (<-6.5%) */}
-          <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-cyan-600 flex-shrink-0" />
-            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
-              <div
-                className="bg-cyan-500 h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${priceDistribution.totalTickers > 0
-                    ? (priceDistribution.distribution.extremeLosses / priceDistribution.totalTickers) * 100
-                    : 0}%`
-                }}
-              />
-              {(() => {
-                const percentage = priceDistribution.totalTickers > 0
-                  ? (priceDistribution.distribution.extremeLosses / priceDistribution.totalTickers) * 100
-                  : 0;
-                const isOver80 = percentage > 80;
-                return (
-                  <div
-                    className="absolute top-0 h-full flex items-center"
-                    style={{
-                      left: isOver80
-                        ? `${percentage - 8}%`  // Position 8% before the end
-                        : `${percentage}%`,
-                      transform: isOver80
-                        ? 'translateX(-100%)'  // Align to the left of the position
-                        : 'translateX(4px)',
-                      paddingRight: isOver80 ? '4px' : '0'
-                    }}
-                  >
-                    <span className="text-xs font-medium text-cyan-600">
-                      {priceDistribution.distribution.extremeLosses}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({Math.round(percentage)}%)
-                    </span>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
-
+      
       {/* Ticker List */}
       <div className="flex-1 px-3">
         <SortableTickerList
