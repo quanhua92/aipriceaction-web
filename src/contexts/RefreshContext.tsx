@@ -39,6 +39,16 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
     const now = Date.now()
     const timeSinceLastRefresh = now - lastRefresh
 
+    // Prevent refresh if it happened too recently (within 5 seconds)
+    if (timeSinceLastRefresh < VISIBILITY_MIN_REFRESH_INTERVAL_MS) {
+      info('Skipping manual refresh - too soon since last refresh', {
+        source: 'manual',
+        timeSinceLastRefresh,
+        minIntervalRequired: VISIBILITY_MIN_REFRESH_INTERVAL_MS
+      })
+      return
+    }
+
     info('Refresh triggered', {
       source: 'manual',
       timeSinceLastRefresh,
@@ -190,11 +200,23 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
 
       // Setup 30-second interval
       intervalRef.current = setInterval(() => {
-        info('Refresh triggered', {
-          source: 'auto-interval',
-          interval: 30000
-        })
-        triggerRefresh()
+        const now = Date.now()
+        const timeSinceLastRefresh = now - lastRefreshRef.current
+
+        // Only refresh if minimum interval has passed
+        if (timeSinceLastRefresh >= VISIBILITY_MIN_REFRESH_INTERVAL_MS) {
+          info('Refresh triggered', {
+            source: 'auto-interval',
+            interval: 30000,
+            timeSinceLastRefresh
+          })
+          triggerRefresh()
+        } else {
+          info('Skipping auto-interval refresh - too soon since last refresh', {
+            timeSinceLastRefresh,
+            minIntervalRequired: VISIBILITY_MIN_REFRESH_INTERVAL_MS
+          })
+        }
       }, 30000) // 30 seconds
     } else {
       // Clear interval when disabled
