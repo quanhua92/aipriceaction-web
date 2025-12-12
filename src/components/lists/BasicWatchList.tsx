@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, Plus, Edit2, Download, Upload, TrendingUp, TrendingDown, Activity } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit2, Download, Upload, TrendingUp, TrendingDown, Activity, Minus } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
@@ -182,6 +182,7 @@ export function BasicWatchList({
     const distribution = {
       extremeGains: 0,    // > 6.5%
       normalGains: 0,     // 0% to 6.5%
+      neutral: 0,         // exactly 0% (within epsilon)
       normalLosses: 0,    // -6.5% to 0%
       extremeLosses: 0    // < -6.5%
     }
@@ -190,11 +191,14 @@ export function BasicWatchList({
     tickersWithData.forEach(ticker => {
       const data = allData[ticker.symbol][0]
       const change = data.close_changed || 0
+      const epsilon = 0.01 // Small epsilon for floating point comparison
 
       if (change > 6.5) {
         distribution.extremeGains++
-      } else if (change >= 0) {
+      } else if (change > epsilon) {
         distribution.normalGains++
+      } else if (Math.abs(change) <= epsilon) {
+        distribution.neutral++
       } else if (change >= -6.5) {
         distribution.normalLosses++
       } else {
@@ -555,6 +559,48 @@ export function BasicWatchList({
                   >
                     <span className="text-xs font-medium text-green-600">
                       {priceDistribution.distribution.normalGains}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({Math.round(percentage)}%)
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Neutral Bar (exactly 0%) */}
+          <div className="flex items-center gap-2">
+            <Minus className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
+              <div
+                className="bg-yellow-500 h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${priceDistribution.totalTickers > 0
+                    ? (priceDistribution.distribution.neutral / priceDistribution.totalTickers) * 100
+                    : 0}%`
+                }}
+              />
+              {(() => {
+                const percentage = priceDistribution.totalTickers > 0
+                  ? (priceDistribution.distribution.neutral / priceDistribution.totalTickers) * 100
+                  : 0;
+                const isOver80 = percentage > 80;
+                return (
+                  <div
+                    className="absolute top-0 h-full flex items-center"
+                    style={{
+                      left: isOver80
+                        ? `${percentage - 8}%`  // Position 8% before the end
+                        : `${percentage}%`,
+                      transform: isOver80
+                        ? 'translateX(-100%)'  // Align to the left of the position
+                        : 'translateX(4px)',
+                      paddingRight: isOver80 ? '4px' : '0'
+                    }}
+                  >
+                    <span className="text-xs font-medium text-yellow-600">
+                      {priceDistribution.distribution.neutral}
                     </span>
                     <span className="text-xs text-muted-foreground ml-1">
                       ({Math.round(percentage)}%)
