@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, Plus, Edit2, Download, Upload } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Edit2, Download, Upload, TrendingUp, TrendingDown, Activity } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
@@ -158,6 +158,44 @@ export function BasicWatchList({
       sector: selectedGroup
     }))
   }, [selectedGroup, tickerGroups, customWatchlists, refreshKey, cryptoTickers])
+
+  // Calculate price change distribution
+  const priceDistribution = React.useMemo(() => {
+    // Combine stock and crypto data
+    const allData = { ...allTickersLastData, ...allCryptoTickersLastData }
+
+    // Get only tickers with price data
+    const tickersWithData = tickers.filter(t => {
+      const data = allData[t.symbol]
+      return data && data.length > 0 && data[0]?.close_changed !== null && data[0]?.close_changed !== undefined
+    })
+
+    // Initialize counters
+    const distribution = {
+      extremeGains: 0,    // > 6.5%
+      normalGains: 0,     // 0% to 6.5%
+      normalLosses: 0,    // -6.5% to 0%
+      extremeLosses: 0    // < -6.5%
+    }
+
+    // Count tickers in each category
+    tickersWithData.forEach(ticker => {
+      const data = allData[ticker.symbol][0]
+      const change = data.close_changed || 0
+
+      if (change > 6.5) {
+        distribution.extremeGains++
+      } else if (change >= 0) {
+        distribution.normalGains++
+      } else if (change >= -6.5) {
+        distribution.normalLosses++
+      } else {
+        distribution.extremeLosses++
+      }
+    })
+
+    return distribution
+  }, [tickers, allTickersLastData, allCryptoTickersLastData])
 
   // Navigation state - use sorted tickers from SortableTickerList
   const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
@@ -431,6 +469,179 @@ export function BasicWatchList({
           </EditWatchListDialog>
         )}
       </div>
+
+      {/* Price Change Distribution Summary */}
+      {!loading && !error && tickers.length > 0 && (
+        <div className="px-3 mb-3 space-y-2">
+          {/* Extreme Gains Bar (>6.5%) */}
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-purple-600 flex-shrink-0" />
+            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
+              <div
+                className="bg-purple-500 h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${tickers.length > 0
+                    ? (priceDistribution.extremeGains / tickers.length) * 100
+                    : 0}%`
+                }}
+              />
+              {(() => {
+                const percentage = tickers.length > 0
+                  ? (priceDistribution.extremeGains / tickers.length) * 100
+                  : 0;
+                const isOver80 = percentage > 80;
+                return (
+                  <div
+                    className="absolute top-0 h-full flex items-center"
+                    style={{
+                      left: isOver80
+                        ? `${percentage - 8}%`  // Position 8% before the end
+                        : `${percentage}%`,
+                      transform: isOver80
+                        ? 'translateX(-100%)'  // Align to the left of the position
+                        : 'translateX(4px)',
+                      paddingRight: isOver80 ? '4px' : '0'
+                    }}
+                  >
+                    <span className="text-xs font-medium text-purple-600">
+                      {priceDistribution.extremeGains}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({Math.round(percentage)}%)
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Normal Gains Bar (0% to 6.5%) */}
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
+              <div
+                className="bg-green-500 h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${tickers.length > 0
+                    ? (priceDistribution.normalGains / tickers.length) * 100
+                    : 0}%`
+                }}
+              />
+              {(() => {
+                const percentage = tickers.length > 0
+                  ? (priceDistribution.normalGains / tickers.length) * 100
+                  : 0;
+                const isOver80 = percentage > 80;
+                return (
+                  <div
+                    className="absolute top-0 h-full flex items-center"
+                    style={{
+                      left: isOver80
+                        ? `${percentage - 8}%`  // Position 8% before the end
+                        : `${percentage}%`,
+                      transform: isOver80
+                        ? 'translateX(-100%)'  // Align to the left of the position
+                        : 'translateX(4px)',
+                      paddingRight: isOver80 ? '4px' : '0'
+                    }}
+                  >
+                    <span className="text-xs font-medium text-green-600">
+                      {priceDistribution.normalGains}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({Math.round(percentage)}%)
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Normal Losses Bar (-6.5% to 0%) */}
+          <div className="flex items-center gap-2">
+            <TrendingDown className="h-4 w-4 text-red-600 flex-shrink-0" />
+            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
+              <div
+                className="bg-red-500 h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${tickers.length > 0
+                    ? (priceDistribution.normalLosses / tickers.length) * 100
+                    : 0}%`
+                }}
+              />
+              {(() => {
+                const percentage = tickers.length > 0
+                  ? (priceDistribution.normalLosses / tickers.length) * 100
+                  : 0;
+                const isOver80 = percentage > 80;
+                return (
+                  <div
+                    className="absolute top-0 h-full flex items-center"
+                    style={{
+                      left: isOver80
+                        ? `${percentage - 8}%`  // Position 8% before the end
+                        : `${percentage}%`,
+                      transform: isOver80
+                        ? 'translateX(-100%)'  // Align to the left of the position
+                        : 'translateX(4px)',
+                      paddingRight: isOver80 ? '4px' : '0'
+                    }}
+                  >
+                    <span className="text-xs font-medium text-red-600">
+                      {priceDistribution.normalLosses}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({Math.round(percentage)}%)
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Extreme Losses Bar (<-6.5%) */}
+          <div className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-cyan-600 flex-shrink-0" />
+            <div className="flex-1 bg-gray-100 rounded-full h-4 relative">
+              <div
+                className="bg-cyan-500 h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${tickers.length > 0
+                    ? (priceDistribution.extremeLosses / tickers.length) * 100
+                    : 0}%`
+                }}
+              />
+              {(() => {
+                const percentage = tickers.length > 0
+                  ? (priceDistribution.extremeLosses / tickers.length) * 100
+                  : 0;
+                const isOver80 = percentage > 80;
+                return (
+                  <div
+                    className="absolute top-0 h-full flex items-center"
+                    style={{
+                      left: isOver80
+                        ? `${percentage - 8}%`  // Position 8% before the end
+                        : `${percentage}%`,
+                      transform: isOver80
+                        ? 'translateX(-100%)'  // Align to the left of the position
+                        : 'translateX(4px)',
+                      paddingRight: isOver80 ? '4px' : '0'
+                    }}
+                  >
+                    <span className="text-xs font-medium text-cyan-600">
+                      {priceDistribution.extremeLosses}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({Math.round(percentage)}%)
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Ticker List */}
       <div className="flex-1 px-3">
