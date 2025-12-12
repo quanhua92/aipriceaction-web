@@ -25,6 +25,7 @@ export const PRIORITY_GROUPS = [
   'CHUNG_KHOAN',
   'BAT_DONG_SAN',
   'XAY_DUNG',
+  'TAI_NGUYEN_CO_BAN',
   'BAN_LE'
 ] as const
 

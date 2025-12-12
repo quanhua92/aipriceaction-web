@@ -158,7 +158,7 @@ Common sectors with abbreviations (used in MarketMatrix):
 - `CHUNG_KHOAN` (CK) - Securities
 - `BAT_DONG_SAN` (BDS) - Real Estate
 - `XAY_DUNG` (XD) - Construction
-- `THEP` - Steel
+- `TAI_NGUYEN_CO_BAN` (TN-CB) - Basic Resources
 - `BAN_LE` - Retail
 
 See `PRIORITY_GROUPS` and `SECTOR_ABBREVIATIONS` in `src/lib/constants.ts`

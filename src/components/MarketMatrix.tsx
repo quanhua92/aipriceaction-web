@@ -64,7 +64,7 @@ function getCellColor(value: number): { bg: string; text: string } {
 }
 
 // Default sectors to show expanded (matches PRIORITY_GROUPS)
-const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
+const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'TAI_NGUYEN_CO_BAN', 'BAN_LE']
 
 // Auto-expand threshold: expand all sectors if total sectors is below this number
 const AUTO_EXPAND_SECTOR_THRESHOLD = 3
