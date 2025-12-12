@@ -621,7 +621,171 @@ export function TrendSignal({
           </div>
         </div>
 
-        <div className="px-0">
+        <div className="px-3 md:px-6">
+          {/* Signal Statistics Summary Cards */}
+          {!loading && !error && signals.length > 0 && (
+            <div className="mt-4 mb-4">
+              {/* Stats Overview */}
+              <div className="mb-2">
+                <div className="text-sm text-muted-foreground">
+                  {!showAll
+                    ? t('common.trendSignal.showingSignals', {
+                        filtered: filteredSignals.length,
+                        total: signals.length
+                      })
+                    : t('common.trendSignal.allTickers', {
+                        total: signals.length
+                      })
+                  }
+                </div>
+              </div>
+
+              {/* Progress Bars */}
+              <div className="space-y-2">
+                {/* BUY Progress Bar */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 w-20">
+                    <ChevronUp className="h-3 w-3 text-green-600" />
+                    <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                      {t('common.trendSignal.buy')}
+                    </span>
+                  </div>
+                  <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-4 relative">
+                    <div
+                      className="bg-green-500 h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${signals.length > 0
+                          ? (signals.filter(s => s.signal === 'BUY').length / signals.length) * 100
+                          : 0}%`
+                      }}
+                    />
+                    {(() => {
+                      const percentage = signals.length > 0
+                        ? (signals.filter(s => s.signal === 'BUY').length / signals.length) * 100
+                        : 0;
+                      const isOver90 = percentage > 90;
+                      return (
+                        <div
+                          className="absolute top-0 h-full flex items-center"
+                          style={{
+                            left: isOver90
+                              ? `${percentage - 8}%`  // Position 8% before the end
+                              : `${percentage}%`,
+                            transform: isOver90
+                              ? 'translateX(-100%)'  // Align to the left of the position
+                              : 'translateX(4px)',
+                            paddingRight: isOver90 ? '4px' : '0'
+                          }}
+                        >
+                          <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                            {signals.filter(s => s.signal === 'BUY').length}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({Math.round(percentage)}%)
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* SELL Progress Bar */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 w-20">
+                    <ChevronDown className="h-3 w-3 text-red-600" />
+                    <span className="text-xs font-medium text-red-700 dark:text-red-300">
+                      {t('common.trendSignal.sell')}
+                    </span>
+                  </div>
+                  <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-4 relative">
+                    <div
+                      className="bg-red-500 h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${signals.length > 0
+                          ? (signals.filter(s => s.signal === 'SELL').length / signals.length) * 100
+                          : 0}%`
+                      }}
+                    />
+                    {(() => {
+                      const percentage = signals.length > 0
+                        ? (signals.filter(s => s.signal === 'SELL').length / signals.length) * 100
+                        : 0;
+                      const isOver90 = percentage > 90;
+                      return (
+                        <div
+                          className="absolute top-0 h-full flex items-center"
+                          style={{
+                            left: isOver90
+                              ? `${percentage - 8}%`  // Position 8% before the end
+                              : `${percentage}%`,
+                            transform: isOver90
+                              ? 'translateX(-100%)'  // Align to the left of the position
+                              : 'translateX(4px)',
+                            paddingRight: isOver90 ? '4px' : '0'
+                          }}
+                        >
+                          <span className="text-xs font-medium text-red-600 dark:text-red-400">
+                            {signals.filter(s => s.signal === 'SELL').length}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({Math.round(percentage)}%)
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* NONE Progress Bar */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 w-20">
+                    <div className="h-3 w-3 bg-gray-400 rounded-sm" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                      {t('common.trendSignal.none')}
+                    </span>
+                  </div>
+                  <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-4 relative">
+                    <div
+                      className="bg-gray-400 h-full rounded-full transition-all duration-300"
+                      style={{
+                        width: `${signals.length > 0
+                          ? (signals.filter(s => s.signal === null || s.signal === undefined).length / signals.length) * 100
+                          : 0}%`
+                      }}
+                    />
+                    {(() => {
+                      const percentage = signals.length > 0
+                        ? (signals.filter(s => s.signal === null || s.signal === undefined).length / signals.length) * 100
+                        : 0;
+                      const isOver90 = percentage > 90;
+                      return (
+                        <div
+                          className="absolute top-0 h-full flex items-center"
+                          style={{
+                            left: isOver90
+                              ? `${percentage - 8}%`  // Position 8% before the end
+                              : `${percentage}%`,
+                            transform: isOver90
+                              ? 'translateX(-100%)'  // Align to the left of the position
+                              : 'translateX(4px)',
+                            paddingRight: isOver90 ? '4px' : '0'
+                          }}
+                        >
+                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {signals.filter(s => s.signal === null || s.signal === undefined).length}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({Math.round(percentage)}%)
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+                </div>
+          )}
           {loading && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">{t('common.trendSignal.loadingSignals')}</p>

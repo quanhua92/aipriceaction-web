@@ -198,6 +198,10 @@ export default {
     hours: 'giờ',
     peak: 'Đỉnh',
     bottom: 'Đáy',
+    showingSignals: 'Đang hiện {filtered} tín hiệu từ {total} mã',
+    allTickers: 'Tất cả {total} mã',
+    activeSignals: '{count} tín hiệu đang hoạt động',
+    hiddenTickers: 'Ẩn: {count} mã không có tín hiệu',
   },
   alerts: {
     title: 'Cảnh Báo Giá',

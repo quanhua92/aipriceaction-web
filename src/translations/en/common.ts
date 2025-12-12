@@ -198,6 +198,10 @@ export default {
     hours: 'hours',
     peak: 'Peak',
     bottom: 'Bottom',
+    showingSignals: 'Showing {filtered} signals from {total} total tickers',
+    allTickers: 'All {total} tickers',
+    activeSignals: '{count} active signals',
+    hiddenTickers: 'Hidden: {count} tickers with no signals',
   },
   alerts: {
     title: 'Price Alerts',
