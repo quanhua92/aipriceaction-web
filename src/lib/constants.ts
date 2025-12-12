@@ -25,7 +25,6 @@ export const PRIORITY_GROUPS = [
   'CHUNG_KHOAN',
   'BAT_DONG_SAN',
   'XAY_DUNG',
-  'THEP',
   'BAN_LE'
 ] as const
 
@@ -146,31 +145,24 @@ export const SECTOR_ABBREVIATIONS: Record<string, string> = {
 	CHUNG_KHOAN: 'CK',
 	BAT_DONG_SAN: 'BDS',
 	XAY_DUNG: 'XD',
-	THEP: 'THEP',
 	BAN_LE: 'BL',
 
-	// Other sectors (alphabetical)
+	// All sectors from API (alphabetical)
 	BAO_HIEM: 'BH',
-	BAT_DONG_SAN_KCN: 'KCN',
-	CAO_SU: 'CS',
 	CONG_NGHE: 'CN',
 	DAU_KHI: 'DK',
-	DAU_TU_CONG: 'DTC',
-	DET_MAY: 'DM',
-	HANG_KHONG: 'HK',
+	DICH_VU_CONG_NGHIEP: 'DV-CN',
+	DIEN: 'DIEN',
+	DU_LICH: 'DL',
+	HANG_CA_NHAN_GIA_DUNG: 'HCN-GD',
 	HOA_CHAT: 'HC',
-	KHAI_KHOANG: 'KK',
-	NANG_LUONG: 'NL',
-	NHUA: 'NHUA',
-	NONG_NGHIEP: 'NN',
-	OTHERS: 'OTH',
-	PENNY: 'PNY',
-	SUC_KHOE: 'SK',
+	OTHERS: 'KHAC',
+	OTO_PHU_TUNG: 'OTO-PT',
+	TAI_NGUYEN_CO_BAN: 'TN-CB',
 	THUC_PHAM: 'TP',
-	THUY_SAN: 'TS',
-	VAN_TAI: 'VT',
-	VLXD: 'VLXD',
-	XAY_LAP_DIEN: 'XLD',
+	TRUYEN_THONG: 'TT',
+	VIEN_THONG: 'VTH',
+	Y_TE: 'YT',
 }
 
 /**

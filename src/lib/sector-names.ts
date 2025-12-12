@@ -1,7 +1,7 @@
 /**
  * Sector name mappings from API keys to readable Vietnamese/English names
  *
- * Maps all 27 sector groups from the API to user-friendly display names
+ * Maps all sector groups from the API to user-friendly display names
  * Source: https://api.aipriceaction.com/tickers/group
  */
 
@@ -31,27 +31,15 @@ export const SECTOR_NAMES: Record<string, SectorName> = {
     vn: 'Xây Dựng',
     en: 'Construction'
   },
-  THEP: {
-    vn: 'Thép',
-    en: 'Steel'
-  },
   BAN_LE: {
     vn: 'Bán Lẻ',
     en: 'Retail'
   },
 
-  // Other sectors (alphabetical by key)
+  // All sectors from API (alphabetical by key)
   BAO_HIEM: {
     vn: 'Bảo Hiểm',
     en: 'Insurance'
-  },
-  BAT_DONG_SAN_KCN: {
-    vn: 'BĐS Khu Công Nghiệp',
-    en: 'Industrial Real Estate'
-  },
-  CAO_SU: {
-    vn: 'Cao Su',
-    en: 'Rubber'
   },
   CONG_NGHE: {
     vn: 'Công Nghệ',
@@ -61,69 +49,53 @@ export const SECTOR_NAMES: Record<string, SectorName> = {
     vn: 'Dầu Khí',
     en: 'Oil & Gas'
   },
-  DAU_TU_CONG: {
-    vn: 'Đầu Tư Công',
-    en: 'Public Investment'
+  DICH_VU_CONG_NGHIEP: {
+    vn: 'Dịch Vụ Công Nghiệp',
+    en: 'Industrial Services'
   },
-  DET_MAY: {
-    vn: 'Dệt May',
-    en: 'Textile & Garment'
+  DIEN: {
+    vn: 'Điện',
+    en: 'Electric Power'
   },
-  HANG_KHONG: {
-    vn: 'Hàng Không',
-    en: 'Aviation'
+  DU_LICH: {
+    vn: 'Du Lịch',
+    en: 'Tourism'
+  },
+  HANG_CA_NHAN_GIA_DUNG: {
+    vn: 'Hàng Cá Nhân & Gia Dụng',
+    en: 'Consumer Goods & Home Appliances'
   },
   HOA_CHAT: {
     vn: 'Hóa Chất',
     en: 'Chemicals'
   },
-  KHAI_KHOANG: {
-    vn: 'Khai Khoáng',
-    en: 'Mining'
-  },
-  NANG_LUONG: {
-    vn: 'Năng Lượng',
-    en: 'Energy'
-  },
-  NHUA: {
-    vn: 'Nhựa',
-    en: 'Plastics'
-  },
-  NONG_NGHIEP: {
-    vn: 'Nông Nghiệp',
-    en: 'Agriculture'
-  },
   OTHERS: {
     vn: 'Khác',
     en: 'Others'
   },
-  PENNY: {
-    vn: 'Penny',
-    en: 'Penny Stocks'
+  OTO_PHU_TUNG: {
+    vn: 'Ô Tô & Phụ Tùng',
+    en: 'Automobile & Auto Parts'
   },
-  SUC_KHOE: {
-    vn: 'Sức Khỏe',
-    en: 'Healthcare'
+  TAI_NGUYEN_CO_BAN: {
+    vn: 'Tài Nguyên Cơ Bản',
+    en: 'Basic Resources'
   },
   THUC_PHAM: {
     vn: 'Thực Phẩm',
     en: 'Food & Beverage'
   },
-  THUY_SAN: {
-    vn: 'Thủy Sản',
-    en: 'Seafood'
+  TRUYEN_THONG: {
+    vn: 'Truyền Thông',
+    en: 'Media & Communications'
   },
-  VAN_TAI: {
-    vn: 'Vận Tải',
-    en: 'Transportation'
+  VIEN_THONG: {
+    vn: 'Viễn Thông',
+    en: 'Telecommunications'
   },
-  VLXD: {
-    vn: 'Vật Liệu Xây Dựng',
-    en: 'Building Materials'
-  },
-  XAY_LAP_DIEN: {
-    vn: 'Xây Lắp Điện',
-    en: 'Electrical Installation'
+  Y_TE: {
+    vn: 'Y Tế',
+    en: 'Healthcare & Medical'
   }
 }
 
