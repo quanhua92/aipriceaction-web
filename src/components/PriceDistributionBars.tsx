@@ -28,13 +28,13 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
 
   const getBarColor = (color: string) => {
     const colors: Record<string, string> = {
-      purple: 'bg-purple-500',
-      green: 'bg-green-500',
-      gray: 'bg-gray-500', // Changed from yellow/amber to gray for neutral
-      red: 'bg-red-500',
-      cyan: 'bg-cyan-500'
+      purple: 'from-purple-600 to-purple-400',
+      green: 'from-green-600 to-green-400',
+      gray: 'from-gray-600 to-gray-400',
+      red: 'from-red-600 to-red-400',
+      cyan: 'from-cyan-600 to-cyan-400'
     }
-    return colors[color] || 'bg-gray-500'
+    return colors[color] || 'from-gray-600 to-gray-400'
   }
 
   const getTextColor = (color: string) => {
@@ -65,53 +65,39 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Price Distribution</h4>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs text-gray-600 dark:text-gray-400">Live</span>
-          </div>
-          <span className="text-xs text-gray-500 dark:text-gray-500">Total: {totalTickers}</span>
-        </div>
-      </div>
-
       {/* Main Distribution Bar */}
-      <div className="relative group">
-        {/* Background with gradient */}
-        <div className="w-full bg-gradient-to-r from-slate-100 via-gray-100 to-slate-100 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 rounded-full h-8 shadow-inner overflow-hidden border border-slate-200 dark:border-slate-700">
-          {/* Animated segments */}
+      <div className="relative">
+        {/* Background with iPhone-style appearance */}
+        <div className="w-full h-10 rounded-lg overflow-hidden bg-black/5 backdrop-blur-sm border border-black/10 dark:bg-white/5 dark:border-white/10">
+          {/* Animated gradient segments */}
           {segmentData.map((segment, index) => (
             <div
               key={segment.key}
-              className={`absolute top-0 h-full transition-all duration-700 ease-out ${getBarColor(segment.color)} hover:brightness-110`}
+              className={`absolute top-0 h-full transition-all duration-700 ease-out bg-gradient-to-r ${getBarColor(segment.color)} hover:opacity-90`}
               style={{
                 left: `${segment.start}%`,
                 width: `${segment.percentage}%`,
                 zIndex: segmentData.length - index,
-                boxShadow: segment.percentage > 0 ? 'inset 0 0 10px rgba(0,0,0,0.1)' : 'none',
-                animation: `slideIn 0.5s ease-out ${index * 0.1}s both`
+                animation: `slideIn 0.6s ease-out ${index * 0.1}s both`
               }}
             >
-              {/* Subtle gradient overlay for depth */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50" />
+              {/* iPhone-style shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-60" />
             </div>
           ))}
         </div>
 
-        {/* Percentage Labels with enhanced styling */}
+        {/* Percentage Labels with clean text */}
         <div className="absolute inset-0 flex items-center">
           {segmentData.map(segment => (
-            segment.percentage > 5 && (
+            segment.percentage > 3 && (
               <span
                 key={`text-${segment.key}`}
-                className="text-sm font-bold text-white drop-shadow-lg"
+                className="text-xs font-semibold text-white"
                 style={{
                   position: 'absolute',
                   left: `${segment.start + segment.percentage / 2}%`,
-                  transform: 'translateX(-50%)',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                  transform: 'translateX(-50%)'
                 }}
               >
                 {Math.round(segment.percentage)}%
@@ -119,21 +105,16 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
             )
           ))}
         </div>
-
-        {/* Hover tooltip background */}
-        <div className="absolute -top-8 left-0 right-0 h-6 bg-slate-900/90 dark:bg-slate-700/90 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center backdrop-blur-sm">
-          <span className="text-xs text-white">Market Sentiment Distribution</span>
-        </div>
       </div>
 
-      {/* Enhanced Legend with cards */}
+      {/* Summary Cards - 5 cards layout */}
       <div className="grid grid-cols-5 gap-2">
         {segmentData.map(segment => {
           const Icon = segment.icon
           const percentage = Math.round(segment.percentage)
           return (
             <div
-              key={`legend-${segment.key}`}
+              key={`card-${segment.key}`}
               className={`relative p-3 rounded-lg border transition-all duration-200 hover:shadow-md hover:scale-105 cursor-pointer flex flex-col items-center justify-center ${
                 segment.percentage > 0
                   ? 'border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800'
@@ -141,35 +122,15 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
               }`}
             >
               {/* Icon */}
-              <div className="flex items-center justify-center mb-1">
-                <Icon className={`h-4 w-4 ${getTextColor(segment.color)}`} />
-              </div>
+              <Icon className={`h-4 w-4 ${getTextColor(segment.color)} mb-1`} />
 
-              {/* Percentage */}
-              <div className={`text-sm font-bold ${getTextColor(segment.color)}`}>
-                {percentage}%
-              </div>
+              {/* Count */}
+              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                {segment.count}
+              </span>
             </div>
           )
         })}
-      </div>
-
-      {/* Summary metrics row */}
-      <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-            <span className="text-slate-600 dark:text-slate-400">Gainers: {distribution.normalGains + distribution.extremeGains}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-amber-500 rounded-full" />
-            <span className="text-slate-600 dark:text-slate-400">Neutral: {distribution.neutral}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-red-500 rounded-full" />
-            <span className="text-slate-600 dark:text-slate-400">Losers: {distribution.normalLosses + distribution.extremeLosses}</span>
-          </div>
-        </div>
       </div>
 
       <style jsx>{`
