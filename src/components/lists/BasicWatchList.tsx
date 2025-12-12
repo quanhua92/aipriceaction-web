@@ -164,8 +164,16 @@ export function BasicWatchList({
     // Combine stock and crypto data
     const allData = { ...allTickersLastData, ...allCryptoTickersLastData }
 
+    // Get tickers to check - regular tickers, plus crypto if CRYPTO watchlist is selected
+    let tickersToCheck = [...tickers]
+
+    // Add crypto tickers when CRYPTO watchlist is selected (since tickers array is empty for crypto)
+    if (selectedGroup === CRYPTO_WATCHLIST_NAME) {
+      tickersToCheck = [...cryptoTickers]
+    }
+
     // Get only tickers with price data
-    const tickersWithData = tickers.filter(t => {
+    const tickersWithData = tickersToCheck.filter(t => {
       const data = allData[t.symbol]
       return data && data.length > 0 && data[0]?.close_changed !== null && data[0]?.close_changed !== undefined
     })
@@ -194,8 +202,8 @@ export function BasicWatchList({
       }
     })
 
-    return distribution
-  }, [tickers, allTickersLastData, allCryptoTickersLastData])
+    return { distribution, totalTickers: tickersWithData.length }
+  }, [tickers, cryptoTickers, selectedGroup, allTickersLastData, allCryptoTickersLastData])
 
   // Navigation state - use sorted tickers from SortableTickerList
   const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
@@ -471,7 +479,7 @@ export function BasicWatchList({
       </div>
 
       {/* Price Change Distribution Summary */}
-      {!loading && !error && tickers.length > 0 && (
+      {!loading && !error && priceDistribution.totalTickers > 0 && (
         <div className="px-3 mb-3 space-y-2">
           {/* Extreme Gains Bar (>6.5%) */}
           <div className="flex items-center gap-2">
@@ -480,14 +488,14 @@ export function BasicWatchList({
               <div
                 className="bg-purple-500 h-full rounded-full transition-all duration-300"
                 style={{
-                  width: `${tickers.length > 0
-                    ? (priceDistribution.extremeGains / tickers.length) * 100
+                  width: `${priceDistribution.totalTickers > 0
+                    ? (priceDistribution.distribution.extremeGains / priceDistribution.totalTickers) * 100
                     : 0}%`
                 }}
               />
               {(() => {
-                const percentage = tickers.length > 0
-                  ? (priceDistribution.extremeGains / tickers.length) * 100
+                const percentage = priceDistribution.totalTickers > 0
+                  ? (priceDistribution.distribution.extremeGains / priceDistribution.totalTickers) * 100
                   : 0;
                 const isOver80 = percentage > 80;
                 return (
@@ -504,7 +512,7 @@ export function BasicWatchList({
                     }}
                   >
                     <span className="text-xs font-medium text-purple-600">
-                      {priceDistribution.extremeGains}
+                      {priceDistribution.distribution.extremeGains}
                     </span>
                     <span className="text-xs text-muted-foreground ml-1">
                       ({Math.round(percentage)}%)
@@ -522,14 +530,14 @@ export function BasicWatchList({
               <div
                 className="bg-green-500 h-full rounded-full transition-all duration-300"
                 style={{
-                  width: `${tickers.length > 0
-                    ? (priceDistribution.normalGains / tickers.length) * 100
+                  width: `${priceDistribution.totalTickers > 0
+                    ? (priceDistribution.distribution.normalGains / priceDistribution.totalTickers) * 100
                     : 0}%`
                 }}
               />
               {(() => {
-                const percentage = tickers.length > 0
-                  ? (priceDistribution.normalGains / tickers.length) * 100
+                const percentage = priceDistribution.totalTickers > 0
+                  ? (priceDistribution.distribution.normalGains / priceDistribution.totalTickers) * 100
                   : 0;
                 const isOver80 = percentage > 80;
                 return (
@@ -546,7 +554,7 @@ export function BasicWatchList({
                     }}
                   >
                     <span className="text-xs font-medium text-green-600">
-                      {priceDistribution.normalGains}
+                      {priceDistribution.distribution.normalGains}
                     </span>
                     <span className="text-xs text-muted-foreground ml-1">
                       ({Math.round(percentage)}%)
@@ -564,14 +572,14 @@ export function BasicWatchList({
               <div
                 className="bg-red-500 h-full rounded-full transition-all duration-300"
                 style={{
-                  width: `${tickers.length > 0
-                    ? (priceDistribution.normalLosses / tickers.length) * 100
+                  width: `${priceDistribution.totalTickers > 0
+                    ? (priceDistribution.distribution.normalLosses / priceDistribution.totalTickers) * 100
                     : 0}%`
                 }}
               />
               {(() => {
-                const percentage = tickers.length > 0
-                  ? (priceDistribution.normalLosses / tickers.length) * 100
+                const percentage = priceDistribution.totalTickers > 0
+                  ? (priceDistribution.distribution.normalLosses / priceDistribution.totalTickers) * 100
                   : 0;
                 const isOver80 = percentage > 80;
                 return (
@@ -588,7 +596,7 @@ export function BasicWatchList({
                     }}
                   >
                     <span className="text-xs font-medium text-red-600">
-                      {priceDistribution.normalLosses}
+                      {priceDistribution.distribution.normalLosses}
                     </span>
                     <span className="text-xs text-muted-foreground ml-1">
                       ({Math.round(percentage)}%)
@@ -606,14 +614,14 @@ export function BasicWatchList({
               <div
                 className="bg-cyan-500 h-full rounded-full transition-all duration-300"
                 style={{
-                  width: `${tickers.length > 0
-                    ? (priceDistribution.extremeLosses / tickers.length) * 100
+                  width: `${priceDistribution.totalTickers > 0
+                    ? (priceDistribution.distribution.extremeLosses / priceDistribution.totalTickers) * 100
                     : 0}%`
                 }}
               />
               {(() => {
-                const percentage = tickers.length > 0
-                  ? (priceDistribution.extremeLosses / tickers.length) * 100
+                const percentage = priceDistribution.totalTickers > 0
+                  ? (priceDistribution.distribution.extremeLosses / priceDistribution.totalTickers) * 100
                   : 0;
                 const isOver80 = percentage > 80;
                 return (
@@ -630,7 +638,7 @@ export function BasicWatchList({
                     }}
                   >
                     <span className="text-xs font-medium text-cyan-600">
-                      {priceDistribution.extremeLosses}
+                      {priceDistribution.distribution.extremeLosses}
                     </span>
                     <span className="text-xs text-muted-foreground ml-1">
                       ({Math.round(percentage)}%)
