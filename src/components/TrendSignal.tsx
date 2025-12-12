@@ -8,7 +8,6 @@ import { type StockData } from '@/lib/api-client'
 import {
   ALL_WATCHLIST_NAME,
   CRYPTO_WATCHLIST_NAME,
-  MARKET_INDICES,
   MATRIX_DAYS_PER_PAGE,
   PRIORITY_GROUPS,
   TRENDSIGNAL_OPEN_SECTORS_STORAGE_KEY,
@@ -31,7 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { TickerGroupSelector } from '@/components/TickerGroupSelector'
 import { ChartFullscreenDialog } from './ChartFullscreenDialog'
-import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
+import { getWatchlistNames } from '@/lib/watchlist-storage'
 import {
   getPredefinedWatchlistTickers,
   isPredefinedWatchlist
@@ -40,33 +39,22 @@ import { getSectorDisplayName } from '@/lib/sector-names'
 import { format } from 'date-fns'
 import { Link } from '@tanstack/react-router'
 import type { SortBy } from '@/components/lists/SortableTickerList'
+import {
+  detectSignal,
+  getTickerSector,
+  processTickerSignals,
+  groupSignalsBySector,
+  getWatchlistTickersByType,
+  type TrendSignalData,
+  type SignalType,
+  type IntervalType
+} from '@/lib/trendsignal-utils'
 
 // Default sectors to show expanded (matches PRIORITY_GROUPS)
 const DEFAULT_OPEN_SECTORS = ['NGAN_HANG', 'CHUNG_KHOAN', 'BAT_DONG_SAN', 'XAY_DUNG', 'THEP', 'BAN_LE']
 
 // Auto-expand threshold: expand all sectors if total sectors is below this number
 const AUTO_EXPAND_SECTOR_THRESHOLD = 3
-
-type SignalType = 'BUY' | 'SELL' | null
-type IntervalType = '1H' | '1D'
-
-interface TrendSignalData {
-  ticker: string
-  signal: SignalType
-  signalDate?: string
-  breakoutPrice?: number
-  previousHigh?: number // For BUY signals
-  previousLow?: number // For SELL signals
-  strength?: number
-  sector: string
-  currentPrice: number
-  closeChange?: number
-  volume?: number
-  ma20_score?: number
-  ma50_score?: number
-  highest20?: number // Highest close in last 20 periods
-  lowest10?: number // Lowest close in last 10 periods
-}
 
 interface TrendSignalProps {
   defaultWatchlist?: string
@@ -75,75 +63,6 @@ interface TrendSignalProps {
   defaultSellPeriod?: number
 }
 
-// Signal detection algorithm
-function detectSignal(
-  data: StockData[],
-  buyPeriod: number,
-  sellPeriod: number
-): { signal: SignalType; strength: number; previousHigh?: number; previousLow?: number } {
-  const minLength = Math.max(buyPeriod, sellPeriod) + 1
-  if (data.length < minLength) {
-    return { signal: null, strength: 0 }
-  }
-
-  const latest = data[data.length - 1]
-  const historical = data.slice(0, -1)
-
-  // Check BUY signal
-  if (historical.length >= buyPeriod) {
-    const lastNBars = historical.slice(-buyPeriod)
-    const highestClose = Math.max(...lastNBars.map(d => d.close))
-
-    if (latest.close > highestClose) {
-      const strength = ((latest.close - highestClose) / highestClose) * 100
-      return {
-        signal: 'BUY',
-        strength,
-        previousHigh: highestClose
-      }
-    }
-  }
-
-  // Check SELL signal
-  if (historical.length >= sellPeriod) {
-    const lastNBars = historical.slice(-sellPeriod)
-    const lowestClose = Math.min(...lastNBars.map(d => d.close))
-
-    if (latest.close < lowestClose) {
-      const strength = ((latest.close - lowestClose) / lowestClose) * 100
-      return {
-        signal: 'SELL',
-        strength,
-        previousLow: lowestClose
-      }
-    }
-  }
-
-  return { signal: null, strength: 0 }
-}
-
-// Get ticker sector (reusing logic from MarketMatrix)
-function getTickerSector(ticker: string, tickerGroups: Record<string, string[]> | null, cryptoTickerGroups: Record<string, string[]> | null): string {
-  // Check crypto groups first
-  if (cryptoTickerGroups) {
-    for (const [sector, symbols] of Object.entries(cryptoTickerGroups)) {
-      if (symbols.includes(ticker)) {
-        return sector
-      }
-    }
-  }
-
-  // Check regular ticker groups
-  if (tickerGroups) {
-    for (const [sector, symbols] of Object.entries(tickerGroups)) {
-      if (symbols.includes(ticker)) {
-        return sector
-      }
-    }
-  }
-
-  return 'Unknown'
-}
 
 export function TrendSignal({
   defaultWatchlist = ALL_WATCHLIST_NAME,
@@ -222,63 +141,19 @@ export function TrendSignal({
     }
   }, [openSectors, selectedWatchlist, signals])
 
-  // Get tickers for selected watchlist (reuse logic from MarketMatrix)
-  const selectedTickers = React.useMemo(() => {
-    if (!tickerGroups) return []
-
-    if (selectedWatchlist === ALL_WATCHLIST_NAME) {
-      // Get all tickers from all sectors (excluding market indices like VNINDEX, VN30)
-      const allTickers: string[] = []
-      Object.entries(tickerGroups).forEach(([sector, symbols]) => {
-        if (!MARKET_INDICES.includes(sector as any)) {
-          allTickers.push(...symbols)
-        }
-      })
-      return allTickers
-    }
-
-    if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
-      return cryptoTickers.map(t => t.symbol)
-    }
-
-    if (isPredefinedWatchlist(selectedWatchlist)) {
-      return getPredefinedWatchlistTickers(selectedWatchlist)
-    }
-
-    if (customWatchlists.includes(selectedWatchlist)) {
-      return getWatchlistTickers(selectedWatchlist)
-    }
-
-    return tickerGroups[selectedWatchlist] || []
-  }, [tickerGroups, selectedWatchlist, customWatchlists, cryptoTickers])
-
-  // Split selected tickers into stocks and crypto
+  // Get tickers for selected watchlist and determine type
   const { stockSymbols, cryptoSymbols, watchlistType } = React.useMemo(() => {
-    if (selectedTickers.length === 0) {
-      return { stockSymbols: [], cryptoSymbols: [], watchlistType: 'stock' as const }
-    }
+    return getWatchlistTickersByType(
+      selectedWatchlist,
+      tickerGroups,
+      cryptoTickers,
+      customWatchlists
+    )
+  }, [selectedWatchlist, tickerGroups, cryptoTickers, customWatchlists])
 
-    const cryptoSymbolSet = new Set(cryptoTickers.map(t => t.symbol))
-    const stocks: string[] = []
-    const crypto: string[] = []
-
-    selectedTickers.forEach(symbol => {
-      if (cryptoSymbolSet.has(symbol)) {
-        crypto.push(symbol)
-      } else {
-        stocks.push(symbol)
-      }
-    })
-
-    const type =
-      selectedWatchlist === ALL_WATCHLIST_NAME ? 'stock' as const :
-      selectedWatchlist === CRYPTO_WATCHLIST_NAME ? 'crypto' as const :
-      crypto.length > 0 && stocks.length > 0 ? 'mixed' as const :
-      crypto.length > 0 ? 'crypto' as const :
-      'stock' as const
-
-    return { stockSymbols: stocks, cryptoSymbols: crypto, watchlistType: type }
-  }, [selectedTickers, cryptoTickers, selectedWatchlist])
+  const selectedTickers = React.useMemo(() => {
+    return [...stockSymbols, ...cryptoSymbols]
+  }, [stockSymbols, cryptoSymbols])
 
   // Fetch and process signals
   React.useEffect(() => {
@@ -353,50 +228,23 @@ export function TrendSignal({
         // Merge responses
         const response = { ...stockResponse, ...cryptoResponse }
 
-        // Process each ticker for signals
-        const processedSignals: TrendSignalData[] = []
+        // Process signals using utility function
+        let processedSignals = processTickerSignals(
+          selectedTickers,
+          response,
+          tickerGroups,
+          cryptoTickerGroups,
+          buyPeriod,
+          sellPeriod
+        )
 
-        for (const ticker of selectedTickers) {
-          const data = response[ticker] || []
-          const latest = data[data.length - 1]
-
-          if (latest) {
-            const detection = detectSignal(data, buyPeriod, sellPeriod)
-            const sector = getTickerSector(ticker, tickerGroups, cryptoTickerGroups)
-
-            // Calculate highest buyPeriod and lowest sellPeriod for reference
-            let highestBuyPeriod: number | undefined
-            let lowestSellPeriod: number | undefined
-
-            if (data.length >= buyPeriod + 1) {
-              const lastBuyPeriodCloses = data.slice(-buyPeriod - 1, -1).map(d => d.close)
-              highestBuyPeriod = Math.max(...lastBuyPeriodCloses)
-            }
-
-            if (data.length >= sellPeriod + 1) {
-              const lastSellPeriodCloses = data.slice(-sellPeriod - 1, -1).map(d => d.close)
-              lowestSellPeriod = Math.min(...lastSellPeriodCloses)
-            }
-
-            processedSignals.push({
-              ticker,
-              signal: detection.signal,
-              signalDate: detection.signal ? formatToVietnamDate(parseUTCISOString(latest.time)) : undefined,
-              breakoutPrice: detection.signal ? latest.close : undefined,
-              previousHigh: detection.previousHigh,
-              previousLow: detection.previousLow,
-              strength: detection.strength,
-              sector,
-              currentPrice: latest.close,
-              closeChange: latest.close_changed,
-              volume: latest.volume,
-              ma20_score: latest.ma20_score,
-              ma50_score: latest.ma50_score,
-              highest20: highestBuyPeriod,
-              lowest10: lowestSellPeriod,
-            })
-          }
-        }
+        // Add signalDate formatting
+        processedSignals = processedSignals.map(signal => ({
+          ...signal,
+          signalDate: signal.signal ? formatToVietnamDate(parseUTCISOString(
+            (response[signal.ticker]?.[response[signal.ticker].length - 1] as any)?.time
+          )) : undefined
+        }))
 
         // Sort: signals first, then by strength (absolute value)
         processedSignals.sort((a, b) => {
@@ -437,92 +285,9 @@ export function TrendSignal({
     return signals.filter(signal => signal.signal !== null && signal.signal !== undefined)
   }, [signals, showAll])
 
-  // Group signals by sector
+  // Group signals by sector using utility function
   const signalsBySector = React.useMemo(() => {
-    if (filteredSignals.length === 0) return {}
-
-    const grouped: { [sector: string]: TrendSignalData[] } = {}
-    filteredSignals.forEach((signal) => {
-      if (!grouped[signal.sector]) {
-        grouped[signal.sector] = []
-      }
-      grouped[signal.sector].push(signal)
-    })
-
-    // Sort sectors by priority
-    const sortedSectors = Object.keys(grouped).sort((a, b) => {
-      // MAJOR_CRYPTO goes first for CRYPTO watchlist
-      if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
-        if (a === 'MAJOR_CRYPTO') return -1
-        if (b === 'MAJOR_CRYPTO') return 1
-      }
-
-      const priorityA = PRIORITY_GROUPS.indexOf(a as any)
-      const priorityB = PRIORITY_GROUPS.indexOf(b as any)
-
-      if (priorityA !== -1 && priorityB !== -1) {
-        return priorityA - priorityB
-      }
-      if (priorityA !== -1) return -1
-      if (priorityB !== -1) return 1
-
-      return a.localeCompare(b)
-    })
-
-    // Sort signals within each sector based on sortBy
-    sortedSectors.forEach(sector => {
-      grouped[sector].sort((a, b) => {
-        switch (sortBy) {
-          case 'az':
-            return a.ticker.localeCompare(b.ticker)
-
-          case 'gainers':
-            // Sort by price change descending (highest gain first)
-            const aChange = a.closeChange ?? -Infinity
-            const bChange = b.closeChange ?? -Infinity
-            return bChange - aChange
-
-          case 'losers':
-            // Sort by price change ascending (lowest/most negative first)
-            const aLoss = a.closeChange ?? Infinity
-            const bLoss = b.closeChange ?? Infinity
-            return aLoss - bLoss
-
-          case 'volume':
-            // Sort by volume descending (highest volume first)
-            const aVol = a.volume ?? 0
-            const bVol = b.volume ?? 0
-            return bVol - aVol
-
-          case 'ma20':
-            // Sort by MA20 score descending (highest/most bullish first)
-            const aMA20 = a.ma20_score ?? -Infinity
-            const bMA20 = b.ma20_score ?? -Infinity
-            return bMA20 - aMA20
-
-          case 'value':
-            // Sort by value descending (highest traded value first)
-            const aValue = (a.currentPrice ?? 0) * (a.volume ?? 0)
-            const bValue = (b.currentPrice ?? 0) * (b.volume ?? 0)
-            return bValue - aValue
-
-          default:
-            // Default sorting: signals first by strength
-            if (a.signal && b.signal) {
-              return Math.abs(b.strength || 0) - Math.abs(a.strength || 0)
-            }
-            if (a.signal && !b.signal) {
-              return -1
-            }
-            if (!a.signal && b.signal) {
-              return 1
-            }
-            return a.ticker.localeCompare(b.ticker)
-        }
-      })
-    })
-
-    return grouped
+    return groupSignalsBySector(filteredSignals, selectedWatchlist, sortBy)
   }, [filteredSignals, selectedWatchlist, sortBy])
 
   // Get all tickers in current view for navigation
