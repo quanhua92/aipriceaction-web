@@ -200,11 +200,10 @@ export function PlaygroundInfoPanel() {
           {/* Random controls */}
           <div>
             <Button
-              variant="outline"
               size="sm"
               onClick={handleRandomize}
               disabled={isLoading}
-              className="w-full text-xs"
+              className="w-full text-xs bg-green-600 text-white hover:bg-green-700"
             >
               <Dices className="h-3.5 w-3.5 mr-2" />
               {t('common.playground.info.randomizeButton')}
