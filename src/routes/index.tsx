@@ -129,7 +129,7 @@ function HomePage() {
 				</div>
 			</div>
 
-			{/* Section 2: Watchlist + Market Matrix */}
+			{/* Section 2: Watchlist + Trend Signals */}
 			<div className="p-2 md:p-6 border-t">
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<div>
@@ -143,14 +143,14 @@ function HomePage() {
 						/>
 					</div>
 					<div>
-						<MarketMatrix />
+						<TrendSignal />
 					</div>
 				</div>
 			</div>
 
-			{/* Section 3: Trend Signals */}
+			{/* Section 3: Market Matrix */}
 			<div className="p-2 md:p-6 border-t">
-				<TrendSignal />
+				<MarketMatrix />
 			</div>
 
 			{/* Fullscreen Dialog */}

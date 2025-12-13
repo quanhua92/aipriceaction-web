@@ -3,6 +3,7 @@ import * as React from "react";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists/BasicWatchList";
+import { TrendSignal } from "@/components/TrendSignal";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { CRYPTO_WATCHLIST_NAME } from "@/lib/constants";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -75,8 +76,8 @@ function CryptoPage() {
 				</div>
 			</div>
 
-			{/* Section 2: Watchlist + Market Matrix */}
-			<div className="p-4 md:p-6 border-t">
+			{/* Section 2: Watchlist + Trend Signals */}
+			<div className="p-2 md:p-6 border-t">
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<div>
 						<BasicWatchList
@@ -89,9 +90,14 @@ function CryptoPage() {
 						/>
 					</div>
 					<div>
-						<MarketMatrix defaultWatchlist={CRYPTO_WATCHLIST_NAME} />
+						<TrendSignal defaultWatchlist={CRYPTO_WATCHLIST_NAME} />
 					</div>
 				</div>
+			</div>
+
+			{/* Section 3: Market Matrix */}
+			<div className="p-2 md:p-6 border-t">
+				<MarketMatrix defaultWatchlist={CRYPTO_WATCHLIST_NAME} />
 			</div>
 
 			{/* Fullscreen Dialog */}
