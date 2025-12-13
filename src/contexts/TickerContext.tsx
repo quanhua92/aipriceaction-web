@@ -131,11 +131,11 @@ export function TickerProvider({
   const { getTickers, tickers, cryptoTickers } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
 
-  // Cache state - initialize immediately from props
-  const [cacheData, setCacheData] = React.useState<StockData[] | null>(() => cachedData || null)
-  const [cacheMetadata, setCacheMetadata] = React.useState<TickerProviderProps['initialCacheMetadata'] | null>(() => initialCacheMetadata || null)
+  // Cache - read-only from props
+  const cacheData = React.useMemo(() => cachedData || null, [cachedData])
+  const cacheMetadata = React.useMemo(() => initialCacheMetadata || null, [initialCacheMetadata])
 
-  // Chart data state
+  // Chart data state - initialize from cache if available
   const [chartData, setChartData] = React.useState<StockData[]>(() => cachedData || [])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -144,24 +144,18 @@ export function TickerProvider({
   // Local endDate state (independent of global settings)
   const [localEndDate, setLocalEndDate] = React.useState<string | null>(null)
 
-  // Update cache state when props change
+  // Initialize chart data from cache if cache is valid
   React.useEffect(() => {
-    const newCacheData = cachedData || null
-    const newCacheMetadata = initialCacheMetadata || null
-
-    setCacheData(newCacheData)
-    setCacheMetadata(newCacheMetadata)
-
-    // If we have valid cache data and it matches current ticker/interval, update chartData immediately
-    if (newCacheData && settings && newCacheMetadata &&
-        newCacheMetadata.symbol === (ticker ?? initialTicker) &&
-        newCacheMetadata.interval === settings.interval) {
-      setChartData(newCacheData)
+    if (cacheData && cacheMetadata && settings &&
+        cacheMetadata.symbol === (ticker ?? initialTicker) &&
+        cacheMetadata.interval === settings.interval) {
+      setChartData(cacheData)
       setLoading(false)
       setError(null)
     }
-  }, [cachedData, initialCacheMetadata, ticker, initialTicker, settings?.interval])
+  }, [cacheData, cacheMetadata, ticker, initialTicker, settings?.interval])
 
+  
   // Refs for stable access
   const loadingMoreRef = React.useRef(false)
   const tickersRef = React.useRef(tickers)
@@ -314,20 +308,10 @@ export function TickerProvider({
 
           setChartData(data)
 
-          // NEW: Update cache after successful fetch
-          setCacheData(data)
-          setCacheMetadata({
-            symbol: selectedTicker,
-            interval: settings.interval,
-            startDate: settings?.startDate || '',
-            endDate: (localEndDate ?? settings?.endDate) || '',
-            mode: mode,
-          })
-
           // Record this API call for future cache detection
           recordApiCall(selectedTicker, settings.interval)
 
-          // Success - clear error and exit retry loop
+          // Success - clear error and exit retry loop (even if data is empty)
           setLoading(false)
           return
         } catch (err) {
@@ -360,12 +344,8 @@ export function TickerProvider({
     lastRefresh,
     localEndDate,
     getTickers,
-    // NEW: Add cache dependencies
-    cacheData,
-    cacheMetadata,
-    isCacheValid,
-    tickersRef,
-    cryptoTickersRef,
+    // NOTE: Don't include cacheData/cacheMetadata as dependencies to avoid infinite loops
+    // isCacheValid, tickersRef, cryptoTickersRef are stable and don't need to be listed
   ])
 
   const contextValue = {

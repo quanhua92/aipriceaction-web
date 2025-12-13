@@ -4,6 +4,7 @@ import { usePlayground } from './PlaygroundDataProvider'
 import { Loader2, AlertCircle } from 'lucide-react'
 import { Interval } from '@/lib/api-client'
 import { useTranslation } from '@/hooks/useTranslation'
+import { TickerProvider } from '@/contexts/TickerContext'
 
 export function PlaygroundChart() {
   const { playgroundData, visibleData, viewportRange } = usePlayground()
@@ -11,12 +12,12 @@ export function PlaygroundChart() {
 
   // Get current visible date (last day in visible range)
   const currentEndDate = visibleData.length > 0
-    ? visibleData[visibleData.length - 1]?.time
+    ? visibleData[visibleData.length - 1]?.time?.split('T')[0]
     : null
 
   // Get start date (first day in visible range)
   const currentStartDate = visibleData.length > 0
-    ? visibleData[0]?.time
+    ? visibleData[0]?.time?.split('T')[0]
     : null
 
   // When currentIndex changes, we want to scroll to the latest visible date
@@ -60,14 +61,13 @@ export function PlaygroundChart() {
     <div className="h-[400px]">
       <TradingViewChart
         ticker={playgroundData.ticker}
-        interval={Interval.Daily}
         endDateOverride={currentEndDate}
         showControls={true}
         height={400}
         viewportSizeOverride={viewportRange.to - viewportRange.from}
         scrollToLatest={scrollToLatest}
 
-        // Pass cached daily data
+        // Pass cached daily data (but don't enforce Daily interval)
         cacheData={visibleData}
         cacheMetadata={{
           symbol: playgroundData.ticker,
@@ -76,7 +76,8 @@ export function PlaygroundChart() {
           endDate: currentEndDate || '',
           mode: 'vn'
         }}
-      />
+
+        />
     </div>
   )
 }
