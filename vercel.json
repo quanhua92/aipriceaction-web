@@ -1,5 +1,11 @@
 {
 	"env": {
 		"VITE_GA_MEASUREMENT_ID": "G-WN1PQVFCFZ"
-	}
+	},
+	"rewrites": [
+		{
+			"source": "/(.*)",
+			"destination": "/index.html"
+		}
+	]
 }
