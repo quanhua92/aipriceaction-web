@@ -12,11 +12,17 @@ export interface PlaygroundData {
   error?: string
 }
 
-// Generate random date between 2016-01-01 and today
+// Generate random date between 2016-01-01 and today, weighted towards recent years
 const generateRandomEndDate = (): string => {
   const start = new Date('2016-01-01')
   const end = new Date()
-  const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime())
+
+  // Use a power function to bias towards more recent dates
+  // Math.random()^bias where bias < 1 gives more weight to recent dates
+  const bias = 0.3 // Lower values = stronger bias towards recent dates
+  const randomFactor = Math.pow(Math.random(), bias)
+
+  const randomTime = start.getTime() + randomFactor * (end.getTime() - start.getTime())
   return new Date(randomTime).toISOString().split('T')[0]
 }
 
