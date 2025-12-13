@@ -41,6 +41,60 @@ const getRandomTicker = (tickerGroups: Record<string, string[]> | null): string 
   return uniqueTickers[Math.floor(Math.random() * uniqueTickers.length)]
 }
 
+// Utility function to preserve position when updating data
+const findPreservedIndex = (
+  newData: StockData[],
+  currentData: StockData[],
+  currentIndex: number,
+  logger: (msg: string) => void
+): number => {
+  if (!currentData.length || !newData.length) {
+    logger('[Playground] ⚠️ No current data or new data, using default index 99')
+    return Math.min(99, Math.max(0, newData.length - 1))
+  }
+
+  const currentDate = currentData[currentIndex]?.time?.split('T')[0]
+  if (!currentDate) {
+    logger('[Playground] ⚠️ No current date found, using default index 99')
+    return Math.min(99, Math.max(0, newData.length - 1))
+  }
+
+  logger(`[Playground] 🔍 Trying to preserve position for date: ${currentDate} (current index: ${currentIndex})`)
+
+  // Try to find the exact date in new data
+  const exactMatch = newData.findIndex(d => d.time?.split('T')[0] === currentDate)
+  if (exactMatch !== -1) {
+    logger(`[Playground] ✅ Found exact date match at index ${exactMatch}`)
+    return exactMatch
+  }
+
+  // If exact date not found, try to find closest date
+  let closestIndex = -1
+  let minDistance = Infinity
+
+  for (let i = 0; i < newData.length; i++) {
+    const newDate = newData[i]?.time?.split('T')[0]
+    if (newDate) {
+      const distance = Math.abs(new Date(newDate).getTime() - new Date(currentDate).getTime())
+      if (distance < minDistance) {
+        minDistance = distance
+        closestIndex = i
+      }
+    }
+  }
+
+  if (closestIndex !== -1) {
+    const closestDate = newData[closestIndex]?.time?.split('T')[0]
+    logger(`[Playground] ⚠️ Date not found, using closest match: ${closestDate} at index ${closestIndex}`)
+    return closestIndex
+  }
+
+  // Last resort: use same absolute index if within bounds
+  const sameIndex = Math.min(currentIndex, newData.length - 1)
+  logger(`[Playground] ⚠️ No close date found, using same absolute index: ${sameIndex}`)
+  return sameIndex
+}
+
 export function usePlaygroundData(
   initialTicker?: string,
   initialEndDate?: string,
@@ -419,27 +473,39 @@ export function usePlaygroundData(
   // Manual date change method
   const updateEndDate = useCallback(async (newEndDate: string) => {
     info(`[Playground] 📅 User selected end date: ${newEndDate}`)
+
+    // Get current state synchronously
+    const currentState = playgroundData
+
+    if (!currentState.ticker) {
+      logError('[Playground] ❌ No ticker available for update')
+      return
+    }
+
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     try {
       const startTime = Date.now()
-      info(`[Playground] Updating end date to: ${newEndDate}`)
+      info(`[Playground] Updating end date to: ${newEndDate} for ticker ${currentState.ticker}`)
+
+      const currentDate = currentState.allData[currentState.currentIndex]?.time?.split('T')[0]
+      info(`[Playground] Current position: index ${currentState.currentIndex} (date: ${currentDate || 'undefined'})`)
 
       const response = await getTickers('Playground.updateDate', {
-        symbol: playgroundData.ticker,
+        symbol: currentState.ticker,
         end_date: newEndDate,
         limit: 500,
         mode: 'vn'
       })
 
-      const data = response[playgroundData.ticker] || []
+      const data = response[currentState.ticker] || []
       const duration = Date.now() - startTime
 
-      // Start by showing first 100 days (or all if less than 100)
-      const startIndex = Math.min(99, Math.max(0, data.length - 1))
+      // Preserve the user's current position when extending the date range
+      const startIndex = findPreservedIndex(data, currentState.allData, currentState.currentIndex, info)
 
-      info(`[Playground] ✅ Loaded ${data.length} days for ${playgroundData.ticker} in ${duration}ms`)
-      info(`[Playground] Initial display index: ${startIndex} (showing ${startIndex + 1} days)`)
+      info(`[Playground] ✅ Loaded ${data.length} days for ${currentState.ticker} in ${duration}ms`)
+      info(`[Playground] 📍 Display index: ${startIndex} (showing ${startIndex + 1} days)`)
 
       if (data.length > 0) {
         const firstDate = data[0]?.time?.split('T')[0]
@@ -460,7 +526,7 @@ export function usePlaygroundData(
         navigateFn({
           to: '/play',
           search: {
-            ticker: playgroundData.ticker,
+            ticker: currentState.ticker,
             endDate: newEndDate
           }
         })
@@ -477,7 +543,7 @@ export function usePlaygroundData(
         error: errorMessage,
       }))
     }
-  }, [getTickers, playgroundData.ticker, navigateFn, info, logError])
+  }, [getTickers, navigateFn, info, logError])
 
   // Viewport range for chart performance (show last ~100 candles)
   const viewportRange = useMemo(() => {
