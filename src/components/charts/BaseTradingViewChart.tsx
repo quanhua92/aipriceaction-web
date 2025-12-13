@@ -648,7 +648,15 @@ export function BaseTradingViewChart({
 			const shouldScrollToLatest = scrollToLatest || !userViewportSet || !lastViewportRange
 
 			if (shouldScrollToLatest) {
-				if (
+				if (scrollToLatest) {
+					// When scrollToLatest is explicitly requested, just scroll to the end
+					// without changing the zoom/viewport size
+					const latestTime = chartData.candlestick[chartData.candlestick.length - 1].time
+					chartRef.current.timeScale().scrollToPosition(latestTime, 0)
+
+					// Reset user viewport flag so manual scrolling works again
+					setUserViewportSet(false)
+				} else if (
 					viewportSizeOverride &&
 					chartData.candlestick.length > viewportSizeOverride
 				) {
@@ -660,22 +668,12 @@ export function BaseTradingViewChart({
 					const to =
 						chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
-
-					// If scrollToLatest is true, reset the user viewport flag so manual scrolling works again
-					if (scrollToLatest) {
-						setUserViewportSet(false)
-					}
 				} else {
 					// Show last 40 candles by default
 					const candlesToShow = Math.min(40, chartData.candlestick.length)
 					const from = chartData.candlestick[chartData.candlestick.length - candlesToShow].time
 					const to = chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
-
-					// If scrollToLatest is true, reset the user viewport flag so manual scrolling works again
-					if (scrollToLatest) {
-						setUserViewportSet(false)
-					}
 				}
 			} else {
 				// User has set viewport - preserve it during live data updates
