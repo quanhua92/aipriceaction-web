@@ -9,11 +9,31 @@ import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { DateInput } from '@/components/DateInput'
 
 export function PlaygroundInfoPanel() {
-  const { playgroundData, visibleData, randomizeData, updateTicker, updateEndDate, setCurrentIndex } = usePlayground()
+  const {
+    playgroundData,
+    visibleData,
+    randomizeData,
+    updateTicker,
+    updateEndDate,
+    setCurrentIndex,
+    updateSecondaryTicker,
+    toggleSecondaryChart
+  } = usePlayground()
   const { info } = useLogs()
   const { t } = useTranslation()
 
-  const { ticker, allData, currentIndex, endDate, isLoading, error } = playgroundData
+  const {
+    ticker,
+    allData,
+    currentIndex,
+    endDate,
+    isLoading,
+    error,
+    secondaryTicker,
+    showSecondaryChart,
+    secondaryIsLoading,
+    secondaryError
+  } = playgroundData
 
   // Format dates for display
   const startDate = allData.length > 0 ? allData[0].time?.split('T')[0] : ''
@@ -53,6 +73,19 @@ export function PlaygroundInfoPanel() {
         info(`[Playground] ⚠️ Date ${newDate} not found in data range`)
       }
     }
+  }
+
+  // Handle secondary ticker selection
+  const handleSecondaryTickerSelect = (newSecondaryTicker: string) => {
+    // Default to VNINDEX if no ticker provided
+    const ticker = newSecondaryTicker || 'VNINDEX'
+    info(`[Playground] 📊 User manually selected secondary ticker: ${ticker}`)
+    updateSecondaryTicker(ticker)
+  }
+
+  // Handle secondary chart visibility toggle
+  const handleSecondaryChartToggle = () => {
+    toggleSecondaryChart()
   }
 
   // Handle share URL copy
@@ -144,6 +177,58 @@ export function PlaygroundInfoPanel() {
             clearable={false}
           />
         </div>
+      </div>
+
+      {/* Secondary Chart Controls */}
+      <div className="space-y-3">
+        {/* Show/Hide Secondary Chart Checkbox */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="show-secondary-chart"
+            checked={showSecondaryChart}
+            onChange={handleSecondaryChartToggle}
+            disabled={isLoading}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="show-secondary-chart" className="text-sm text-muted-foreground">
+            {t('common.playground.info.showSecondaryChart')}
+          </label>
+        </div>
+
+        {/* Secondary Ticker Selection - Show when enabled */}
+        {showSecondaryChart && (
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground">{t('common.playground.info.secondaryTicker')}</label>
+            <SelectTickerDialog onSelectTicker={handleSecondaryTickerSelect}>
+              <Button
+                variant="outline"
+                disabled={secondaryIsLoading || isLoading}
+                className="w-full justify-start font-mono text-sm"
+              >
+                <Edit className="h-3.5 w-3.5 mr-2 flex-shrink-0" />
+                {secondaryTicker || 'VNINDEX'}
+              </Button>
+            </SelectTickerDialog>
+          </div>
+        )}
+
+        {/* Secondary loading/error state */}
+        {showSecondaryChart && (
+          <div>
+            {secondaryIsLoading && (
+              <div className="text-center py-2">
+                <p className="text-sm text-muted-foreground">{t('common.playground.info.secondaryLoading')}</p>
+              </div>
+            )}
+
+            {secondaryError && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                <p className="text-xs text-destructive">{secondaryError}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Loading/Error states */}

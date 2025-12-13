@@ -223,3 +223,4 @@ export const VISIBILITY_REFRESH_DEBOUNCE_MS = 500
  * Prevents unnecessary refreshes if user just switched away and back quickly
  */
 export const VISIBILITY_MIN_REFRESH_INTERVAL_MS = 5000
+

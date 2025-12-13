@@ -18,20 +18,25 @@ function PlayPage() {
   const navigate = useNavigate()
 
   return (
-    <PlaygroundDataProvider initialTicker={ticker} initialEndDate={endDate} navigate={navigate}>
-      <div className="space-y-8">
+    <PlaygroundDataProvider
+      initialTicker={ticker}
+      initialEndDate={endDate}
+      initialSecondaryTicker={'VNINDEX'}
+      navigate={navigate}
+    >
+      <div className="space-y-4">
         {/* Top: Info */}
-        <div className="p-4 md:p-6">
+        <div className="px-4 md:px-6 pt-4 md:pt-6 pb-2">
           <PlaygroundInfoPanel />
         </div>
 
         {/* Middle: Chart */}
-        <div className="p-4 md:p-6">
+        <div className="px-4 md:px-6 py-2">
           <PlaygroundChart />
         </div>
 
         {/* Bottom: Controls */}
-        <div className="p-4 md:p-6">
+        <div className="px-4 md:px-6 pb-4 md:pb-6 pt-2">
           <PlaygroundControls />
         </div>
       </div>

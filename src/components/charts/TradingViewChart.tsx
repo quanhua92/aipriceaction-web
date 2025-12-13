@@ -91,7 +91,7 @@ function TradingViewChartContent({
 
 	return (
 		<>
-			<div className="space-y-4">
+			<div>
 				{showControls && (
 					<ChartControlBar
 						ticker={selectedTicker}
