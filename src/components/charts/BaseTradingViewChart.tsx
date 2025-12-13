@@ -30,6 +30,7 @@ interface BaseTradingViewChartProps {
 	showControls?: boolean
 	viewportSizeOverride?: number
 	noDataMessage?: string
+	scrollToLatest?: boolean  // Force scroll to latest candle when data changes
 	maVisibility?: {
 		ma10: boolean
 		ma20: boolean
@@ -45,6 +46,7 @@ export function BaseTradingViewChart({
 	showControls = true,
 	viewportSizeOverride,
 	noDataMessage = 'No data available',
+	scrollToLatest = false,
 	maVisibility: maVisibilityProp,
 }: BaseTradingViewChartProps) {
 	// Get global settings
@@ -641,8 +643,11 @@ export function BaseTradingViewChart({
 				setIsDataInitialized(true)
 			}
 
-			// Only reset viewport if user hasn't manually set it OR this is initial data load
-			if (!userViewportSet || !lastViewportRange) {
+			// Force scroll to latest if requested (e.g., on playground navigation)
+			// OR reset viewport if user hasn't manually set it OR this is initial data load
+			const shouldScrollToLatest = scrollToLatest || !userViewportSet || !lastViewportRange
+
+			if (shouldScrollToLatest) {
 				if (
 					viewportSizeOverride &&
 					chartData.candlestick.length > viewportSizeOverride
@@ -655,12 +660,22 @@ export function BaseTradingViewChart({
 					const to =
 						chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
+
+					// If scrollToLatest is true, reset the user viewport flag so manual scrolling works again
+					if (scrollToLatest) {
+						setUserViewportSet(false)
+					}
 				} else {
 					// Show last 40 candles by default
 					const candlesToShow = Math.min(40, chartData.candlestick.length)
 					const from = chartData.candlestick[chartData.candlestick.length - candlesToShow].time
 					const to = chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
+
+					// If scrollToLatest is true, reset the user viewport flag so manual scrolling works again
+					if (scrollToLatest) {
+						setUserViewportSet(false)
+					}
 				}
 			} else {
 				// User has set viewport - preserve it during live data updates
@@ -684,6 +699,7 @@ export function BaseTradingViewChart({
 		lastViewportRange,
 		isDataInitialized,
 		maVisibility,
+		scrollToLatest,
 	])
 
 	// Update candlestick series price format when data changes

@@ -6,6 +6,7 @@ import { Interval } from '@/lib/api-client'
 import { BaseTradingViewChart } from './BaseTradingViewChart'
 import { ChartControlBar } from './ChartControlBar'
 import { ChartFullscreenDialog } from '@/components/ChartFullscreenDialog'
+import { StockData } from '@/lib/api-client'
 
 interface TradingViewChartProps {
 	// Visual configuration
@@ -13,6 +14,7 @@ interface TradingViewChartProps {
 	height?: number
 	showControls?: boolean
 	viewportSizeOverride?: number
+	scrollToLatest?: boolean  // Force scroll to latest candle when data changes
 
 	// Ticker control
 	initialTicker?: string    // Static setup only
@@ -33,6 +35,16 @@ interface TradingViewChartProps {
 	endDate?: string
 	setEndDate?: (date?: string) => void
 	endDateOverride?: string | null  // Local endDate override (for dialogs)
+
+	// NEW: Cache support props
+	cacheData?: StockData[]
+	cacheMetadata?: {
+		symbol: string
+		interval: Interval
+		startDate: string
+		endDate: string
+		mode: 'vn' | 'crypto'
+	}
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -117,7 +129,10 @@ export function TradingViewChart(props: TradingViewChartProps) {
 			initialTicker={props.initialTicker}
 			ticker={props.ticker}
 			limit={props.limit}
-			endDate={props.endDateOverride}
+			endDate={props.endDateOverride || props.cacheMetadata?.endDate}
+			// NEW: Pass cache props to TickerProvider
+			cachedData={props.cacheData}
+			initialCacheMetadata={props.cacheMetadata}
 		>
 			<TradingViewChartContent {...props} />
 		</TickerProvider>

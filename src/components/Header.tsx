@@ -127,6 +127,17 @@ export default function Header() {
             </Link>
 
             <Link
+              to="/play"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
+              }}
+            >
+              <span className="font-medium">Playground</span>
+            </Link>
+
+            <Link
               to="/notes"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{

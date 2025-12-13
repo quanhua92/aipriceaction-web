@@ -10,6 +10,7 @@ import {
   Coins,
   FileText,
   TrendingUp,
+  Dices,
 } from 'lucide-react'
 import {
   Sheet,
@@ -145,6 +146,19 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             >
               <Brain size={20} />
               <span className="font-medium">AI Context</span>
+            </Link>
+
+            <Link
+              to="/play"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+              }}
+            >
+              <Dices size={20} />
+              <span className="font-medium">Playground</span>
             </Link>
 
             <Link
