@@ -25,8 +25,11 @@ export default {
   ok: 'OK',
   home: {
     welcomeTitle: 'Chào mừng đến với AIPriceAction',
-    welcomeDescription: 'Nền tảng phân tích thị trường chứng khoán Việt Nam thông minh. Theo dõi xu hướng thị trường, phân tích hành động giá với điểm MA, và tận dụng thông tin chi tiết được hỗ trợ bởi AI để đưa ra quyết định giao dịch thông minh hơn.',
+    welcomeDescription: 'Phân tích chứng khoán Việt Nam với thông tin chi tiết từ AI và biểu đồ tương tác.',
     tryAIContext: 'Dùng Thử AI Context',
+    tryPlayground: 'Dùng Thử Playground',
+    aiContextShort: 'Cung cấp AI dữ liệu thực tế - xem AI biến con số thành chiến lược giao dịch thông minh',
+    playgroundShort: 'Thử ngay ý tưởng giao dịch của bạn - du hành qua thời gian và chứng kiến các mô hình thị trường hình thành',
   },
   ticker: {
     open: 'Mở Cửa',

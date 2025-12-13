@@ -1,14 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists/BasicWatchList";
 import { TrendSignal } from "@/components/TrendSignal";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
+import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { CRYPTO_WATCHLIST_NAME } from "@/lib/constants";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@/components/ui/button";
-import { Brain, ArrowRight } from "lucide-react";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 
 export const Route = createFileRoute("/crypto")({ component: CryptoPage });
@@ -56,13 +55,7 @@ function CryptoPage() {
 						<p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
 							{t("common.home.welcomeDescription")}
 						</p>
-						<Link to="/ai">
-							<Button size="lg" className="mt-4 gap-2">
-								<Brain className="h-5 w-5" />
-								{t("common.home.tryAIContext")}
-								<ArrowRight className="h-4 w-4" />
-							</Button>
-						</Link>
+						<HeroCTACarousel />
 					</div>
 				</div>
 			</div>
