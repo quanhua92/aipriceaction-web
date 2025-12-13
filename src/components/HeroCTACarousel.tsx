@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Brain, BarChart3, ArrowRight } from 'lucide-react';
@@ -8,16 +8,50 @@ export function HeroCTACarousel() {
   const { t } = useTranslation();
   const [activeSlide, setActiveSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [isTouching, setIsTouching] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   // Auto-rotate effect
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || isTouching) return;
 
     const interval = setInterval(() => {
       setActiveSlide((prev) => (prev + 1) % 2);
     }, 3000);
     return () => clearInterval(interval);
-  }, [isHovered]);
+  }, [isHovered, isTouching]);
+
+  // Swipe gesture handlers
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+    setIsTouching(true);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    setIsTouching(false);
+
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      setActiveSlide((prev) => (prev + 1) % 2);
+    }
+    if (isRightSwipe) {
+      setActiveSlide((prev) => (prev - 1 + 2) % 2);
+    }
+  };
 
   const slides = [
     {
@@ -43,7 +77,13 @@ export function HeroCTACarousel() {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Slides Container */}
-      <div className="overflow-hidden">
+      <div
+        ref={sliderRef}
+        className="overflow-hidden"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <div
           className="flex transition-transform duration-300 ease-in-out"
           style={{ transform: `translateX(-${activeSlide * 100}%)` }}
