@@ -9,7 +9,7 @@ import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { DateInput } from '@/components/DateInput'
 
 export function PlaygroundInfoPanel() {
-  const { playgroundData, visibleData, randomizeData, updateTicker, updateEndDate } = usePlayground()
+  const { playgroundData, visibleData, randomizeData, updateTicker, updateEndDate, setCurrentIndex } = usePlayground()
   const { info } = useLogs()
   const { t } = useTranslation()
 
@@ -37,6 +37,21 @@ export function PlaygroundInfoPanel() {
     if (newDate) {
       info(`[Playground] 📅 User manually selected end date: ${newDate}`)
       updateEndDate(newDate)
+    }
+  }
+
+  // Handle manual current date selection (for navigation, not URL)
+  const handleCurrentDateChange = (newDate: string | undefined) => {
+    if (newDate && allData.length > 0) {
+      // Find the index of the selected date
+      const targetIndex = allData.findIndex(d => d.time?.split('T')[0] === newDate)
+
+      if (targetIndex !== -1) {
+        info(`[Playground] 📍 User manually navigated to date: ${newDate} (index ${targetIndex})`)
+        setCurrentIndex(targetIndex)
+      } else {
+        info(`[Playground] ⚠️ Date ${newDate} not found in data range`)
+      }
     }
   }
 
@@ -84,7 +99,7 @@ export function PlaygroundInfoPanel() {
       </div>
 
       {/* Manual Controls Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Ticker Selection */}
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground">{t('common.playground.info.ticker')}</label>
@@ -100,7 +115,7 @@ export function PlaygroundInfoPanel() {
           </SelectTickerDialog>
         </div>
 
-        {/* Date Selection */}
+        {/* End Date Selection */}
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
@@ -109,6 +124,21 @@ export function PlaygroundInfoPanel() {
           <DateInput
             value={endDate}
             onChange={handleDateChange}
+            placeholder="YYYY-MM-DD"
+            disabled={isLoading}
+            clearable={false}
+          />
+        </div>
+
+        {/* Current Date Selection */}
+        <div className="space-y-2">
+          <label className="text-xs text-muted-foreground flex items-center gap-1">
+            <Calendar className="h-3.5 w-3.5" />
+            {t('common.playground.info.currentDate')}
+          </label>
+          <DateInput
+            value={currentDate}
+            onChange={handleCurrentDateChange}
             placeholder="YYYY-MM-DD"
             disabled={isLoading}
             clearable={false}

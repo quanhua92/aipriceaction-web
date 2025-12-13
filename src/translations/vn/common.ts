@@ -346,6 +346,7 @@ export default {
       badge: 'Playground',
       ticker: 'Mã Cổ Phiếu',
       endDate: 'Ngày Kết Thúc',
+      currentDate: 'Ngày Hiện Tại',
       share: 'Chia Sẻ',
       currentPrice: 'Giá Hiện Tại',
       dateRange: 'Khoảng Ngày',

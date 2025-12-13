@@ -346,6 +346,7 @@ export default {
       badge: 'Playground',
       ticker: 'Ticker',
       endDate: 'End Date',
+      currentDate: 'Current Date',
       share: 'Share',
       currentPrice: 'Current Price',
       dateRange: 'Date Range',
