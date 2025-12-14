@@ -123,6 +123,11 @@ export function usePlaygroundData(
     showSecondaryChart: false,
   })
 
+  // Log initial values after mount
+  React.useEffect(() => {
+    info(`[Playground] 🎯 Initial secondary ticker: "${playgroundData.secondaryTicker}"`)
+  }, [])
+
   // Fetch initial data
   const fetchInitialData = useCallback(async () => {
     info('[Playground] Starting initialization...')
@@ -359,20 +364,7 @@ export function usePlaygroundData(
     return visible
   }, [playgroundData.allData, playgroundData.currentIndex, debug])
 
-  // Store navigate function for URL updates
-  React.useEffect(() => {
-    if (navigateFn && !initialTicker && !initialEndDate) {
-      // Only update URL on initial load if not from URL params
-      navigateFn({
-        to: '/play',
-        search: {
-          ticker: playgroundData.ticker,
-          endDate: playgroundData.endDate
-        }
-      })
-    }
-  }, [playgroundData.ticker, playgroundData.endDate, navigateFn, initialTicker, initialEndDate])
-
+  
   // Watch for URL param changes (e.g., when user manually changes URL in browser)
   useEffect(() => {
     // Only react to URL changes if they differ from current state
@@ -539,11 +531,17 @@ export function usePlaygroundData(
   const updateEndDate = useCallback(async (newEndDate: string) => {
     info(`[Playground] 📅 User selected end date: ${newEndDate}`)
 
-    // Get current state synchronously
+    // Use a ref to avoid stale closure issues
     const currentState = playgroundData
+    info(`[Playground] 🔍 Current state ticker: "${currentState.ticker}", initialTicker: "${initialTicker}"`)
 
-    if (!currentState.ticker) {
+    // Get ticker from state with fallback
+    const ticker = currentState.ticker || initialTicker || 'VNINDEX'
+    info(`[Playground] 📊 Using ticker: "${ticker}"`)
+
+    if (!ticker || ticker === '') {
       logError('[Playground] ❌ No ticker available for update')
+      logError(`[Playground] Debug - currentState.ticker: "${currentState.ticker}", initialTicker: "${initialTicker}"`)
       return
     }
 
@@ -556,20 +554,19 @@ export function usePlaygroundData(
 
     try {
       const startTime = Date.now()
-      info(`[Playground] Updating end date to: ${newEndDate} for ticker ${currentState.ticker}`)
-
-      const currentDate = currentState.allData[currentState.currentIndex]?.time?.split('T')[0]
-      info(`[Playground] Current position: index ${currentState.currentIndex} (date: ${currentDate || 'undefined'})`)
+      info(`[Playground] Updating end date to: ${newEndDate} for ticker ${ticker}`)
 
       // Fetch both primary and secondary tickers in parallel if secondary ticker exists
+      info(`[Playground] 🚀 About to call getTickers for ticker: ${ticker}`)
       const promises = [
         getTickers('Playground.updateDate.primary', {
-          symbol: currentState.ticker,
+          symbol: ticker,
           end_date: newEndDate,
           limit: 500,
           mode: 'vn'
         })
       ]
+      info(`[Playground] ✅ getTickers promise created`)
 
       if (currentState.secondaryTicker) {
         info(`[Playground] Also fetching secondary ticker ${currentState.secondaryTicker}`)
@@ -590,12 +587,22 @@ export function usePlaygroundData(
       const primaryResult = results[0]
       if (primaryResult.status === 'fulfilled') {
         const response = primaryResult.value
-        const data = response[currentState.ticker] || []
+        const data = response[ticker] || []
 
-        // Preserve the user's current position when extending the date range
-        const startIndex = findPreservedIndex(data, currentState.allData, currentState.currentIndex, info)
+        // Simple logic: if changing to earlier date, show end of data; otherwise try to preserve
+        const currentDate = currentState.allData[currentState.currentIndex]?.time?.split('T')[0]
+        let startIndex
 
-        info(`[Playground] ✅ Loaded ${data.length} days for ${currentState.ticker} in ${duration}ms`)
+        if (currentDate && new Date(currentDate) > new Date(newEndDate)) {
+          // Current date is after new end date, jump to end
+          startIndex = data.length - 1
+          info(`[Playground] 📍 Jumping to end (index ${startIndex}) since current date is after new end date`)
+        } else {
+          // Try to preserve position
+          startIndex = findPreservedIndex(data, currentState.allData, currentState.currentIndex, info)
+        }
+
+        info(`[Playground] ✅ Loaded ${data.length} days for ${ticker} in ${duration}ms`)
         info(`[Playground] 📍 Display index: ${startIndex} (showing ${startIndex + 1} days)`)
 
         if (data.length > 0) {
@@ -606,6 +613,7 @@ export function usePlaygroundData(
 
         setPlaygroundData(prev => ({
           ...prev,
+          ticker: ticker, // Ensure ticker is set
           allData: data,
           currentIndex: startIndex,
           endDate: newEndDate,
@@ -650,7 +658,7 @@ export function usePlaygroundData(
         navigateFn({
           to: '/play',
           search: {
-            ticker: currentState.ticker,
+            ticker: ticker,
             endDate: newEndDate,
           }
         })
@@ -731,6 +739,21 @@ export function usePlaygroundData(
     setPlaygroundData(prev => {
       const newState = !prev.showSecondaryChart
       info(`[Playground] 📍 Secondary chart ${newState ? 'shown' : 'hidden'}`)
+
+      // Log secondary ticker data info
+      if (newState) {
+        info(`[Playground] 📊 Secondary ticker: "${prev.secondaryTicker}"`)
+        info(`[Playground] 📊 Secondary data length: ${prev.secondaryAllData?.length || 0} days`)
+        if (prev.secondaryAllData && prev.secondaryAllData.length > 0) {
+          const firstDate = prev.secondaryAllData[0]?.time?.split('T')[0]
+          const lastDate = prev.secondaryAllData[prev.secondaryAllData.length - 1]?.time?.split('T')[0]
+          info(`[Playground] 📊 Secondary data range: ${firstDate} to ${lastDate}`)
+        }
+        if (prev.secondaryError) {
+          info(`[Playground] ⚠️ Secondary error: ${prev.secondaryError}`)
+        }
+      }
+
       return {
         ...prev,
         showSecondaryChart: newState,
