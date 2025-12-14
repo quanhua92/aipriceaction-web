@@ -531,33 +531,36 @@ export function usePlaygroundData(
   const updateEndDate = useCallback(async (newEndDate: string) => {
     info(`[Playground] 📅 User selected end date: ${newEndDate}`)
 
-    // Use a ref to avoid stale closure issues
-    const currentState = playgroundData
-    info(`[Playground] 🔍 Current state ticker: "${currentState.ticker}", initialTicker: "${initialTicker}"`)
+    // Set loading state first
+    setPlaygroundData(prev => {
+      const ticker = prev.ticker || initialTicker || 'VNINDEX'
+      info(`[Playground] 🔍 Current state ticker: "${prev.ticker}", initialTicker: "${initialTicker}"`)
+      info(`[Playground] 📊 Using ticker: "${ticker}"`)
 
-    // Get ticker from state with fallback
-    const ticker = currentState.ticker || initialTicker || 'VNINDEX'
-    info(`[Playground] 📊 Using ticker: "${ticker}"`)
+      if (!ticker || ticker === '') {
+        logError('[Playground] ❌ No ticker available for update')
+        logError(`[Playground] Debug - prev.ticker: "${prev.ticker}", initialTicker: "${initialTicker}"`)
+        return prev // Return unchanged state
+      }
 
-    if (!ticker || ticker === '') {
-      logError('[Playground] ❌ No ticker available for update')
-      logError(`[Playground] Debug - currentState.ticker: "${currentState.ticker}", initialTicker: "${initialTicker}"`)
-      return
-    }
-
-    setPlaygroundData(prev => ({
-      ...prev,
-      isLoading: true,
-      error: undefined,
-      secondaryIsLoading: currentState.secondaryTicker ? true : prev.secondaryIsLoading,
-    }))
+      return {
+        ...prev,
+        isLoading: true,
+        error: undefined,
+        secondaryIsLoading: prev.secondaryTicker ? true : prev.secondaryIsLoading,
+      }
+    })
 
     try {
       const startTime = Date.now()
+
+      // Get the current state with the ticker we need to use
+      const currentState = playgroundData
+      const ticker = currentState.ticker || initialTicker || 'VNINDEX'
+
       info(`[Playground] Updating end date to: ${newEndDate} for ticker ${ticker}`)
 
       // Fetch both primary and secondary tickers in parallel if secondary ticker exists
-      info(`[Playground] 🚀 About to call getTickers for ticker: ${ticker}`)
       const promises = [
         getTickers('Playground.updateDate.primary', {
           symbol: ticker,
@@ -566,7 +569,6 @@ export function usePlaygroundData(
           mode: 'vn'
         })
       ]
-      info(`[Playground] ✅ getTickers promise created`)
 
       if (currentState.secondaryTicker) {
         info(`[Playground] Also fetching secondary ticker ${currentState.secondaryTicker}`)
@@ -611,9 +613,10 @@ export function usePlaygroundData(
           info(`[Playground] Primary data range: ${firstDate} to ${lastDate}`)
         }
 
+        // Update state using functional form to ensure we preserve the ticker
         setPlaygroundData(prev => ({
           ...prev,
-          ticker: ticker, // Ensure ticker is set
+          ticker: ticker, // Explicitly set ticker to ensure it's preserved
           allData: data,
           currentIndex: startIndex,
           endDate: newEndDate,
@@ -676,7 +679,7 @@ export function usePlaygroundData(
         error: errorMessage,
       }))
     }
-  }, [getTickers, navigateFn, info, logError])
+  }, [playgroundData, getTickers, navigateFn, info, logError, initialTicker])
 
   // Update secondary ticker method
   const updateSecondaryTicker = useCallback(async (newSecondaryTicker: string) => {
