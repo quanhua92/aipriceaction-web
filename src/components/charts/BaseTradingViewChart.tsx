@@ -643,19 +643,29 @@ export function BaseTradingViewChart({
 				setIsDataInitialized(true)
 			}
 
-			// Force scroll to latest if requested (e.g., on playground navigation)
-			// OR reset viewport if user hasn't manually set it OR this is initial data load
-			const shouldScrollToLatest = scrollToLatest || !userViewportSet || !lastViewportRange
-
-			if (shouldScrollToLatest) {
-				if (scrollToLatest && viewportSizeOverride) {
-					// When scrollToLatest is requested AND we have viewportSizeOverride (playground case),
-					// show the last viewportSizeOverride bars and scroll to them
-					const startIndex = Math.max(0, chartData.candlestick.length - viewportSizeOverride)
+			// On playground navigation (scrollToLatest), we want to scroll to the end of the new data
+			// while preserving the viewport zoom (number of bars visible)
+			if (scrollToLatest) {
+				if (viewportSizeOverride && chartData.candlestick.length > viewportSizeOverride) {
+					// Navigate to new data - show last viewportSizeOverride bars
+					const startIndex = chartData.candlestick.length - viewportSizeOverride
 					const from = chartData.candlestick[startIndex].time
 					const to = chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
-				} else if (viewportSizeOverride && chartData.candlestick.length > viewportSizeOverride) {
+				} else {
+					// Navigate to new data - show last 40 bars or all if less
+					const defaultViewportSize = 40
+					const actualViewportSize = Math.min(defaultViewportSize, chartData.candlestick.length)
+					const startIndex = chartData.candlestick.length - actualViewportSize
+					const from = chartData.candlestick[startIndex].time
+					const to = chartData.candlestick[chartData.candlestick.length - 1].time
+					chartRef.current.timeScale().setVisibleRange({ from, to })
+				}
+				// Reset user viewport flag so they can scroll again
+				setUserViewportSet(false)
+			} else if (!userViewportSet || !lastViewportRange) {
+				// Initial load or no user viewport - set default viewport
+				if (viewportSizeOverride && chartData.candlestick.length > viewportSizeOverride) {
 					// Show exactly viewportSizeOverride bars from the end of data
 					const startIndex = chartData.candlestick.length - viewportSizeOverride
 					const from = chartData.candlestick[startIndex].time
@@ -674,7 +684,8 @@ export function BaseTradingViewChart({
 					chartRef.current.timeScale().setVisibleRange({ from, to })
 				}
 			} else {
-				// User has set viewport - preserve it during live data updates
+				// User has manually scrolled - preserve their viewport position
+				// Only restore if the current viewport is way off from expected
 				try {
 					const currentRange = chartRef.current.timeScale().getVisibleRange()
 					if (
