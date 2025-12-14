@@ -21,25 +21,27 @@ export { type SortBy }
 export function SortButtons({
   value,
   onChange,
-  availableOptions = ['volume', 'gainers', 'losers', 'value', 'ma20', 'az'],
+  availableOptions = ['volume', 'gainers', 'losers', 'value', 'az', 'ma20', 'ma50', 'ma100', 'ma200'],
   margin = 'top',
   className = ''
 }: SortButtonsProps) {
   const { t } = useTranslation()
 
   // Define the order and display of buttons
-  const buttonOrder: SortBy[] = [
+  const defaultOrder: SortBy[] = [
     'volume', 'gainers', 'losers', // Row 1
-    'value', 'ma20', 'ma50', 'az'   // Row 2
+    'value', 'az', 'ma20',         // Row 2
+    'ma50', 'ma100', 'ma200'       // Row 3 (MA scores)
   ]
 
   const marginClass = margin === 'top' ? 'mt-3' : 'mb-3'
 
-  const renderButton = (option: SortBy) => {
-    if (!availableOptions.includes(option)) {
-      return null
-    }
+  // Filter and sort buttons based on available options and defined order
+  const filteredButtons = defaultOrder.filter(option =>
+    availableOptions.includes(option)
+  )
 
+  const renderButton = (option: SortBy) => {
     const isActive = value === option
 
     return (
@@ -59,10 +61,7 @@ export function SortButtons({
 
   return (
     <div className={`grid grid-cols-3 gap-1.5 ${marginClass} shrink-0 ${className}`}>
-      {/* Row 1 */}
-      {buttonOrder.slice(0, 3).map(renderButton)}
-      {/* Row 2 */}
-      {buttonOrder.slice(3).map(renderButton)}
+      {filteredButtons.map(renderButton)}
     </div>
   )
 }

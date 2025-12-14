@@ -13,6 +13,8 @@ export default {
       losers: '↓ Losers',
       ma20: 'MA20 Score',
       ma50: 'MA50 Score',
+      ma100: 'MA100 Score',
+      ma200: 'MA200 Score',
       value: 'Value',
       az: 'A-Z',
     },

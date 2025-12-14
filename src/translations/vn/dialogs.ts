@@ -13,6 +13,8 @@ export default {
       losers: '↓ Giảm',
       ma20: 'Điểm MA20',
       ma50: 'Điểm MA50',
+      ma100: 'Điểm MA100',
+      ma200: 'Điểm MA200',
       value: 'Giá trị',
       az: 'A-Z',
     },

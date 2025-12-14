@@ -13,7 +13,7 @@ export interface Ticker {
   sector: string
 }
 
-export type SortBy = 'az' | 'gainers' | 'losers' | 'volume' | 'ma20' | 'ma50' | 'value'
+export type SortBy = 'az' | 'gainers' | 'losers' | 'volume' | 'ma20' | 'ma50' | 'ma100' | 'ma200' | 'value'
 export type SectionFilter = 'all' | 'stocks' | 'crypto'
 
 export interface SortableTickerListProps {
