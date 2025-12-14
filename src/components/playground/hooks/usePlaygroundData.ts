@@ -113,6 +113,9 @@ export function usePlaygroundData(
 ) {
   const { getTickers, tickerGroups } = useAPI()
   const { info, error: logError, debug } = useLogs()
+
+  // Ref to track if initialization has already happened
+  const hasInitialized = React.useRef(false)
   // Get initial value from localStorage
   const initialShowSecondaryChart = typeof window !== 'undefined'
     ? localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
@@ -351,11 +354,14 @@ export function usePlaygroundData(
     }
   }, [getTickers, tickerGroups, info, logError, navigateFn])
 
-  // Fetch data on mount
+  // Fetch data on mount (only once)
   useEffect(() => {
-    info('[Playground] 🚀 Component mounted, initializing...')
-    fetchInitialData()
-  }, [fetchInitialData]) // Only run on mount
+    if (!hasInitialized.current) {
+      hasInitialized.current = true
+      info('[Playground] 🚀 Component mounted, initializing...')
+      fetchInitialData()
+    }
+  }, []) // Empty dependency array - only run once on mount
 
   // Navigate to new index
   const setCurrentIndex = useCallback((newIndex: number) => {
