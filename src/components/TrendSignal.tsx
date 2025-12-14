@@ -40,6 +40,7 @@ import { getSectorDisplayName } from '@/lib/sector-names'
 import { format } from 'date-fns'
 import { Link } from '@tanstack/react-router'
 import type { SortBy } from '@/components/lists/SortableTickerList'
+import { SortButtons } from '@/components/SortButtons'
 import {
   detectSignal,
   getTickerSector,
@@ -574,70 +575,11 @@ export function TrendSignal({
           </div>
 
           {/* Sort Buttons */}
-          <div className="grid grid-cols-3 gap-1.5 mt-3 shrink-0">
-            {/* Row 1 */}
-            <button
-              onClick={() => setSortBy('volume')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                sortBy === 'volume'
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t('dialogs.selectTicker.sortBy.volume')}
-            </button>
-            <button
-              onClick={() => setSortBy('gainers')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                sortBy === 'gainers'
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t('dialogs.selectTicker.sortBy.gainers')}
-            </button>
-            <button
-              onClick={() => setSortBy('losers')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                sortBy === 'losers'
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t('dialogs.selectTicker.sortBy.losers')}
-            </button>
-            {/* Row 2 */}
-            <button
-              onClick={() => setSortBy('value')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                sortBy === 'value'
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t('dialogs.selectTicker.sortBy.value')}
-            </button>
-            <button
-              onClick={() => setSortBy('ma20')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                sortBy === 'ma20'
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t('dialogs.selectTicker.sortBy.ma20')}
-            </button>
-            <button
-              onClick={() => setSortBy('az')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                sortBy === 'az'
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t('dialogs.selectTicker.sortBy.az')}
-            </button>
-          </div>
+          <SortButtons
+            value={sortBy}
+            onChange={setSortBy}
+            margin="top"
+          />
         </div>
 
         <div className="px-3 md:px-6">
