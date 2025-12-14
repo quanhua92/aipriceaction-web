@@ -97,12 +97,12 @@ export function toVietnamUnixTime(utcDate: Date): number {
 }
 
 /**
- * Format a Date object to short Vietnam date string (e.g., "Nov 9")
+ * Format a Date object to short Vietnam date string (e.g., "2025-11-09")
  * Useful for compact displays like chart overlays
  *
  * @param utcDate - Date object in UTC
- * @returns Short date string in "MMM D" format (e.g., "Nov 9")
- * @example formatToVietnamDateShort(new Date("2025-11-09T14:00:00Z")) => "Nov 9"
+ * @returns Short date string in "YYYY-MM-DD" format (e.g., "2025-11-09")
+ * @example formatToVietnamDateShort(new Date("2025-11-09T14:00:00Z")) => "2025-11-09"
  */
 export function formatToVietnamDateShort(utcDate: Date): string {
   if (!utcDate || isNaN(utcDate.getTime())) {
@@ -113,21 +113,20 @@ export function formatToVietnamDateShort(utcDate: Date): string {
   const vietnamTime = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000))
 
   // Format using UTC methods (the time is already shifted by +7)
-  const month = vietnamTime.getUTCMonth()
-  const day = vietnamTime.getUTCDate()
+  const year = vietnamTime.getUTCFullYear()
+  const month = String(vietnamTime.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(vietnamTime.getUTCDate()).padStart(2, '0')
 
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-  return `${monthNames[month]} ${day}`
+  return `${year}-${month}-${day}`
 }
 
 /**
- * Format a Date object to short Vietnam date+time string (e.g., "Nov 9, 21:00")
+ * Format a Date object to short Vietnam date+time string (e.g., "2025-11-09, 21:00")
  * Useful for intraday chart overlays (minute/hour intervals)
  *
  * @param utcDate - Date object in UTC
- * @returns Short date+time string in "MMM D, HH:MM" format (e.g., "Nov 9, 21:00")
- * @example formatToVietnamDateTimeShort(new Date("2025-11-09T14:00:00Z")) => "Nov 9, 21:00"
+ * @returns Short date+time string in "YYYY-MM-DD, HH:MM" format (e.g., "2025-11-09, 21:00")
+ * @example formatToVietnamDateTimeShort(new Date("2025-11-09T14:00:00Z")) => "2025-11-09, 21:00"
  */
 export function formatToVietnamDateTimeShort(utcDate: Date): string {
   if (!utcDate || isNaN(utcDate.getTime())) {
@@ -138,14 +137,13 @@ export function formatToVietnamDateTimeShort(utcDate: Date): string {
   const vietnamTime = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000))
 
   // Format using UTC methods (the time is already shifted by +7)
-  const month = vietnamTime.getUTCMonth()
-  const day = vietnamTime.getUTCDate()
+  const year = vietnamTime.getUTCFullYear()
+  const month = String(vietnamTime.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(vietnamTime.getUTCDate()).padStart(2, '0')
   const hours = String(vietnamTime.getUTCHours()).padStart(2, '0')
   const minutes = String(vietnamTime.getUTCMinutes()).padStart(2, '0')
 
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-  return `${monthNames[month]} ${day}, ${hours}:${minutes}`
+  return `${year}-${month}-${day}, ${hours}:${minutes}`
 }
 
 /**
