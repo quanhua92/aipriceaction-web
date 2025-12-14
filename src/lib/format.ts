@@ -121,6 +121,32 @@ export function formatToVietnamDateShort(utcDate: Date): string {
 }
 
 /**
+ * Format a Date object to short month name format (e.g., "Nov 09")
+ * Useful for compact displays where month name is preferred over numbers
+ *
+ * @param utcDate - Date object in UTC
+ * @returns Short month name format string (e.g., "Nov 09")
+ * @example formatToVietnamMonthDay(new Date("2025-11-09T14:00:00Z")) => "Nov 09"
+ */
+export function formatToVietnamMonthDay(utcDate: Date): string {
+  if (!utcDate || isNaN(utcDate.getTime())) {
+    return '--'
+  }
+
+  // Add 7 hours for Vietnam timezone (UTC+7)
+  const vietnamTime = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000))
+
+  // Month names
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  // Format using UTC methods (the time is already shifted by +7)
+  const month = monthNames[vietnamTime.getUTCMonth()]
+  const day = String(vietnamTime.getUTCDate()).padStart(2, '0')
+
+  return `${month} ${day}`
+}
+
+/**
  * Format a Date object to short Vietnam date+time string (e.g., "2025-11-09, 21:00")
  * Useful for intraday chart overlays (minute/hour intervals)
  *

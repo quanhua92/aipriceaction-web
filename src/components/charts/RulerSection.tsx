@@ -6,6 +6,7 @@ import {
 	formatPrice,
 	formatToVietnamDateShort,
 	formatToVietnamDateTimeShort,
+	formatToVietnamMonthDay,
 	parseUTCISOString,
 } from '@/lib/format'
 import { X } from 'lucide-react'
@@ -61,7 +62,7 @@ export function RulerSection({ data, crosshairData, latestData }: RulerSectionPr
 					onClick={handleSetPointA}
 					className="h-6 px-2 text-xs min-w-0"
 				>
-					{pointA ? `A: ${formatToVietnamDateShort(parseUTCISOString(pointA.time))} ${formatPrice(pointA.close, pointA)}` : `A: ${t('common.ruler.setPointA')}`}
+					{pointA ? `A: ${formatToVietnamMonthDay(parseUTCISOString(pointA.time))} ${formatPrice(pointA.close, pointA)}` : `A: ${t('common.ruler.setPointA')}`}
 				</Button>
 				{rulerTimeA && (
 					<Button
@@ -81,7 +82,7 @@ export function RulerSection({ data, crosshairData, latestData }: RulerSectionPr
 					onClick={handleSetPointB}
 					className="h-6 px-2 text-xs min-w-0"
 				>
-					{pointB ? `B: ${formatToVietnamDateShort(parseUTCISOString(pointB.time))} ${formatPrice(pointB.close, pointB)}` : `B: ${t('common.ruler.setPointB')}`}
+					{pointB ? `B: ${formatToVietnamMonthDay(parseUTCISOString(pointB.time))} ${formatPrice(pointB.close, pointB)}` : `B: ${t('common.ruler.setPointB')}`}
 				</Button>
 				{rulerTimeB && (
 					<Button
