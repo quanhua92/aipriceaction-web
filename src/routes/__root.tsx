@@ -8,6 +8,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import Header from '../components/Header'
 import { DebugFooter } from '../components/DebugFooter'
 import { StatusBar } from '../components/StatusBar'
+import { ThemeProvider } from '../components/ThemeProvider'
 import { APIProvider } from '../contexts/APIContext'
 import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
 import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
@@ -79,36 +80,38 @@ function RootComponent() {
     <GoogleAnalyticsProvider measurementId={measurementId}>
       <LogsProvider>
         <SiteSettingsProvider>
-          <RefreshProvider>
-            <ChartSettingsProvider>
-              <APIProvider>
-                <AlertProvider>
-                  <NoteProvider>
-                    <PWAInstallProvider>
-                      <Header />
-                      <Outlet />
-                      <StatusBar />
-                      <DebugFooter />
-                      {import.meta.env.DEV && (
-                        <TanStackDevtools
-                          config={{
-                            position: 'bottom-right',
-                          }}
-                          plugins={[
-                            {
-                              name: 'Tanstack Router',
-                              render: <TanStackRouterDevtoolsPanel />,
-                            },
-                            TanStackQueryDevtools,
-                          ]}
-                        />
-                      )}
-                    </PWAInstallProvider>
-                  </NoteProvider>
-                </AlertProvider>
-              </APIProvider>
-            </ChartSettingsProvider>
-          </RefreshProvider>
+          <ThemeProvider>
+            <RefreshProvider>
+              <ChartSettingsProvider>
+                <APIProvider>
+                  <AlertProvider>
+                    <NoteProvider>
+                      <PWAInstallProvider>
+                        <Header />
+                        <Outlet />
+                        <StatusBar />
+                        <DebugFooter />
+                        {import.meta.env.DEV && (
+                          <TanStackDevtools
+                            config={{
+                              position: 'bottom-right',
+                            }}
+                            plugins={[
+                              {
+                                name: 'Tanstack Router',
+                                render: <TanStackRouterDevtoolsPanel />,
+                              },
+                              TanStackQueryDevtools,
+                            ]}
+                          />
+                        )}
+                      </PWAInstallProvider>
+                    </NoteProvider>
+                  </AlertProvider>
+                </APIProvider>
+              </ChartSettingsProvider>
+            </RefreshProvider>
+          </ThemeProvider>
         </SiteSettingsProvider>
       </LogsProvider>
     </GoogleAnalyticsProvider>

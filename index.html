@@ -42,6 +42,37 @@
         document.head.appendChild(script);
       }
     </script>
+    <script>
+      // Prevent FOUC by applying theme immediately
+      (function() {
+        var root = document.documentElement;
+        var theme = 'system'; // default fallback
+
+        try {
+          // Test if localStorage is available
+          var test = '__test__';
+          localStorage.setItem(test, test);
+          localStorage.removeItem(test);
+
+          // If localStorage works, get the theme
+          var storedTheme = localStorage.getItem('site-settings-theme');
+          if (storedTheme && ['light', 'dark', 'system'].indexOf(storedTheme) !== -1) {
+            theme = storedTheme;
+          }
+        } catch (e) {
+          // localStorage not available, keep default 'system' theme
+          console.log('localStorage not available, using system theme');
+        }
+
+        // Apply the theme
+        if (theme === 'system') {
+          var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          root.classList.add(isDark ? 'dark' : 'light');
+        } else {
+          root.classList.add(theme);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

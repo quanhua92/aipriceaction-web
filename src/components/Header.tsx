@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
 import { PWAInstallButton } from './PWAInstallButton'
 import { MobileNavigation } from './MobileNavigation'
+import { ThemeToggle } from './ThemeToggle'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -154,6 +155,8 @@ export default function Header() {
           <div className="max-md:hidden">
             <PWAInstallButton />
           </div>
+
+          <ThemeToggle />
 
           <Toggle
             pressed={isRefreshEnabled}

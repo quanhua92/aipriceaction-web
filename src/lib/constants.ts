@@ -224,3 +224,8 @@ export const VISIBILITY_REFRESH_DEBOUNCE_MS = 500
  */
 export const VISIBILITY_MIN_REFRESH_INTERVAL_MS = 5000
 
+/**
+ * LocalStorage key for theme preference
+ */
+export const THEME_STORAGE_KEY = 'site-settings-theme'
+
