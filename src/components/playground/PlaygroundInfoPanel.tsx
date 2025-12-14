@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { usePlayground } from './PlaygroundDataProvider'
 import { useLogs } from '@/contexts/LogsContext'
-import { Dices, Calendar, Edit, Share2 } from 'lucide-react'
+import { Dices, Calendar, Edit, Share2, X } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
@@ -88,6 +88,22 @@ export function PlaygroundInfoPanel() {
     toggleSecondaryChart()
   }
 
+  // Handle end date reset to today's date
+  const handleEndDateReset = () => {
+    const today = new Date().toISOString().split('T')[0]
+    info(`[Playground] 📅 User reset end date to today: ${today}`)
+    handleDateChange(today)
+  }
+
+  // Handle current date reset to end of data
+  const handleCurrentDateReset = () => {
+    if (allData.length > 0) {
+      const endIndex = allData.length - 1
+      info(`[Playground] ⏭️ User reset current date to end (index ${endIndex})`)
+      setCurrentIndex(endIndex)
+    }
+  }
+
   // Handle share URL copy
   const handleShare = async () => {
     const currentUrl = window.location.href
@@ -154,13 +170,27 @@ export function PlaygroundInfoPanel() {
             <Calendar className="h-3.5 w-3.5" />
             {t('common.playground.info.endDate')}
           </label>
-          <DateInput
-            value={endDate}
-            onChange={handleDateChange}
-            placeholder="YYYY-MM-DD"
-            disabled={isLoading}
-            clearable={false}
-          />
+          <div className="flex gap-2">
+            <DateInput
+              value={endDate}
+              onChange={handleDateChange}
+              placeholder="YYYY-MM-DD"
+              disabled={isLoading}
+              clearable={false}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleEndDateReset}
+              disabled={isLoading}
+              title="Reset to today"
+              className="px-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Current Date Selection */}
@@ -169,13 +199,27 @@ export function PlaygroundInfoPanel() {
             <Calendar className="h-3.5 w-3.5" />
             {t('common.playground.info.currentDate')}
           </label>
-          <DateInput
-            value={currentDate}
-            onChange={handleCurrentDateChange}
-            placeholder="YYYY-MM-DD"
-            disabled={isLoading}
-            clearable={false}
-          />
+          <div className="flex gap-2">
+            <DateInput
+              value={currentDate}
+              onChange={handleCurrentDateChange}
+              placeholder="YYYY-MM-DD"
+              disabled={isLoading}
+              clearable={false}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleCurrentDateReset}
+              disabled={isLoading || allData.length === 0}
+              title="Jump to end"
+              className="px-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
