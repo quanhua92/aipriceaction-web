@@ -82,11 +82,11 @@ function getViewModeLabel(viewMode: ViewMode): string {
 
 // Color coding helper (reference scheme)
 function getCellColor(value: number): { bg: string; text: string } {
-  if (value > 6.5) return { bg: 'bg-purple-500', text: 'text-white' } // Ceiling
-  if (value < -6.5) return { bg: 'bg-cyan-500', text: 'text-white' } // Floor
-  if (value > 0) return { bg: 'bg-green-500', text: 'text-white' } // Gain
-  if (value < 0) return { bg: 'bg-red-500', text: 'text-white' } // Loss
-  return { bg: 'bg-gray-200', text: 'text-gray-600' } // No change
+  if (value > 6.5) return { bg: 'bg-purple-500 dark:bg-purple-600', text: 'text-white' } // Ceiling
+  if (value < -6.5) return { bg: 'bg-cyan-500 dark:bg-cyan-600', text: 'text-white' } // Floor
+  if (value > 0) return { bg: 'bg-green-500 dark:bg-green-600', text: 'text-white' } // Gain
+  if (value < 0) return { bg: 'bg-red-500 dark:bg-red-600', text: 'text-white' } // Loss
+  return { bg: 'bg-gray-200 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300' } // No change
 }
 
 // Default sectors to show expanded (matches PRIORITY_GROUPS)
@@ -792,7 +792,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
               {/* Fixed Left Column - Ticker Symbols */}
               <div className="w-[100px] min-w-[100px] flex-shrink-0 border-r border-border">
                 {/* Header */}
-                <div className="bg-muted/50 text-center px-2 py-2 font-semibold border-b border-border h-[40px] flex items-center justify-center text-xs">
+                <div className="bg-muted/50 dark:bg-muted/30 text-center px-2 py-2 font-semibold border-b border-border h-[40px] flex items-center justify-center text-xs">
                   Ticker
                 </div>
 
@@ -823,10 +823,10 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                     return (
                       <div key={sector}>
                         {/* Sector Header */}
-                        <div className="bg-primary/20 px-2 py-2 font-semibold text-primary text-xs flex items-center border-b border-primary/30 h-[36px]">
+                        <div className="bg-primary/20 dark:bg-primary/10 px-2 py-2 font-semibold text-primary text-xs flex items-center border-b border-primary/30 dark:border-primary/20 h-[36px]">
                           <button
                             onClick={() => toggleSector(sector)}
-                            className="flex items-center gap-1 hover:bg-primary/30 rounded px-1 transition-colors w-full"
+                            className="flex items-center gap-1 hover:bg-primary/30 dark:hover:bg-primary/20 rounded px-1 transition-colors w-full"
                             title={getSectorDisplayName(sector, language)}
                           >
                             {isCollapsed ? (
@@ -846,7 +846,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                           sectorRows.map((row) => (
                             <div
                               key={row.ticker}
-                              className="bg-white px-2 py-2 border-b border-border hover:bg-muted/10 h-[36px] flex items-center justify-center"
+                              className="bg-background px-2 py-2 border-b border-border hover:bg-muted/10 dark:hover:bg-muted/20 h-[36px] flex items-center justify-center"
                             >
                               <span className="font-mono font-semibold text-xs truncate">
                                 {row.ticker}
@@ -861,7 +861,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
               {/* Scrollable Right Column - Data Cells */}
               <div className="flex-1 overflow-x-auto">
                 {/* Header row */}
-                <div className="flex bg-muted/50 border-b border-border h-[40px]">
+                <div className="flex bg-muted/50 dark:bg-muted/30 border-b border-border h-[40px]">
                   {matrixData.dates.map((date) => {
                     try {
                       return (
@@ -914,11 +914,11 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                     return (
                       <div key={sector}>
                         {/* Sector Header Row */}
-                        <div className="flex bg-primary/20 h-[36px]">
+                        <div className="flex bg-primary/20 dark:bg-primary/10 h-[36px]">
                           {matrixData.dates.map((date) => (
                             <div
                               key={date}
-                              className="w-[60px] min-w-[60px] flex-shrink-0 border-r border-primary/30"
+                              className="w-[60px] min-w-[60px] flex-shrink-0 border-r border-primary/30 dark:border-primary/20"
                             />
                           ))}
                         </div>
@@ -926,7 +926,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                         {/* Data rows for tickers */}
                         {!isCollapsed &&
                           sectorRows.map((row) => (
-                            <div key={row.ticker} className="flex hover:bg-muted/10 h-[36px]">
+                            <div key={row.ticker} className="flex hover:bg-muted/10 dark:hover:bg-muted/20 h-[36px]">
                               {row.cells.map((cell) => {
                                 const colors = getCellColor(cell.value)
                                 const displayValue =
@@ -938,7 +938,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                                   <div
                                     key={cell.date}
                                     onClick={() => handleCellClick(row.ticker)}
-                                    className={`w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 text-xs font-semibold flex items-center justify-center cursor-pointer border-r border-border hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 ${colors.bg} ${colors.text}`}
+                                    className={`w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 text-xs font-semibold flex items-center justify-center cursor-pointer border-r border-border hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 dark:hover:ring-blue-400 ${colors.bg} ${colors.text}`}
                                     title={`${row.ticker} - ${cell.date}\n${getViewModeLabel(viewMode)}: ${(cell.value ?? 0).toFixed(2)}%`}
                                   >
                                     {displayValue}
