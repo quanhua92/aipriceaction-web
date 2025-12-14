@@ -15,6 +15,7 @@ interface PlaygroundContextValue {
   updateEndDate: ReturnType<typeof usePlaygroundData>['updateEndDate']
   updateSecondaryTicker: ReturnType<typeof usePlaygroundData>['updateSecondaryTicker']
   toggleSecondaryChart: ReturnType<typeof usePlaygroundData>['toggleSecondaryChart']
+  setShowSecondaryChart: ReturnType<typeof usePlaygroundData>['setShowSecondaryChart']
 }
 
 const PlaygroundContext = React.createContext<PlaygroundContextValue | undefined>(undefined)
@@ -63,6 +64,7 @@ export function PlaygroundDataProvider({
     updateEndDate: playgroundDataValue.updateEndDate,
     updateSecondaryTicker: playgroundDataValue.updateSecondaryTicker,
     toggleSecondaryChart: playgroundDataValue.toggleSecondaryChart,
+    setShowSecondaryChart: playgroundDataValue.setShowSecondaryChart,
   }
 
   return (

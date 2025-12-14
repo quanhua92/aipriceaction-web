@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { usePlayground } from './PlaygroundDataProvider'
 import { useLogs } from '@/contexts/LogsContext'
@@ -7,6 +8,9 @@ import { format, parseISO } from 'date-fns'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { DateInput } from '@/components/DateInput'
+
+// localStorage key for secondary chart visibility
+const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
 
 export function PlaygroundInfoPanel() {
   const {
@@ -17,10 +21,28 @@ export function PlaygroundInfoPanel() {
     updateEndDate,
     setCurrentIndex,
     updateSecondaryTicker,
-    toggleSecondaryChart
+    toggleSecondaryChart,
+    setShowSecondaryChart
   } = usePlayground()
   const { info } = useLogs()
   const { t } = useTranslation()
+
+  // Initialize secondary chart visibility from localStorage on mount - run only once
+  useEffect(() => {
+    const stored = localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY)
+    if (stored !== null) {
+      const isVisible = stored === 'true'
+      setShowSecondaryChart(isVisible)
+      info(`[Playground] 📊 Restored secondary chart visibility from localStorage: ${isVisible}`)
+    }
+  }, []) // Empty dependency array - run only on mount
+
+  // Save secondary chart visibility to localStorage whenever it changes
+  useEffect(() => {
+    const { showSecondaryChart } = playgroundData
+    localStorage.setItem(SECONDARY_CHART_VISIBLE_KEY, showSecondaryChart.toString())
+    info(`[Playground] 💾 Saved secondary chart visibility to localStorage: ${showSecondaryChart}`)
+  }, [playgroundData.showSecondaryChart])
 
   const {
     ticker,

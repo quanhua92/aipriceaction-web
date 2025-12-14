@@ -3,6 +3,9 @@ import { useAPI } from '@/contexts/APIContext'
 import { type StockData } from '@/lib/api-client'
 import { useLogs } from '@/contexts/LogsContext'
 
+// localStorage key for secondary chart visibility
+const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
+
 export interface PlaygroundData {
   ticker: string          // Randomly selected Vietnamese stock or index
   allData: StockData[]    // 500 days cached from API
@@ -110,6 +113,11 @@ export function usePlaygroundData(
 ) {
   const { getTickers, tickerGroups } = useAPI()
   const { info, error: logError, debug } = useLogs()
+  // Get initial value from localStorage
+  const initialShowSecondaryChart = typeof window !== 'undefined'
+    ? localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
+    : false
+
   const [playgroundData, setPlaygroundData] = useState<PlaygroundData>({
     ticker: '',
     allData: [],
@@ -120,8 +128,15 @@ export function usePlaygroundData(
     secondaryAllData: undefined,
     secondaryIsLoading: false,
     secondaryError: undefined,
-    showSecondaryChart: false,
+    showSecondaryChart: initialShowSecondaryChart,
   })
+
+  // Log initial value after mount
+  React.useEffect(() => {
+    if (initialShowSecondaryChart) {
+      info(`[Playground] 📊 Initial secondary chart visibility from localStorage: true`)
+    }
+  }, [])
 
   // Log initial values after mount
   React.useEffect(() => {
@@ -229,7 +244,9 @@ export function usePlaygroundData(
         secondaryAllData: secondaryData,
         secondaryIsLoading: false,
         secondaryError,
-        showSecondaryChart: false, // Hide by default
+        showSecondaryChart: typeof window !== 'undefined'
+          ? localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
+          : false,
       })
 
       // Update URL if we have navigate function and this wasn't from initial URL params
@@ -297,13 +314,18 @@ export function usePlaygroundData(
         info(`[Playground] Data range: ${firstDate} to ${lastDate}`)
       }
 
-      setPlaygroundData({
+      setPlaygroundData(prev => ({
         ticker,
         allData: data,
         currentIndex: startIndex,
         endDate,
         isLoading: false,
-      })
+        secondaryTicker: prev.secondaryTicker,
+        secondaryAllData: prev.secondaryAllData,
+        secondaryIsLoading: prev.secondaryIsLoading,
+        secondaryError: prev.secondaryError,
+        showSecondaryChart: prev.showSecondaryChart,
+      }))
 
       // Update URL with new random values
       if (navigateFn) {
@@ -407,13 +429,18 @@ export function usePlaygroundData(
           info(`[Playground] Data range: ${firstDate} to ${lastDate}`)
         }
 
-        setPlaygroundData({
+        setPlaygroundData(prev => ({
           ticker,
           allData: data,
           currentIndex: startIndex,
           endDate,
           isLoading: false,
-        })
+          secondaryTicker: prev.secondaryTicker,
+          secondaryAllData: prev.secondaryAllData,
+          secondaryIsLoading: prev.secondaryIsLoading,
+          secondaryError: prev.secondaryError,
+          showSecondaryChart: prev.showSecondaryChart,
+        }))
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load data from URL params'
         logError(`[Playground] ❌ URL param data fetch failed: ${errorMessage}`)
@@ -495,13 +522,18 @@ export function usePlaygroundData(
         info(`[Playground] Data range: ${firstDate} to ${lastDate}`)
       }
 
-      setPlaygroundData({
+      setPlaygroundData(prev => ({
         ticker: newTicker,
         allData: data,
         currentIndex: startIndex,
-        endDate: playgroundData.endDate,
+        endDate: prev.endDate,
         isLoading: false,
-      })
+        secondaryTicker: prev.secondaryTicker,
+        secondaryAllData: prev.secondaryAllData,
+        secondaryIsLoading: prev.secondaryIsLoading,
+        secondaryError: prev.secondaryError,
+        showSecondaryChart: prev.showSecondaryChart,
+      }))
 
       // Update URL
       if (navigateFn) {
@@ -621,6 +653,11 @@ export function usePlaygroundData(
           currentIndex: startIndex,
           endDate: newEndDate,
           isLoading: false,
+          secondaryTicker: prev.secondaryTicker,
+          secondaryAllData: prev.secondaryAllData,
+          secondaryIsLoading: prev.secondaryIsLoading,
+          secondaryError: prev.secondaryError,
+          showSecondaryChart: prev.showSecondaryChart,
         }))
       } else {
         throw primaryResult.reason
@@ -764,6 +801,15 @@ export function usePlaygroundData(
     })
   }, [])
 
+  // Set secondary chart visibility directly
+  const setShowSecondaryChart = useCallback((visible: boolean) => {
+    info(`[Playground] 📍 Secondary chart ${visible ? 'shown' : 'hidden'} (from localStorage)`)
+    setPlaygroundData(prev => ({
+      ...prev,
+      showSecondaryChart: visible,
+    }))
+  }, [info])
+
   // Get secondary visible data
   const secondaryVisibleData = useMemo(() => {
     if (!playgroundData.secondaryAllData?.length) return []
@@ -819,5 +865,6 @@ export function usePlaygroundData(
     updateEndDate,
     updateSecondaryTicker,
     toggleSecondaryChart,
+    setShowSecondaryChart,
   }
 }
