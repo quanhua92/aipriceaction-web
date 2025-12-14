@@ -11,6 +11,7 @@ export default {
       volume: 'KL GD',
       gainers: '↑ Tăng',
       losers: '↓ Giảm',
+      ma10: 'Điểm MA10',
       ma20: 'Điểm MA20',
       ma50: 'Điểm MA50',
       ma100: 'Điểm MA100',

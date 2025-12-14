@@ -473,6 +473,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             const bVol = bData?.volume ?? 0
             return bVol - aVol
 
+          case 'ma10':
+            // Sort by MA10 score descending (highest/most bullish first)
+            const aMA10 = aData?.ma10_score ?? -Infinity
+            const bMA10 = bData?.ma10_score ?? -Infinity
+            return bMA10 - aMA10
+
           case 'ma20':
             // Sort by MA20 score descending (highest/most bullish first)
             const aMA20 = aData?.ma20_score ?? -Infinity
@@ -484,6 +490,18 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             const aMA50 = aData?.ma50_score ?? -Infinity
             const bMA50 = bData?.ma50_score ?? -Infinity
             return bMA50 - aMA50
+
+          case 'ma100':
+            // Sort by MA100 score descending (highest/most bullish first)
+            const aMA100 = aData?.ma100_score ?? -Infinity
+            const bMA100 = bData?.ma100_score ?? -Infinity
+            return bMA100 - aMA100
+
+          case 'ma200':
+            // Sort by MA200 score descending (highest/most bullish first)
+            const aMA200 = aData?.ma200_score ?? -Infinity
+            const bMA200 = bData?.ma200_score ?? -Infinity
+            return bMA200 - aMA200
 
           case 'value':
             // Sort by value descending (highest traded value first)

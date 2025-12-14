@@ -11,6 +11,7 @@ export default {
       volume: 'Volume',
       gainers: '↑ Gainers',
       losers: '↓ Losers',
+      ma10: 'MA10 Score',
       ma20: 'MA20 Score',
       ma50: 'MA50 Score',
       ma100: 'MA100 Score',

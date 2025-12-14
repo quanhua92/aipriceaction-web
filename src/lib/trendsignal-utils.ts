@@ -28,8 +28,11 @@ export interface TrendSignalData {
   currentPrice: number
   closeChange?: number
   volume?: number
+  ma10_score?: number
   ma20_score?: number
   ma50_score?: number
+  ma100_score?: number
+  ma200_score?: number
   highest20?: number
   lowest10?: number
 }
@@ -162,8 +165,11 @@ export function processTickerSignals(
         currentPrice: latest.close,
         closeChange: latest.close_changed,
         volume: latest.volume,
+        ma10_score: latest.ma10_score,
         ma20_score: latest.ma20_score,
         ma50_score: latest.ma50_score,
+        ma100_score: latest.ma100_score,
+        ma200_score: latest.ma200_score,
         highest20: highestBuyPeriod,
         lowest10: lowestSellPeriod,
       })
@@ -236,11 +242,35 @@ export function groupSignalsBySector(
           const bVol = b.volume ?? 0
           return bVol - aVol
 
+        case 'ma10':
+          // Sort by MA10 score descending (highest/most bullish first)
+          const aMA10 = a.ma10_score ?? -Infinity
+          const bMA10 = b.ma10_score ?? -Infinity
+          return bMA10 - aMA10
+
         case 'ma20':
           // Sort by MA20 score descending (highest/most bullish first)
           const aMA20 = a.ma20_score ?? -Infinity
           const bMA20 = b.ma20_score ?? -Infinity
           return bMA20 - aMA20
+
+        case 'ma50':
+          // Sort by MA50 score descending (highest/most bullish first)
+          const aMA50 = a.ma50_score ?? -Infinity
+          const bMA50 = b.ma50_score ?? -Infinity
+          return bMA50 - aMA50
+
+        case 'ma100':
+          // Sort by MA100 score descending (highest/most bullish first)
+          const aMA100 = a.ma100_score ?? -Infinity
+          const bMA100 = b.ma100_score ?? -Infinity
+          return bMA100 - aMA100
+
+        case 'ma200':
+          // Sort by MA200 score descending (highest/most bullish first)
+          const aMA200 = a.ma200_score ?? -Infinity
+          const bMA200 = b.ma200_score ?? -Infinity
+          return bMA200 - aMA200
 
         case 'value':
           // Sort by value descending (highest traded value first)
