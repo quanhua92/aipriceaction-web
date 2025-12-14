@@ -56,45 +56,73 @@ export function RulerSection({ data, crosshairData, latestData }: RulerSectionPr
 		<div className="flex items-center justify-between gap-2">
 			{/* A and B buttons on one line with date and price */}
 			<div className="flex items-center gap-2">
-				<Button
-					size="sm"
-					variant={rulerTimeA ? 'default' : 'outline'}
-					onClick={handleSetPointA}
-					className="h-6 px-2 text-xs min-w-0"
-				>
-					{pointA ? `A: ${formatToVietnamMonthDay(parseUTCISOString(pointA.time))} ${formatPrice(pointA.close, pointA)}` : `A: ${t('common.ruler.setPointA')}`}
-				</Button>
-				{rulerTimeA && (
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => setRulerTimeA(undefined)}
-						className="h-5 w-5 p-0 hover:bg-destructive/10 flex-shrink-0"
-						title={t('common.ruler.clear')}
-					>
-						<X className="h-3 w-3" />
-					</Button>
-				)}
+				{/* A button with X */}
+				<div className="flex items-center">
+					{rulerTimeA ? (
+						<>
+							<Button
+								size="sm"
+								variant="default"
+								onClick={handleSetPointA}
+								className="h-6 px-2 text-xs min-w-0 rounded-r-none"
+							>
+								{pointA && pointA.time ? `A: ${formatToVietnamMonthDay(parseUTCISOString(pointA.time))} ${formatPrice(pointA.close, pointA)}` : `A: ${t('common.ruler.setPointA')}`}
+							</Button>
+							<Button
+								variant="default"
+								size="sm"
+								onClick={() => setRulerTimeA(undefined)}
+								className="h-6 w-4 p-0 hover:bg-destructive/20 flex-shrink-0 rounded-l-none"
+								title={t('common.ruler.clear')}
+							>
+								<X className="h-2 w-2" />
+							</Button>
+						</>
+					) : (
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={handleSetPointA}
+							className="h-6 px-2 text-xs min-w-0"
+						>
+							{`A: ${t('common.ruler.setPointA')}`}
+						</Button>
+					)}
+				</div>
 
-				<Button
-					size="sm"
-					variant={rulerTimeB ? 'default' : 'outline'}
-					onClick={handleSetPointB}
-					className="h-6 px-2 text-xs min-w-0"
-				>
-					{pointB ? `B: ${formatToVietnamMonthDay(parseUTCISOString(pointB.time))} ${formatPrice(pointB.close, pointB)}` : `B: ${t('common.ruler.setPointB')}`}
-				</Button>
-				{rulerTimeB && (
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => setRulerTimeB(undefined)}
-						className="h-5 w-5 p-0 hover:bg-destructive/10 flex-shrink-0"
-						title={t('common.ruler.clear')}
-					>
-						<X className="h-3 w-3" />
-					</Button>
-				)}
+				{/* B button with X */}
+				<div className="flex items-center">
+					{rulerTimeB ? (
+						<>
+							<Button
+								size="sm"
+								variant="default"
+								onClick={handleSetPointB}
+								className="h-6 px-2 text-xs min-w-0 rounded-r-none"
+							>
+													{pointB && pointB.time ? `B: ${formatToVietnamMonthDay(parseUTCISOString(pointB.time))} ${formatPrice(pointB.close, pointB)}` : `B: ${t('common.ruler.setPointB')}`}
+							</Button>
+							<Button
+								variant="default"
+								size="sm"
+								onClick={() => setRulerTimeB(undefined)}
+								className="h-6 w-4 p-0 hover:bg-destructive/20 flex-shrink-0 rounded-l-none"
+								title={t('common.ruler.clear')}
+							>
+								<X className="h-2 w-2" />
+							</Button>
+						</>
+					) : (
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={handleSetPointB}
+							className="h-6 px-2 text-xs min-w-0"
+						>
+							{`B: ${t('common.ruler.setPointB')}`}
+						</Button>
+					)}
+				</div>
 			</div>
 
 			{/* Difference display */}
