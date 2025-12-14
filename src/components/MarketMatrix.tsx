@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, ChevronRight, ChevronDown, Repeat, MoreVertical } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, MoreVertical } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { type StockData } from '@/lib/api-client'
@@ -22,6 +22,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { getWatchlistNames, getWatchlistTickers } from '@/lib/watchlist-storage'
 import {
   getPredefinedWatchlistTickers,
@@ -36,7 +43,7 @@ import { TickerGroupSelector } from '@/components/TickerGroupSelector'
 import { SortButtons } from '@/components/SortButtons'
 import { Link } from '@tanstack/react-router'
 
-type ViewMode = 'close_changed' | 'ma20_score'
+type ViewMode = 'close_changed' | 'ma10_score' | 'ma20_score' | 'ma50_score' | 'ma100_score'
 
 interface MatrixCell {
   date: string
@@ -53,6 +60,24 @@ interface MatrixRow {
 interface MatrixData {
   dates: string[] // Sorted descending (newest first)
   rows: MatrixRow[]
+}
+
+// Helper function to get view mode label
+function getViewModeLabel(viewMode: ViewMode): string {
+  switch (viewMode) {
+    case 'close_changed':
+      return 'Close Change'
+    case 'ma10_score':
+      return 'MA10 Score'
+    case 'ma20_score':
+      return 'MA20 Score'
+    case 'ma50_score':
+      return 'MA50 Score'
+    case 'ma100_score':
+      return 'MA100 Score'
+    default:
+      return 'Unknown'
+  }
 }
 
 // Color coding helper (reference scheme)
@@ -395,10 +420,24 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
               let value = 0
               if (point) {
-                if (viewMode === 'close_changed') {
-                  value = point.close_changed ?? 0
-                } else {
-                  value = point.ma20_score ?? 0
+                switch (viewMode) {
+                  case 'close_changed':
+                    value = point.close_changed ?? 0
+                    break
+                  case 'ma10_score':
+                    value = point.ma10_score ?? 0
+                    break
+                  case 'ma20_score':
+                    value = point.ma20_score ?? 0
+                    break
+                  case 'ma50_score':
+                    value = point.ma50_score ?? 0
+                    break
+                  case 'ma100_score':
+                    value = point.ma100_score ?? 0
+                    break
+                  default:
+                    value = 0
                 }
               }
 
@@ -586,10 +625,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
     setCurrentPage(0) // Reset to first page
   }
 
-  const handleViewModeToggle = () => {
-    setViewMode((prev) => (prev === 'close_changed' ? 'ma20_score' : 'close_changed'))
-  }
-
+  
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(0, prev - 1))
   }
@@ -660,19 +696,19 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             refreshKey={refreshKey}
           />
 
-          {/* View Mode Toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewModeToggle}
-            className="flex items-center gap-1 h-8 px-3"
-            title={`Switch to ${viewMode === 'close_changed' ? 'MA20 Score' : 'Close Change'}`}
-          >
-            <Repeat className="h-3 w-3" />
-            <span className="text-xs font-medium">
-              {viewMode === 'close_changed' ? 'CLOSE %' : 'MA20'}
-            </span>
-          </Button>
+          {/* View Mode Selector */}
+          <Select value={viewMode} onValueChange={setViewMode}>
+            <SelectTrigger className="w-32 h-8 px-3">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="close_changed">Close %</SelectItem>
+              <SelectItem value="ma10_score">MA10</SelectItem>
+              <SelectItem value="ma20_score">MA20</SelectItem>
+              <SelectItem value="ma50_score">MA50</SelectItem>
+              <SelectItem value="ma100_score">MA100</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Spacer to push actions to the right */}
           <div className="flex-1"></div>
@@ -903,7 +939,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                                     key={cell.date}
                                     onClick={() => handleCellClick(row.ticker)}
                                     className={`w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 text-xs font-semibold flex items-center justify-center cursor-pointer border-r border-border hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 ${colors.bg} ${colors.text}`}
-                                    title={`${row.ticker} - ${cell.date}\n${viewMode === 'close_changed' ? 'Close Change' : 'MA20 Score'}: ${(cell.value ?? 0).toFixed(2)}%`}
+                                    title={`${row.ticker} - ${cell.date}\n${getViewModeLabel(viewMode)}: ${(cell.value ?? 0).toFixed(2)}%`}
                                   >
                                     {displayValue}
                                   </div>
