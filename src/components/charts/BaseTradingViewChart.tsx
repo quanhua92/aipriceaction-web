@@ -648,30 +648,28 @@ export function BaseTradingViewChart({
 			const shouldScrollToLatest = scrollToLatest || !userViewportSet || !lastViewportRange
 
 			if (shouldScrollToLatest) {
-				if (scrollToLatest) {
-					// When scrollToLatest is explicitly requested, just scroll to the end
-					// without changing the zoom/viewport size
-					const latestTime = chartData.candlestick[chartData.candlestick.length - 1].time
-					chartRef.current.timeScale().scrollToPosition(latestTime, 0)
-
-					// Reset user viewport flag so manual scrolling works again
-					setUserViewportSet(false)
-				} else if (
-					viewportSizeOverride &&
-					chartData.candlestick.length > viewportSizeOverride
-				) {
-					// Show only the last N candles
-					const from =
-						chartData.candlestick[
-							chartData.candlestick.length - viewportSizeOverride
-						].time
-					const to =
-						chartData.candlestick[chartData.candlestick.length - 1].time
+				if (scrollToLatest && viewportSizeOverride) {
+					// When scrollToLatest is requested AND we have viewportSizeOverride (playground case),
+					// show the last viewportSizeOverride bars and scroll to them
+					const startIndex = Math.max(0, chartData.candlestick.length - viewportSizeOverride)
+					const from = chartData.candlestick[startIndex].time
+					const to = chartData.candlestick[chartData.candlestick.length - 1].time
+					chartRef.current.timeScale().setVisibleRange({ from, to })
+				} else if (viewportSizeOverride && chartData.candlestick.length > viewportSizeOverride) {
+					// Show exactly viewportSizeOverride bars from the end of data
+					const startIndex = chartData.candlestick.length - viewportSizeOverride
+					const from = chartData.candlestick[startIndex].time
+					const to = chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
 				} else {
-					// Show last 40 candles by default
-					const candlesToShow = Math.min(40, chartData.candlestick.length)
-					const from = chartData.candlestick[chartData.candlestick.length - candlesToShow].time
+					// Show last 40 candles by default, or all if less than 40
+					const defaultViewportSize = 40
+					const actualViewportSize = viewportSizeOverride
+						? Math.min(viewportSizeOverride, chartData.candlestick.length)
+						: Math.min(defaultViewportSize, chartData.candlestick.length)
+
+					const startIndex = chartData.candlestick.length - actualViewportSize
+					const from = chartData.candlestick[startIndex].time
 					const to = chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
 				}

@@ -69,11 +69,21 @@ export function PlaygroundChart() {
     )
   }
 
+  // Determine viewport size based on screen size
+  const getViewportBars = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768 ? 30 : 40  // Mobile: 30, Desktop: 40
+    }
+    return 40  // Default to 40
+  }
+
+  const viewportBars = getViewportBars()
+
   const primaryChartProps = {
     ticker: playgroundData.ticker,
     endDateOverride: currentEndDate,
     showControls: true,
-    viewportSizeOverride: viewportRange.to - viewportRange.from,
+    viewportSizeOverride: viewportBars,  // Show fixed number of bars on screen
     scrollToLatest: scrollToLatest,
     cacheData: visibleData,
     cacheMetadata: {
@@ -90,7 +100,7 @@ export function PlaygroundChart() {
     ticker: playgroundData.secondaryTicker!,
     endDateOverride: currentEndDate,
     showControls: true, // Show controls on secondary chart
-    viewportSizeOverride: secondaryViewportRange.to - secondaryViewportRange.from,
+    viewportSizeOverride: viewportBars,  // Show fixed number of bars on screen
     scrollToLatest: scrollToLatest,
     cacheData: secondaryVisibleData,
     cacheMetadata: {
