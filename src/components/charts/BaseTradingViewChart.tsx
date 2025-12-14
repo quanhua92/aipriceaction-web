@@ -797,7 +797,7 @@ export function BaseTradingViewChart({
 							<div
 								className={cn(
 									"absolute top-3 left-3 text-zinc-100 z-10 pointer-events-none",
-									"text-[12px]"
+									displayData.symbol && displayData.symbol.length >= 4 ? "text-[11px]" : "text-[12px]"
 								)}
 								style={{
 									WebkitFontSmoothing: 'antialiased',
