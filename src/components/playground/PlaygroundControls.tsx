@@ -53,11 +53,6 @@ export function PlaygroundControls() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="pb-3 border-b">
-        <h3 className="text-sm font-semibold">{t('common.playground.controls.title')}</h3>
-      </div>
-
       {/* Navigation buttons */}
       <div className="flex items-center justify-center gap-3">
         <Button
@@ -105,10 +100,6 @@ export function PlaygroundControls() {
       {/* Slider for fine control */}
       {allData.length > 0 && (
         <div className="space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{currentDate || t('common.playground.controls.dayX', { index: currentIndex + 1 })}</span>
-            <span>{endDate || t('common.playground.controls.totalY', { total: allData.length })}</span>
-          </div>
           <input
             type="range"
             min="0"
@@ -120,40 +111,48 @@ export function PlaygroundControls() {
               background: `linear-gradient(to right, hsl(var(--primary)) ${progress}%, hsl(var(--muted)) ${progress}%)`
             }}
           />
-          <div className="text-center text-xs text-muted-foreground">
-            {currentDate ? currentDate : t('common.playground.controls.showingDays', {
-              visible: currentIndex + 1,
-              percent: Math.round(progress)
-            })}
-          </div>
         </div>
       )}
 
-      {/* Quick jump buttons */}
-      <div className="space-y-2">
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleJumpToStart}
-            disabled={isAtStart}
-            className="text-xs flex flex-col items-center p-2 h-auto"
-          >
-            <span className="text-xs">{t('common.playground.controls.start')}</span>
-            <span className="text-xs text-muted-foreground font-mono">{allData[0]?.time?.split('T')[0] || ''}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleJumpToEnd}
-            disabled={isAtEnd}
-            className="text-xs flex flex-col items-center p-2 h-auto"
-          >
-            <span className="text-xs">{t('common.playground.controls.end')}</span>
-            <span className="text-xs text-muted-foreground font-mono">{endDate || ''}</span>
-          </Button>
+      {/* Date info - 3 columns */}
+      {allData.length > 0 && (
+        <div className="space-y-2">
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleJumpToStart}
+              disabled={isAtStart}
+              className="text-xs flex flex-col items-center p-2 h-auto"
+            >
+              <span className="text-xs">{t('common.playground.controls.start')}</span>
+              <span className="text-xs text-muted-foreground font-mono">{allData[0]?.time?.split('T')[0] || ''}</span>
+            </Button>
+
+            {/* Current date in middle - matching button style but not clickable */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => e.preventDefault()}
+              className="text-xs flex flex-col items-center p-2 h-auto"
+            >
+              <span className="text-xs">{t('common.playground.controls.current')}</span>
+              <span className="text-xs font-mono font-semibold">{currentDate || '-'}</span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleJumpToEnd}
+              disabled={isAtEnd}
+              className="text-xs flex flex-col items-center p-2 h-auto"
+            >
+              <span className="text-xs">{t('common.playground.controls.end')}</span>
+              <span className="text-xs text-muted-foreground font-mono">{endDate || ''}</span>
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

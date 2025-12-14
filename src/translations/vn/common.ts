@@ -379,6 +379,7 @@ export default {
       quickJump: 'Nhảy Nhanh:',
       start: 'Bắt Đầu',
       end: 'Kết Thúc',
+      current: 'Hiện tại',
     },
     manual: {
       title: 'Chọn Thủ Công',

@@ -379,6 +379,7 @@ export default {
       quickJump: 'Quick Jump:',
       start: 'Start',
       end: 'End',
+      current: 'Current',
     },
     manual: {
       title: 'Manual Selection',
