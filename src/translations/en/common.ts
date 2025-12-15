@@ -143,6 +143,7 @@ export default {
     ending: 'Ending',
   },
   watchlist: {
+    title: 'Watchlist',
     editWatchlist: 'Edit Watchlist',
     new: 'New',
   },

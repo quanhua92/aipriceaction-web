@@ -452,7 +452,7 @@ export function BasicWatchList({
       {/* Title Header */}
       <div className="flex items-center mb-3 shrink-0 px-3">
         <h3 className="text-lg font-semibold">
-          Watchlist
+          {t('common.watchlist.title')}
         </h3>
       </div>
 

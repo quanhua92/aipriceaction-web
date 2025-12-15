@@ -143,6 +143,7 @@ export default {
     ending: 'Kết thúc',
   },
   watchlist: {
+    title: 'Danh Sách Theo Dõi',
     editWatchlist: 'Chỉnh Sửa Danh Mục',
     new: 'Tạo Mới',
   },

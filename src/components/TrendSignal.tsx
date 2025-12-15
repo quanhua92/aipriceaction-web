@@ -469,15 +469,26 @@ export function TrendSignal({
 
   return (
     <>
-      <div className="p-3 md:p-6">
-        <Link to="/signals" className="inline-block">
-          <h2 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
+      <div>
+        <div className="flex items-center mb-3 shrink-0 px-3">
+          <h3 className="text-lg font-semibold">
             {t('common.trendSignal.title')}
-          </h2>
-        </Link>
+          </h3>
+        </div>
+
+        {/* Signal Statistics Summary Cards */}
+        {!loading && !error && signals.length > 0 && (
+          <div className="px-3 mb-3">
+            {/* Signal Distribution Bar */}
+            <TrendSignalDistribution
+              distribution={signalDistribution}
+              totalSignals={signals.length}
+            />
+          </div>
+        )}
 
           {/* Control Bar - Row 1: Watchlist, Interval, and Actions */}
-          <div className="flex items-center gap-2 mt-4">
+          <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
             {/* Ticker Group Selector */}
             <TickerGroupSelector
               value={selectedWatchlist}
@@ -491,12 +502,12 @@ export function TrendSignal({
               {(['1H', '1D'] as const).map((int) => (
                 <Button
                   key={int}
-                  variant={interval === int ? 'default' : 'outline'}
+                  variant={interval === int ? 'outline' : 'ghost'}
                   size="sm"
                   onClick={() => setInterval(int)}
-                  className={`h-8 px-3 ${
+                  className={`h-8 px-3 text-xs ${
                     interval === int
-                      ? 'bg-green-600 text-white hover:bg-green-700'
+                      ? 'border border-primary text-primary'
                       : ''
                   }`}
                 >
@@ -527,7 +538,7 @@ export function TrendSignal({
           </div>
 
           {/* Control Bar - Row 2: Buy and Sell Period Selectors */}
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
             {/* Buy Period Selector */}
             <Select value={buyPeriod.toString()} onValueChange={(v) => setBuyPeriod(parseInt(v))}>
               <SelectTrigger className="w-40 h-8 text-xs">
@@ -558,7 +569,7 @@ export function TrendSignal({
           </div>
 
           {/* Control Bar - Row 3: Show All checkbox */}
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="show-all"
@@ -575,26 +586,16 @@ export function TrendSignal({
           </div>
 
           {/* Sort Buttons */}
-          <SortButtons
-            value={sortBy}
-            onChange={setSortBy}
-            margin="top"
-          />
+          <div className="mb-3 shrink-0 px-3">
+            <SortButtons
+              value={sortBy}
+              onChange={setSortBy}
+              margin="top"
+            />
+          </div>
         </div>
 
-        <div className="px-3 md:px-6">
-          {/* Signal Statistics Summary Cards */}
-          {!loading && !error && signals.length > 0 && (
-            <div className="mt-4 mb-4">
-  
-              {/* Signal Distribution Bar */}
-              <TrendSignalDistribution
-                distribution={signalDistribution}
-                totalSignals={signals.length}
-              />
-
-                </div>
-          )}
+        <div>
           {loading && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">{t('common.trendSignal.loadingSignals')}</p>
