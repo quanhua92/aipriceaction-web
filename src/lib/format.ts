@@ -312,3 +312,23 @@ export function formatVolume(volume: number | null | undefined): string {
   return safeVolume.toFixed(0)
 }
 
+/**
+ * Get responsive viewport size based on chart container width
+ * @param chartWidth - Width of the chart container in pixels
+ * @returns number of bars to show based on container size
+ */
+export function getResponsiveViewportSize(chartWidth: number): number {
+  // Small containers (like mobile grid): < 400px
+  if (chartWidth < 400) {
+    return 40
+  }
+
+  // Medium containers: 400px - 599px
+  if (chartWidth < 600) {
+    return 80
+  }
+
+  // Large containers: >= 600px
+  return 120
+}
+

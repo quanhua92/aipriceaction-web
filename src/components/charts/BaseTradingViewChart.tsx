@@ -14,7 +14,7 @@ import {
 	LineSeries,
 } from 'lightweight-charts'
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort, formatToVietnamDateTimeShort, getOptimalDecimalPlaces, getMarketDecimalPlaces } from '@/lib/format'
+import { formatPrice, formatPercent, formatVolume, parseUTCISOString, toVietnamUnixTime, formatToVietnamDateShort, formatToVietnamDateTimeShort, getOptimalDecimalPlaces, getMarketDecimalPlaces, getResponsiveViewportSize } from '@/lib/format'
 import { INTRADAY_INTERVALS } from '@/lib/constants'
 import { Interval } from '@/lib/api-client'
 import { type StockData } from '@/lib/api-client'
@@ -113,6 +113,7 @@ export function BaseTradingViewChart({
 	} | null>(null)
 	const [isDataInitialized, setIsDataInitialized] = useState(false)
 	const [crosshairData, setCrosshairData] = useState<StockData | null>(null)
+	const [containerWidth, setContainerWidth] = useState(0)
 
 	// Reset data initialization flag when data changes
 	// Note: We intentionally preserve viewport position for comparison across tickers
@@ -120,6 +121,11 @@ export function BaseTradingViewChart({
 		console.log('[BaseTradingViewChart] Data changed:', data?.length, 'bars')
 		setIsDataInitialized(false)
 	}, [data])
+
+	// Calculate responsive viewport size
+	const responsiveViewportSize = useMemo(() => {
+		return containerWidth > 0 ? getResponsiveViewportSize(containerWidth) : 40
+	}, [containerWidth])
 
 	// Transform data to TradingView format
 	const chartData = useMemo(() => {
@@ -557,8 +563,10 @@ export function BaseTradingViewChart({
 		// Handle resize using ResizeObserver to detect container size changes
 		const handleResize = () => {
 			if (chartContainerRef.current) {
+				const width = chartContainerRef.current.clientWidth
+				setContainerWidth(width)
 				chart.applyOptions({
-					width: chartContainerRef.current.clientWidth,
+					width,
 				})
 			}
 		}
@@ -570,6 +578,8 @@ export function BaseTradingViewChart({
 
 		if (chartContainerRef.current) {
 			resizeObserver.observe(chartContainerRef.current)
+			// Set initial width
+			setContainerWidth(chartContainerRef.current.clientWidth)
 		}
 
 		// Also listen to window resize for fullscreen/browser resize
@@ -653,9 +663,8 @@ export function BaseTradingViewChart({
 					const to = chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
 				} else {
-					// Navigate to new data - show last 40 bars or all if less
-					const defaultViewportSize = 40
-					const actualViewportSize = Math.min(defaultViewportSize, chartData.candlestick.length)
+					// Navigate to new data - show responsive number of bars or all if less
+					const actualViewportSize = Math.min(responsiveViewportSize, chartData.candlestick.length)
 					const startIndex = chartData.candlestick.length - actualViewportSize
 					const from = chartData.candlestick[startIndex].time
 					const to = chartData.candlestick[chartData.candlestick.length - 1].time
@@ -672,11 +681,10 @@ export function BaseTradingViewChart({
 					const to = chartData.candlestick[chartData.candlestick.length - 1].time
 					chartRef.current.timeScale().setVisibleRange({ from, to })
 				} else {
-					// Show last 40 candles by default, or all if less than 40
-					const defaultViewportSize = 40
+					// Show responsive number of candles by default, or all if less
 					const actualViewportSize = viewportSizeOverride
 						? Math.min(viewportSizeOverride, chartData.candlestick.length)
-						: Math.min(defaultViewportSize, chartData.candlestick.length)
+						: Math.min(responsiveViewportSize, chartData.candlestick.length)
 
 					const startIndex = chartData.candlestick.length - actualViewportSize
 					const from = chartData.candlestick[startIndex].time
@@ -707,6 +715,7 @@ export function BaseTradingViewChart({
 		isDataInitialized,
 		maVisibility,
 		scrollToLatest,
+		responsiveViewportSize,
 	])
 
 	// Update candlestick series price format when data changes
