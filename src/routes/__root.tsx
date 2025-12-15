@@ -2,8 +2,6 @@ import {
   Outlet,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import Header from '../components/Header'
 import { DebugFooter } from '../components/DebugFooter'
@@ -17,8 +15,6 @@ import { NoteProvider } from '../contexts/NoteContext'
 import { RefreshProvider } from '../contexts/RefreshContext'
 import { GoogleAnalyticsProvider } from '../contexts/GoogleAnalyticsProvider'
 import { LogsProvider } from '../contexts/LogsContext'
-
-import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import { PWAInstallProvider } from '../components/PWAInstallBanner'
 import { useEffect, useState } from 'react'
 
@@ -91,20 +87,6 @@ function RootComponent() {
                         <Outlet />
                         <StatusBar />
                         <DebugFooter />
-                        {import.meta.env.DEV && (
-                          <TanStackDevtools
-                            config={{
-                              position: 'bottom-right',
-                            }}
-                            plugins={[
-                              {
-                                name: 'Tanstack Router',
-                                render: <TanStackRouterDevtoolsPanel />,
-                              },
-                              TanStackQueryDevtools,
-                            ]}
-                          />
-                        )}
                       </PWAInstallProvider>
                     </NoteProvider>
                   </AlertProvider>

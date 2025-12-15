@@ -13,6 +13,7 @@ import { Route as WatchRouteImport } from './routes/watch'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as MatrixRouteImport } from './routes/matrix'
+import { Route as DebugRouteImport } from './routes/debug'
 import { Route as CryptoRouteImport } from './routes/crypto'
 import { Route as AlertRouteImport } from './routes/alert'
 import { Route as AiRouteImport } from './routes/ai'
@@ -40,6 +41,11 @@ const PlayRoute = PlayRouteImport.update({
 const MatrixRoute = MatrixRouteImport.update({
   id: '/matrix',
   path: '/matrix',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DebugRoute = DebugRouteImport.update({
+  id: '/debug',
+  path: '/debug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CryptoRoute = CryptoRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/ai': typeof AiRoute
   '/alert': typeof AlertRoute
   '/crypto': typeof CryptoRoute
+  '/debug': typeof DebugRoute
   '/matrix': typeof MatrixRoute
   '/play': typeof PlayRoute
   '/signals': typeof SignalsRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/ai': typeof AiRoute
   '/alert': typeof AlertRoute
   '/crypto': typeof CryptoRoute
+  '/debug': typeof DebugRoute
   '/matrix': typeof MatrixRoute
   '/play': typeof PlayRoute
   '/signals': typeof SignalsRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/ai': typeof AiRoute
   '/alert': typeof AlertRoute
   '/crypto': typeof CryptoRoute
+  '/debug': typeof DebugRoute
   '/matrix': typeof MatrixRoute
   '/play': typeof PlayRoute
   '/signals': typeof SignalsRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/ai'
     | '/alert'
     | '/crypto'
+    | '/debug'
     | '/matrix'
     | '/play'
     | '/signals'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/ai'
     | '/alert'
     | '/crypto'
+    | '/debug'
     | '/matrix'
     | '/play'
     | '/signals'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/ai'
     | '/alert'
     | '/crypto'
+    | '/debug'
     | '/matrix'
     | '/play'
     | '/signals'
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   AiRoute: typeof AiRoute
   AlertRoute: typeof AlertRoute
   CryptoRoute: typeof CryptoRoute
+  DebugRoute: typeof DebugRoute
   MatrixRoute: typeof MatrixRoute
   PlayRoute: typeof PlayRoute
   SignalsRoute: typeof SignalsRoute
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/matrix'
       fullPath: '/matrix'
       preLoaderRoute: typeof MatrixRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/debug': {
+      id: '/debug'
+      path: '/debug'
+      fullPath: '/debug'
+      preLoaderRoute: typeof DebugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/crypto': {
@@ -280,6 +300,7 @@ const rootRouteChildren: RootRouteChildren = {
   AiRoute: AiRoute,
   AlertRoute: AlertRoute,
   CryptoRoute: CryptoRoute,
+  DebugRoute: DebugRoute,
   MatrixRoute: MatrixRoute,
   PlayRoute: PlayRoute,
   SignalsRoute: SignalsRoute,
