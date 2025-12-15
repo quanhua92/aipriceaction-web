@@ -24,9 +24,9 @@
 
     <!-- Manifest -->
     <link rel="manifest" href="/manifest.json" />
-    <script type="text/javascript">
+    <script type="module">
       // Vite replaces import.meta.env.VITE_GA_MEASUREMENT_ID at build time
-      window.GA_MEASUREMENT_ID = '${import.meta.env.VITE_GA_MEASUREMENT_ID || ''}';
+      window.GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || '';
 
       if (window.GA_MEASUREMENT_ID && window.GA_MEASUREMENT_ID !== '' && !window.GA_MEASUREMENT_ID.includes('undefined')) {
         // Google tag (gtag.js)
