@@ -113,14 +113,14 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
           return (
             <div
               key={`card-${segment.key}`}
-              className={`relative p-3 rounded-lg border transition-all duration-200 hover:shadow-md hover:scale-105 cursor-pointer flex flex-col items-center justify-center ${
+              className={`relative p-3 rounded-lg border transition-all duration-200 hover:shadow-md hover:scale-105 cursor-pointer flex items-center justify-center gap-2 ${
                 segment.percentage > 0
                   ? 'border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800'
                   : 'border-slate-100 bg-slate-50 opacity-60 dark:border-slate-700 dark:bg-slate-900/50'
               }`}
             >
               {/* Icon */}
-              <Icon className={`h-4 w-4 ${getTextColor(segment.color)} mb-1`} />
+              <Icon className={`h-4 w-4 ${getTextColor(segment.color)} flex-shrink-0`} />
 
               {/* Count */}
               <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
