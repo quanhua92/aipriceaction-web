@@ -82,7 +82,17 @@ export function ChartControlBar({
 
 	// Create dynamic visible intervals that include the current selection
 	const createDynamicVisibleIntervals = (baseIntervals: Interval[]) => {
-		const intervalsSet = new Set([...baseIntervals, currentInterval])
+		const intervalsSet = new Set(baseIntervals)
+
+		// If current interval is not in base intervals (non-common), hide 15m to make space
+		const isNonCommonInterval = !baseIntervals.includes(currentInterval)
+		if (isNonCommonInterval) {
+			intervalsSet.delete(Interval.Minutes15)
+		}
+
+		// Always include the current interval
+		intervalsSet.add(currentInterval)
+
 		const mergedIntervals = Array.from(intervalsSet)
 		// Sort by position in ALL_INTERVALS to maintain chronological order
 		return mergedIntervals.sort(
