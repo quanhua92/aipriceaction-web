@@ -288,26 +288,43 @@ export function SortableTickerList({
   // This ensures navigation order matches what user sees on screen
   const visuallyOrderedTickers = React.useMemo(() => {
     const ordered: Ticker[] = []
+    const seenSymbols = new Set<string>()
+
+    // Helper function to add unique tickers (O(1) check)
+    const addUnique = (ticker: Ticker) => {
+      if (!seenSymbols.has(ticker.symbol)) {
+        seenSymbols.add(ticker.symbol)
+        ordered.push(ticker)
+      }
+    }
 
     // 1. Market Indices (if shown and not filtered out)
     if (filteredMarketIndices.length > 0 && sectionFilter !== 'crypto') {
       // Convert market indices strings to Ticker objects
-      ordered.push(...filteredMarketIndices.map(symbol => ({ symbol, sector: 'Market Indices' })))
+      filteredMarketIndices.forEach(symbol => {
+        addUnique({ symbol, sector: 'Market Indices' })
+      })
     }
 
     // 2. Major Crypto (if shown and not filtered out)
     if (filteredMajorCrypto.length > 0 && sectionFilter !== 'stocks') {
-      ordered.push(...filteredMajorCrypto)
+      filteredMajorCrypto.forEach(ticker => {
+        addUnique(ticker)
+      })
     }
 
     // 3. Regular Stocks (if shown and not filtered out)
     if (filteredTickers.length > 0 && sectionFilter !== 'crypto') {
-      ordered.push(...filteredTickers)
+      filteredTickers.forEach(ticker => {
+        addUnique(ticker)
+      })
     }
 
     // 4. Minor Crypto (if shown and not filtered out)
     if (filteredCryptoTickers.length > 0 && sectionFilter !== 'stocks') {
-      ordered.push(...filteredCryptoTickers)
+      filteredCryptoTickers.forEach(ticker => {
+        addUnique(ticker)
+      })
     }
 
     return ordered

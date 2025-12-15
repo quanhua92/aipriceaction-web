@@ -103,17 +103,23 @@ export function BasicWatchList({
     if (selectedGroup === ALL_WATCHLIST_NAME) {
       if (!tickerGroups) return []
 
-      // Get all tickers from all sector groups
+      // Get all tickers from all sector groups with deduplication
       // SortableTickerList will handle market indices via marketIndices prop
       const allSectorTickers: Ticker[] = []
+      const seenSymbols = new Set<string>()
+
       Object.entries(tickerGroups).forEach(([sector, symbols]) => {
         // Skip market indices as they're handled by SortableTickerList
         if (!MARKET_INDICES.includes(sector as any)) {
           symbols.forEach(symbol => {
-            allSectorTickers.push({
-              symbol,
-              sector
-            })
+            // Only add if not already seen (deduplicate across sectors)
+            if (!seenSymbols.has(symbol)) {
+              seenSymbols.add(symbol)
+              allSectorTickers.push({
+                symbol,
+                sector
+              })
+            }
           })
         }
       })
