@@ -75,7 +75,7 @@ function CryptoPage() {
 					<div>
 						<BasicWatchList
 							defaultGroup={CRYPTO_WATCHLIST_NAME}
-							maxHeight="500px"
+							maxHeight="800px"
 							showMarketIndices={true}
 							showControls={false}
 							onSelectTicker={handleSelectTicker}

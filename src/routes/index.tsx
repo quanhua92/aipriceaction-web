@@ -128,7 +128,7 @@ function HomePage() {
 					<div>
 						<BasicWatchList
 							defaultGroup={ALL_WATCHLIST_NAME}
-							maxHeight="500px"
+							maxHeight="800px"
 							showMarketIndices={true}
 							showControls={false}
 							onSelectTicker={handleSelectTicker}
