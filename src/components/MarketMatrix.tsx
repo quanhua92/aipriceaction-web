@@ -678,15 +678,15 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
   return (
     <>
-      <div className="p-3 md:p-6">
-          <Link to="/matrix" className="inline-block">
-            <h2 className="text-lg font-semibold hover:text-primary transition-colors cursor-pointer">
-              Market Matrix
-            </h2>
-          </Link>
+      <div>
+        <div className="flex items-center mb-3 shrink-0">
+          <h3 className="text-lg font-semibold">
+            Market Matrix
+          </h3>
+        </div>
 
         {/* Control Bar - Row 1: Watchlist, View Mode, and Actions */}
-        <div className="flex items-center gap-2 mt-4">
+        <div className="flex items-center gap-2 mb-3 shrink-0">
           {/* Watchlist Selector */}
           <TickerGroupSelector
             value={selectedWatchlist}
@@ -732,15 +732,17 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
         </div>
 
           {/* Sort Buttons */}
-          <SortButtons
-            value={sortBy}
-            onChange={setSortBy}
-            margin="top"
-          />
+          <div className="mb-3 shrink-0">
+            <SortButtons
+              value={sortBy}
+              onChange={setSortBy}
+              margin="top"
+            />
+          </div>
 
           {/* Date Range Info */}
           {matrixData && (
-            <div className="text-xs text-muted-foreground mt-2">
+            <div className="text-xs text-muted-foreground mb-3">
               {matrixData.dates[matrixData.dates.length - 1]} to {matrixData.dates[0]} ({matrixData.dates.length} trading days)
             </div>
           )}
