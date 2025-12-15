@@ -9,7 +9,9 @@ import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TrendSignal } from "@/components/TrendSignal";
 import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
-import { ALL_WATCHLIST_NAME } from "@/lib/constants";
+import { ALL_WATCHLIST_NAME, MARKET_INDICES } from "@/lib/constants";
+import { useAPI } from "@/contexts/APIContext";
+import type { StockData } from "@/lib/api-client";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -36,20 +38,82 @@ interface ChartPageLayout {
 	chartTickers: string[];
 }
 
-const DEFAULT_LAYOUT: ChartPageLayout = {
-	chartCount: 2,
-	gridColumns: 1,
-	chartTickers: ["VIC", "VNINDEX", "ACB", "BCM", "BID", "CTG", "DGC", "FPT", "GAS", "GVR"],
+// Function to generate initial ticker list from API data
+const generateInitialTickers = (
+	tickerGroups: Record<string, string[]> | null,
+	allTickersLastData: Record<string, StockData[]> | null
+): string[] => {
+	if (!tickerGroups || !allTickersLastData) {
+		// Fallback to specified default tickers if no data available
+		return ["VNINDEX", "VIC", "SSI", "MBB", "MWG"];
+	}
+
+	const allTickers: { symbol: string; sector: string }[] = [];
+
+	// Add market indices first
+	allTickers.push({ symbol: "VNINDEX", sector: "Market Indices" });
+	allTickers.push({ symbol: "VN30", sector: "Market Indices" });
+
+	// Add tickers from all sector groups (similar to ALL watchlist logic)
+	Object.entries(tickerGroups).forEach(([sector, symbols]) => {
+		// Skip market indices as they're already added
+		if (!MARKET_INDICES.includes(sector as any)) {
+			symbols.forEach(symbol => {
+				allTickers.push({ symbol, sector });
+			});
+		}
+	});
+
+	// Remove duplicates (keep first occurrence)
+	const uniqueTickers = Array.from(
+		new Map(allTickers.map(t => [t.symbol, t])).values()
+	);
+
+	// Sort by trading value (close × volume) descending - same as SortableTickerList 'value' sort
+	uniqueTickers.sort((a, b) => {
+		const aData = allTickersLastData[a.symbol]?.[0];
+		const bData = allTickersLastData[b.symbol]?.[0];
+
+		const aValue = (aData?.close ?? 0) * (aData?.volume ?? 0);
+		const bValue = (bData?.close ?? 0) * (bData?.volume ?? 0);
+
+		return bValue - aValue;
+	});
+
+	// Return top 10 symbols
+	return uniqueTickers.slice(0, 10).map(t => t.symbol);
+};
+
+const FALLBACK_LAYOUT: ChartPageLayout = {
+	chartCount: 4,
+	gridColumns: 2,
+	chartTickers: ["VNINDEX", "VIC", "SSI", "MBB", "MWG"],
 };
 
 function ChartPage() {
+	// Get ticker groups and data from API context
+	const { tickerGroups, allTickersLastData } = useAPI();
 
-	// Layout state
-	const [layout, setLayout] = React.useState<ChartPageLayout>(DEFAULT_LAYOUT);
+	// Layout state - initialize with dynamic defaults, will update once data loads
+	const [layout, setLayout] = React.useState<ChartPageLayout>(() => ({
+		chartCount: 4,
+		gridColumns: 2,
+		chartTickers: generateInitialTickers(null, null) // Use fallback initially
+	}));
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
+	const [hasInitializedTickers, setHasInitializedTickers] = React.useState(false);
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
+
+	// Initialize chart tickers once when both tickerGroups and allTickersLastData are available
+	React.useEffect(() => {
+		if (!hasInitializedTickers && tickerGroups && allTickersLastData) {
+			const initialTickers = generateInitialTickers(tickerGroups, allTickersLastData);
+			setLayout(prev => ({ ...prev, chartTickers: initialTickers }));
+			setHasInitializedTickers(true);
+		}
+	}, [tickerGroups, allTickersLastData, hasInitializedTickers]);
 
 	// Track active ticker for right sidebar (by symbol, like Watch page)
 	const [activeTicker, setActiveTicker] = React.useState<string>("VNINDEX");
