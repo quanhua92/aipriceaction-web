@@ -817,7 +817,7 @@ export function BaseTradingViewChart({
 									const change = displayData.close_changed ?? 0
 									const symbolColor = change > 6.5 ? "text-purple-400" : change >= 0 ? "text-green-400" : change < -6.5 ? "text-cyan-400" : "text-red-400"
 									const priceColor = change > 6.5 ? "text-purple-400" : change >= 0 ? "text-green-400" : change < -6.5 ? "text-cyan-400" : "text-red-400"
-									const percentColor = change > 6.5 ? "text-purple-600" : change >= 0 ? "text-green-600" : change < -6.5 ? "text-cyan-600" : "text-red-600"
+									const percentColor = change > 6.5 ? "text-purple-400" : change >= 0 ? "text-green-400" : change < -6.5 ? "text-cyan-400" : "text-red-400"
 									return (
 										<>
 											<span className={cn("font-semibold", symbolColor)}>{displayData.symbol}</span> <span className={cn(priceColor)}>{formatPrice(displayData.close, displayData)}</span> <span className={cn(percentColor)}>{formatPercent(change)}</span>
