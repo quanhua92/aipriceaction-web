@@ -112,18 +112,13 @@ export function ChartControlBar({
 	)
 
 	const renderIntervalButton = (int: Interval, _isMobile: boolean = false) => {
-		// Check if interval needs more padding (like 1H, 1D)
-		const needsMorePadding = int.length === 2 && (int.includes('H') || int.includes('D'))
-
 		return (
 			<Button
 				key={int}
 				variant="ghost"
 				size="sm"
 				onClick={() => handleIntervalChange(int)}
-				className={`${
-					needsMorePadding ? 'px-2' : 'px-1'
-				} py-1 h-7 text-xs font-medium transition-colors ${
+				className={`px-1 py-1 h-7 text-xs font-medium transition-colors ${
 					currentInterval === int
 						? 'bg-primary text-primary-foreground hover:bg-primary/90'
 						: 'text-muted-foreground hover:bg-muted hover:text-foreground'
