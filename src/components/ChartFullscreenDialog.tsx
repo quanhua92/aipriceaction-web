@@ -263,7 +263,7 @@ export function ChartFullscreenDialog({
 
         {displayTicker && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col gap-0">
-            <TabsList className="mx-2 mb-2 grid grid-cols-2 w-fit">
+            <TabsList className="mx-auto mb-2 grid grid-cols-2 gap-2 w-fit">
               <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
               <TabsTrigger value="trendSignal">{t('dialogs.quickAddAlert.tabs.trendSignal')}</TabsTrigger>
             </TabsList>
