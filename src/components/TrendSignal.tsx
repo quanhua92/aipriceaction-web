@@ -405,11 +405,11 @@ export function TrendSignal({
     let customTitle = signal.ticker
     if (signal.signal && signal.strength !== undefined && signal.strength !== null) {
       if (signal.signal === 'BUY' && signal.previousHigh) {
-        customTitle += ` - ${t('common.trendSignal.above', {
+        customTitle += ` - ${t('common.trendSignal.buy')} - ${t('common.trendSignal.above', {
           price: signal.previousHigh.toLocaleString()
         })} ${Math.abs(signal.strength).toFixed(1)}%`
       } else if (signal.signal === 'SELL' && signal.previousLow) {
-        customTitle += ` - ${t('common.trendSignal.below', {
+        customTitle += ` - ${t('common.trendSignal.sell')} - ${t('common.trendSignal.below', {
           price: signal.previousLow.toLocaleString()
         })} ${Math.abs(signal.strength).toFixed(1)}%`
       }
