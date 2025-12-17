@@ -49,6 +49,7 @@ export default {
       details: 'Chi Tiết',
       existing: 'Tất Cả',
       chart: 'Biểu Đồ',
+      trendSignal: 'Tín Hiệu',
     },
     note: {
       label: 'Ghi chú (tùy chọn)',

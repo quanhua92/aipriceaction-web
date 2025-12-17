@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { useTranslation } from '@/hooks/useTranslation'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { TrendSignalTable } from '@/components/TrendSignalTable'
 
 export type TitleGeneratorCallback = (ticker: string) => string | Promise<string>
 
@@ -40,6 +42,9 @@ export function ChartFullscreenDialog({
 
   // New state for dynamic title
   const [dynamicTitle, setDynamicTitle] = React.useState<string | null>(null)
+
+  // Active tab state (Chart is default)
+  const [activeTab, setActiveTab] = React.useState("chart")
 
   // Internal state for navigation when tickerList is provided
   const [internalIndex, setInternalIndex] = React.useState(currentIndex)
@@ -203,6 +208,10 @@ export function ChartFullscreenDialog({
 
         let available = dialogHeight - headerHeight - gap - padding
 
+        // Account for tabs list height (~40px)
+        const TABS_LIST_HEIGHT = 40
+        available -= TABS_LIST_HEIGHT
+
         // Account for chart control bar (~32px) + space-y-4 gap (~16px) = 48px
         const CHART_CONTROL_BAR_HEIGHT = 48
         available -= CHART_CONTROL_BAR_HEIGHT
@@ -252,15 +261,38 @@ export function ChartFullscreenDialog({
         </DialogHeader>
 
         {displayTicker && (
-          <div className="flex-1 min-h-0 w-full overflow-y-auto">
-            <TradingViewChart
-              ticker={displayTicker}
-              onTickerChange={handleTickerChange}
-              height={chartHeight}
-              showControls={true}
-              endDateOverride={endDate}
-            />
-          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col gap-0">
+            <TabsList className="mx-2 mb-2 grid grid-cols-2 w-fit">
+              <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
+              <TabsTrigger value="trendSignal">{t('dialogs.quickAddAlert.tabs.trendSignal')}</TabsTrigger>
+            </TabsList>
+
+            {/* Chart Tab - preserve existing height calculation */}
+            <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden px-2 pb-2">
+              <div className="flex-1 min-h-0 w-full overflow-y-auto">
+                <TradingViewChart
+                  ticker={displayTicker}
+                  onTickerChange={handleTickerChange}
+                  height={chartHeight}
+                  showControls={true}
+                  endDateOverride={endDate}
+                />
+              </div>
+            </TabsContent>
+
+            {/* TrendSignal Tab - natural scrolling */}
+            <TabsContent value="trendSignal" className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
+              <div className="h-full">
+                <TrendSignalTable
+                  tickers={[displayTicker]}
+                  maxDays={40}
+                  buyPeriod={20}
+                  sellPeriod={10}
+                  interval="1D"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
         )}
 
         {/* Navigation Controls - only show when tickerList is provided */}

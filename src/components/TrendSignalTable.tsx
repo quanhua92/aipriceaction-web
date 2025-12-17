@@ -213,15 +213,7 @@ export function TrendSignalTable({
   return (
     <>
       <div>
-        <div className="flex items-center mb-3 shrink-0 px-3">
-          <h3 className="text-lg font-semibold">
-            Historical Trend Signals
-          </h3>
-          <span className="ml-2 text-sm text-muted-foreground">
-            ({tickers.length === 1 ? tickers[0] : `${tickers.length} tickers`})
-          </span>
-        </div>
-
+  
         {/* Control Bar - Row 1: Interval and Actions */}
         <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
           {/* Interval Selector */}
