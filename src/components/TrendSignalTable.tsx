@@ -231,7 +231,7 @@ export function TrendSignalTable({
     <>
       <div>
   
-        {/* Control Bar - Row 1: Interval and Actions */}
+        {/* Control Bar - Single Row */}
         <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
           {/* Interval Selector */}
           <div className="flex gap-1">
@@ -241,7 +241,7 @@ export function TrendSignalTable({
                 variant={selectedInterval === int ? 'outline' : 'ghost'}
                 size="sm"
                 onClick={() => setSelectedInterval(int)}
-                className={`h-8 px-3 text-xs ${
+                className={`h-8 px-2 text-xs ${
                   selectedInterval === int
                     ? 'border border-primary text-primary'
                     : ''
@@ -251,6 +251,34 @@ export function TrendSignalTable({
               </Button>
             ))}
           </div>
+
+          {/* Buy Period Selector */}
+          <Select value={selectedBuyPeriod.toString()} onValueChange={(v) => setSelectedBuyPeriod(parseInt(v))}>
+            <SelectTrigger className="w-28 h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[5, 10, 15, 20, 25, 30].map((n) => (
+                <SelectItem key={n} value={n.toString()}>
+                  {t('common.trendSignal.buy')}: {t('common.trendSignal.peak')} {n} {selectedInterval === '1D' ? t('common.trendSignal.days') : t('common.trendSignal.hours')}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Sell Period Selector */}
+          <Select value={selectedSellPeriod.toString()} onValueChange={(v) => setSelectedSellPeriod(parseInt(v))}>
+            <SelectTrigger className="w-28 h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[5, 10, 15, 20].map((n) => (
+                <SelectItem key={n} value={n.toString()}>
+                  {t('common.trendSignal.sell')}: {t('common.trendSignal.bottom')} {n} {selectedInterval === '1D' ? t('common.trendSignal.days') : t('common.trendSignal.hours')}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Spacer to push actions to the right */}
           <div className="flex-1"></div>
@@ -273,37 +301,6 @@ export function TrendSignalTable({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-        </div>
-
-        {/* Control Bar - Row 2: Buy and Sell Period Selectors */}
-        <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
-          {/* Buy Period Selector */}
-          <Select value={selectedBuyPeriod.toString()} onValueChange={(v) => setSelectedBuyPeriod(parseInt(v))}>
-            <SelectTrigger className="w-40 h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {[5, 10, 15, 20, 25, 30].map((n) => (
-                <SelectItem key={n} value={n.toString()}>
-                  {t('common.trendSignal.buy')}: {t('common.trendSignal.peak')} {n} {selectedInterval === '1D' ? t('common.trendSignal.days') : t('common.trendSignal.hours')}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Sell Period Selector */}
-          <Select value={selectedSellPeriod.toString()} onValueChange={(v) => setSelectedSellPeriod(parseInt(v))}>
-            <SelectTrigger className="w-40 h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {[5, 10, 15, 20].map((n) => (
-                <SelectItem key={n} value={n.toString()}>
-                  {t('common.trendSignal.sell')}: {t('common.trendSignal.bottom')} {n} {selectedInterval === '1D' ? t('common.trendSignal.days') : t('common.trendSignal.hours')}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
         <div>
