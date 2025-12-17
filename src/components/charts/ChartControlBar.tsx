@@ -112,13 +112,14 @@ export function ChartControlBar({
 	)
 
 	const renderIntervalButton = (int: Interval, _isMobile: boolean = false) => {
+		const isMediumInterval = int === Interval.Minutes15 || int === Interval.Minutes30
 		return (
 			<Button
 				key={int}
 				variant="ghost"
 				size="sm"
 				onClick={() => handleIntervalChange(int)}
-				className={`px-1 py-1 h-7 text-xs font-medium transition-colors ${
+				className={`${isMediumInterval ? 'px-1' : 'px-2'} py-1 h-7 text-xs font-medium transition-colors ${
 					currentInterval === int
 						? 'bg-primary text-primary-foreground hover:bg-primary/90'
 						: 'text-muted-foreground hover:bg-muted hover:text-foreground'
