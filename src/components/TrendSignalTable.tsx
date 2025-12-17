@@ -412,7 +412,7 @@ function SignalCard({ signal, showDate, onClick }: SignalCardProps) {
     >
       {/* Left side: Ticker and signal */}
       <div className="flex items-center gap-2 flex-shrink-0 w-24">
-        <span className="font-mono font-bold text-sm">{signal.ticker}</span>
+        <span className={`font-mono font-bold ${signal.ticker.length >= 4 ? 'text-xs' : 'text-sm'}`}>{signal.ticker}</span>
         {signal.signal && (
           <span className={`px-1.5 py-0.5 text-xs font-semibold rounded flex-shrink-0 ${
             signal.signal === 'BUY'
