@@ -36,6 +36,7 @@ interface TrendSignalTableProps {
   sellPeriod?: number        // Default 10
   interval?: IntervalType    // '1H' | '1D'
   endDate?: string           // Optional: End date for API fetch
+  shouldOpenFullscreen?: boolean  // Default false: Allow ticker clicks to open dialog
 }
 
 export function TrendSignalTable({
@@ -45,7 +46,8 @@ export function TrendSignalTable({
   buyPeriod = 20,
   sellPeriod = 10,
   interval = '1D',
-  endDate
+  endDate,
+  shouldOpenFullscreen = false
 }: TrendSignalTableProps) {
   // Internal memoization of tickers array to prevent future bugs
   const internalTickers = React.useMemo(() => {
@@ -160,7 +162,9 @@ export function TrendSignalTable({
 
   // Event handlers
   const handleSignalClick = (signal: HistoricalSignalData) => {
-    setDialogTicker(signal.ticker)
+    if (shouldOpenFullscreen) {
+      setDialogTicker(signal.ticker)
+    }
   }
 
   const handleCloseDialog = () => {
@@ -375,7 +379,7 @@ export function TrendSignalTable({
                           key={`${signal.ticker}-${signal.date}`}
                           signal={signal}
                           showDate={false} // Date is shown in header
-                          onClick={() => handleSignalClick(signal)}
+                          onClick={shouldOpenFullscreen ? () => handleSignalClick(signal) : undefined}
                         />
                       ))}
                     </div>
@@ -388,7 +392,7 @@ export function TrendSignalTable({
                   key={`${signal.ticker}-${signal.date}`}
                   signal={signal}
                   showDate={true} // Show date on each card
-                  onClick={() => handleSignalClick(signal)}
+                  onClick={shouldOpenFullscreen ? () => handleSignalClick(signal) : undefined}
                 />
               ))}
             </div>
@@ -412,7 +416,7 @@ export function TrendSignalTable({
 interface SignalCardProps {
   signal: HistoricalSignalData
   showDate: boolean
-  onClick: () => void
+  onClick?: () => void  // Optional onClick
 }
 
 function SignalCard({ signal, showDate, onClick }: SignalCardProps) {
@@ -421,7 +425,9 @@ function SignalCard({ signal, showDate, onClick }: SignalCardProps) {
   return (
     <div
       onClick={onClick}
-      className="flex items-center justify-between p-4 border-b border-border hover:bg-muted/50 cursor-pointer"
+      className={`flex items-center justify-between p-4 border-b border-border ${
+        onClick ? 'hover:bg-muted/50 cursor-pointer' : ''
+      }`}
     >
       {/* Left side: Ticker and signal */}
       <div className="flex items-center gap-2 flex-shrink-0 w-24">
