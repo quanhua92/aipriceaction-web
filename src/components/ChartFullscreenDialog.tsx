@@ -290,6 +290,7 @@ export function ChartFullscreenDialog({
                   buyPeriod={20}
                   sellPeriod={10}
                   interval="1D"
+                  endDate={endDate}
                 />
               </div>
             </TabsContent>

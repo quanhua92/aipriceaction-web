@@ -35,6 +35,7 @@ interface TrendSignalTableProps {
   buyPeriod?: number         // Default 20
   sellPeriod?: number        // Default 10
   interval?: IntervalType    // '1H' | '1D'
+  endDate?: string           // Optional: End date for API fetch
 }
 
 export function TrendSignalTable({
@@ -43,7 +44,8 @@ export function TrendSignalTable({
   maxDays = 40,
   buyPeriod = 20,
   sellPeriod = 10,
-  interval = '1D'
+  interval = '1D',
+  endDate
 }: TrendSignalTableProps) {
   // Internal memoization of tickers array to prevent future bugs
   const internalTickers = React.useMemo(() => {
@@ -88,11 +90,10 @@ export function TrendSignalTable({
 
       try {
         // Always fetch all tickers to leverage browser cache
-        const endDate = format(new Date(), 'yyyy-MM-dd')
         const response = await getTickers('TrendSignalTable.fetch', {
           symbol: undefined, // Fetch ALL tickers for cache efficiency
           interval: selectedInterval === '1H' ? '1H' : '1D',
-          end_date: endDate,
+          end_date: endDate, // Will be undefined if not provided, API will default to latest
           limit: maxDays,
           mode: 'vn'
         })
@@ -129,7 +130,7 @@ export function TrendSignalTable({
     return () => {
       isMounted = false
     }
-  }, [internalTickers, selectedInterval, selectedBuyPeriod, selectedSellPeriod, lastRefresh, maxDays])
+  }, [internalTickers, selectedInterval, selectedBuyPeriod, selectedSellPeriod, lastRefresh, maxDays, endDate])
 
   // Flatten all signals for navigation
   const allSignals = React.useMemo(() => {
