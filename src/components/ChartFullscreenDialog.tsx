@@ -269,7 +269,7 @@ export function ChartFullscreenDialog({
             </TabsList>
 
             {/* Chart Tab - preserve existing height calculation */}
-            <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden px-2 pb-2">
+            <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden pb-2">
               <div className="flex-1 min-h-0 w-full overflow-y-auto">
                 <TradingViewChart
                   ticker={displayTicker}
@@ -282,7 +282,7 @@ export function ChartFullscreenDialog({
             </TabsContent>
 
             {/* TrendSignal Tab - natural scrolling */}
-            <TabsContent value="trendSignal" className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
+            <TabsContent value="trendSignal" className="flex-1 min-h-0 overflow-y-auto pb-2">
               <div className="h-full">
                 <TrendSignalTable
                   ticker={displayTicker}
