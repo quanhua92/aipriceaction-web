@@ -10,7 +10,7 @@ import {
   getPredefinedWatchlistTickers,
   isPredefinedWatchlist
 } from './predefined-watchlists'
-import { getWatchlistNames, getWatchlistTickers } from './watchlist-storage'
+import { getWatchlistTickers } from './watchlist-storage'
 
 // Types to export
 export type SignalType = 'BUY' | 'SELL' | null
@@ -35,6 +35,16 @@ export interface TrendSignalData {
   ma200_score?: number
   highest20?: number
   lowest10?: number
+}
+
+export interface HistoricalSignalData extends TrendSignalData {
+  date: string               // Date of the signal
+  windowEnd: number          // Index position in data array
+}
+
+export interface TickerSignalHistory {
+  ticker: string
+  signals: HistoricalSignalData[]
 }
 
 /**
@@ -163,13 +173,13 @@ export function processTickerSignals(
         strength: detection.strength,
         sector,
         currentPrice: latest.close,
-        closeChange: latest.close_changed,
-        volume: latest.volume,
-        ma10_score: latest.ma10_score,
-        ma20_score: latest.ma20_score,
-        ma50_score: latest.ma50_score,
-        ma100_score: latest.ma100_score,
-        ma200_score: latest.ma200_score,
+        closeChange: latest.close_changed || undefined,
+        volume: latest.volume || undefined,
+        ma10_score: latest.ma10_score || undefined,
+        ma20_score: latest.ma20_score || undefined,
+        ma50_score: latest.ma50_score || undefined,
+        ma100_score: latest.ma100_score || undefined,
+        ma200_score: latest.ma200_score || undefined,
         highest20: highestBuyPeriod,
         lowest10: lowestSellPeriod,
       })
@@ -352,4 +362,111 @@ export function getWatchlistTickersByType(
     'stock' as const
 
   return { stockSymbols: stocks, cryptoSymbols: crypto, watchlistType: type }
+}
+
+/**
+ * Calculate historical signals using sliding windows for each ticker
+ * Creates signals for each day using moving windows over the historical data
+ */
+export function calculateHistoricalSignals(
+  tickers: string[],
+  data: Record<string, StockData[]>,
+  tickerGroups: Record<string, string[]> | null,
+  cryptoTickerGroups: Record<string, string[]> | null,
+  buyPeriod: number,
+  sellPeriod: number
+): TickerSignalHistory[] {
+  const histories: TickerSignalHistory[] = []
+
+  for (const ticker of tickers) {
+    const tickerData = data[ticker] || []
+    if (tickerData.length < Math.max(buyPeriod, sellPeriod) + 1) {
+      // Skip tickers with insufficient data
+      continue
+    }
+
+    const signals: HistoricalSignalData[] = []
+    const sector = getTickerSector(ticker, tickerGroups, cryptoTickerGroups)
+
+    // Calculate signals for each window position
+    for (let windowEnd = Math.max(buyPeriod, sellPeriod); windowEnd < tickerData.length; windowEnd++) {
+      const windowData = tickerData.slice(0, windowEnd + 1)
+      const currentBar = tickerData[windowEnd]
+
+      if (!currentBar) continue
+
+      // Detect signal for this window
+      const detection = detectSignal(windowData, buyPeriod, sellPeriod)
+
+      // Calculate highest buyPeriod and lowest sellPeriod for this window
+      let highestBuyPeriod: number | undefined
+      let lowestSellPeriod: number | undefined
+
+      if (windowData.length >= buyPeriod + 1) {
+        const lastBuyPeriodCloses = windowData.slice(-buyPeriod - 1, -1).map(d => d.close)
+        highestBuyPeriod = Math.max(...lastBuyPeriodCloses)
+      }
+
+      if (windowData.length >= sellPeriod + 1) {
+        const lastSellPeriodCloses = windowData.slice(-sellPeriod - 1, -1).map(d => d.close)
+        lowestSellPeriod = Math.min(...lastSellPeriodCloses)
+      }
+
+      // Create signal data
+      const signalData: HistoricalSignalData = {
+        ticker,
+        signal: detection.signal,
+        breakoutPrice: detection.signal ? currentBar.close : undefined,
+        previousHigh: detection.previousHigh,
+        previousLow: detection.previousLow,
+        strength: detection.strength,
+        sector,
+        currentPrice: currentBar.close,
+        closeChange: currentBar.close_changed || undefined,
+        volume: currentBar.volume || undefined,
+        ma10_score: currentBar.ma10_score || undefined,
+        ma20_score: currentBar.ma20_score || undefined,
+        ma50_score: currentBar.ma50_score || undefined,
+        ma100_score: currentBar.ma100_score || undefined,
+        ma200_score: currentBar.ma200_score || undefined,
+        highest20: highestBuyPeriod,
+        lowest10: lowestSellPeriod,
+        date: currentBar.time, // Use normalized timestamp
+        windowEnd
+      }
+
+      signals.push(signalData)
+    }
+
+    if (signals.length > 0) {
+      histories.push({
+        ticker,
+        signals
+      })
+    }
+  }
+
+  return histories
+}
+
+/**
+ * Group historical signals by date for multiple tickers view
+ */
+export function groupSignalsByDate(signals: HistoricalSignalData[]): Record<string, HistoricalSignalData[]> {
+  const grouped: Record<string, HistoricalSignalData[]> = {}
+
+  signals.forEach(signal => {
+    const date = signal.date.split('T')[0] // Extract date part
+    if (!grouped[date]) {
+      grouped[date] = []
+    }
+    grouped[date].push(signal)
+  })
+
+  // Sort signals within each date by ticker name
+  Object.keys(grouped).forEach(date => {
+    grouped[date].sort((a, b) => a.ticker.localeCompare(b.ticker))
+  })
+
+  return grouped
 }
