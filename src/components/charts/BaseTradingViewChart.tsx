@@ -128,6 +128,11 @@ export function BaseTradingViewChart({
 		useState<StockData | null>(null);
 	// Use ref to track current crosshair lock state for immediate access in event handlers
 	const clickedCrosshairRef = useRef<StockData | null>(null);
+	// Track locked crosshair position coordinates for built-in crosshair methods
+	const [lockedCrosshairPosition, setLockedCrosshairPosition] = useState<{
+		price: number;
+		horizontalPosition: Time;
+	} | null>(null);
 	const [containerWidth, setContainerWidth] = useState(0);
 
 	// Reset data initialization flag when data changes
@@ -619,7 +624,10 @@ export function BaseTradingViewChart({
 				}
 				setClickedCrosshairData(null);
 				clickedCrosshairRef.current = null; // Update ref immediately
+				setLockedCrosshairPosition(null); // Clear locked position
 				setCrosshairData(null);
+				// Clear built-in crosshair position
+				chartRef.current?.clearCrosshairPosition();
 				// Clear tooltip completely when clearing to prevent hover from immediately showing
 				tooltip.innerHTML = "";
 				tooltip.style.display = "none";
@@ -665,6 +673,20 @@ export function BaseTradingViewChart({
 				}
 				setClickedCrosshairData(clickedDataPoint);
 				clickedCrosshairRef.current = clickedDataPoint; // Update ref immediately
+
+				// Store locked position for built-in crosshair methods
+				const lockedPosition = {
+					price: clickedDataPoint.close,
+					horizontalPosition: param.time as Time,
+				};
+				setLockedCrosshairPosition(lockedPosition);
+
+				// Set built-in crosshair position to show dotted lines
+				chartRef.current?.setCrosshairPosition(
+					lockedPosition.price,
+					lockedPosition.horizontalPosition,
+					candlestickSeriesRef.current!
+				);
 
 				// Show tooltip at clicked position, similar to hover
 				tooltip.style.display = "block";
@@ -782,17 +804,25 @@ export function BaseTradingViewChart({
 					);
 				}
 
-				// If there's a locked crosshair, show tooltip at the locked position
-				if (clickedCrosshairRef.current) {
+				// If there's a locked crosshair, restore built-in crosshair position and show tooltip
+				if (clickedCrosshairRef.current && lockedCrosshairPosition) {
 					if (process.env.NODE_ENV === "development") {
 						console.log(
-							"[BaseTradingViewChart] Showing locked crosshair tooltip at:",
+							"[BaseTradingViewChart] Restoring locked crosshair position and tooltip:",
 							{
 								symbol: clickedCrosshairRef.current.symbol,
-								price: clickedCrosshairRef.current.close,
+								price: lockedCrosshairPosition.price,
+								horizontalPosition: lockedCrosshairPosition.horizontalPosition,
 							},
 						);
 					}
+
+					// Restore built-in crosshair position when hovering out of bounds
+					chartRef.current?.setCrosshairPosition(
+						lockedCrosshairPosition.price,
+						lockedCrosshairPosition.horizontalPosition,
+						candlestickSeriesRef.current!
+					);
 
 					// Convert the locked position time to Vietnam timezone Unix timestamp for chart display
 					const lockedDateTime = parseUTCISOString(
