@@ -29,7 +29,8 @@ import {
 import { ChartFullscreenDialog, TitleGeneratorCallback } from './ChartFullscreenDialog'
 
 interface TrendSignalTableProps {
-  tickers: string[]           // Tickers to analyze
+  tickers?: string[]          // Optional: Multiple tickers to analyze
+  ticker?: string             // Optional: Single ticker to analyze
   maxDays?: number           // Default 40, for API fetch
   buyPeriod?: number         // Default 20
   sellPeriod?: number        // Default 10
@@ -38,11 +39,22 @@ interface TrendSignalTableProps {
 
 export function TrendSignalTable({
   tickers,
+  ticker,
   maxDays = 40,
   buyPeriod = 20,
   sellPeriod = 10,
   interval = '1D'
 }: TrendSignalTableProps) {
+  // Internal memoization of tickers array to prevent future bugs
+  const internalTickers = React.useMemo(() => {
+    if (tickers) {
+      return tickers
+    }
+    if (ticker) {
+      return [ticker]
+    }
+    return []
+  }, [tickers, ticker])
   const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups } = useAPI()
   const { lastRefresh } = useRefresh()
   const { t, language } = useTranslation()
@@ -63,8 +75,8 @@ export function TrendSignalTable({
 
   // Fetch and calculate historical signals
   React.useEffect(() => {
-    if (tickers.length === 0 || loading) {
-      if (tickers.length === 0) setSignalHistories([])
+    if (internalTickers.length === 0 || loading) {
+      if (internalTickers.length === 0) setSignalHistories([])
       return
     }
 
@@ -89,7 +101,7 @@ export function TrendSignalTable({
 
         // Calculate historical signals only for the specified tickers
         const histories = calculateHistoricalSignals(
-          tickers,
+          internalTickers,
           response,
           tickerGroups,
           cryptoTickerGroups,
@@ -117,7 +129,7 @@ export function TrendSignalTable({
     return () => {
       isMounted = false
     }
-  }, [tickers, selectedInterval, selectedBuyPeriod, selectedSellPeriod, lastRefresh, maxDays])
+  }, [internalTickers, selectedInterval, selectedBuyPeriod, selectedSellPeriod, lastRefresh, maxDays])
 
   // Flatten all signals for navigation
   const allSignals = React.useMemo(() => {
@@ -131,12 +143,12 @@ export function TrendSignalTable({
 
   // Group signals by date for multiple tickers view
   const signalsByDate = React.useMemo(() => {
-    if (tickers.length <= 1) return {}
+    if (internalTickers.length <= 1) return {}
     return groupSignalsByDate(sortedSignals)
-  }, [sortedSignals, tickers.length])
+  }, [sortedSignals, internalTickers.length])
 
   // Get all tickers for navigation
-  const allTickersForNavigation = tickers
+  const allTickersForNavigation = internalTickers
 
   // Find current ticker index in the list
   const currentTickerIndex = React.useMemo(() => {
@@ -239,7 +251,7 @@ export function TrendSignalTable({
           <div className="flex-1"></div>
 
           {/* Date Actions Menu (only for multiple tickers) */}
-          {tickers.length > 1 && (
+          {internalTickers.length > 1 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -311,7 +323,7 @@ export function TrendSignalTable({
               )}
 
               {/* Multiple tickers: Group by date */}
-              {tickers.length > 1 && Object.entries(signalsByDate)
+              {internalTickers.length > 1 && Object.entries(signalsByDate)
                 .sort((a, b) => b[0].localeCompare(a[0])) // Sort dates descending
                 .map(([date, dateSignals]) => {
                   const isCollapsed = !openDates.has(date)
@@ -370,7 +382,7 @@ export function TrendSignalTable({
                 })}
 
               {/* Single ticker: Show all signals chronologically */}
-              {tickers.length === 1 && sortedSignals.map((signal) => (
+              {internalTickers.length === 1 && sortedSignals.map((signal) => (
                 <SignalCard
                   key={`${signal.ticker}-${signal.date}`}
                   signal={signal}

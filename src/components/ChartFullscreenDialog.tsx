@@ -67,9 +67,7 @@ export function ChartFullscreenDialog({
     ? tickerList[internalIndex]
     : internalTicker
 
-  // Memoize tickers array for TrendSignalTable to prevent unnecessary re-renders
-  const trendSignalTickers = React.useMemo(() => [displayTicker], [displayTicker])
-
+  
   // Update title when displayTicker changes
   React.useEffect(() => {
     if (!displayTicker || !getTitle) {
@@ -287,7 +285,7 @@ export function ChartFullscreenDialog({
             <TabsContent value="trendSignal" className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
               <div className="h-full">
                 <TrendSignalTable
-                  tickers={trendSignalTickers}
+                  ticker={displayTicker}
                   maxDays={40}
                   buyPeriod={20}
                   sellPeriod={10}
