@@ -32,6 +32,7 @@ import {
 	toVietnamUnixTime,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { TOOLTIP_MARGIN, TOOLTIP_WIDTH, TOOLTIP_HEIGHT } from "@/lib/constants";
 import { RulerSection } from "./RulerSection";
 
 interface BaseTradingViewChartProps {
@@ -390,15 +391,12 @@ export function BaseTradingViewChart({
 		});
 
 		// Create tooltip element
-		const tooltipWidth = 200;
-		const tooltipHeight = 90;
-		const tooltipMargin = 15;
 
 		const tooltip = document.createElement("div");
 		tooltip.style.cssText = `
 			width: auto;
 			min-width: 180px;
-			max-width: ${tooltipWidth}px;
+			max-width: ${TOOLTIP_WIDTH}px;
 			position: absolute;
 			display: none;
 			padding: 6px 8px;
@@ -771,14 +769,14 @@ export function BaseTradingViewChart({
 
 				// Position tooltip at clicked position (same logic as hover)
 				const y = param.point.y;
-				let left = param.point.x + tooltipMargin;
-				if (left > chartContainerRef.current.clientWidth - tooltipWidth) {
-					left = param.point.x - tooltipMargin - tooltipWidth;
+				let left = param.point.x + TOOLTIP_MARGIN;
+				if (left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH) {
+					left = param.point.x - TOOLTIP_MARGIN - TOOLTIP_WIDTH;
 				}
 
-				let top = y + tooltipMargin;
-				if (top > chartContainerRef.current.clientHeight - tooltipHeight) {
-					top = y - tooltipHeight - tooltipMargin;
+				let top = y + TOOLTIP_MARGIN;
+				if (top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT) {
+					top = y - TOOLTIP_HEIGHT - TOOLTIP_MARGIN;
 				}
 
 				tooltip.style.left = `${left}px`;
@@ -842,9 +840,9 @@ export function BaseTradingViewChart({
 						// Position tooltip in default location (top-right of chart)
 						const left =
 							chartContainerRef.current.clientWidth -
-							tooltipWidth -
-							tooltipMargin;
-						const top = tooltipMargin;
+							TOOLTIP_WIDTH -
+							TOOLTIP_MARGIN;
+						const top = TOOLTIP_MARGIN;
 
 						tooltip.style.left = `${left}px`;
 						tooltip.style.top = `${top}px`;
@@ -996,18 +994,18 @@ export function BaseTradingViewChart({
 
 			// Position tooltip
 			const y = param.point.y;
-			let left = param.point.x + tooltipMargin;
+			let left = param.point.x + TOOLTIP_MARGIN;
 			const leftAdjusted =
-				left > chartContainerRef.current.clientWidth - tooltipWidth;
+				left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH;
 			if (leftAdjusted) {
-				left = param.point.x - tooltipMargin - tooltipWidth;
+				left = param.point.x - TOOLTIP_MARGIN - TOOLTIP_WIDTH;
 			}
 
-			let top = y + tooltipMargin;
+			let top = y + TOOLTIP_MARGIN;
 			const topAdjusted =
-				top > chartContainerRef.current.clientHeight - tooltipHeight;
+				top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT;
 			if (topAdjusted) {
-				top = y - tooltipHeight - tooltipMargin;
+				top = y - TOOLTIP_HEIGHT - TOOLTIP_MARGIN;
 			}
 
 				// if (process.env.NODE_ENV === "development") {

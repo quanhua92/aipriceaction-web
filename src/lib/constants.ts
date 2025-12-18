@@ -229,3 +229,14 @@ export const VISIBILITY_MIN_REFRESH_INTERVAL_MS = 5000
  */
 export const THEME_STORAGE_KEY = 'site-settings-theme'
 
+/**
+ * Tooltip margin from crosshair in pixels
+ */
+export const TOOLTIP_MARGIN = 30
+
+/**
+ * Tooltip dimensions in pixels
+ */
+export const TOOLTIP_WIDTH = 200
+export const TOOLTIP_HEIGHT = 90
+
