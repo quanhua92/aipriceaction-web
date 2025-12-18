@@ -247,7 +247,7 @@ export default {
     invalidFileFormat: 'Định dạng file không hợp lệ: cần một mảng ghi chú',
   },
   pwa: {
-    install: 'Cài Đặt Ứng Dụng',
+    install: 'Install App',
     appInstalled: 'Đã Cài Đặt',
     installNow: 'Cài Đặt Ngay',
     maybeLater: 'Để Sau',
