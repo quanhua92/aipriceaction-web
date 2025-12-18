@@ -3,7 +3,7 @@ import { type StockData, Interval } from '@/lib/api-client'
 import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
 import { useAPI } from './APIContext'
-import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT, DEFAULT_CHART_LIMIT } from '@/lib/constants'
+import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT, DEFAULT_CHART_LIMIT, LOAD_MORE_LIMIT } from '@/lib/constants'
 import { isCryptoTicker } from '@/lib/ticker-utils'
 
 interface TickerContextValue {
@@ -177,7 +177,7 @@ export function TickerProvider({
 
     // Increase global limit - this will affect all charts
     const currentLimit = limit ?? settings.limit
-    const newLimit = currentLimit + DEFAULT_CHART_LIMIT
+    const newLimit = currentLimit + LOAD_MORE_LIMIT
     setLimit(newLimit)
 
     // Reset flag after state update

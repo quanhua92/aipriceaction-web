@@ -108,6 +108,11 @@ export const MATRIX_DAYS_PER_PAGE = 40
 export const DEFAULT_CHART_LIMIT = 128
 
 /**
+ * Number of additional records to load when clicking "Load More" button
+ */
+export const LOAD_MORE_LIMIT = 256
+
+/**
  * Maximum number of retry attempts for failed API calls
  */
 export const API_RETRY_ATTEMPTS = 3
