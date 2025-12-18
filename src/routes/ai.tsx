@@ -315,9 +315,13 @@ function AIContextPage() {
 					<div>
 						<SelectTickerDialog onSelectTicker={handleAddTicker}>
 							<Button
-								variant="outline"
+								variant={canAddMoreTickers ? "default" : "outline"}
 								size="sm"
-								className="w-full"
+								className={`w-full ${
+									canAddMoreTickers
+										? 'bg-green-500 hover:bg-green-600 text-white'
+										: ''
+								}`}
 								disabled={!canAddMoreTickers}
 							>
 								<Plus className="h-4 w-4 mr-2" />
