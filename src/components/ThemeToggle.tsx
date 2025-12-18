@@ -1,4 +1,4 @@
-import { Sun, Moon, Monitor } from 'lucide-react'
+import { Sun, Moon, Lightbulb } from 'lucide-react'
 import { useSiteSettings } from '@/contexts/SiteSettingsContext'
 import { Toggle } from '@/components/ui/toggle'
 
@@ -17,7 +17,7 @@ export function ThemeToggle() {
     switch (theme) {
       case 'light': return <Sun size={18} />
       case 'dark': return <Moon size={18} />
-      default: return <Monitor size={18} />
+      default: return <Lightbulb size={18} />
     }
   }
 
