@@ -133,6 +133,10 @@ export function BaseTradingViewChart({
 		price: number;
 		horizontalPosition: Time;
 	} | null>(null);
+	const lockedCrosshairPositionRef = useRef<{
+		price: number;
+		horizontalPosition: Time;
+	} | null>(null);
 	const [containerWidth, setContainerWidth] = useState(0);
 
 	// Reset data initialization flag when data changes
@@ -148,6 +152,11 @@ export function BaseTradingViewChart({
 	useEffect(() => {
 		clickedCrosshairRef.current = clickedCrosshairData;
 	}, [clickedCrosshairData]);
+
+	// Keep position ref in sync with state for immediate access in event handlers
+	useEffect(() => {
+		lockedCrosshairPositionRef.current = lockedCrosshairPosition;
+	}, [lockedCrosshairPosition]);
 
 	// Calculate responsive viewport size
 	const responsiveViewportSize = useMemo(() => {
@@ -625,6 +634,7 @@ export function BaseTradingViewChart({
 				setClickedCrosshairData(null);
 				clickedCrosshairRef.current = null; // Update ref immediately
 				setLockedCrosshairPosition(null); // Clear locked position
+				lockedCrosshairPositionRef.current = null; // Clear ref immediately
 				setCrosshairData(null);
 				// Clear built-in crosshair position
 				chartRef.current?.clearCrosshairPosition();
@@ -679,7 +689,9 @@ export function BaseTradingViewChart({
 					price: clickedDataPoint.close,
 					horizontalPosition: param.time as Time,
 				};
+
 				setLockedCrosshairPosition(lockedPosition);
+				lockedCrosshairPositionRef.current = lockedPosition; // Update ref immediately
 
 				// Set built-in crosshair position to show dotted lines
 				chartRef.current?.setCrosshairPosition(
@@ -805,22 +817,11 @@ export function BaseTradingViewChart({
 				}
 
 				// If there's a locked crosshair, restore built-in crosshair position and show tooltip
-				if (clickedCrosshairRef.current && lockedCrosshairPosition) {
-					if (process.env.NODE_ENV === "development") {
-						console.log(
-							"[BaseTradingViewChart] Restoring locked crosshair position and tooltip:",
-							{
-								symbol: clickedCrosshairRef.current.symbol,
-								price: lockedCrosshairPosition.price,
-								horizontalPosition: lockedCrosshairPosition.horizontalPosition,
-							},
-						);
-					}
-
+				if (clickedCrosshairRef.current && lockedCrosshairPositionRef.current) {
 					// Restore built-in crosshair position when hovering out of bounds
 					chartRef.current?.setCrosshairPosition(
-						lockedCrosshairPosition.price,
-						lockedCrosshairPosition.horizontalPosition,
+						lockedCrosshairPositionRef.current.price,
+						lockedCrosshairPositionRef.current.horizontalPosition,
 						candlestickSeriesRef.current!
 					);
 
@@ -845,16 +846,6 @@ export function BaseTradingViewChart({
 							tooltipMargin;
 						const top = tooltipMargin;
 
-						if (process.env.NODE_ENV === "development") {
-						console.log("[BaseTradingViewChart] Locked tooltip positioning:", {
-							left,
-							top,
-							positioning: "default-top-right",
-							lockedChartTime,
-							originalTime: clickedCrosshairRef.current.time,
-						});
-					}
-
 						tooltip.style.left = `${left}px`;
 						tooltip.style.top = `${top}px`;
 						tooltip.style.display = "block";
@@ -866,13 +857,16 @@ export function BaseTradingViewChart({
 						}
 						tooltip.style.display = "none";
 					}
-				} else {
-					// No locked crosshair, hide tooltip
-					tooltip.style.display = "none";
-				}
 
-				setCrosshairData(null);
-				return;
+					// IMPORTANT: Keep crosshair data for overlay display when locked
+					setCrosshairData(clickedCrosshairRef.current);
+					return;
+				} else {
+					// No locked crosshair, hide tooltip and clear crosshair data
+					tooltip.style.display = "none";
+					setCrosshairData(null);
+					return;
+				}
 			}
 
 			tooltip.style.display = "block";
@@ -911,14 +905,14 @@ export function BaseTradingViewChart({
 				return;
 			}
 
-			if (process.env.NODE_ENV === "development") {
-				console.log("[BaseTradingViewChart] Processing hover data:", {
-					paramTime: param.time,
-					hasCandleData: !!candleData,
-					hasVolumeData: !!volumeData,
-					currentIndex: "calculating...",
-				});
-			}
+			// if (process.env.NODE_ENV === "development") {
+			// 	console.log("[BaseTradingViewChart] Processing hover data:", {
+			// 		paramTime: param.time,
+			// 		hasCandleData: !!candleData,
+			// 		hasVolumeData: !!volumeData,
+			// 		currentIndex: "calculating...",
+			// 	});
+			// }
 
 			// Format date with time (timestamp is already in Vietnam time)
 			let dateStr: string;
@@ -950,14 +944,14 @@ export function BaseTradingViewChart({
 			);
 			const currentDataPoint = currentIndex >= 0 ? data[currentIndex] : null;
 
-			if (process.env.NODE_ENV === "development") {
-				console.log("[BaseTradingViewChart] Hover data mapping:", {
-					currentIndex,
-					foundDataPoint: !!currentDataPoint,
-					dataPointSymbol: currentDataPoint?.symbol,
-					dataPointPrice: currentDataPoint?.close,
-				});
-			}
+			// if (process.env.NODE_ENV === "development") {
+			// 	console.log("[BaseTradingViewChart] Hover data mapping:", {
+			// 		currentIndex,
+			// 		foundDataPoint: !!currentDataPoint,
+			// 		dataPointSymbol: currentDataPoint?.symbol,
+			// 		dataPointPrice: currentDataPoint?.close,
+			// 	});
+			// }
 
 			// Update crosshair data for overlay
 			setCrosshairData(currentDataPoint);
@@ -1016,18 +1010,18 @@ export function BaseTradingViewChart({
 				top = y - tooltipHeight - tooltipMargin;
 			}
 
-			if (process.env.NODE_ENV === "development") {
-				console.log("[BaseTradingViewChart] Tooltip positioning:", {
-					pointX: param.point.x,
-					pointY: param.point.y,
-					left,
-					top,
-					leftAdjusted,
-					topAdjusted,
-					containerWidth: chartContainerRef.current.clientWidth,
-					containerHeight: chartContainerRef.current.clientHeight,
-				});
-			}
+				// if (process.env.NODE_ENV === "development") {
+			// 	console.log("[BaseTradingViewChart] Tooltip positioning:", {
+			// 		pointX: param.point.x,
+			// 		pointY: param.point.y,
+			// 		left,
+			// 		top,
+			// 		leftAdjusted,
+			// 		topAdjusted,
+			// 		containerWidth: chartContainerRef.current.clientWidth,
+			// 		containerHeight: chartContainerRef.current.clientHeight,
+			// 	});
+			// }
 
 			tooltip.style.left = `${left}px`;
 			tooltip.style.top = `${top}px`;
