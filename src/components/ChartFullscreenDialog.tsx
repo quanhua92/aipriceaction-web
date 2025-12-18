@@ -255,7 +255,7 @@ export function ChartFullscreenDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent ref={dialogContentRef} className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[90vh] h-[90dvh] p-2 gap-2 flex flex-col">
         <DialogHeader data-slot="header" className="flex-shrink-0">
-          <DialogTitle className="text-base">
+          <DialogTitle className="text-base text-center">
             {dynamicTitle || title || displayTicker}
             {endDate && ` - ${t('common.chart.ending')} ${endDate}`}
           </DialogTitle>
@@ -263,7 +263,7 @@ export function ChartFullscreenDialog({
 
         {displayTicker && (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col gap-0">
-            <TabsList className="mx-auto mb-2 grid grid-cols-2 gap-2 w-fit">
+            <TabsList className="mx-auto mb-2 grid grid-cols-2 gap-4 w-fit">
               <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
               <TabsTrigger value="trendSignal">{t('dialogs.quickAddAlert.tabs.trendSignal')}</TabsTrigger>
             </TabsList>
