@@ -37,6 +37,7 @@ import { TOOLTIP_MARGIN, TOOLTIP_WIDTH, TOOLTIP_HEIGHT } from "@/lib/constants";
 import { RulerSection } from "./RulerSection";
 import { createTooltipElement, positionTooltip } from "@/lib/tooltipStyles";
 import { getChangeColors, getVolumeColor, getVolumePercentColor, getMAColor, getBasicChangeColor } from "@/lib/chartColors";
+import { formatTooltipDate } from "@/lib/chartDateUtils";
 
 interface BaseTradingViewChartProps {
 	title?: string;
@@ -359,28 +360,7 @@ export function BaseTradingViewChart({
 		// Unified tooltip building function
 		const buildTooltipHTML = (currentDataPoint: StockData, paramTime: any) => {
 			// Format date with time (timestamp is already in Vietnam time)
-			let dateStr: string;
-			try {
-				const date = new Date((paramTime as number) * 1000);
-				if (isNaN(date.getTime())) {
-					dateStr = String(paramTime);
-				} else {
-					// Timestamp is already shifted to Vietnam time, format as UTC to display correctly
-					dateStr = date.toLocaleString("en-US", {
-						year: "numeric",
-						month: "short",
-						day: "numeric",
-						hour: "2-digit",
-						minute: "2-digit",
-						timeZone: "UTC", // Use UTC because timestamp is already shifted
-					});
-				}
-			} catch (error) {
-				if (process.env.NODE_ENV === "development") {
-					console.error("Invalid date in tooltip:", paramTime, error);
-				}
-				dateStr = String(paramTime);
-			}
+			const dateStr = formatTooltipDate(paramTime);
 
 			// Find chart data for this time
 			const candleData = chartData.candlestick.find(
@@ -591,26 +571,7 @@ export function BaseTradingViewChart({
 				tooltip.style.display = "block";
 
 				// Format date with time (timestamp is already in Vietnam time)
-				let dateStr: string;
-				try {
-					const date = new Date((param.time as number) * 1000);
-					if (isNaN(date.getTime())) {
-						dateStr = String(param.time);
-					} else {
-						// Timestamp is already shifted to Vietnam time, format as UTC to display correctly
-						dateStr = date.toLocaleString("en-US", {
-							year: "numeric",
-							month: "short",
-							day: "numeric",
-							hour: "2-digit",
-							minute: "2-digit",
-							timeZone: "UTC", // Use UTC because timestamp is already shifted
-						});
-					}
-				} catch (error) {
-					console.error("Invalid date in tooltip:", param.time, error);
-					dateStr = String(param.time);
-				}
+				const dateStr = formatTooltipDate(param.time);
 
 				// Get data from all series for clicked position
 				const candleData = chartData.candlestick.find(
@@ -802,28 +763,7 @@ export function BaseTradingViewChart({
 			// }
 
 			// Format date with time (timestamp is already in Vietnam time)
-			let dateStr: string;
-			try {
-				const date = new Date((param.time as number) * 1000);
-				if (isNaN(date.getTime())) {
-					dateStr = String(param.time);
-				} else {
-					// Timestamp is already shifted to Vietnam time, format as UTC to display correctly
-					dateStr = date.toLocaleString("en-US", {
-						year: "numeric",
-						month: "short",
-						day: "numeric",
-						hour: "2-digit",
-						minute: "2-digit",
-						timeZone: "UTC", // Use UTC because timestamp is already shifted
-					});
-				}
-			} catch (error) {
-				if (process.env.NODE_ENV === "development") {
-					console.error("Invalid date in tooltip:", param.time, error);
-				}
-				dateStr = String(param.time);
-			}
+			const dateStr = formatTooltipDate(param.time);
 
 			// Find current index in original data to get change percentages
 			const currentIndex = chartData.candlestick.findIndex(
