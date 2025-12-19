@@ -35,6 +35,8 @@ import {
 import { cn } from "@/lib/utils";
 import { TOOLTIP_MARGIN, TOOLTIP_WIDTH, TOOLTIP_HEIGHT } from "@/lib/constants";
 import { RulerSection } from "./RulerSection";
+import { createTooltipElement, positionTooltip } from "@/lib/tooltipStyles";
+import { getChangeColors, getVolumeColor, getVolumePercentColor, getMAColor, getBasicChangeColor } from "@/lib/chartColors";
 
 interface BaseTradingViewChartProps {
 	title?: string;
@@ -348,30 +350,8 @@ export function BaseTradingViewChart({
 			],
 		});
 
-		// Create tooltip element
-
-		const tooltip = document.createElement("div");
-		tooltip.style.cssText = `
-			width: auto;
-			min-width: 180px;
-			max-width: ${TOOLTIP_WIDTH}px;
-			position: absolute;
-			display: none;
-			padding: 6px 8px;
-			box-sizing: border-box;
-			font-size: 11px;
-			text-align: left;
-			z-index: 10;
-			pointer-events: none;
-			border: 1px solid #27272a;
-			border-radius: 4px;
-			background: rgba(24, 24, 27, 0.95);
-			color: #fafafa;
-			font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
-			backdrop-filter: blur(8px);
-		`;
+		// Create tooltip element using extracted styles
+		const tooltip = createTooltipElement();
 		chartContainerRef.current.appendChild(tooltip);
 
 		// Let lightweight-charts handle viewport management naturally
@@ -422,7 +402,7 @@ export function BaseTradingViewChart({
 				currentDataPoint.close_changed !== undefined
 			) {
 				const change = currentDataPoint.close_changed;
-				const changeColor = change >= 0 ? "#16a34a" : "#dc2626";
+				const changeColor = getBasicChangeColor(change);
 				priceChangePercent = `<span style="color: ${changeColor}; font-size: 9px;">${formatPercent(change)}</span>`;
 			}
 
@@ -433,7 +413,7 @@ export function BaseTradingViewChart({
 				currentDataPoint.volume_changed !== undefined
 			) {
 				const volChange = currentDataPoint.volume_changed;
-				const volChangeColor = volChange >= 0 ? "#16a34a" : "#dc2626";
+				const volChangeColor = getBasicChangeColor(volChange);
 				volumeChangePercent = `<span style="color: ${volChangeColor}; font-size: 9px;">${formatPercent(volChange)}</span>`;
 			}
 
@@ -470,8 +450,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma10_score !== null &&
 					currentDataPoint?.ma10_score !== undefined
 				) {
-					const ma10Color =
-						currentDataPoint.ma10_score >= 0 ? "#16a34a" : "#dc2626";
+					const ma10Color = getMAColor(currentDataPoint.ma10_score);
 					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">MA10</span> ${formatPrice(ma10Data.value, currentDataPoint)}</div>`;
 					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma10Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma10_score)}</span></div>`;
 				}
@@ -481,8 +460,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma20_score !== null &&
 					currentDataPoint?.ma20_score !== undefined
 				) {
-					const ma20Color =
-						currentDataPoint.ma20_score >= 0 ? "#16a34a" : "#dc2626";
+					const ma20Color = getMAColor(currentDataPoint.ma20_score);
 					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">MA20</span> ${formatPrice(ma20Data.value, currentDataPoint)}</div>`;
 					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma20Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma20_score)}</span></div>`;
 				}
@@ -492,8 +470,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma50_score !== null &&
 					currentDataPoint?.ma50_score !== undefined
 				) {
-					const ma50Color =
-						currentDataPoint.ma50_score >= 0 ? "#16a34a" : "#dc2626";
+					const ma50Color = getMAColor(currentDataPoint.ma50_score);
 					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">MA50</span> ${formatPrice(ma50Data.value, currentDataPoint)}</div>`;
 					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma50Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma50_score)}</span></div>`;
 				}
@@ -503,8 +480,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma100_score !== null &&
 					currentDataPoint?.ma100_score !== undefined
 				) {
-					const ma100Color =
-						currentDataPoint.ma100_score >= 0 ? "#16a34a" : "#dc2626";
+					const ma100Color = getMAColor(currentDataPoint.ma100_score);
 					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">MA100</span> ${formatPrice(ma100Data.value, currentDataPoint)}</div>`;
 					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma100Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma100_score)}</span></div>`;
 				}
@@ -514,8 +490,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma200_score !== null &&
 					currentDataPoint?.ma200_score !== undefined
 				) {
-					const ma200Color =
-						currentDataPoint.ma200_score >= 0 ? "#16a34a" : "#dc2626";
+					const ma200Color = getMAColor(currentDataPoint.ma200_score);
 					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a; display: inline-block; width: 40px;">MA200</span> ${formatPrice(ma200Data.value, currentDataPoint)} <span style="color: #71717a;">Score</span> <span style="color: ${ma200Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma200_score)}</span></div>`;
 				}
 			}
@@ -660,7 +635,7 @@ export function BaseTradingViewChart({
 					clickedDataPoint.close_changed !== undefined
 				) {
 					const change = clickedDataPoint.close_changed;
-					const changeColor = change >= 0 ? "#16a34a" : "#dc2626";
+					const changeColor = getBasicChangeColor(change);
 					priceChangePercent = `<span style="color: ${changeColor}; font-size: 9px;">${formatPercent(change)}</span>`;
 				}
 
@@ -671,7 +646,7 @@ export function BaseTradingViewChart({
 					clickedDataPoint.volume_changed !== undefined
 				) {
 					const volChange = clickedDataPoint.volume_changed;
-					const volChangeColor = volChange >= 0 ? "#16a34a" : "#dc2626";
+					const volChangeColor = getBasicChangeColor(volChange);
 					volumeChangePercent = `<span style="color: ${volChangeColor}; font-size: 9px;">${formatPercent(volChange)}</span>`;
 				}
 
@@ -876,7 +851,7 @@ export function BaseTradingViewChart({
 				currentDataPoint.close_changed !== undefined
 			) {
 				const change = currentDataPoint.close_changed;
-				const changeColor = change >= 0 ? "#16a34a" : "#dc2626";
+				const changeColor = getBasicChangeColor(change);
 				priceChangePercent = `<span style="color: ${changeColor}; font-size: 9px;">${formatPercent(change)}</span>`;
 			}
 
@@ -888,7 +863,7 @@ export function BaseTradingViewChart({
 				currentDataPoint.volume_changed !== undefined
 			) {
 				const volChange = currentDataPoint.volume_changed;
-				const volChangeColor = volChange >= 0 ? "#16a34a" : "#dc2626";
+				const volChangeColor = getBasicChangeColor(volChange);
 				volumeChangePercent = `<span style="color: ${volChangeColor}; font-size: 9px;">${formatPercent(volChange)}</span>`;
 			}
 
@@ -1174,61 +1149,26 @@ export function BaseTradingViewChart({
 							>
 								{(() => {
 									const change = displayData.close_changed ?? 0;
-									const symbolColor =
-										change > 6.5
-											? "text-purple-400"
-											: change >= 0
-												? "text-green-400"
-												: change < -6.5
-													? "text-cyan-400"
-													: "text-red-400";
-									const priceColor =
-										change > 6.5
-											? "text-purple-400"
-											: change >= 0
-												? "text-green-400"
-												: change < -6.5
-													? "text-cyan-400"
-													: "text-red-400";
-									const percentColor =
-										change > 6.5
-											? "text-purple-400"
-											: change >= 0
-												? "text-green-400"
-												: change < -6.5
-													? "text-cyan-400"
-													: "text-red-400";
+									const colors = getChangeColors(change);
 									return (
 										<>
-											<span className={cn("font-semibold", symbolColor)}>
+											<span className={cn("font-semibold", colors.symbol)}>
 												{displayData.symbol}
 											</span>{" "}
-											<span className={cn(priceColor)}>
+											<span className={cn(colors.price)}>
 												{formatPrice(displayData.close, displayData)}
 											</span>{" "}
-											<span className={cn(percentColor)}>
+											<span className={cn(colors.percent)}>
 												{formatPercent(change)}
 											</span>
 										</>
 									);
 								})()}
 								<span className="mx-1"></span>
-								<span
-									className={cn(
-										(displayData.volume_changed ?? 0) >= 0
-											? "text-green-400"
-											: "text-red-400",
-									)}
-								>
+								<span className={cn(getVolumeColor(displayData.volume_changed ?? 0))}>
 									{formatVolume(displayData.volume)}
 								</span>{" "}
-								<span
-									className={cn(
-										(displayData.volume_changed ?? 0) >= 0
-											? "text-green-600"
-											: "text-red-600",
-									)}
-								>
+								<span className={cn(getVolumePercentColor(displayData.volume_changed ?? 0))}>
 									{formatPercent(displayData.volume_changed ?? 0)}
 								</span>
 								<span className="text-zinc-400 ml-2">
