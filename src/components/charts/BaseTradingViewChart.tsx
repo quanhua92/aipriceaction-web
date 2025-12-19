@@ -15,6 +15,7 @@ import {
 } from "lightweight-charts";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MA_CONFIG, MA_SERIES_OPTIONS } from "./utils/chartConfig";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTicker } from "@/contexts/TickerContext";
 import { Interval, type StockData } from "@/lib/api-client";
@@ -117,12 +118,6 @@ export function BaseTradingViewChart({
 	const ma100SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const ma200SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 
-	// Viewport state tracking
-	const [userViewportSet, setUserViewportSet] = useState(false);
-	const [lastViewportRange, setLastViewportRange] = useState<{
-		from: Time;
-		to: Time;
-	} | null>(null);
 	const [isDataInitialized, setIsDataInitialized] = useState(false);
 	const [crosshairData, setCrosshairData] = useState<StockData | null>(null);
 	const [clickedCrosshairData, setClickedCrosshairData] =
@@ -223,22 +218,17 @@ export function BaseTradingViewChart({
 				color: volumeColor + "80", // Add transparency
 			});
 
-			// Add moving averages if available
-			if (point.ma10 !== undefined && point.ma10 !== null) {
-				ma10.push({ time, value: point.ma10 });
-			}
-			if (point.ma20 !== undefined && point.ma20 !== null) {
-				ma20.push({ time, value: point.ma20 });
-			}
-			if (point.ma50 !== undefined && point.ma50 !== null) {
-				ma50.push({ time, value: point.ma50 });
-			}
-			if (point.ma100 !== undefined && point.ma100 !== null) {
-				ma100.push({ time, value: point.ma100 });
-			}
-			if (point.ma200 !== undefined && point.ma200 !== null) {
-				ma200.push({ time, value: point.ma200 });
-			}
+			// Add moving averages if available using configuration
+			MA_CONFIG.forEach(({ key }) => {
+				const maValue = point[key as keyof typeof point] as number | undefined;
+				if (maValue !== undefined && maValue !== null) {
+					if (key === 'ma10') ma10.push({ time, value: maValue });
+					else if (key === 'ma20') ma20.push({ time, value: maValue });
+					else if (key === 'ma50') ma50.push({ time, value: maValue });
+					else if (key === 'ma100') ma100.push({ time, value: maValue });
+					else if (key === 'ma200') ma200.push({ time, value: maValue });
+				}
+			});
 		});
 
 		return { candlestick, volume, ma10, ma20, ma50, ma100, ma200 };
@@ -331,51 +321,19 @@ export function BaseTradingViewChart({
 			},
 		});
 
-		// Add moving average series (initially empty)
-		const ma10Series = chart.addSeries(LineSeries, {
-			color: "#dc2626",
-			lineWidth: 2,
-			crosshairMarkerVisible: false,
-			lastValueVisible: false,
-			priceLineVisible: false,
+		// Add moving average series (initially empty) using configuration
+		MA_CONFIG.forEach(({ key, color }) => {
+			const series = chart.addSeries(LineSeries, {
+				color,
+				...MA_SERIES_OPTIONS,
+			});
+			// Map to existing refs for backward compatibility
+			if (key === 'ma10') ma10SeriesRef.current = series;
+			else if (key === 'ma20') ma20SeriesRef.current = series;
+			else if (key === 'ma50') ma50SeriesRef.current = series;
+			else if (key === 'ma100') ma100SeriesRef.current = series;
+			else if (key === 'ma200') ma200SeriesRef.current = series;
 		});
-		ma10SeriesRef.current = ma10Series;
-
-		const ma20Series = chart.addSeries(LineSeries, {
-			color: "#16a34a",
-			lineWidth: 2,
-			crosshairMarkerVisible: false,
-			lastValueVisible: false,
-			priceLineVisible: false,
-		});
-		ma20SeriesRef.current = ma20Series;
-
-		const ma50Series = chart.addSeries(LineSeries, {
-			color: "#2563eb",
-			lineWidth: 2,
-			crosshairMarkerVisible: false,
-			lastValueVisible: false,
-			priceLineVisible: false,
-		});
-		ma50SeriesRef.current = ma50Series;
-
-		const ma100Series = chart.addSeries(LineSeries, {
-			color: "#a1a1aa",
-			lineWidth: 2,
-			crosshairMarkerVisible: false,
-			lastValueVisible: false,
-			priceLineVisible: false,
-		});
-		ma100SeriesRef.current = ma100Series;
-
-		const ma200Series = chart.addSeries(LineSeries, {
-			color: "#71717a",
-			lineWidth: 2,
-			crosshairMarkerVisible: false,
-			lastValueVisible: false,
-			priceLineVisible: false,
-		});
-		ma200SeriesRef.current = ma200Series;
 
 		// Create watermark using official API
 		const watermark = createTextWatermark(chart.panes()[0], {
@@ -416,51 +374,7 @@ export function BaseTradingViewChart({
 		`;
 		chartContainerRef.current.appendChild(tooltip);
 
-		// Track user viewport changes
-		const handleVisibleTimeRangeChange = () => {
-			const visibleRange = chart.timeScale().getVisibleRange();
-
-			if (process.env.NODE_ENV === "development") {
-				console.log("[BaseTradingViewChart] Viewport change detected:", {
-					hasVisibleRange: !!visibleRange,
-					isDataInitialized,
-					userViewportSet,
-					visibleFrom: visibleRange?.from,
-					visibleTo: visibleRange?.to,
-				});
-			}
-
-			if (visibleRange && isDataInitialized) {
-				if (!userViewportSet) {
-					if (process.env.NODE_ENV === "development") {
-						console.log(
-							"[BaseTradingViewChart] First user viewport interaction - setting flag and saving range",
-						);
-					}
-					setUserViewportSet(true);
-					setLastViewportRange({
-						from: visibleRange.from,
-						to: visibleRange.to,
-					});
-				} else {
-					if (process.env.NODE_ENV === "development") {
-						console.log(
-							"[BaseTradingViewChart] Updating existing user viewport range",
-						);
-					}
-					// Update last known viewport
-					setLastViewportRange({
-						from: visibleRange.from,
-						to: visibleRange.to,
-					});
-				}
-			}
-		};
-
-		// Subscribe to viewport changes
-		chart
-			.timeScale()
-			.subscribeVisibleTimeRangeChange(handleVisibleTimeRangeChange);
+		// Let lightweight-charts handle viewport management naturally
 
 		// Unified tooltip building function
 		const buildTooltipHTML = (currentDataPoint: StockData, paramTime: any) => {
@@ -1086,7 +1000,6 @@ export function BaseTradingViewChart({
 		height,
 		maVisibility,
 		chartContainerRef.current,
-		userViewportSet,
 		isDataInitialized,
 	]);
 
@@ -1123,11 +1036,9 @@ export function BaseTradingViewChart({
 				console.log("[BaseTradingViewChart] Viewport management:", {
 					candlestickCount: chartData.candlestick.length,
 					isDataInitialized,
-					userViewportSet,
 					scrollToLatest,
 					viewportSizeOverride,
 					responsiveViewportSize,
-					hasLastViewportRange: !!lastViewportRange,
 				});
 			}
 
@@ -1139,124 +1050,27 @@ export function BaseTradingViewChart({
 				setIsDataInitialized(true);
 			}
 
-			// On playground navigation (scrollToLatest), we want to scroll to the end of the new data
-			// while preserving the viewport zoom (number of bars visible)
-			if (scrollToLatest) {
+			// Only set viewport on initial load or when explicitly requested
+			if (!isDataInitialized || scrollToLatest) {
 				if (process.env.NODE_ENV === "development") {
 					console.log(
-						"[BaseTradingViewChart] Scrolling to latest due to scrollToLatest flag",
+						"[BaseTradingViewChart] Setting viewport -",
+						scrollToLatest ? "scrollToLatest" : "initial load"
 					);
 				}
-				if (
-					viewportSizeOverride &&
-					chartData.candlestick.length > viewportSizeOverride
-				) {
-					// Navigate to new data - show last viewportSizeOverride bars
-					const startIndex =
-						chartData.candlestick.length - viewportSizeOverride;
-					const from = chartData.candlestick[startIndex].time;
-					const to =
-						chartData.candlestick[chartData.candlestick.length - 1].time;
-					chartRef.current.timeScale().setVisibleRange({ from, to });
-				} else {
-					// Navigate to new data - show responsive number of bars or all if less
-					const actualViewportSize = Math.min(
-						responsiveViewportSize,
-						chartData.candlestick.length,
-					);
-					const startIndex = chartData.candlestick.length - actualViewportSize;
-					const from = chartData.candlestick[startIndex].time;
-					const to =
-						chartData.candlestick[chartData.candlestick.length - 1].time;
-					chartRef.current.timeScale().setVisibleRange({ from, to });
-				}
-				// Reset user viewport flag so they can scroll again
-				setUserViewportSet(false);
-			} else if (!userViewportSet || !lastViewportRange) {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						"[BaseTradingViewChart] Setting default viewport - initial load or no user viewport",
-					);
-				}
-				// Initial load or no user viewport - set default viewport
-				if (
-					viewportSizeOverride &&
-					chartData.candlestick.length > viewportSizeOverride
-				) {
-					// Show exactly viewportSizeOverride bars from the end of data
-					const startIndex =
-						chartData.candlestick.length - viewportSizeOverride;
-					const from = chartData.candlestick[startIndex].time;
-					const to =
-						chartData.candlestick[chartData.candlestick.length - 1].time;
-					chartRef.current.timeScale().setVisibleRange({ from, to });
-				} else {
-					// Show responsive number of candles by default, or all if less
-					const actualViewportSize = viewportSizeOverride
-						? Math.min(viewportSizeOverride, chartData.candlestick.length)
-						: Math.min(responsiveViewportSize, chartData.candlestick.length);
 
-					const startIndex = chartData.candlestick.length - actualViewportSize;
-					const from = chartData.candlestick[startIndex].time;
-					const to =
-						chartData.candlestick[chartData.candlestick.length - 1].time;
-					chartRef.current.timeScale().setVisibleRange({ from, to });
-				}
-			} else {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						"[BaseTradingViewChart] Preserving user viewport - user has manually scrolled",
-					);
-				}
-				// User has manually scrolled - preserve their viewport position
-				// Only restore if the current viewport is way off from expected
-				try {
-					const currentRange = chartRef.current.timeScale().getVisibleRange();
-					const needsRestore =
-						!currentRange ||
-						Math.abs(
-							Number(currentRange.from) - Number(lastViewportRange.from),
-						) > 1000;
+				const viewportSize = viewportSizeOverride || responsiveViewportSize;
+				const actualViewportSize = Math.min(viewportSize, chartData.candlestick.length);
+				const startIndex = chartData.candlestick.length - actualViewportSize;
+				const from = chartData.candlestick[startIndex].time;
+				const to = chartData.candlestick[chartData.candlestick.length - 1].time;
 
-					if (process.env.NODE_ENV === "development") {
-						console.log("[BaseTradingViewChart] Viewport restoration check:", {
-							hasCurrentRange: !!currentRange,
-							currentFrom: currentRange?.from,
-							expectedFrom: lastViewportRange?.from,
-							difference:
-								currentRange && lastViewportRange
-									? Math.abs(
-											Number(currentRange.from) - Number(lastViewportRange.from),
-										)
-									: "N/A",
-							needsRestore,
-						});
-					}
-
-					if (needsRestore) {
-						if (process.env.NODE_ENV === "development") {
-							console.log(
-								"[BaseTradingViewChart] Restoring viewport to user position",
-							);
-						}
-						chartRef.current.timeScale().setVisibleRange(lastViewportRange);
-					}
-				} catch (error) {
-					if (process.env.NODE_ENV === "development") {
-						console.log(
-							"[BaseTradingViewChart] Failed to restore viewport:",
-							error,
-						);
-					}
-					// Failed to restore viewport, ignore
-				}
+				chartRef.current.timeScale().setVisibleRange({ from, to });
 			}
 		}
 	}, [
 		chartData,
 		viewportSizeOverride,
-		userViewportSet,
-		lastViewportRange,
 		isDataInitialized,
 		maVisibility,
 		scrollToLatest,

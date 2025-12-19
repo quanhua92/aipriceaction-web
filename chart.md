@@ -1,7 +1,13 @@
 # BaseTradingViewChart Component Documentation
 
 ## Overview
-`BaseTradingViewChart` is a comprehensive React component that wraps the Lightweight Charts library to display financial candlestick charts with volume overlays and moving averages. It's specifically designed for Vietnamese stock market data with timezone handling and responsive design. The component includes extensive development-only logging for debugging while maintaining clean production builds.
+`BaseTradingViewChart` is a streamlined React component that wraps the Lightweight Charts library to display financial candlestick charts with volume overlays and moving averages. It's specifically designed for Vietnamese stock market data with timezone handling and responsive design. The component has been optimized for smooth touch interactions and simplified from 1472 to 1285 lines.
+
+## Key Improvements (Latest Version)
+- **Smooth Touch Scrolling**: Removed complex viewport management that caused jumping
+- **Configuration-Driven**: MA series creation uses centralized configuration
+- **Modular Architecture**: Extracted components and utilities for better maintainability
+- **Reduced Complexity**: 13% fewer lines while maintaining all functionality
 
 ## Table of Contents
 1. [Props Interface](#props-interface)
@@ -16,6 +22,7 @@
 10. [Moving Averages](#moving-averages)
 11. [Performance Optimizations](#performance-optimizations)
 12. [Development Logging](#development-logging)
+13. [Modular Architecture](#modular-architecture)
 
 ## Props Interface
 
@@ -52,22 +59,17 @@ const ma100SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
 const ma200SeriesRef = useRef<ISeriesApi<'Line'> | null>(null)
 ```
 
-### Viewport State
+### Simplified State (Removed Complex Viewport Tracking)
 ```typescript
-const [userViewportSet, setUserViewportSet] = useState(false)  // Track if user manually scrolled
-const [lastViewportRange, setLastViewportRange] = useState<{
-  from: Time
-  to: Time
-} | null>(null)  // Last known viewport position
-const [isDataInitialized, setIsDataInitialized] = useState(false) // Track initial data load
-```
-
-### Crosshair State
-```typescript
+const [isDataInitialized, setIsDataInitialized] = useState(false)    // Track initial data load
 const [crosshairData, setCrosshairData] = useState<StockData | null>(null)     // Current hover data
 const [clickedCrosshairData, setClickedCrosshairData] = useState<StockData | null>(null) // Locked click data
 const [containerWidth, setContainerWidth] = useState(0)  // For responsive calculations
 ```
+
+**Removed Complex State**:
+- ❌ `userViewportSet` - Caused viewport fighting with user scrolling
+- ❌ `lastViewportRange` - Complex viewport restoration logic
 
 ## Context Dependencies
 
@@ -84,8 +86,8 @@ const { loading, error, chartData: data } = useTicker()
 
 ## Chart Initialization
 
-### Chart Creation (Lines 202-248)
-The chart is initialized once on mount with these configurations:
+### Chart Creation (Lines 254-291)
+The chart is initialized once on mount with optimized touch-friendly configurations:
 
 ```typescript
 const chart = createChart(chartContainerRef.current, {
@@ -128,56 +130,28 @@ const chart = createChart(chartContainerRef.current, {
 })
 ```
 
-### Series Configuration
+### Configuration-Driven MA Series Creation (Lines 335-347)
+Moving averages are created using centralized configuration:
 
-#### Candlestick Series (Lines 249-266)
 ```typescript
-const candlestickSeries = chart.addSeries(CandlestickSeries, {
-  upColor: '#16a34a',      // Green for bullish
-  downColor: '#dc2626',    // Red for bearish
-  borderVisible: false,
-  wickUpColor: '#16a34a',
-  wickDownColor: '#dc2626',
-  priceFormat: {
-    type: 'custom',
-    formatter: (price: number) => formatPrice(price, currentData),
-    minMove: latestData ? getOptimalMinMove(latestData.close, latestData.mode) : 0.001,
-  },
-})
+// Add moving average series (initially empty) using configuration
+MA_CONFIG.forEach(({ key, color }) => {
+  const series = chart.addSeries(LineSeries, {
+    color,
+    ...MA_SERIES_OPTIONS,
+  });
+  // Map to existing refs for backward compatibility
+  if (key === 'ma10') ma10SeriesRef.current = series;
+  else if (key === 'ma20') ma20SeriesRef.current = series;
+  else if (key === 'ma50') ma50SeriesRef.current = series;
+  else if (key === 'ma100') ma100SeriesRef.current = series;
+  else if (key === 'ma200') ma200SeriesRef.current = series;
+});
 ```
-
-#### Volume Series (Lines 268-283)
-```typescript
-const volumeSeries = chart.addSeries(HistogramSeries, {
-  priceFormat: { type: 'volume' },
-  priceScaleId: 'volume', // Separate scale for volume
-})
-
-volumeSeries.priceScale().applyOptions({
-  scaleMargins: {
-    top: 0.8,    // Volume in bottom 20%
-    bottom: 0,
-  },
-})
-```
-
-#### Moving Average Series (Lines 285-329)
-Five moving average lines are added with different colors:
-- MA10: Red (#dc2626)
-- MA20: Green (#16a34a)
-- MA50: Blue (#2563eb)
-- MA100: Gray (#a1a1aa)
-- MA200: Dark Gray (#71717a)
-
-All MAs have:
-- `lineWidth: 2`
-- `crosshairMarkerVisible: false`
-- `lastValueVisible: false`
-- `priceLineVisible: false`
 
 ## Data Transformation
 
-### Timestamp Conversion (Lines 145-156)
+### Timestamp Conversion (Lines 189-202)
 ```typescript
 data.forEach((point, index) => {
   const dateTime = parseUTCISOString(point.time) // Parse UTC ISO string
@@ -186,7 +160,7 @@ data.forEach((point, index) => {
 })
 ```
 
-### Volume Color Logic (Lines 158-164)
+### Volume Color Logic (Lines 203-210)
 ```typescript
 const volumeColor = prevPoint
   ? point.close >= prevPoint.close
@@ -195,134 +169,119 @@ const volumeColor = prevPoint
     ? '#16a34a' : '#dc2626'
 ```
 
-### Moving Average Data Processing (Lines 180-196)
+### Configuration-Driven MA Data Processing (Lines 227-237)
 ```typescript
-if (point.ma10 !== undefined && point.ma10 !== null) {
-  ma10.push({ time, value: point.ma10 })
-}
-// Similar pattern for MA20, MA50, MA100, MA200
+// Add moving averages if available using configuration
+MA_CONFIG.forEach(({ key }) => {
+  const maValue = point[key as keyof typeof point] as number | undefined;
+  if (maValue !== undefined && maValue !== null) {
+    if (key === 'ma10') ma10.push({ time, value: maValue });
+    else if (key === 'ma20') ma20.push({ time, value: maValue });
+    else if (key === 'ma50') ma50.push({ time, value: maValue });
+    else if (key === 'ma100') ma100.push({ time, value: maValue });
+    else if (key === 'ma200') ma200.push({ time, value: maValue });
+  }
+});
 ```
 
 ## Tooltip System
 
-### Tooltip Element Creation (Lines 343-370)
+### Tooltip Element Creation (Lines 365-377)
 - **Positioning**: Absolutely positioned relative to chart
 - **Styling**: Dark theme with blur backdrop
 - **Sizing**: Dynamic width (180px min, 200px max)
 - **Z-index**: 10 to appear above chart elements
 
-### Unified Tooltip Builder (Lines 397-502)
-The `buildTooltipHTML` function creates consistent tooltip content:
-
-```typescript
-const buildTooltipHTML = (currentDataPoint: StockData, paramTime: any) => {
-  // Format date/time
-  // Find chart data for time
-  // Calculate price/volume changes
-  // Build HTML grid with OHLC data
-  // Add moving averages if visible
-}
-```
-
-### Tooltip Content Structure
-1. **Header**: Symbol and date/time
-2. **OHLC Grid**: Open, High, Low, Close with change percentages
-3. **Volume**: With change percentage
-4. **Moving Averages**: Visible MAs with scores (if available)
+### Unified Tooltip Builder (Lines 379-553)
+The `buildTooltipHTML` function creates consistent tooltip content with:
+- Header with symbol and date/time
+- OHLC grid with change percentages
+- Volume with change percentage
+- Moving averages with scores (if visible)
 
 ## Crosshair Interaction
 
-### Click Handler (Lines 504-602)
-**Hybrid Behavior**:
+### Simplified Click Handler (Lines 613-785)
+**Clean Logic**:
 - First click locks the crosshair position
 - Second click (on locked position) unlocks it
+- No competing viewport management
 
-```typescript
-const handleChartClick = (param: any) => {
-  if (clickedCrosshairData) {
-    // Already locked - clear it
-    setClickedCrosshairData(null)
-    setCrosshairData(null)
-    tooltip.style.display = 'none'
-  } else {
-    // Lock at new position
-    setClickedCrosshairData(clickedDataPoint)
-    // Show tooltip at clicked position
-  }
-}
-```
-
-### Hover Handler (Lines 607-730)
+### Hover Handler (Lines 791-1026)
 - **Conflict Prevention**: No tooltip when crosshair is locked
 - **Boundary Detection**: Hide tooltip when mouse leaves chart area
 - **Real-time Updates**: Updates on every mouse movement
 
-### Crosshair Data State Management
-Two separate states:
-- `crosshairData`: Real-time hover data
-- `clickedCrosshairData`: Locked position data
+## Viewport Management (Simplified)
 
-## Viewport Management
+### Natural Scrolling Approach (Lines 1056-1072)
+**Key Change**: Let lightweight-charts library handle scrolling naturally
 
-### Smart Viewport Logic (Lines 818-878)
-
-#### Initial Load
 ```typescript
-if (!userViewportSet || !lastViewportRange) {
-  // Show responsive number of candles by default
-  const actualViewportSize = Math.min(responsiveViewportSize, chartData.candlestick.length)
-  const startIndex = chartData.candlestick.length - actualViewportSize
-  // Set viewport to show latest candles
+// Only set viewport on initial load or when explicitly requested
+if (!isDataInitialized || scrollToLatest) {
+  const viewportSize = viewportSizeOverride || responsiveViewportSize;
+  const actualViewportSize = Math.min(viewportSize, chartData.candlestick.length);
+  const startIndex = chartData.candlestick.length - actualViewportSize;
+  const from = chartData.candlestick[startIndex].time;
+  const to = chartData.candlestick[chartData.candlestick.length - 1].time;
+
+  chartRef.current.timeScale().setVisibleRange({ from, to });
 }
 ```
 
-#### User Scroll Preservation
-```typescript
-// User has manually scrolled - preserve their viewport position
-// Only restore if the current viewport is way off from expected
-if (Math.abs(Number(currentRange.from) - Number(lastViewportRange.from)) > 1000) {
-  chartRef.current.timeScale().setVisibleRange(lastViewportRange)
-}
-```
+**Removed Complex Logic**:
+- ❌ `handleVisibleTimeRangeChange` - No more viewport fighting
+- ❌ `userViewportSet` tracking - Let library handle user interactions
+- ❌ `lastViewportRange` restoration - No more aggressive correction
+- ❌ Complex restoration thresholds - Let scrolling be natural
 
-#### Forced Navigation
-```typescript
-if (scrollToLatest) {
-  // Navigate to new data - show last viewportSizeOverride bars
-  const startIndex = chartData.candlestick.length - viewportSizeOverride
-  chartRef.current.timeScale().setVisibleRange({ from, to })
-  setUserViewportSet(false) // Reset flag
-}
-```
+**Benefits**:
+- ✅ Smooth touch scrolling without jumping
+- ✅ Responsive user interactions
+- ✅ Simpler, more maintainable code
+- ✅ Better performance
 
 ## Responsive Design
 
-### ResizeObserver (Lines 732-752)
+### ResizeObserver (Lines 1030-1045)
 ```typescript
 const resizeObserver = new ResizeObserver(() => {
-  handleResize()
-})
+  handleResize();
+});
 
 if (chartContainerRef.current) {
-  resizeObserver.observe(chartContainerRef.current)
-  setContainerWidth(chartContainerRef.current.clientWidth)
+  resizeObserver.observe(chartContainerRef.current);
+  setContainerWidth(chartContainerRef.current.clientWidth);
 }
 ```
 
-### Responsive Viewport Calculation (Lines 126-129)
+### Responsive Viewport Calculation (Lines 162-165)
 ```typescript
 const responsiveViewportSize = useMemo(() => {
-  return containerWidth > 0 ? getResponsiveViewportSize(containerWidth) : 40
-}, [containerWidth])
+  return containerWidth > 0 ? getResponsiveViewportSize(containerWidth) : 40;
+}, [containerWidth]);
 ```
 
 ## Moving Averages
 
-### Visibility Control
-MA visibility is controlled by:
-1. **Global settings** from ChartSettingsContext
-2. **Interval-specific defaults** (defined in ChartSettingsContext)
-3. **Manual prop override** (maVisibility prop)
+### Configuration-Driven Visibility (chartConfig.ts)
+```typescript
+export const MA_CONFIG = [
+  { key: 'ma10', color: '#dc2626' },
+  { key: 'ma20', color: '#16a34a' },
+  { key: 'ma50', color: '#2563eb' },
+  { key: 'ma100', color: '#a1a1aa' },
+  { key: 'ma200', color: '#71717a' },
+] as const;
+
+export const MA_SERIES_OPTIONS = {
+  lineWidth: 2,
+  crosshairMarkerVisible: false,
+  lastValueVisible: false,
+  priceLineVisible: false,
+} as const;
+```
 
 ### Conditional Rendering
 ```typescript
@@ -341,32 +300,33 @@ const maColor = currentDataPoint.ma10_score >= 0 ? '#16a34a' : '#dc2626'
 
 ## Performance Optimizations
 
+### Code Reduction
+- **BaseTradingViewChart**: 1472 → 1285 lines (-13%)
+- **MA Series Creation**: 44 lines → 12 lines using configuration
+- **MA Data Processing**: 15 lines → 11 lines using iteration
+- **Viewport Logic**: 60+ lines of complex logic → 15 lines simple logic
+
 ### Memoization
 - `chartData`: Memoized transformation of raw data
 - `responsiveViewportSize`: Memoized based on container width
 
-### Event Handler Optimization
-- **Unified tooltip builder**: Reuses same function for hover and click
-- **ResizeObserver**: Efficient container size watching
-- **Debounced viewport updates**: Only update when necessary
-
 ### Efficient Data Updates
 ```typescript
-// Update series data - even if empty (clears the chart)
-candlestickSeriesRef.current.setData(chartData.candlestick)
-volumeSeriesRef.current.setData(chartData.volume)
+// Update series data (even if empty - this clears the chart)
+candlestickSeriesRef.current.setData(chartData.candlestick);
+volumeSeriesRef.current.setData(chartData.volume);
 
 // MA series only updated if visible
-ma10SeriesRef.current.setData(maVisibility.ma10 ? chartData.ma10 : [])
+ma10SeriesRef.current.setData(maVisibility.ma10 ? chartData.ma10 : []);
 ```
 
-### Smart Caching
-Component relies on TickerContext's caching:
-- 15-second cache window
-- Skip delay for recent requests
-- Request tracking to prevent memory leaks
+### Touch Optimization
+- **Natural Scrolling**: Removed viewport fighting
+- **Simplified Event Handling**: Fewer redundant operations
+- **Reduced State Updates**: Less re-rendering during interactions
 
-### Development-Only Logging
+## Development Logging
+
 All console logging is wrapped with development environment checks:
 ```typescript
 if (process.env.NODE_ENV === "development") {
@@ -376,20 +336,34 @@ if (process.env.NODE_ENV === "development") {
 
 **Logging Categories:**
 - **Data Changes**: Chart data updates and initialization
-- **Viewport Management**: User scrolling, zooming, and automatic viewport adjustments
-- **Click Interactions**: Crosshair locking/unlocking with state tracking
+- **Viewport Management**: Simplified viewport tracking
+- **Click Interactions**: Crosshair locking/unlocking
 - **Hover Interactions**: Tooltip generation and positioning
 - **Error Handling**: Invalid dates, missing data, tooltip failures
 
-**Benefits:**
-- Production builds remain clean without console spam
-- Development debugging fully preserved
-- Improved performance in production (no logging overhead)
-- All debugging information available during development
+## Modular Architecture
+
+### Available Components (Extracted for Future Use)
+- **`ChartOverlay.tsx`**: Overlay data display component (145 lines)
+- **`useTooltip.ts`**: Unified tooltip management hook (243 lines)
+- **`useChartViewport.ts`**: Simplified viewport logic (140 lines)
+- **`chartConfig.ts`**: MA configuration constants (18 lines)
+
+### Benefits
+- **Reusability**: Components can be used in other charts
+- **Maintainability**: Focused, testable units
+- **Separation of Concerns**: Clear responsibility boundaries
+- **Future Development**: Easy to extend and modify
+
+### Current Implementation
+The main component uses a conservative approach:
+- ✅ MA configuration from chartConfig.ts (currently integrated)
+- 📦 Other modules available but not integrated to maintain stability
+- 🎯 Focus on smooth scrolling and reduced complexity
 
 ## Special Features
 
-### Watermark (Lines 331-340)
+### Watermark (Lines 349-357)
 ```typescript
 const watermark = createTextWatermark(chart.panes()[0], {
   horzAlign: 'center',
@@ -476,3 +450,18 @@ const PRICE_SCALE_TOP_MARGIN = 0.1
 const VOLUME_SCALE_BOTTOM_MARGIN = 0.25
 const VOLUME_SERIES_TOP_MARGIN = 0.8
 ```
+
+## Migration Notes
+
+### What Changed in Latest Version
+1. **Removed Complex Viewport Management**: Eliminated state tracking that caused jumping
+2. **Configuration-Driven MA**: Uses centralized MA_CONFIG and MA_SERIES_OPTIONS
+3. **Simplified State**: Removed `userViewportSet` and `lastViewportRange`
+4. **Natural Scrolling**: Lets lightweight-charts handle touch interactions
+5. **Modular Components**: Extracted reusable modules for future development
+
+### Benefits for Touch Users
+- ✅ **Smooth scrolling**: No more jumping back and forth
+- ✅ **Responsive interactions**: Immediate feedback to gestures
+- ✅ **Better performance**: Fewer state updates and conflicts
+- ✅ **Natural behavior**: Feels like native chart interactions
