@@ -13,8 +13,6 @@ interface TradingViewChartProps {
 	title?: string
 	height?: number
 	showControls?: boolean
-	viewportSizeOverride?: number
-	scrollToLatest?: boolean  // Force scroll to latest candle when data changes
 
 	// Ticker control
 	initialTicker?: string    // Static setup only

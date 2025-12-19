@@ -127,8 +127,7 @@ export function BaseTradingViewChart({
 		ma200: ma200SeriesRef,
 	} as const;
 
-	const [isDataInitialized, setIsDataInitialized] = useState(false);
-	const [crosshairData, setCrosshairData] = useState<StockData | null>(null);
+		const [crosshairData, setCrosshairData] = useState<StockData | null>(null);
 	const [clickedCrosshairData, setClickedCrosshairData] =
 		useState<StockData | null>(null);
 	// Use ref to track current crosshair lock state for immediate access in event handlers
@@ -150,7 +149,6 @@ export function BaseTradingViewChart({
 		if (process.env.NODE_ENV === "development") {
 			console.log("[BaseTradingViewChart] Data changed:", data?.length, "bars");
 		}
-		setIsDataInitialized(false);
 	}, [data]);
 
 	// Keep ref in sync with state for immediate access in event handlers
@@ -847,7 +845,6 @@ export function BaseTradingViewChart({
 		height,
 		maVisibility,
 		chartContainerRef.current,
-		isDataInitialized,
 	]);
 
 	// Update chart data when chartData changes
@@ -876,44 +873,9 @@ export function BaseTradingViewChart({
 		if (ma200SeriesRef.current) {
 			ma200SeriesRef.current.setData(maVisibility.ma200 ? chartData.ma200 : []);
 		}
-
-		// Smart viewport management
-		if (chartRef.current && chartData.candlestick.length > 0) {
-			if (process.env.NODE_ENV === "development") {
-				console.log("[BaseTradingViewChart] Viewport management:", {
-					candlestickCount: chartData.candlestick.length,
-					isDataInitialized,
-					responsiveViewportSize,
-				});
-			}
-
-			// Mark data as initialized on first successful data load
-			if (!isDataInitialized) {
-				if (process.env.NODE_ENV === "development") {
-					console.log("[BaseTradingViewChart] Marking data as initialized");
-				}
-				setIsDataInitialized(true);
-			}
-
-			// Only set viewport on initial load
-			if (!isDataInitialized) {
-				if (process.env.NODE_ENV === "development") {
-					console.log("[BaseTradingViewChart] Setting viewport - initial load");
-				}
-
-				const actualViewportSize = Math.min(responsiveViewportSize, chartData.candlestick.length);
-				const startIndex = chartData.candlestick.length - actualViewportSize;
-				const from = chartData.candlestick[startIndex].time;
-				const to = chartData.candlestick[chartData.candlestick.length - 1].time;
-
-				chartRef.current.timeScale().setVisibleRange({ from, to });
-			}
-		}
 	}, [
 		chartData,
-		isDataInitialized,
 		maVisibility,
-		responsiveViewportSize,
 	]);
 
 	// Update candlestick series price format when data changes

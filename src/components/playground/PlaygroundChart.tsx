@@ -59,13 +59,7 @@ export function PlaygroundChart() {
     ? visibleData[0]?.time?.split('T')[0]
     : null
 
-  // When currentIndex changes, we want to scroll to the latest visible date
-  const [prevIndex, setPrevIndex] = React.useState(playgroundData.currentIndex)
-  const scrollToLatest = playgroundData.currentIndex !== prevIndex
-  React.useEffect(() => {
-    setPrevIndex(playgroundData.currentIndex)
-  }, [playgroundData.currentIndex])
-
+  
   // Check if we should show the secondary chart
   const shouldShowSecondary = playgroundData.showSecondaryChart && playgroundData.secondaryTicker
 
@@ -102,22 +96,11 @@ export function PlaygroundChart() {
     )
   }
 
-  // Determine viewport size based on screen size
-  const getViewportBars = () => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < 768 ? 30 : 40  // Mobile: 30, Desktop: 40
-    }
-    return 40  // Default to 40
-  }
-
-  const viewportBars = getViewportBars()
-
+  
   const primaryChartProps = {
     ticker: playgroundData.ticker,
     endDateOverride: currentEndDate,
     showControls: true,
-    viewportSizeOverride: viewportBars,  // Show fixed number of bars on screen
-    scrollToLatest: scrollToLatest,
     height: chartHeight,  // Pass the selected height
     cacheData: visibleData,
     cacheMetadata: {
@@ -134,8 +117,6 @@ export function PlaygroundChart() {
     ticker: playgroundData.secondaryTicker!,
     endDateOverride: currentEndDate,
     showControls: true, // Show controls on secondary chart
-    viewportSizeOverride: viewportBars,  // Show fixed number of bars on screen
-    scrollToLatest: scrollToLatest,
     height: chartHeight,  // Pass the selected height
     cacheData: secondaryVisibleData,
     cacheMetadata: {
