@@ -146,9 +146,6 @@ export function BaseTradingViewChart({
 	// Reset data initialization flag when data changes
 	// Note: We intentionally preserve viewport position for comparison across tickers
 	useEffect(() => {
-		if (process.env.NODE_ENV === "development") {
-			console.log("[BaseTradingViewChart] Data changed:", data?.length, "bars");
-		}
 	}, [data]);
 
 	// Keep ref in sync with state for immediate access in event handlers
@@ -412,22 +409,9 @@ export function BaseTradingViewChart({
 		const handleChartClick = (param: any) => {
 			const currentLockedRef = clickedCrosshairRef.current; // Get current ref value
 
-			if (process.env.NODE_ENV === "development") {
-				console.log("[BaseTradingViewChart] Click handler triggered:", {
-					hasTime: !!param.time,
-					dataLength: data?.length || 0,
-					clickedCrosshairLockedState: !!clickedCrosshairData,
-					clickedCrosshairLockedRef: !!currentLockedRef,
-					clickedCrosshairSymbolState: clickedCrosshairData?.symbol,
-					clickedCrosshairSymbolRef: currentLockedRef?.symbol,
-				});
-			}
-
+			
 			// TOGGLE LOGIC: Always handle toggle first, before any validation
 			if (currentLockedRef) {
-				if (process.env.NODE_ENV === "development") {
-					console.log("[BaseTradingViewChart] Toggling crosshair - unlocking");
-				}
 				setClickedCrosshairData(null);
 				clickedCrosshairRef.current = null; // Update ref immediately
 				setLockedCrosshairPosition(null); // Clear locked position
@@ -457,27 +441,8 @@ export function BaseTradingViewChart({
 			);
 			const clickedDataPoint = currentIndex >= 0 ? data[currentIndex] : null;
 
-			if (process.env.NODE_ENV === "development") {
-				console.log("[BaseTradingViewChart] Click analysis for locking:", {
-					paramTime: param.time,
-					currentIndex,
-					foundDataPoint: !!clickedDataPoint,
-					dataPointSymbol: clickedDataPoint?.symbol,
-				});
-			}
-
+			
 			if (clickedDataPoint) {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						"[BaseTradingViewChart] Locking crosshair at new position:",
-						{
-							symbol: clickedDataPoint.symbol,
-							time: clickedDataPoint.time,
-							price: clickedDataPoint.close,
-							wasPreviouslyLocked: false,
-						},
-					);
-				}
 				setClickedCrosshairData(clickedDataPoint);
 				clickedCrosshairRef.current = clickedDataPoint; // Update ref immediately
 
@@ -578,21 +543,6 @@ export function BaseTradingViewChart({
 				param.point.y < 0 ||
 				param.point.y > chartContainerRef.current.clientHeight
 			) {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						"[BaseTradingViewChart] Hover out of bounds or missing data:",
-						{
-							hasContainer: !!chartContainerRef.current,
-							hasPoint: param.point !== undefined,
-							hasTime: !!param.time,
-							pointX: param.point?.x,
-							pointY: param.point?.y,
-							containerWidth: chartContainerRef.current?.clientWidth,
-							containerHeight: chartContainerRef.current?.clientHeight,
-							hasLockedCrosshair: !!clickedCrosshairRef.current,
-						},
-					);
-				}
 
 				// If there's a locked crosshair, restore built-in crosshair position and show tooltip
 				if (clickedCrosshairRef.current && lockedCrosshairPositionRef.current) {
