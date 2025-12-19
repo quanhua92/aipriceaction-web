@@ -13,9 +13,9 @@
 export const formatTooltipDate = (paramTime: any): string => {
 	let dateStr: string;
 	try {
-		const date = new Date((param.time as number) * 1000);
+		const date = new Date((paramTime as number) * 1000);
 		if (isNaN(date.getTime())) {
-			dateStr = String(param.time);
+			dateStr = String(paramTime);
 		} else {
 			// Timestamp is already shifted to Vietnam time, format as UTC to display correctly
 			dateStr = date.toLocaleString("en-US", {
