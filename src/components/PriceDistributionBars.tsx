@@ -73,12 +73,11 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
           {segmentData.map((segment, index) => (
             <div
               key={segment.key}
-              className={`absolute top-0 h-full transition-all duration-700 ease-out ${getBarColor(segment.color)} hover:opacity-90`}
+              className={`absolute top-0 h-full ${getBarColor(segment.color)} hover:opacity-90`}
               style={{
                 left: `${segment.start}%`,
                 width: `${segment.percentage}%`,
-                zIndex: segmentData.length - index,
-                animation: `slideIn 0.6s ease-out ${index * 0.1}s both`
+                zIndex: segmentData.length - index
               }}
             >
                 </div>
@@ -131,17 +130,6 @@ export function PriceDistributionBars({ distribution, totalTickers }: PriceDistr
         })}
       </div>
 
-      <style jsx>{`
-        @keyframes slideIn {
-          from {
-            transform: scaleX(0);
-            transform-origin: left;
-          }
-          to {
-            transform: scaleX(1);
-          }
-        }
-      `}</style>
-    </div>
+      </div>
   )
 }
