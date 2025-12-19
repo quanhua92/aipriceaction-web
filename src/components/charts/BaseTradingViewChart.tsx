@@ -44,8 +44,7 @@ interface BaseTradingViewChartProps {
 	title?: string;
 	height?: number;
 	showControls?: boolean;
-	viewportSizeOverride?: number;
-	noDataMessage?: string;
+		noDataMessage?: string;
 	maVisibility?: {
 		ma10: boolean;
 		ma20: boolean;
@@ -59,7 +58,6 @@ export function BaseTradingViewChart({
 	title,
 	height: heightProp,
 	showControls = true,
-	viewportSizeOverride,
 	noDataMessage = "No data available",
 	maVisibility: maVisibilityProp,
 }: BaseTradingViewChartProps) {
@@ -885,7 +883,6 @@ export function BaseTradingViewChart({
 				console.log("[BaseTradingViewChart] Viewport management:", {
 					candlestickCount: chartData.candlestick.length,
 					isDataInitialized,
-					viewportSizeOverride,
 					responsiveViewportSize,
 				});
 			}
@@ -904,8 +901,7 @@ export function BaseTradingViewChart({
 					console.log("[BaseTradingViewChart] Setting viewport - initial load");
 				}
 
-				const viewportSize = viewportSizeOverride || responsiveViewportSize;
-				const actualViewportSize = Math.min(viewportSize, chartData.candlestick.length);
+				const actualViewportSize = Math.min(responsiveViewportSize, chartData.candlestick.length);
 				const startIndex = chartData.candlestick.length - actualViewportSize;
 				const from = chartData.candlestick[startIndex].time;
 				const to = chartData.candlestick[chartData.candlestick.length - 1].time;
@@ -915,7 +911,6 @@ export function BaseTradingViewChart({
 		}
 	}, [
 		chartData,
-		viewportSizeOverride,
 		isDataInitialized,
 		maVisibility,
 		responsiveViewportSize,
