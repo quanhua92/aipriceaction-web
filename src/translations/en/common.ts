@@ -79,6 +79,30 @@ export default {
       fetchError: 'Failed to fetch market data',
       removeTicker: 'Remove',
     },
+    pageDescription: {
+      title: 'AI Analysis Builder',
+      subtitle: 'Professional Market Analysis Tools',
+      mainDescription: 'Create professional AI analysis contexts with Vietnamese stock market data. Select multiple stocks, configure timeframes, and generate ready-to-use prompts for AI assistants.',
+      features: {
+        multiTicker: {
+          title: 'Multiple Stocks',
+          description: 'Select up to 100 stocks, indices, and sectors for comprehensive analysis'
+        },
+        flexibleIntervals: {
+          title: 'Flexible Timeframes',
+          description: 'Choose from various timeframes (5m to 1M) for different analysis needs'
+        },
+        customTemplates: {
+          title: 'Professional Templates',
+          description: 'Use expert-designed templates for different analysis scenarios'
+        },
+        copyToClipboard: {
+          title: 'Easy Export',
+          description: 'Copy formatted analysis directly to AI assistant conversations'
+        }
+      },
+      getStarted: 'Start building: Select stocks, configure your analysis, and copy the generated context to your AI assistant.'
+    },
   },
   statusBar: {
     loading: 'Loading...',

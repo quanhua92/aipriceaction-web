@@ -16,6 +16,7 @@ import { TickerGroupSelector } from "@/components/TickerGroupSelector";
 import { getTickersForGroup } from "@/lib/ticker-group-utils";
 import { getWatchlistNames } from "@/lib/watchlist-storage";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
+import { AIDescription } from "@/components/ai/AIDescription";
 
 export const Route = createFileRoute("/ai")({ component: AIContextPage });
 
@@ -231,14 +232,15 @@ function AIContextPage() {
 	const canAddMoreTickers = selectedTickers.length < MAX_TICKERS;
 
 	return (
-		<div className="container mx-auto p-2 md:p-6 space-y-6">
-			<div className="space-y-2">
-				<h1 className="text-3xl font-bold">{t("common.aiContext.title")}</h1>
-				<p className="text-muted-foreground">
-					{t("common.aiContext.description")}
-				</p>
+		<div className="space-y-4">
+			{/* Description Section */}
+			<div className="bg-gradient-to-r from-green-500/10 via-blue-500/10 to-purple-500/10 border-b">
+				<div className="container mx-auto p-6 md:p-8">
+					<AIDescription />
+				</div>
 			</div>
 
+			<div className="container mx-auto p-2 md:p-6 space-y-6">
 			{/* Date Control Widget */}
 			<DateControlWidget />
 
@@ -505,6 +507,7 @@ function AIContextPage() {
 					</div>
 				</CardContent>
 			</Card>
+			</div>
 		</div>
 	)
 }

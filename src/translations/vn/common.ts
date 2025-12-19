@@ -79,6 +79,30 @@ export default {
       fetchError: 'Không thể lấy dữ liệu thị trường',
       removeTicker: 'Xóa',
     },
+    pageDescription: {
+      title: 'Công Cụ Phân Tích AI',
+      subtitle: 'Phân Tích Chuyên Nghiệp',
+      mainDescription: 'Tạo ngữ cảnh phân tích AI chuyên nghiệp với dữ liệu chứng khoán Việt Nam. Chọn nhiều cổ phiếu, tùy chỉnh khung thời gian và tạo ngữ cảnh cho trợ lý AI.',
+      features: {
+        multiTicker: {
+          title: 'Nhiều Cổ Phiếu',
+          description: 'Chọn đến 100 mã cổ phiếu, chỉ số và ngành để phân tích toàn diện'
+        },
+        flexibleIntervals: {
+          title: 'Thời Gian Linh Hoạt',
+          description: 'Chọn nhiều khung thời gian (5m đến 1M) cho các nhu cầu phân tích khác nhau'
+        },
+        customTemplates: {
+          title: 'Mẫu Chuyên Nghiệp',
+          description: 'Sử dụng mẫu có sẵn cho các trường hợp phân tích chuyên sâu'
+        },
+        copyToClipboard: {
+          title: 'Sao Chép Nhanh',
+          description: 'Sao chép ngữ cảnh phân tích ngay vào cuộc trò chuyện với AI'
+        }
+      },
+      getStarted: 'Bắt đầu: Chọn cổ phiếu, cấu hình phân tích, và sao chép ngữ cảnh vào trợ lý AI của bạn.'
+    },
   },
   statusBar: {
     loading: 'Đang tải...',
