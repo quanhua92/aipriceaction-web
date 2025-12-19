@@ -125,6 +125,9 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 	const volume: HistogramData[] = [];
 	const maDataArrays = createMADataArrays();
 
+	// Track seen timestamps to prevent duplicates
+	const seenTimestamps = new Set<number>();
+
 	// Transform each data point
 	data.forEach((point, index) => {
 		// Parse UTC ISO string to Date object (reuse from candlestick transformation)
@@ -139,6 +142,15 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 		}
 
 		const time = toVietnamUnixTime(dateTime) as any;
+
+		// Skip duplicate timestamps to prevent lightweight-charts error
+		if (seenTimestamps.has(time)) {
+			if (process.env.NODE_ENV === "development") {
+				console.warn("Skipping duplicate timestamp in chart data:", time, "for point:", point);
+			}
+			return;
+		}
+		seenTimestamps.add(time);
 
 		// Transform candlestick data
 		candlestick.push({
