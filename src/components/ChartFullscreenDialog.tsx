@@ -50,8 +50,14 @@ export function ChartFullscreenDialog({
   const [internalIndex, setInternalIndex] = React.useState(currentIndex)
   const [internalTicker, setInternalTicker] = React.useState<string | null>(ticker)
 
+  // Navigation lock to prevent prop changes from overriding user navigation
+  const [isNavigationLocked, setIsNavigationLocked] = React.useState(false)
+
   // Update internal state when ticker prop changes
   React.useEffect(() => {
+    // Only sync props if navigation isn't locked
+    if (isNavigationLocked) return
+
     setInternalTicker(ticker)
     if (ticker && tickerList) {
       const index = tickerList.indexOf(ticker)
@@ -59,7 +65,15 @@ export function ChartFullscreenDialog({
         setInternalIndex(index)
       }
     }
-  }, [ticker, tickerList])
+  }, [ticker, tickerList, isNavigationLocked])
+
+  // Reset navigation lock when dialog opens
+  React.useEffect(() => {
+    if (isOpen) {
+      // Reset navigation lock when dialog opens
+      setIsNavigationLocked(false)
+    }
+  }, [isOpen])
 
   // Get the current ticker to display
   // If internalTicker is not in tickerList (user selected external ticker like crypto), use internalTicker directly
@@ -114,6 +128,7 @@ export function ChartFullscreenDialog({
     const newIndex = internalIndex === 0 ? tickerList.length - 1 : internalIndex - 1
     setInternalIndex(newIndex)
     setInternalTicker(tickerList[newIndex])
+    setIsNavigationLocked(true) // Lock navigation after first user interaction
 
     // Prefetch previous 2 tickers from new position (delayed 100ms)
     setTimeout(() => {
@@ -127,6 +142,7 @@ export function ChartFullscreenDialog({
     const newIndex = (internalIndex + 1) % tickerList.length
     setInternalIndex(newIndex)
     setInternalTicker(tickerList[newIndex])
+    setIsNavigationLocked(true) // Lock navigation after first user interaction
 
     // Prefetch next 2 tickers from new position (delayed 100ms)
     setTimeout(() => {
@@ -140,6 +156,7 @@ export function ChartFullscreenDialog({
     if (!tickerList || tickerList.length === 0) {
       // No ticker list - just update internal ticker
       setInternalTicker(newTicker)
+      setIsNavigationLocked(false) // Unlock for external tickers
       return
     }
 
@@ -149,9 +166,11 @@ export function ChartFullscreenDialog({
       // Ticker found in list - jump to that index (stay in navigation mode)
       setInternalIndex(index)
       setInternalTicker(newTicker)
+      setIsNavigationLocked(false) // Unlock when user explicitly selects ticker
     } else {
       // Ticker not in list - switch to single-ticker mode
       setInternalTicker(newTicker)
+      setIsNavigationLocked(false) // Unlock for external tickers
       // Note: Navigation will still show, but displayTicker will use internalTicker
       // since it's not in the list at the current index
     }
