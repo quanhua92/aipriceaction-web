@@ -260,7 +260,6 @@ export function TickerProvider({
 
     // NEW: Check if we can use cached data
     if (isCacheValid(cacheData, cacheMetadata, selectedTicker, settings?.interval, localEndDate ?? settings?.endDate, tickersRef.current, cryptoTickersRef.current)) {
-      console.log('[TickerProvider] Using cached data for', selectedTicker)
       setChartData(cacheData)
       setLoading(false)
       setError(null)
@@ -268,7 +267,6 @@ export function TickerProvider({
     }
 
     // Cache miss or invalid cache - fetch normally
-    console.log('[TickerProvider] Cache miss - fetching data for', selectedTicker)
 
     const fetchChartData = async () => {
             setLoading(true)

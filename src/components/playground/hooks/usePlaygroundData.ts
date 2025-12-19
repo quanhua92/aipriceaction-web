@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { useAPI } from '@/contexts/APIContext'
 import { type StockData } from '@/lib/api-client'
-import { useLogs } from '@/contexts/LogsContext'
 
 // localStorage key for secondary chart visibility
 const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
@@ -56,25 +55,19 @@ const findPreservedIndex = (
   newData: StockData[],
   currentData: StockData[],
   currentIndex: number,
-  logger: (msg: string) => void
 ): number => {
   if (!currentData.length || !newData.length) {
-    logger('[Playground] ⚠️ No current data or new data, using default index 99')
     return Math.min(99, Math.max(0, newData.length - 1))
   }
 
   const currentDate = currentData[currentIndex]?.time?.split('T')[0]
   if (!currentDate) {
-    logger('[Playground] ⚠️ No current date found, using default index 99')
     return Math.min(99, Math.max(0, newData.length - 1))
   }
-
-  logger(`[Playground] 🔍 Trying to preserve position for date: ${currentDate} (current index: ${currentIndex})`)
 
   // Try to find the exact date in new data
   const exactMatch = newData.findIndex(d => d.time?.split('T')[0] === currentDate)
   if (exactMatch !== -1) {
-    logger(`[Playground] ✅ Found exact date match at index ${exactMatch}`)
     return exactMatch
   }
 
@@ -94,14 +87,11 @@ const findPreservedIndex = (
   }
 
   if (closestIndex !== -1) {
-    const closestDate = newData[closestIndex]?.time?.split('T')[0]
-    logger(`[Playground] ⚠️ Date not found, using closest match: ${closestDate} at index ${closestIndex}`)
     return closestIndex
   }
 
   // Last resort: use same absolute index if within bounds
   const sameIndex = Math.min(currentIndex, newData.length - 1)
-  logger(`[Playground] ⚠️ No close date found, using same absolute index: ${sameIndex}`)
   return sameIndex
 }
 
@@ -112,7 +102,6 @@ export function usePlaygroundData(
   initialSecondaryTicker?: string
 ) {
   const { getTickers, tickerGroups } = useAPI()
-  const { info, error: logError, debug } = useLogs()
 
   // Ref to track if initialization has already happened
   const hasInitialized = React.useRef(false)
@@ -134,26 +123,12 @@ export function usePlaygroundData(
     showSecondaryChart: initialShowSecondaryChart,
   })
 
-  // Log initial value after mount
-  React.useEffect(() => {
-    if (initialShowSecondaryChart) {
-      info(`[Playground] 📊 Initial secondary chart visibility from localStorage: true`)
-    }
-  }, [])
-
-  // Log initial values after mount
-  React.useEffect(() => {
-    info(`[Playground] 🎯 Initial secondary ticker: "${playgroundData.secondaryTicker}"`)
-  }, [])
-
   // Fetch initial data
   const fetchInitialData = useCallback(async () => {
-    info('[Playground] Starting initialization...')
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     try {
       const startTime = Date.now()
-      info('[Playground] Fetching initial data...')
 
       // Use provided values or generate random ones
       // If initial values were provided, use them. Otherwise, generate random ones.
@@ -161,12 +136,8 @@ export function usePlaygroundData(
       const ticker = useInitial ? initialTicker : getRandomTicker(tickerGroups)
       const endDate = useInitial ? initialEndDate : generateRandomEndDate()
 
-      info(`[Playground] Selected ticker: ${ticker} (${useInitial ? 'from URL' : 'random'})`)
-      info(`[Playground] Selected end date: ${endDate} (${useInitial ? 'from URL' : 'random'})`)
-
       // To get exactly 500 days, we only specify endDate and limit
       // The API will return 500 trading days before the endDate
-      info(`[Playground] Fetching 500 days ending at ${endDate}`)
 
       // Fetch both primary and secondary tickers in parallel if secondary ticker is set
       const promises = [
@@ -199,10 +170,8 @@ export function usePlaygroundData(
       if (primaryResult.status === 'fulfilled') {
         const response = primaryResult.value
         primaryData = response[ticker] || []
-        info(`[Playground] ✅ Primary ${ticker}: ${primaryData.length} days`)
       } else {
         primaryError = primaryResult.reason?.message || 'Failed to fetch primary ticker'
-        logError(`[Playground] ❌ Primary ${ticker} failed: ${primaryError}`)
       }
 
       // Process secondary ticker result
@@ -213,27 +182,21 @@ export function usePlaygroundData(
       if (secondaryResult.status === 'fulfilled') {
         const response = secondaryResult.value
         secondaryData = response[secondaryTicker] || []
-        info(`[Playground] ✅ Secondary ${secondaryTicker}: ${secondaryData.length} days`)
       } else {
         secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary ticker'
-        logError(`[Playground] ❌ Secondary ${secondaryTicker} failed: ${secondaryError}`)
       }
 
       // Start by showing first 100 days (or all if less than 100)
       const startIndex = Math.min(99, Math.max(0, primaryData.length - 1))
 
-      info(`[Playground] Initial display index: ${startIndex} (showing ${startIndex + 1} days)`)
-
       if (primaryData.length > 0) {
         const firstDate = primaryData[0]?.time?.split('T')[0]
         const lastDate = primaryData[primaryData.length - 1]?.time?.split('T')[0]
-        info(`[Playground] Primary data range: ${firstDate} to ${lastDate}`)
       }
 
       if (secondaryData.length > 0) {
         const firstDate = secondaryData[0]?.time?.split('T')[0]
         const lastDate = secondaryData[secondaryData.length - 1]?.time?.split('T')[0]
-        info(`[Playground] Secondary data range: ${firstDate} to ${lastDate}`)
       }
 
       setPlaygroundData({
@@ -264,37 +227,26 @@ export function usePlaygroundData(
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load playground data'
-      logError(`[Playground] ❌ Initial data fetch failed: ${errorMessage}`)
-      if (err instanceof Error) {
-        logError(`[Playground] Error stack: ${err.stack}`)
-      }
       setPlaygroundData(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
       }))
     }
-  }, [getTickers, tickerGroups, info, logError, navigateFn, initialTicker, initialEndDate, initialSecondaryTicker])
+  }, [getTickers, tickerGroups, navigateFn, initialTicker, initialEndDate, initialSecondaryTicker])
 
   // Randomize data with new ticker and date
   const randomizeData = useCallback(async () => {
-    info('[Playground] 🎲 Starting randomization...')
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     try {
       const startTime = Date.now()
-      info('[Playground] Generating random ticker and date...')
 
       // Always generate random ones for randomization
       const ticker = getRandomTicker(tickerGroups)
       const endDate = generateRandomEndDate()
 
-      info(`[Playground] Randomized ticker: ${ticker}`)
-      info(`[Playground] Randomized end date: ${endDate}`)
-
       // To get exactly 500 days, we only specify endDate and limit
-      info(`[Playground] Fetching 500 days ending at ${endDate}`)
-
       const response = await getTickers('Playground.randomize', {
         symbol: ticker,
         end_date: endDate,
@@ -308,13 +260,9 @@ export function usePlaygroundData(
       // Start by showing first 100 days (or all if less than 100)
       const startIndex = Math.min(99, Math.max(0, data.length - 1))
 
-      info(`[Playground] ✅ Loaded ${data.length} days for ${ticker} in ${duration}ms`)
-      info(`[Playground] Initial display index: ${startIndex} (showing ${startIndex + 1} days)`)
-
       if (data.length > 0) {
         const firstDate = data[0]?.time?.split('T')[0]
         const lastDate = data[data.length - 1]?.time?.split('T')[0]
-        info(`[Playground] Data range: ${firstDate} to ${lastDate}`)
       }
 
       setPlaygroundData(prev => ({
@@ -342,23 +290,18 @@ export function usePlaygroundData(
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to randomize playground data'
-      logError(`[Playground] ❌ Randomization failed: ${errorMessage}`)
-      if (err instanceof Error) {
-        logError(`[Playground] Error stack: ${err.stack}`)
-      }
       setPlaygroundData(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
       }))
     }
-  }, [getTickers, tickerGroups, info, logError, navigateFn])
+  }, [getTickers, tickerGroups, navigateFn])
 
   // Fetch data on mount (only once)
   useEffect(() => {
     if (!hasInitialized.current) {
       hasInitialized.current = true
-      info('[Playground] 🚀 Component mounted, initializing...')
       fetchInitialData()
     }
   }, []) // Empty dependency array - only run once on mount
@@ -367,13 +310,9 @@ export function usePlaygroundData(
   const setCurrentIndex = useCallback((newIndex: number) => {
     setPlaygroundData(prev => {
       const clampedIndex = Math.max(0, Math.min(prev.allData.length - 1, newIndex))
-      if (clampedIndex !== prev.currentIndex) {
-        const currentIndexDate = prev.allData[clampedIndex]?.time?.split('T')[0]
-        info(`[Playground] 📍 Index changed to ${clampedIndex} (${clampedIndex + 1} days, date: ${currentIndexDate})`)
-      }
       return { ...prev, currentIndex: clampedIndex }
     })
-  }, [info])
+  }, [])
 
   // Get visible data based on current index
   const visibleData = useMemo(() => {
@@ -382,17 +321,10 @@ export function usePlaygroundData(
     // Show data from index 0 to currentIndex (cumulative view)
     const visible = playgroundData.allData.slice(0, playgroundData.currentIndex + 1)
 
-    // Log when visible data changes
-    if (visible.length > 0) {
-      const firstDate = visible[0]?.time?.split('T')[0]
-      const lastDate = visible[visible.length - 1]?.time?.split('T')[0]
-      debug(`[Playground] 📊 Visible data: ${visible.length} days (${firstDate} to ${lastDate})`)
-    }
-
     return visible
-  }, [playgroundData.allData, playgroundData.currentIndex, debug])
+  }, [playgroundData.allData, playgroundData.currentIndex])
 
-  
+
   // Watch for URL param changes (e.g., when user manually changes URL in browser)
   useEffect(() => {
     // Only react to URL changes if they differ from current state
@@ -405,13 +337,11 @@ export function usePlaygroundData(
       return
     }
 
-    info(`[Playground] 🔄 URL params changed - fetching data for ${urlTicker || playgroundData.ticker} ending at ${urlEndDate || playgroundData.endDate}`)
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     const fetchDataForParams = async (ticker: string, endDate: string) => {
       try {
         const startTime = Date.now()
-        info(`[Playground] Fetching data from URL params: ${ticker} ending at ${endDate}`)
 
         const response = await getTickers('Playground.urlChange', {
           symbol: ticker,
@@ -426,13 +356,9 @@ export function usePlaygroundData(
         // Start by showing first 100 days (or all if less than 100)
         const startIndex = Math.min(99, Math.max(0, data.length - 1))
 
-        info(`[Playground] ✅ Loaded ${data.length} days for ${ticker} in ${duration}ms`)
-        info(`[Playground] Initial display index: ${startIndex} (showing ${startIndex + 1} days)`)
-
         if (data.length > 0) {
           const firstDate = data[0]?.time?.split('T')[0]
           const lastDate = data[data.length - 1]?.time?.split('T')[0]
-          info(`[Playground] Data range: ${firstDate} to ${lastDate}`)
         }
 
         setPlaygroundData(prev => ({
@@ -449,10 +375,6 @@ export function usePlaygroundData(
         }))
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load data from URL params'
-        logError(`[Playground] ❌ URL param data fetch failed: ${errorMessage}`)
-        if (err instanceof Error) {
-          logError(`[Playground] Error stack: ${err.stack}`)
-        }
         setPlaygroundData(prev => ({
           ...prev,
           isLoading: false,
@@ -466,7 +388,7 @@ export function usePlaygroundData(
     const endDateToUse = urlEndDate || playgroundData.endDate
 
     fetchDataForParams(tickerToLoad, endDateToUse)
-  }, [initialTicker, initialEndDate, playgroundData.ticker, playgroundData.endDate, getTickers, info, logError])
+  }, [initialTicker, initialEndDate, playgroundData.ticker, playgroundData.endDate, getTickers])
 
   // Navigation helpers
   const navigateDate = useCallback((direction: 'back5' | 'back1' | 'next1' | 'next5') => {
@@ -476,35 +398,29 @@ export function usePlaygroundData(
     switch (direction) {
       case 'back5':
         newIndex = Math.max(0, prevIndex - 5)
-        info(`[Playground] ⬅️ Navigating back 5 days: ${prevIndex} → ${newIndex}`)
         break
       case 'back1':
         newIndex = Math.max(0, prevIndex - 1)
-        info(`[Playground] ⬅️ Navigating back 1 day: ${prevIndex} → ${newIndex}`)
         break
       case 'next1':
         newIndex = Math.min(playgroundData.allData.length - 1, prevIndex + 1)
-        info(`[Playground] ➡️ Navigating next 1 day: ${prevIndex} → ${newIndex}`)
         break
       case 'next5':
         newIndex = Math.min(playgroundData.allData.length - 1, prevIndex + 5)
-        info(`[Playground] ➡️ Navigating next 5 days: ${prevIndex} → ${newIndex}`)
         break
       default:
         newIndex = prevIndex
     }
 
     setCurrentIndex(newIndex)
-  }, [playgroundData.currentIndex, playgroundData.allData.length, setCurrentIndex, info])
+  }, [playgroundData.currentIndex, playgroundData.allData.length, setCurrentIndex])
 
   // Manual ticker change method
   const updateTicker = useCallback(async (newTicker: string) => {
-    info(`[Playground] 📊 User selected ticker: ${newTicker}`)
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     try {
       const startTime = Date.now()
-      info(`[Playground] Updating ticker to: ${newTicker}`)
 
       const response = await getTickers('Playground.updateTicker', {
         symbol: newTicker,
@@ -519,13 +435,9 @@ export function usePlaygroundData(
       // Start by showing first 100 days (or all if less than 100)
       const startIndex = Math.min(99, Math.max(0, data.length - 1))
 
-      info(`[Playground] ✅ Loaded ${data.length} days for ${newTicker} in ${duration}ms`)
-      info(`[Playground] Initial display index: ${startIndex} (showing ${startIndex + 1} days)`)
-
       if (data.length > 0) {
         const firstDate = data[0]?.time?.split('T')[0]
         const lastDate = data[data.length - 1]?.time?.split('T')[0]
-        info(`[Playground] Data range: ${firstDate} to ${lastDate}`)
       }
 
       setPlaygroundData(prev => ({
@@ -553,31 +465,21 @@ export function usePlaygroundData(
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update ticker'
-      logError(`[Playground] ❌ Ticker update failed: ${errorMessage}`)
-      if (err instanceof Error) {
-        logError(`[Playground] Error stack: ${err.stack}`)
-      }
       setPlaygroundData(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
       }))
     }
-  }, [getTickers, playgroundData.endDate, navigateFn, info, logError])
+  }, [getTickers, playgroundData.endDate, navigateFn])
 
   // Manual date change method
   const updateEndDate = useCallback(async (newEndDate: string) => {
-    info(`[Playground] 📅 User selected end date: ${newEndDate}`)
-
     // Set loading state first
     setPlaygroundData(prev => {
       const ticker = prev.ticker || initialTicker || 'VNINDEX'
-      info(`[Playground] 🔍 Current state ticker: "${prev.ticker}", initialTicker: "${initialTicker}"`)
-      info(`[Playground] 📊 Using ticker: "${ticker}"`)
 
       if (!ticker || ticker === '') {
-        logError('[Playground] ❌ No ticker available for update')
-        logError(`[Playground] Debug - prev.ticker: "${prev.ticker}", initialTicker: "${initialTicker}"`)
         return prev // Return unchanged state
       }
 
@@ -596,8 +498,6 @@ export function usePlaygroundData(
       const currentState = playgroundData
       const ticker = currentState.ticker || initialTicker || 'VNINDEX'
 
-      info(`[Playground] Updating end date to: ${newEndDate} for ticker ${ticker}`)
-
       // Fetch both primary and secondary tickers in parallel if secondary ticker exists
       const promises = [
         getTickers('Playground.updateDate.primary', {
@@ -609,7 +509,6 @@ export function usePlaygroundData(
       ]
 
       if (currentState.secondaryTicker) {
-        info(`[Playground] Also fetching secondary ticker ${currentState.secondaryTicker}`)
         promises.push(
           getTickers('Playground.updateDate.secondary', {
             symbol: currentState.secondaryTicker,
@@ -636,19 +535,14 @@ export function usePlaygroundData(
         if (currentDate && new Date(currentDate) > new Date(newEndDate)) {
           // Current date is after new end date, jump to end
           startIndex = data.length - 1
-          info(`[Playground] 📍 Jumping to end (index ${startIndex}) since current date is after new end date`)
         } else {
           // Try to preserve position
-          startIndex = findPreservedIndex(data, currentState.allData, currentState.currentIndex, info)
+          startIndex = findPreservedIndex(data, currentState.allData, currentState.currentIndex)
         }
-
-        info(`[Playground] ✅ Loaded ${data.length} days for ${ticker} in ${duration}ms`)
-        info(`[Playground] 📍 Display index: ${startIndex} (showing ${startIndex + 1} days)`)
 
         if (data.length > 0) {
           const firstDate = data[0]?.time?.split('T')[0]
           const lastDate = data[data.length - 1]?.time?.split('T')[0]
-          info(`[Playground] Primary data range: ${firstDate} to ${lastDate}`)
         }
 
         // Update state using functional form to ensure we preserve the ticker
@@ -676,12 +570,9 @@ export function usePlaygroundData(
           const response = secondaryResult.value
           const data = response[currentState.secondaryTicker] || []
 
-          info(`[Playground] ✅ Loaded ${data.length} days for secondary ticker ${currentState.secondaryTicker}`)
-
           if (data.length > 0) {
             const firstDate = data[0]?.time?.split('T')[0]
             const lastDate = data[data.length - 1]?.time?.split('T')[0]
-            info(`[Playground] Secondary data range: ${firstDate} to ${lastDate}`)
           }
 
           setPlaygroundData(prev => ({
@@ -690,7 +581,6 @@ export function usePlaygroundData(
             secondaryIsLoading: false,
           }))
         } else {
-          logError(`[Playground] ❌ Secondary ticker update failed: ${secondaryResult.reason}`)
           setPlaygroundData(prev => ({
             ...prev,
             secondaryIsLoading: false,
@@ -711,10 +601,6 @@ export function usePlaygroundData(
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update end date'
-      logError(`[Playground] ❌ End date update failed: ${errorMessage}`)
-      if (err instanceof Error) {
-        logError(`[Playground] Error stack: ${err.stack}`)
-      }
       setPlaygroundData(prev => ({
         ...prev,
         isLoading: false,
@@ -722,16 +608,14 @@ export function usePlaygroundData(
         error: errorMessage,
       }))
     }
-  }, [playgroundData, getTickers, navigateFn, info, logError, initialTicker])
+  }, [playgroundData, getTickers, navigateFn, initialTicker])
 
   // Update secondary ticker method
   const updateSecondaryTicker = useCallback(async (newSecondaryTicker: string) => {
     if (!playgroundData.endDate) {
-      logError('[Playground] ❌ No end date available for secondary ticker update')
       return
     }
 
-    info(`[Playground] 📊 User selected secondary ticker: ${newSecondaryTicker}`)
     setPlaygroundData(prev => ({
       ...prev,
       secondaryTicker: newSecondaryTicker,
@@ -741,7 +625,6 @@ export function usePlaygroundData(
 
     try {
       const startTime = Date.now()
-      info(`[Playground] Fetching data for secondary ticker: ${newSecondaryTicker}`)
 
       const response = await getTickers('Playground.updateSecondaryTicker', {
         symbol: newSecondaryTicker,
@@ -753,12 +636,9 @@ export function usePlaygroundData(
       const data = response[newSecondaryTicker] || []
       const duration = Date.now() - startTime
 
-      info(`[Playground] ✅ Loaded ${data.length} days for secondary ticker ${newSecondaryTicker} in ${duration}ms`)
-
       if (data.length > 0) {
         const firstDate = data[0]?.time?.split('T')[0]
         const lastDate = data[data.length - 1]?.time?.split('T')[0]
-        info(`[Playground] Secondary data range: ${firstDate} to ${lastDate}`)
       }
 
       setPlaygroundData(prev => ({
@@ -768,37 +648,18 @@ export function usePlaygroundData(
       }))
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update secondary ticker'
-      logError(`[Playground] ❌ Secondary ticker update failed: ${errorMessage}`)
-      if (err instanceof Error) {
-        logError(`[Playground] Error stack: ${err.stack}`)
-      }
       setPlaygroundData(prev => ({
         ...prev,
         secondaryIsLoading: false,
         secondaryError: errorMessage,
       }))
     }
-  }, [getTickers, playgroundData.endDate, info, logError])
+  }, [getTickers, playgroundData.endDate])
 
   // Toggle secondary chart visibility
   const toggleSecondaryChart = useCallback(() => {
     setPlaygroundData(prev => {
       const newState = !prev.showSecondaryChart
-      info(`[Playground] 📍 Secondary chart ${newState ? 'shown' : 'hidden'}`)
-
-      // Log secondary ticker data info
-      if (newState) {
-        info(`[Playground] 📊 Secondary ticker: "${prev.secondaryTicker}"`)
-        info(`[Playground] 📊 Secondary data length: ${prev.secondaryAllData?.length || 0} days`)
-        if (prev.secondaryAllData && prev.secondaryAllData.length > 0) {
-          const firstDate = prev.secondaryAllData[0]?.time?.split('T')[0]
-          const lastDate = prev.secondaryAllData[prev.secondaryAllData.length - 1]?.time?.split('T')[0]
-          info(`[Playground] 📊 Secondary data range: ${firstDate} to ${lastDate}`)
-        }
-        if (prev.secondaryError) {
-          info(`[Playground] ⚠️ Secondary error: ${prev.secondaryError}`)
-        }
-      }
 
       return {
         ...prev,
@@ -809,12 +670,11 @@ export function usePlaygroundData(
 
   // Set secondary chart visibility directly
   const setShowSecondaryChart = useCallback((visible: boolean) => {
-    info(`[Playground] 📍 Secondary chart ${visible ? 'shown' : 'hidden'} (from localStorage)`)
     setPlaygroundData(prev => ({
       ...prev,
       showSecondaryChart: visible,
     }))
-  }, [info])
+  }, [])
 
   // Get secondary visible data
   const secondaryVisibleData = useMemo(() => {
@@ -823,14 +683,8 @@ export function usePlaygroundData(
     // Show data from index 0 to currentIndex (cumulative view)
     const visible = playgroundData.secondaryAllData.slice(0, playgroundData.currentIndex + 1)
 
-    if (visible.length > 0) {
-      const firstDate = visible[0]?.time?.split('T')[0]
-      const lastDate = visible[visible.length - 1]?.time?.split('T')[0]
-      debug(`[Playground] 📊 Secondary visible data: ${visible.length} days (${firstDate} to ${lastDate})`)
-    }
-
     return visible
-  }, [playgroundData.secondaryAllData, playgroundData.currentIndex, debug])
+  }, [playgroundData.secondaryAllData, playgroundData.currentIndex])
 
   // Viewport range for chart performance (show last ~100 candles)
   const viewportRange = useMemo(() => {
@@ -856,7 +710,7 @@ export function usePlaygroundData(
     }
   }, [secondaryVisibleData])
 
-  
+
   return {
     playgroundData,
     visibleData,
