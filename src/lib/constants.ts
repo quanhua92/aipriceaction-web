@@ -105,7 +105,7 @@ export const MATRIX_DAYS_PER_PAGE = 40
 /**
  * Default number of records to load for charts
  */
-export const DEFAULT_CHART_LIMIT = 128
+export const DEFAULT_CHART_LIMIT = 256
 
 /**
  * Number of additional records to load when clicking "Load More" button
