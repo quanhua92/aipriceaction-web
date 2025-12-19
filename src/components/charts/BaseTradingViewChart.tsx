@@ -46,7 +46,6 @@ interface BaseTradingViewChartProps {
 	showControls?: boolean;
 	viewportSizeOverride?: number;
 	noDataMessage?: string;
-	scrollToLatest?: boolean; // Force scroll to latest candle when data changes
 	maVisibility?: {
 		ma10: boolean;
 		ma20: boolean;
@@ -62,7 +61,6 @@ export function BaseTradingViewChart({
 	showControls = true,
 	viewportSizeOverride,
 	noDataMessage = "No data available",
-	scrollToLatest = false,
 	maVisibility: maVisibilityProp,
 }: BaseTradingViewChartProps) {
 	// Get global settings
@@ -887,7 +885,6 @@ export function BaseTradingViewChart({
 				console.log("[BaseTradingViewChart] Viewport management:", {
 					candlestickCount: chartData.candlestick.length,
 					isDataInitialized,
-					scrollToLatest,
 					viewportSizeOverride,
 					responsiveViewportSize,
 				});
@@ -901,13 +898,10 @@ export function BaseTradingViewChart({
 				setIsDataInitialized(true);
 			}
 
-			// Only set viewport on initial load or when explicitly requested
-			if (!isDataInitialized || scrollToLatest) {
+			// Only set viewport on initial load
+			if (!isDataInitialized) {
 				if (process.env.NODE_ENV === "development") {
-					console.log(
-						"[BaseTradingViewChart] Setting viewport -",
-						scrollToLatest ? "scrollToLatest" : "initial load"
-					);
+					console.log("[BaseTradingViewChart] Setting viewport - initial load");
 				}
 
 				const viewportSize = viewportSizeOverride || responsiveViewportSize;
@@ -924,7 +918,6 @@ export function BaseTradingViewChart({
 		viewportSizeOverride,
 		isDataInitialized,
 		maVisibility,
-		scrollToLatest,
 		responsiveViewportSize,
 	]);
 
