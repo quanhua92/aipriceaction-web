@@ -121,6 +121,15 @@ export function BaseTradingViewChart({
 	const ma100SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const ma200SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 
+	// Dynamic ref mapping for MA series
+	const maSeriesRefs = {
+		ma10: ma10SeriesRef,
+		ma20: ma20SeriesRef,
+		ma50: ma50SeriesRef,
+		ma100: ma100SeriesRef,
+		ma200: ma200SeriesRef,
+	} as const;
+
 	const [isDataInitialized, setIsDataInitialized] = useState(false);
 	const [crosshairData, setCrosshairData] = useState<StockData | null>(null);
 	const [clickedCrosshairData, setClickedCrosshairData] =
@@ -184,6 +193,15 @@ export function BaseTradingViewChart({
 		const ma100: LineData[] = [];
 		const ma200: LineData[] = [];
 
+		// Dynamic MA data mapping
+		const maDataArrays = {
+			ma10,
+			ma20,
+			ma50,
+			ma100,
+			ma200,
+		} as const;
+
 		data.forEach((point, index) => {
 			// Parse UTC ISO string to Date object
 			const dateTime = parseUTCISOString(point.time);
@@ -225,11 +243,7 @@ export function BaseTradingViewChart({
 			MA_CONFIG.forEach(({ key }) => {
 				const maValue = point[key as keyof typeof point] as number | undefined;
 				if (maValue !== undefined && maValue !== null) {
-					if (key === 'ma10') ma10.push({ time, value: maValue });
-					else if (key === 'ma20') ma20.push({ time, value: maValue });
-					else if (key === 'ma50') ma50.push({ time, value: maValue });
-					else if (key === 'ma100') ma100.push({ time, value: maValue });
-					else if (key === 'ma200') ma200.push({ time, value: maValue });
+					maDataArrays[key as keyof typeof maDataArrays].push({ time, value: maValue });
 				}
 			});
 		});
@@ -330,12 +344,8 @@ export function BaseTradingViewChart({
 				color,
 				...MA_SERIES_OPTIONS,
 			});
-			// Map to existing refs for backward compatibility
-			if (key === 'ma10') ma10SeriesRef.current = series;
-			else if (key === 'ma20') ma20SeriesRef.current = series;
-			else if (key === 'ma50') ma50SeriesRef.current = series;
-			else if (key === 'ma100') ma100SeriesRef.current = series;
-			else if (key === 'ma200') ma200SeriesRef.current = series;
+			// Dynamic ref mapping for backward compatibility
+			maSeriesRefs[key as keyof typeof maSeriesRefs].current = series;
 		});
 
 		// Create watermark using official API
