@@ -38,6 +38,7 @@ import { RulerSection } from "./RulerSection";
 import { createTooltipElement, positionTooltip } from "@/lib/tooltipStyles";
 import { getChangeColors, getVolumeColor, getVolumePercentColor, getMAColor, getBasicChangeColor } from "@/lib/chartColors";
 import { formatTooltipDate } from "@/lib/chartDateUtils";
+import { transformStockDataToChartData, type ChartData } from "@/lib/chartDataTransform";
 
 interface BaseTradingViewChartProps {
 	title?: string;
@@ -172,83 +173,8 @@ export function BaseTradingViewChart({
 	}, [containerWidth]);
 
 	// Transform data to TradingView format
-	const chartData = useMemo(() => {
-		if (!data || data.length === 0) {
-			return {
-				candlestick: [],
-				volume: [],
-				ma10: [],
-				ma20: [],
-				ma50: [],
-				ma100: [],
-				ma200: [],
-			};
-		}
-
-		const candlestick: CandlestickData[] = [];
-		const volume: HistogramData[] = [];
-		const ma10: LineData[] = [];
-		const ma20: LineData[] = [];
-		const ma50: LineData[] = [];
-		const ma100: LineData[] = [];
-		const ma200: LineData[] = [];
-
-		// Dynamic MA data mapping
-		const maDataArrays = {
-			ma10,
-			ma20,
-			ma50,
-			ma100,
-			ma200,
-		} as const;
-
-		data.forEach((point, index) => {
-			// Parse UTC ISO string to Date object
-			const dateTime = parseUTCISOString(point.time);
-
-			// Skip invalid dates
-			if (isNaN(dateTime.getTime())) {
-				if (process.env.NODE_ENV === "development") {
-					console.error("Invalid date in chart data:", point.time);
-				}
-				return;
-			}
-
-			// Convert to Vietnam time Unix timestamp for chart display
-			const time = toVietnamUnixTime(dateTime) as Time;
-			const prevPoint = index > 0 ? data[index - 1] : null;
-			const volumeColor = prevPoint
-				? point.close >= prevPoint.close
-					? "#16a34a"
-					: "#dc2626"
-				: point.close >= point.open
-					? "#16a34a"
-					: "#dc2626";
-
-			candlestick.push({
-				time,
-				open: point.open,
-				high: point.high,
-				low: point.low,
-				close: point.close,
-			});
-
-			volume.push({
-				time,
-				value: point.volume,
-				color: volumeColor + "80", // Add transparency
-			});
-
-			// Add moving averages if available using configuration
-			MA_CONFIG.forEach(({ key }) => {
-				const maValue = point[key as keyof typeof point] as number | undefined;
-				if (maValue !== undefined && maValue !== null) {
-					maDataArrays[key as keyof typeof maDataArrays].push({ time, value: maValue });
-				}
-			});
-		});
-
-		return { candlestick, volume, ma10, ma20, ma50, ma100, ma200 };
+	const chartData = useMemo((): ChartData => {
+		return transformStockDataToChartData(data);
 	}, [data]);
 
 	// Initialize chart (only once on mount)
