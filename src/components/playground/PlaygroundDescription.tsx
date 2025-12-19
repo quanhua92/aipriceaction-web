@@ -30,9 +30,9 @@ export function PlaygroundDescription() {
             <span className="text-green-600 text-xs font-bold">1</span>
           </div>
           <div>
-            <h3 className="font-semibold text-sm mb-1">Time Travel</h3>
+            <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.timeTravel.title')}</h3>
             <p className="text-sm text-muted-foreground">
-              {t('common.playground.description.features.timeTravel')}
+              {t('common.playground.description.features.timeTravel.description')}
             </p>
           </div>
         </div>
@@ -42,9 +42,9 @@ export function PlaygroundDescription() {
             <span className="text-blue-600 text-xs font-bold">2</span>
           </div>
           <div>
-            <h3 className="font-semibold text-sm mb-1">Dual Charts</h3>
+            <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.dualCharts.title')}</h3>
             <p className="text-sm text-muted-foreground">
-              {t('common.playground.description.features.dualCharts')}
+              {t('common.playground.description.features.dualCharts.description')}
             </p>
           </div>
         </div>
@@ -54,9 +54,9 @@ export function PlaygroundDescription() {
             <span className="text-purple-600 text-xs font-bold">3</span>
           </div>
           <div>
-            <h3 className="font-semibold text-sm mb-1">Interactive Controls</h3>
+            <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.interactiveControls.title')}</h3>
             <p className="text-sm text-muted-foreground">
-              {t('common.playground.description.features.interactiveControls')}
+              {t('common.playground.description.features.interactiveControls.description')}
             </p>
           </div>
         </div>
@@ -66,9 +66,9 @@ export function PlaygroundDescription() {
             <span className="text-orange-600 text-xs font-bold">4</span>
           </div>
           <div>
-            <h3 className="font-semibold text-sm mb-1">Manual Selection</h3>
+            <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.manualSelection.title')}</h3>
             <p className="text-sm text-muted-foreground">
-              {t('common.playground.description.features.manualSelection')}
+              {t('common.playground.description.features.manualSelection.description')}
             </p>
           </div>
         </div>
@@ -78,9 +78,9 @@ export function PlaygroundDescription() {
             <span className="text-pink-600 text-xs font-bold">5</span>
           </div>
           <div>
-            <h3 className="font-semibold text-sm mb-1">Shareable Config</h3>
+            <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.shareableConfig.title')}</h3>
             <p className="text-sm text-muted-foreground">
-              {t('common.playground.description.features.shareableConfig')}
+              {t('common.playground.description.features.shareableConfig.description')}
             </p>
           </div>
         </div>

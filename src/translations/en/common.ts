@@ -394,11 +394,26 @@ export default {
       subtitle: 'Historical Market Data Simulator',
       mainDescription: 'Test your trading strategies with 500 days of historical Vietnamese market data. Navigate through time, compare multiple charts, and discover market patterns.',
       features: {
-        timeTravel: 'Navigate through 500 trading days with intuitive controls',
-        dualCharts: 'Compare any ticker with market indices or other stocks',
-        interactiveControls: 'Use buttons, slider, or quick jumps to explore data',
-        manualSelection: 'Choose specific tickers and dates for analysis',
-        shareableConfig: 'Share your analysis with URL-based configurations'
+        timeTravel: {
+          title: 'Time Travel',
+          description: 'Navigate through 500 trading days with intuitive controls'
+        },
+        dualCharts: {
+          title: 'Dual Charts',
+          description: 'Compare any ticker with market indices or other stocks'
+        },
+        interactiveControls: {
+          title: 'Interactive Controls',
+          description: 'Use buttons, slider, or quick jumps to explore data'
+        },
+        manualSelection: {
+          title: 'Manual Selection',
+          description: 'Choose specific tickers and dates for analysis'
+        },
+        shareableConfig: {
+          title: 'Shareable Config',
+          description: 'Share your analysis with URL-based configurations'
+        }
       },
       getStarted: 'Get Started: Use the navigation controls below to explore historical data, or randomize to discover new opportunities.'
     },

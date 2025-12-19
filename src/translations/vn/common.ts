@@ -390,15 +390,30 @@ export default {
       info: 'Chọn thủ công mã cổ phiếu và ngày kết thúc để tải 500 ngày giao dịch kết thúc tại ngày đã chọn.',
     },
     description: {
-      title: 'Playground',
+      title: 'Sân Chơi',
       subtitle: 'Trình Giả Lập Dữ Liệu Lịch Sử Thị Trường',
       mainDescription: 'Kiểm tra chiến lược giao dịch của bạn với 500 ngày dữ liệu lịch sử thị trường Việt Nam. Du hành qua thời gian, so sánh nhiều biểu đồ và khám phá các mô hình thị trường.',
       features: {
-        timeTravel: 'Điều hướng qua 500 ngày giao dịch với các điều khiển trực quan',
-        dualCharts: 'So sánh bất kỳ mã cổ phiếu nào với chỉ số thị trường hoặc các cổ phiếu khác',
-        interactiveControls: 'Sử dụng nút bấm, thanh trượt hoặc nhảy nhanh để khám phá dữ liệu',
-        manualSelection: 'Chọn mã cổ phiếu và ngày cụ thể để phân tích',
-        shareableConfig: 'Chia sẻ phân tích của bạn qua cấu hình URL'
+        timeTravel: {
+          title: 'Du Hành Thời Gian',
+          description: 'Điều hướng qua 500 ngày giao dịch với các điều khiển trực quan'
+        },
+        dualCharts: {
+          title: 'Biểu Đồ Kép',
+          description: 'So sánh bất kỳ mã cổ phiếu nào với chỉ số thị trường hoặc các cổ phiếu khác'
+        },
+        interactiveControls: {
+          title: 'Điều Khiển Tương Tác',
+          description: 'Sử dụng nút bấm, thanh trượt hoặc nhảy nhanh để khám phá dữ liệu'
+        },
+        manualSelection: {
+          title: 'Lựa Chọn Thủ Công',
+          description: 'Chọn mã cổ phiếu và ngày cụ thể để phân tích'
+        },
+        shareableConfig: {
+          title: 'Cấu Hình Chia Sẻ',
+          description: 'Chia sẻ phân tích của bạn qua cấu hình URL'
+        }
       },
       getStarted: 'Bắt Đầu: Sử dụng các điều khiển điều hướng bên dưới để khám phá dữ liệu lịch sử, hoặc chọn ngẫu nhiên để khám phá cơ hội mới.'
     },
