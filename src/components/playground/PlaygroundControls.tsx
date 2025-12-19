@@ -60,7 +60,7 @@ export function PlaygroundControls() {
           size="sm"
           onClick={handleBack5}
           disabled={isAtStart}
-          className="h-10 w-10 p-0"
+          className="h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-50 hover:border-green-700 hover:text-green-700"
           title={t('common.playground.controls.back5Days')}
         >
           <ChevronsLeft className="h-4 w-4" />
@@ -70,7 +70,7 @@ export function PlaygroundControls() {
           size="sm"
           onClick={handleBack1}
           disabled={isAtStart}
-          className="h-10 w-10 p-0"
+          className="h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-50 hover:border-green-700 hover:text-green-700"
           title={t('common.playground.controls.back1Day')}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -80,7 +80,7 @@ export function PlaygroundControls() {
           size="sm"
           onClick={handleNext1}
           disabled={isAtEnd}
-          className="h-10 w-10 p-0"
+          className="h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-50 hover:border-green-700 hover:text-green-700"
           title={t('common.playground.controls.next1Day')}
         >
           <ChevronRight className="h-4 w-4" />
@@ -90,11 +90,16 @@ export function PlaygroundControls() {
           size="sm"
           onClick={handleNext5}
           disabled={isAtEnd}
-          className="h-10 w-10 p-0"
+          className="h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-50 hover:border-green-700 hover:text-green-700"
           title={t('common.playground.controls.next5Days')}
         >
           <ChevronsRight className="h-4 w-4" />
         </Button>
+      </div>
+
+      {/* Navigation guide text */}
+      <div className="text-center text-sm text-muted-foreground">
+        {t('common.playground.controls.navigationGuide')}
       </div>
 
       {/* Slider for fine control */}

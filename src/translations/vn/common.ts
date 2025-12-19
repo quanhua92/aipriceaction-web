@@ -374,6 +374,7 @@ export default {
       back1Day: 'Lui 1 ngày',
       next1Day: 'Tiếp 1 ngày',
       next5Days: 'Tiếp 5 ngày',
+      navigationGuide: 'Điều hướng qua các ngày giao dịch',
       dayX: 'Ngày {index}',
       totalY: '{total} tổng',
       showingDays: 'Hiển thị {visible} ngày ({percent}%)',

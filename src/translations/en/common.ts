@@ -374,6 +374,7 @@ export default {
       back1Day: 'Back 1 day',
       next1Day: 'Next 1 day',
       next5Days: 'Next 5 days',
+      navigationGuide: 'Navigate through trading days',
       dayX: 'Day {index}',
       totalY: '{total} total',
       showingDays: 'Showing {visible} days ({percent}%)',
