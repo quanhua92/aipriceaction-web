@@ -127,7 +127,8 @@ export function BaseTradingViewChart({
 		ma200: ma200SeriesRef,
 	} as const;
 
-		const [crosshairData, setCrosshairData] = useState<StockData | null>(null);
+	const [isDataInitialized, setIsDataInitialized] = useState(false);
+	const [crosshairData, setCrosshairData] = useState<StockData | null>(null);
 	const [clickedCrosshairData, setClickedCrosshairData] =
 		useState<StockData | null>(null);
 	// Use ref to track current crosshair lock state for immediate access in event handlers
@@ -146,6 +147,7 @@ export function BaseTradingViewChart({
 	// Reset data initialization flag when data changes
 	// Note: We intentionally preserve viewport position for comparison across tickers
 	useEffect(() => {
+		setIsDataInitialized(false);
 	}, [data]);
 
 	// Keep ref in sync with state for immediate access in event handlers
@@ -823,9 +825,21 @@ export function BaseTradingViewChart({
 		if (ma200SeriesRef.current) {
 			ma200SeriesRef.current.setData(maVisibility.ma200 ? chartData.ma200 : []);
 		}
+
+		// Set initial viewport only on first data load
+		if (chartRef.current && chartData.candlestick.length > 0 && !isDataInitialized) {
+			const viewportSize = Math.min(100, chartData.candlestick.length); // Show last 100 bars or all if less
+			const startIndex = Math.max(0, chartData.candlestick.length - viewportSize);
+			const from = chartData.candlestick[startIndex].time;
+			const to = chartData.candlestick[chartData.candlestick.length - 1].time;
+
+			chartRef.current.timeScale().setVisibleRange({ from, to });
+			setIsDataInitialized(true);
+		}
 	}, [
 		chartData,
 		maVisibility,
+		isDataInitialized,
 	]);
 
 	// Update candlestick series price format when data changes
