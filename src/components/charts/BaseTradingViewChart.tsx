@@ -828,7 +828,7 @@ export function BaseTradingViewChart({
 
 		// Set initial viewport only on first data load
 		if (chartRef.current && chartData.candlestick.length > 0 && !isDataInitialized) {
-			const viewportSize = Math.min(100, chartData.candlestick.length); // Show last 100 bars or all if less
+			const viewportSize = Math.min(responsiveViewportSize, chartData.candlestick.length); // Show responsive number of bars or all if less
 			const startIndex = Math.max(0, chartData.candlestick.length - viewportSize);
 			const from = chartData.candlestick[startIndex].time;
 			const to = chartData.candlestick[chartData.candlestick.length - 1].time;
@@ -840,6 +840,7 @@ export function BaseTradingViewChart({
 		chartData,
 		maVisibility,
 		isDataInitialized,
+		responsiveViewportSize,
 	]);
 
 	// Update candlestick series price format when data changes
