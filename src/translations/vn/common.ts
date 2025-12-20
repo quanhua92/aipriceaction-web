@@ -90,7 +90,7 @@ export default {
         },
         flexibleIntervals: {
           title: 'Thời Gian Linh Hoạt',
-          description: 'Chọn nhiều khung thời gian (5m đến 1M) cho các nhu cầu phân tích khác nhau'
+          description: 'Chọn nhiều khung thời gian (5 phút đến 1 tháng) cho các nhu cầu phân tích khác nhau'
         },
         customTemplates: {
           title: 'Mẫu Chuyên Nghiệp',

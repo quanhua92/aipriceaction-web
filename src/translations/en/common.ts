@@ -90,7 +90,7 @@ export default {
         },
         flexibleIntervals: {
           title: 'Flexible Timeframes',
-          description: 'Choose from various timeframes (5m to 1M) for different analysis needs'
+          description: 'Choose from various timeframes (5 minutes to 1 month) for different analysis needs'
         },
         customTemplates: {
           title: 'Professional Templates',
