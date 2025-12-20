@@ -407,6 +407,12 @@ export default {
       end: 'Kết Thúc',
       current: 'Hiện tại',
     },
+    intervalWarning: {
+      title: 'Không Có Dữ Liệu',
+      hourlyUnavailable: 'Dữ liệu giờ chỉ có từ năm 2023 trở đi. {date} quá cũ. Hãy thử ngày gần hơn hoặc sử dụng khoảng thời trình Ngày.',
+      minuteUnavailable: 'Dữ liệu phút ({interval}) chỉ có từ năm 2023 trở đi. {date} quá cũ. Hãy thử ngày gần hơn hoặc sử dụng khoảng thời trình Ngày/Giờ.',
+      generalUnavailable: 'Dữ liệu cho khoảng thời trình {interval} không có sẵn cho ngày {date}. Hãy thử khoảng thời trình khác hoặc ngày gần hơn.',
+    },
     manual: {
       title: 'Chọn Thủ Công',
       selectTicker: 'Chọn Mã Cổ Phiếu',

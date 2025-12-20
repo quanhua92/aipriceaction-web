@@ -407,6 +407,12 @@ export default {
       end: 'End',
       current: 'Current',
     },
+    intervalWarning: {
+      title: 'Data Unavailable',
+      hourlyUnavailable: 'Hourly data is only available from 2023 onwards. {date} is too old. Try a more recent date or use Daily interval.',
+      minuteUnavailable: 'Minute data ({interval}) is only available from 2023 onwards. {date} is too old. Try a more recent date or use Daily/Hourly intervals.',
+      generalUnavailable: 'Data for {interval} interval is not available for {date}. Try a different interval or more recent date.',
+    },
     manual: {
       title: 'Manual Selection',
       selectTicker: 'Select Ticker',

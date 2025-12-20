@@ -4,6 +4,7 @@ import { PlaygroundInfoPanel } from '@/components/playground/PlaygroundInfoPanel
 import { PlaygroundControls } from '@/components/playground/PlaygroundControls'
 import { PlaygroundChart } from '@/components/playground/PlaygroundChart'
 import { PlaygroundDescription } from '@/components/playground/PlaygroundDescription'
+import { PlaygroundIntervalWatcher } from '@/components/playground/PlaygroundIntervalWatcher'
 import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/play')({
@@ -43,6 +44,9 @@ function PlayPage() {
           <div className="px-4 md:px-6 py-2">
             <PlaygroundChart />
           </div>
+
+          {/* Interval Availability Warning */}
+          <PlaygroundIntervalWatcher />
 
           {/* Bottom: Controls */}
           <div className="px-4 md:px-6 pb-4 md:pb-6 pt-2">

@@ -115,15 +115,16 @@ export function PlaygroundChart() {
   // Secondary chart props
   const secondaryChartProps = {
     ticker: playgroundData.secondaryTicker!,
-    endDateOverride: currentEndDate,
+    // No endDateOverride - let secondary chart use its own cache dates
     showControls: true, // Show controls on secondary chart
     height: chartHeight,  // Pass the selected height
     cacheData: secondaryVisibleData,
     cacheMetadata: {
       symbol: playgroundData.secondaryTicker!,
       interval: Interval.Daily,
-      startDate: currentStartDate || '',
-      endDate: currentEndDate || '',
+      // Use secondary chart's own date metadata, not primary's
+      startDate: secondaryVisibleData.length > 0 ? secondaryVisibleData[0]?.time?.split('T')[0] || '' : '',
+      endDate: secondaryVisibleData.length > 0 ? secondaryVisibleData[secondaryVisibleData.length - 1]?.time?.split('T')[0] || '' : '',
       mode: 'vn'
     },
   }

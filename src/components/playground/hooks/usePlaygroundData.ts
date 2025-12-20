@@ -676,6 +676,41 @@ export function usePlaygroundData(
     }))
   }, [])
 
+  // Align primary and secondary data to common date range
+  useEffect(() => {
+    if (playgroundData.allData?.length && playgroundData.secondaryAllData?.length) {
+      // Get start and end dates from both arrays
+      const primaryStartDate = playgroundData.allData[0]?.time?.split('T')[0]
+      const primaryEndDate = playgroundData.allData[playgroundData.allData.length - 1]?.time?.split('T')[0]
+
+      const secondaryStartDate = playgroundData.secondaryAllData[0]?.time?.split('T')[0]
+      const secondaryEndDate = playgroundData.secondaryAllData[playgroundData.secondaryAllData.length - 1]?.time?.split('T')[0]
+
+      // Use LATER start date and EARLIER end date (intersection)
+      const commonStartDate = primaryStartDate > secondaryStartDate ? primaryStartDate : secondaryStartDate
+      const commonEndDate = primaryEndDate < secondaryEndDate ? primaryEndDate : secondaryEndDate
+
+      // Filter both arrays to common date range
+      const alignedPrimary = playgroundData.allData.filter(item => {
+        const itemDate = item.time?.split('T')[0]
+        return itemDate && itemDate >= commonStartDate && itemDate <= commonEndDate
+      })
+
+      const alignedSecondary = playgroundData.secondaryAllData.filter(item => {
+        const itemDate = item.time?.split('T')[0]
+        return itemDate && itemDate >= commonStartDate && itemDate <= commonEndDate
+      })
+
+      // Update state with aligned data
+      setPlaygroundData(prev => ({
+        ...prev,
+        allData: alignedPrimary,
+        secondaryAllData: alignedSecondary,
+        currentIndex: Math.min(prev.currentIndex, alignedPrimary.length - 1, alignedSecondary.length - 1)
+      }))
+    }
+  }, [playgroundData.allData?.length, playgroundData.secondaryAllData?.length])
+
   // Get secondary visible data
   const secondaryVisibleData = useMemo(() => {
     if (!playgroundData.secondaryAllData?.length) return []

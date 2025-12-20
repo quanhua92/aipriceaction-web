@@ -258,11 +258,81 @@ export function TickerProvider({
 
     prevDepsRef.current = currentDeps
 
-    // NEW: Check if we can use cached data
+    // 1. Perfect cache match (symbol, interval, date, mode)
     if (isCacheValid(cacheData, cacheMetadata, selectedTicker, settings?.interval, localEndDate ?? settings?.endDate, tickersRef.current, cryptoTickersRef.current)) {
       setChartData(cacheData)
       setLoading(false)
       setError(null)
+      return
+    }
+
+    // 2. Same symbol but different interval - fetch new interval using cache's date range
+    if (cacheData && cacheMetadata && settings &&
+        cacheMetadata.symbol === selectedTicker &&
+        cacheMetadata.interval !== settings.interval) {
+
+      const targetDate = cacheData[cacheData.length - 1]?.time?.split('T')[0] || settings.endDate
+
+      const fetchIntervalData = async () => {
+        setLoading(true)
+        setError(null)
+
+        let lastError: Error | null = null
+
+        // Retry loop with exponential backoff
+        for (let attempt = 1; attempt <= API_RETRY_ATTEMPTS; attempt++) {
+          try {
+            // Check if this is a recent request (likely cached)
+            const isRecent = isRecentRequest(selectedTicker, settings.interval)
+
+            // Only add random delay for new requests, skip for cached ones
+            if (!isRecent) {
+              const delay = getRandomDelay()
+              await sleep(delay)
+            }
+
+            // Determine mode: crypto or stock (stock takes priority if symbol in both lists)
+            const mode = isCryptoTicker(selectedTicker, tickersRef.current, cryptoTickersRef.current) ? 'crypto' : 'vn'
+
+            // Build source string for interval change
+            const source = `TickerContext.intervalChange [${cacheMetadata.interval}→${settings.interval}]`
+
+            const response = await getTickers(source, {
+              symbol: selectedTicker,
+              interval: settings.interval,  // New interval from global settings
+              end_date: targetDate,         // Date from last cached item
+              limit: limit ?? settings.limit,
+              mode,
+            })
+            const data = response[selectedTicker] || []
+
+            setChartData(data)
+
+            // Record this API call for future cache detection
+            recordApiCall(selectedTicker, settings.interval)
+
+            // Success - clear error and exit retry loop
+            setLoading(false)
+            return
+          } catch (err) {
+            lastError = err instanceof Error ? err : new Error('Failed to fetch chart data for interval change')
+
+            // If this is not the last attempt, wait before retrying (exponential backoff)
+            if (attempt < API_RETRY_ATTEMPTS) {
+              const backoffDelay = Math.pow(2, attempt - 1) * 1000 // 1s, 2s, 4s
+              console.warn(`API call failed (attempt ${attempt}/${API_RETRY_ATTEMPTS}), retrying in ${backoffDelay}ms...`, lastError)
+              await sleep(backoffDelay)
+            }
+          }
+        }
+
+        // All retries failed
+        setError(lastError?.message || 'Failed to fetch chart data for interval change')
+        setChartData([])
+        setLoading(false)
+      }
+
+      fetchIntervalData()
       return
     }
 
