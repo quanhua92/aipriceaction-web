@@ -12,14 +12,18 @@ import { SortButtons } from '@/components/SortButtons'
 import type { SortBy } from '@/components/SortButtons'
 import { TickerGroupSelector } from '@/components/TickerGroupSelector'
 import { TopPerformerCard } from './TopPerformerCard'
+import { TopPerformerTable } from './TopPerformerTable'
+import { ViewModeToggle } from './ViewModeToggle'
 import { SectionFilter } from './SectionFilter'
 import { IntervalButtons } from './IntervalButtons'
+import { BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY } from '@/lib/constants'
 import type {
   BasicTopPerformersProps,
   SectionFilter as SectionFilterType,
   IntervalType,
   TopPerformer,
-  TickerWithData
+  TickerWithData,
+  ViewMode
 } from './types'
 import {
   enrichTickerWithData,
@@ -67,10 +71,26 @@ export function BasicTopPerformers({
   const [error, setError] = React.useState<string | null>(null)
   const [apiData, setApiData] = React.useState<Record<string, any[]>>({})
 
-  
+  // State for view mode (cards vs table)
+  const [viewMode, setViewMode] = React.useState<ViewMode>(() => {
+    // Load from localStorage or default to 'table'
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY)
+      return saved === 'cards' ? 'cards' : 'table'
+    }
+    return 'table'
+  })
+
   // State for custom watchlists
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
   const [refreshKey, setRefreshKey] = React.useState(0)
+
+  // Save view mode to localStorage when it changes
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY, viewMode)
+    }
+  }, [viewMode])
 
   // Load custom watchlists
   React.useEffect(() => {
@@ -322,6 +342,11 @@ export function BasicTopPerformers({
         </div>
       )}
 
+      {/* View Mode Toggle - Cards | Table */}
+      {showControls && (
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
+      )}
+
       {/* Section Filter Buttons - matching SortableTickerList style */}
       <div>
         <SectionFilter value={sectionFilter} onChange={setSectionFilter} />
@@ -354,49 +379,71 @@ export function BasicTopPerformers({
       {/* Top Performers Sections */}
       {!loading && !error && (
         <div className="flex-1 space-y-4">
-          {/* Top 10 Winners */}
-          <div>
-            <h3 className="text-sm font-semibold text-green-600 mb-2">
-              {t('common.topPerformers.topWinners', { count: maxItems })}
-            </h3>
-            {winners.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground text-sm">
-                {t('common.topPerformers.noWinnersFound')}
+          {viewMode === 'cards' ? (
+            <>
+              {/* Top 10 Winners - Cards View */}
+              <div>
+                <h3 className="text-sm font-semibold text-green-600 mb-2">
+                  {t('common.topPerformers.topWinners', { count: maxItems })}
+                </h3>
+                {winners.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    {t('common.topPerformers.noWinnersFound')}
+                  </div>
+                ) : (
+                  <div className="space-y-0">
+                    {winners.map((winner) => (
+                      <TopPerformerCard
+                        key={`winner-${winner.symbol}`}
+                        performer={winner}
+                        onClick={() => handleTickerSelect(winner.symbol)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-0">
-                {winners.map((winner) => (
-                  <TopPerformerCard
-                    key={`winner-${winner.symbol}`}
-                    performer={winner}
-                    onClick={() => handleTickerSelect(winner.symbol)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
 
-          {/* Top 10 Losers */}
-          <div>
-            <h3 className="text-sm font-semibold text-red-600 mb-2">
-              {t('common.topPerformers.topLosers', { count: maxItems })}
-            </h3>
-            {losers.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground text-sm">
-                {t('common.topPerformers.noLosersFound')}
+              {/* Top 10 Losers - Cards View */}
+              <div>
+                <h3 className="text-sm font-semibold text-red-600 mb-2">
+                  {t('common.topPerformers.topLosers', { count: maxItems })}
+                </h3>
+                {losers.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    {t('common.topPerformers.noLosersFound')}
+                  </div>
+                ) : (
+                  <div className="space-y-0">
+                    {losers.map((loser) => (
+                      <TopPerformerCard
+                        key={`loser-${loser.symbol}`}
+                        performer={loser}
+                        onClick={() => handleTickerSelect(loser.symbol)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-0">
-                {losers.map((loser) => (
-                  <TopPerformerCard
-                    key={`loser-${loser.symbol}`}
-                    performer={loser}
-                    onClick={() => handleTickerSelect(loser.symbol)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <>
+              {/* Top 10 Winners - Table View */}
+              <TopPerformerTable
+                performers={winners}
+                title={t('common.topPerformers.topWinners', { count: maxItems })}
+                onTickerSelect={handleTickerSelect}
+                emptyMessage={t('common.topPerformers.noWinnersFound')}
+              />
+
+              {/* Top 10 Losers - Table View */}
+              <TopPerformerTable
+                performers={losers}
+                title={t('common.topPerformers.topLosers', { count: maxItems })}
+                onTickerSelect={handleTickerSelect}
+                emptyMessage={t('common.topPerformers.noLosersFound')}
+              />
+            </>
+          )}
         </div>
       )}
 

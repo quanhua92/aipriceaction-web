@@ -455,5 +455,21 @@ export default {
     noLosersFound: 'Không có cổ phiếu giảm giá',
     topWinners: 'Top {count} Cổ Phiếu Tăng Nhiều Nhất',
     topLosers: 'Top {count} Cổ Phiếu Giảm Nhiều Nhất',
+    viewMode: {
+      cards: 'Thẻ',
+      table: 'Bảng',
+    },
+    tableHeaders: {
+      symbol: 'Mã CP',
+      sector: 'Ngành',
+      price: 'Giá',
+      changePercent: 'Thay đổi %',
+      volume: 'KLGD',
+      volumeChange: 'Thay đổi KL',
+      ma10: 'MA10',
+      ma20: 'MA20',
+      ma50: 'MA50',
+      value: 'GTGD',
+    },
   },
 }

@@ -455,5 +455,21 @@ export default {
     noLosersFound: 'No losers found',
     topWinners: 'Top {count} Winners',
     topLosers: 'Top {count} Losers',
+    viewMode: {
+      cards: 'Cards',
+      table: 'Table',
+    },
+    tableHeaders: {
+      symbol: 'Symbol',
+      sector: 'Sector',
+      price: 'Price',
+      changePercent: 'Change %',
+      volume: 'Volume',
+      volumeChange: 'Vol Change',
+      ma10: 'MA10',
+      ma20: 'MA20',
+      ma50: 'MA50',
+      value: 'Value',
+    },
   },
 }

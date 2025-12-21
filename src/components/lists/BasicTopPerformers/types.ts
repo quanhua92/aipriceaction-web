@@ -2,7 +2,8 @@ import type { StockData } from '@/lib/api-client'
 import type { SortBy } from '@/components/SortButtons'
 
 export type SectionFilter = 'all' | 'stocks' | 'crypto'
-export type IntervalType = '1H' | '1D' | '1W'
+export type IntervalType = '1H' | '1D' | '1W' | '1M'
+export type ViewMode = 'cards' | 'table'
 
 export interface TopPerformer {
   symbol: string
@@ -46,6 +47,18 @@ export interface SectionFilterProps {
 export interface IntervalButtonsProps {
   value: IntervalType
   onChange: (value: IntervalType) => void
+}
+
+export interface ViewModeToggleProps {
+  value: ViewMode
+  onChange: (value: ViewMode) => void
+}
+
+export interface TopPerformerTableProps {
+  performers: TopPerformer[]
+  title: string
+  onTickerSelect?: (symbol: string) => void
+  emptyMessage: string
 }
 
 // Internal type for enriched ticker data

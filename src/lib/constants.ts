@@ -245,3 +245,8 @@ export const TOOLTIP_MARGIN = 30
 export const TOOLTIP_WIDTH = 200
 export const TOOLTIP_HEIGHT = 90
 
+/**
+ * LocalStorage key for BasicTopPerformers view mode preference
+ */
+export const BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY = 'basic-top-performers-view-mode'
+
