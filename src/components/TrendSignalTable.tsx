@@ -10,6 +10,8 @@ import {
   type TickerSignalHistory,
   type IntervalType
 } from '@/lib/trendsignal-utils'
+import { isCryptoTicker } from '@/lib/ticker-utils'
+import type { StockData } from '@/lib/api-client'
 import { formatToVietnamDate, parseUTCISOString } from '@/lib/format'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -59,9 +61,25 @@ export function TrendSignalTable({
     }
     return []
   }, [tickers, ticker])
-  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, tickers: stockTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { t, language } = useTranslation()
+
+  // Separate tickers by type (crypto vs stocks)
+  const separateTickersByType = React.useMemo(() => {
+    const cryptoTickersList: string[] = []
+    const stockTickersList: string[] = []
+
+    internalTickers.forEach(ticker => {
+      if (isCryptoTicker(ticker, stockTickers, cryptoTickers)) {
+        cryptoTickersList.push(ticker)
+      } else {
+        stockTickersList.push(ticker)
+      }
+    })
+
+    return { cryptoTickersList, stockTickersList }
+  }, [internalTickers, cryptoTickers, stockTickers])
 
   // State management
   const [selectedInterval, setSelectedInterval] = React.useState<IntervalType>(interval)
@@ -91,21 +109,67 @@ export function TrendSignalTable({
       setError(null)
 
       try {
-        // Always fetch all tickers to leverage browser cache
-        const response = await getTickers('TrendSignalTable.fetch', {
-          symbol: undefined, // Fetch ALL tickers for cache efficiency
-          interval: selectedInterval === '1H' ? '1H' : '1D',
-          end_date: endDate, // Will be undefined if not provided, API will default to latest
-          limit: maxDays,
-          mode: 'vn'
-        })
+        const { cryptoTickersList, stockTickersList } = separateTickersByType
+
+        // Prepare API calls based on ticker types
+        const apiCalls: Promise<any>[] = []
+
+        if (stockTickersList.length > 0) {
+          apiCalls.push(getTickers('TrendSignalTable.fetch.stocks', {
+            symbol: undefined, // Fetch all for cache efficiency
+            interval: selectedInterval === '1H' ? '1H' : '1D',
+            end_date: endDate,
+            limit: maxDays,
+            mode: 'vn'
+          }))
+        }
+
+        if (cryptoTickersList.length > 0) {
+          apiCalls.push(getTickers('TrendSignalTable.fetch.crypto', {
+            symbol: undefined, // Fetch all for cache efficiency
+            interval: selectedInterval === '1H' ? '1H' : '1D',
+            end_date: endDate,
+            limit: maxDays,
+            mode: 'crypto'
+          }))
+        }
+
+        // If no tickers to fetch, return empty result
+        if (apiCalls.length === 0) {
+          if (isMounted) {
+            setSignalHistories([])
+          }
+          return
+        }
+
+        // Make parallel API calls
+        const responses = await Promise.allSettled(apiCalls)
 
         if (!isMounted) return
 
-        // Calculate historical signals only for the specified tickers
+        // Merge responses
+        let combinedResponse: Record<string, StockData[]> = {}
+
+        responses.forEach((response, index) => {
+          if (response.status === 'fulfilled') {
+            combinedResponse = { ...combinedResponse, ...response.value }
+          } else {
+            console.warn(`API call ${index} failed:`, response.reason)
+          }
+        })
+
+        // Check if we got any data
+        if (Object.keys(combinedResponse).length === 0) {
+          if (isMounted) {
+            setError('No data available for selected tickers')
+          }
+          return
+        }
+
+        // Calculate historical signals with merged data
         const histories = calculateHistoricalSignals(
           internalTickers,
-          response,
+          combinedResponse,
           tickerGroups,
           cryptoTickerGroups,
           selectedBuyPeriod,
@@ -132,7 +196,7 @@ export function TrendSignalTable({
     return () => {
       isMounted = false
     }
-  }, [internalTickers, selectedInterval, selectedBuyPeriod, selectedSellPeriod, lastRefresh, maxDays, endDate])
+  }, [internalTickers, selectedInterval, selectedBuyPeriod, selectedSellPeriod, lastRefresh, maxDays, endDate, separateTickersByType])
 
   // Flatten all signals for navigation
   const allSignals = React.useMemo(() => {
