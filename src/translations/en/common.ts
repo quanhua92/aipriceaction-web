@@ -448,4 +448,12 @@ export default {
       getStarted: 'Get Started: Use the navigation controls below to explore historical data, or randomize to discover new opportunities.'
     },
   },
+  topPerformers: {
+    title: 'Top Performers',
+    loadingPerformers: 'Loading performers...',
+    noWinnersFound: 'No winners found',
+    noLosersFound: 'No losers found',
+    topWinners: 'Top {count} Winners',
+    topLosers: 'Top {count} Losers',
+  },
 }

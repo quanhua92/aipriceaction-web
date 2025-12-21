@@ -9,6 +9,7 @@ import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TrendSignal } from "@/components/TrendSignal";
+import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import {
 	ALL_WATCHLIST_NAME,
 	CUSTOM_WATCHLISTS_STORAGE_KEY,
@@ -55,8 +56,8 @@ function WatchPage() {
 	const [currentPage, setCurrentPage] = React.useState(0);
 	const [pageSize, setPageSize] = React.useState(10);
 
-	// Grid columns state
-	const [columns, setColumns] = React.useState<1 | 2 | 3 | 4 | 5 | 6>(2);
+	// Grid columns state - responsive default: 1 on mobile, 2 on desktop
+	const [columns, setColumns] = React.useState<1 | 2 | 3 | 4 | 5 | 6>(typeof window !== 'undefined' && window.innerWidth >= 768 ? 2 : 1);
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
@@ -362,32 +363,40 @@ function WatchPage() {
 
 					{isRightSidebarOpen && (
 	<Tabs defaultValue="ticker" className="flex-1 flex flex-col min-h-0">
-									<TabsList className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0 h-9 lg:h-10 gap-1.5">
+						<div className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0">
+							<TabsList className="w-full h-auto lg:h-10 gap-1.5 flex-wrap">
 										<TabsTrigger
 											value="ticker"
-											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+											className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
 										>
 											Ticker Info
 										</TabsTrigger>
 										<TabsTrigger
 											value="matrix"
-											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+											className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
 										>
 											Market Matrix
 										</TabsTrigger>
 										<TabsTrigger
 											value="signals"
-											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+											className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
 										>
 											Signals
 										</TabsTrigger>
 										<TabsTrigger
+											value="performers"
+											className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
+										>
+											Top Performers
+										</TabsTrigger>
+										<TabsTrigger
 											value="backtest"
-											className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+											className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
 										>
 											Backtesting
 										</TabsTrigger>
 									</TabsList>
+						</div>
 
 									<TabsContent value="ticker" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4 data-[state=inactive]:hidden">
 										<BasicTickerWidget
@@ -407,6 +416,14 @@ function WatchPage() {
 
 									<TabsContent value="signals" forceMount className="flex-1 min-h-0 overflow-auto data-[state=inactive]:hidden">
 										<TrendSignal />
+									</TabsContent>
+
+									<TabsContent value="performers" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
+										<BasicTopPerformers
+											onTickerSelect={handleSelectTicker}
+											maxItems={10}
+											showControls={true}
+										/>
 									</TabsContent>
 
 									<TabsContent value="backtest" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">

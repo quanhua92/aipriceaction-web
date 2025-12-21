@@ -448,4 +448,12 @@ export default {
       getStarted: 'Bắt Đầu: Sử dụng các điều khiển điều hướng bên dưới để khám phá dữ liệu lịch sử, hoặc chọn ngẫu nhiên để khám phá cơ hội mới.'
     },
   },
+  topPerformers: {
+    title: 'Top Hiệu Suất',
+    loadingPerformers: 'Đang tải hiệu suất...',
+    noWinnersFound: 'Không có cổ phiếu tăng giá',
+    noLosersFound: 'Không có cổ phiếu giảm giá',
+    topWinners: 'Top {count} Cổ Phiếu Tăng Nhiều Nhất',
+    topLosers: 'Top {count} Cổ Phiếu Giảm Nhiều Nhất',
+  },
 }

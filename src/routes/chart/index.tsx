@@ -8,6 +8,7 @@ import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TrendSignal } from "@/components/TrendSignal";
+import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
 import { ALL_WATCHLIST_NAME, MARKET_INDICES } from "@/lib/constants";
 import { useAPI } from "@/contexts/APIContext";
@@ -86,7 +87,7 @@ const generateInitialTickers = (
 
 const FALLBACK_LAYOUT: ChartPageLayout = {
 	chartCount: 4,
-	gridColumns: 2,
+	gridColumns: 1, // Mobile-friendly default, will be updated by responsive logic
 	chartTickers: ["VNINDEX", "VIC", "SSI", "MBB", "MWG"],
 };
 
@@ -94,10 +95,10 @@ function ChartPage() {
 	// Get ticker groups and data from API context
 	const { tickerGroups, allTickersLastData } = useAPI();
 
-	// Layout state - initialize with dynamic defaults, will update once data loads
+	// Layout state - initialize with responsive defaults, will update once data loads
 	const [layout, setLayout] = React.useState<ChartPageLayout>(() => ({
 		chartCount: 4,
-		gridColumns: 2,
+		gridColumns: typeof window !== 'undefined' && window.innerWidth >= 768 ? 2 : 1, // Responsive default
 		chartTickers: generateInitialTickers(null, null) // Use fallback initially
 	}));
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
@@ -365,32 +366,40 @@ function ChartPage() {
 
 				{isRightSidebarOpen && (
 					<Tabs defaultValue="ticker" className="flex-1 flex flex-col min-h-0">
-						<TabsList className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0 h-9 lg:h-10 gap-1.5">
+						<div className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0">
+							<TabsList className="w-full h-auto lg:h-10 gap-1.5 flex-wrap">
 							<TabsTrigger
 								value="ticker"
-								className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+								className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
 							>
 								Ticker Info
 							</TabsTrigger>
 							<TabsTrigger
 								value="matrix"
-								className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+								className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
 							>
 								Market Matrix
 							</TabsTrigger>
 							<TabsTrigger
 								value="signals"
-								className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+								className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
 							>
 								Signals
 							</TabsTrigger>
 							<TabsTrigger
+								value="performers"
+								className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
+							>
+								Top Performers
+							</TabsTrigger>
+							<TabsTrigger
 								value="backtest"
-								className="flex-1 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted"
+								className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
 							>
 								Backtesting
 							</TabsTrigger>
 						</TabsList>
+					</div>
 
 						<TabsContent value="ticker" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 space-y-4 data-[state=inactive]:hidden">
 							<BasicTickerWidget
@@ -410,6 +419,14 @@ function ChartPage() {
 
 						<TabsContent value="signals" forceMount className="flex-1 min-h-0 overflow-auto data-[state=inactive]:hidden">
 							<TrendSignal />
+						</TabsContent>
+
+						<TabsContent value="performers" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
+							<BasicTopPerformers
+								onTickerSelect={handleSelectTicker}
+								maxItems={10}
+								showControls={true}
+							/>
 						</TabsContent>
 
 						<TabsContent value="backtest" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">

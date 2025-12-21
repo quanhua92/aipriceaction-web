@@ -9,6 +9,7 @@ import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
+import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { ALL_WATCHLIST_NAME, HOME_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Ticker } from "@/components/lists/SortableTickerList";
@@ -141,9 +142,20 @@ function HomePage() {
 				</div>
 			</div>
 
-			{/* Section 3: Market Matrix */}
+			{/* Section 3: Top Performers + Market Matrix */}
 			<div className="p-2 md:p-6 border-t">
-				<MarketMatrix />
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+					<div>
+						<BasicTopPerformers
+							onTickerSelect={handleSelectTicker}
+							maxItems={10}
+							showControls={true}
+						/>
+					</div>
+					<div>
+						<MarketMatrix />
+					</div>
+				</div>
 			</div>
 
 			{/* Fullscreen Dialog */}
