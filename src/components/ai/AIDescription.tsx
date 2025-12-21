@@ -8,7 +8,7 @@ export function AIDescription() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+        <h1 className="text-3xl md:text-4xl font-bold leading-relaxed bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
           {t('common.aiContext.pageDescription.title')}
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground">

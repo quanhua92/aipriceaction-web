@@ -85,7 +85,7 @@ function HomePage() {
 			<div className="bg-gradient-to-r from-green-500/10 via-blue-500/10 to-purple-500/10 border-b">
 				<div className="container mx-auto p-6 md:p-8">
 					<div className="max-w-4xl mx-auto text-center space-y-4">
-						<h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+						<h1 className="text-3xl md:text-4xl font-bold leading-relaxed bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
 							{t("common.home.welcomeTitle")}
 						</h1>
 						<p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
