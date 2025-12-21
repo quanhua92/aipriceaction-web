@@ -172,9 +172,9 @@ function ChartPage() {
 	// Dynamic grid layout for main layout
 	const mainGridLayoutClass = React.useMemo(() => {
 		if (isLeftSidebarOpen && isRightSidebarOpen) {
-			return "grid-cols-1 lg:grid-cols-[320px_1fr_380px]";
+			return "grid-cols-1 lg:grid-cols-[380px_1fr_380px]";
 		} else if (isLeftSidebarOpen && !isRightSidebarOpen) {
-			return "grid-cols-1 lg:grid-cols-[320px_1fr_48px]";
+			return "grid-cols-1 lg:grid-cols-[380px_1fr_48px]";
 		} else if (!isLeftSidebarOpen && isRightSidebarOpen) {
 			return "grid-cols-1 lg:grid-cols-[48px_1fr_380px]";
 		} else if (!isLeftSidebarOpen && !isRightSidebarOpen) {
@@ -367,7 +367,7 @@ function ChartPage() {
 				{isRightSidebarOpen && (
 					<Tabs defaultValue="ticker" className="flex-1 flex flex-col min-h-0">
 						<div className="w-[calc(100%-1rem)] lg:w-[calc(100%-2rem)] mx-2 lg:mx-4 mt-2 lg:mt-4 shrink-0">
-							<TabsList className="w-full h-auto lg:h-10 gap-1.5 flex-wrap">
+							<TabsList className="w-full h-auto gap-1.5 flex-wrap">
 							<TabsTrigger
 								value="ticker"
 								className="px-3 py-1.5 text-xs lg:text-sm font-medium rounded-md transition-colors data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:hover:bg-green-700 data-[state=inactive]:bg-muted/50 data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:bg-muted whitespace-nowrap"
