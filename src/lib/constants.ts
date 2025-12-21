@@ -221,13 +221,13 @@ export const WATCH_RIGHT_SIDEBAR_OPEN_KEY = 'watch-right-sidebar-open'
  * Debounce delay for visibility change refresh trigger (in milliseconds)
  * Prevents rapid refresh triggers from quick tab switching
  */
-export const VISIBILITY_REFRESH_DEBOUNCE_MS = 500
+export const VISIBILITY_REFRESH_DEBOUNCE_MS = 5000
 
 /**
  * Minimum time between refreshes (in milliseconds)
  * Prevents unnecessary refreshes if user just switched away and back quickly
  */
-export const VISIBILITY_MIN_REFRESH_INTERVAL_MS = 5000
+export const VISIBILITY_MIN_REFRESH_INTERVAL_MS = 30000
 
 /**
  * LocalStorage key for theme preference
