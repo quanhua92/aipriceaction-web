@@ -147,7 +147,6 @@ function HomePage() {
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<div>
 						<BasicTopPerformers
-							onTickerSelect={handleSelectTicker}
 							maxItems={10}
 							showControls={true}
 						/>

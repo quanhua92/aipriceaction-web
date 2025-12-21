@@ -46,7 +46,6 @@ function DebugPageContent() {
           <div>
             <h2 className="text-lg font-semibold mb-2">Top Market Performers</h2>
             <BasicTopPerformers
-              onTickerSelect={handleTickerSelect}
               maxItems={10}
               showControls={true}
             />

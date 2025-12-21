@@ -5,6 +5,7 @@ import { useRefresh } from '@/contexts/RefreshContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useLogs } from '@/contexts/LogsContext'
+import { ChartFullscreenDialog } from '@/components/ChartFullscreenDialog'
 import { getWatchlistNames, getCustomWatchlists } from '@/lib/watchlist-storage'
 import { isPredefinedWatchlist } from '@/lib/predefined-watchlists'
 import { ALL_WATCHLIST_NAME } from '@/lib/constants'
@@ -80,6 +81,41 @@ export function BasicTopPerformers({
     }
     return 'table'
   })
+
+  // State for internal ChartFullscreenDialog
+  const [internalDialogTicker, setInternalDialogTicker] = React.useState<string | null>(null)
+
+  // Get 20 tickers from winners and losers for internal dialog navigation
+  const navigationTickers = React.useMemo(() => {
+    // Combine winners and losers, unique by symbol
+    const combined = [...winners, ...losers]
+    const uniqueTickers = Array.from(new Map(combined.map(t => [t.symbol, t])).values())
+    return uniqueTickers.map(t => t.symbol).slice(0, 20) // Limit to 20 tickers
+  }, [winners, losers])
+
+  // Get current index for internal dialog
+  const navigationIndex = React.useMemo(() => {
+    if (!internalDialogTicker) return 0
+    const index = navigationTickers.indexOf(internalDialogTicker)
+    return index !== -1 ? index : 0
+  }, [internalDialogTicker, navigationTickers])
+
+  // Custom title generator for internal dialog
+  const generateCustomTitle = React.useCallback((ticker: string): string => {
+    const performer = [...winners, ...losers].find(p => p.symbol === ticker)
+    if (!performer) return ticker
+
+    const changeText = performer.change >= 0 ? `+${performer.change.toFixed(1)}%` : `${performer.change.toFixed(1)}%`
+    const formattedPrice = performer.price.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+
+    return `${ticker} • ${formattedPrice} • ${changeText} • ${performer.volume >= 1000000 ?
+      `${(performer.volume / 1000000).toFixed(1)}M vol` :
+      `${(performer.volume / 1000).toFixed(0)}K vol`
+    }`
+  }, [winners, losers])
 
   // State for custom watchlists
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
@@ -294,10 +330,14 @@ export function BasicTopPerformers({
   ])
 
   const handleTickerSelect = (symbol: string) => {
-    // Only call parent's onTickerSelect, no internal dialog
+    // If onTickerSelect is provided, forward to it and do nothing else
     if (onTickerSelect) {
       onTickerSelect(symbol)
+      return
     }
+
+    // If no onTickerSelect provided, open internal ChartFullscreenDialog
+    setInternalDialogTicker(symbol)
   }
 
   if (apiLoading || cryptoLoading) {
@@ -445,6 +485,17 @@ export function BasicTopPerformers({
             </>
           )}
         </div>
+      )}
+
+      {/* Internal ChartFullscreenDialog - only show when no onTickerSelect prop provided */}
+      {!onTickerSelect && (
+        <ChartFullscreenDialog
+          ticker={internalDialogTicker}
+          onClose={() => setInternalDialogTicker(null)}
+          tickerList={navigationTickers}
+          currentIndex={navigationIndex}
+          getTitle={generateCustomTitle}
+        />
       )}
 
     </div>

@@ -420,7 +420,6 @@ function WatchPage() {
 
 									<TabsContent value="performers" forceMount className="flex-1 min-h-0 overflow-auto p-2 lg:p-4 data-[state=inactive]:hidden">
 										<BasicTopPerformers
-											onTickerSelect={handleSelectTicker}
 											maxItems={10}
 											showControls={true}
 										/>
