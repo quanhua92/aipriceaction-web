@@ -24,7 +24,7 @@ export function PlaygroundDescription() {
       </div>
 
       {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         <div className="flex items-start space-x-3 p-4 rounded-lg bg-card/50 border">
           <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center mt-0.5">
             <span className="text-green-600 text-xs font-bold">1</span>
@@ -73,18 +73,7 @@ export function PlaygroundDescription() {
           </div>
         </div>
 
-        <div className="flex items-start space-x-3 p-4 rounded-lg bg-card/50 border">
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-pink-500/20 flex items-center justify-center mt-0.5">
-            <span className="text-pink-600 text-xs font-bold">5</span>
-          </div>
-          <div>
-            <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.shareableConfig.title')}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t('common.playground.description.features.shareableConfig.description')}
-            </p>
-          </div>
         </div>
-      </div>
 
       {/* Get Started Call-to-Action */}
       <div className="text-center pt-4 border-t">

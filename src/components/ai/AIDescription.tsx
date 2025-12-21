@@ -24,7 +24,7 @@ export function AIDescription() {
       </div>
 
       {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         <div className="flex items-start space-x-3 p-4 rounded-lg bg-card/50 border">
           <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center mt-0.5">
             <span className="text-green-600 text-xs font-bold">1</span>
