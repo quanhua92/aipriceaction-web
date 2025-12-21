@@ -7,7 +7,6 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { useLogs } from '@/contexts/LogsContext'
 import { getWatchlistNames, getCustomWatchlists } from '@/lib/watchlist-storage'
 import { isPredefinedWatchlist } from '@/lib/predefined-watchlists'
-import { getSectorDisplayName } from '@/lib/sector-names'
 import { ALL_WATCHLIST_NAME } from '@/lib/constants'
 import { SortButtons } from '@/components/SortButtons'
 import type { SortBy } from '@/components/SortButtons'
@@ -15,7 +14,6 @@ import { TickerGroupSelector } from '@/components/TickerGroupSelector'
 import { TopPerformerCard } from './TopPerformerCard'
 import { SectionFilter } from './SectionFilter'
 import { IntervalButtons } from './IntervalButtons'
-import { ChartFullscreenDialog, TitleGeneratorCallback } from '@/components/ChartFullscreenDialog'
 import type {
   BasicTopPerformersProps,
   SectionFilter as SectionFilterType,
@@ -69,9 +67,7 @@ export function BasicTopPerformers({
   const [error, setError] = React.useState<string | null>(null)
   const [apiData, setApiData] = React.useState<Record<string, any[]>>({})
 
-  // Dialog state for chart viewing
-  const [dialogTicker, setDialogTicker] = React.useState<string | null>(null)
-
+  
   // State for custom watchlists
   const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([])
   const [refreshKey, setRefreshKey] = React.useState(0)
@@ -277,62 +273,12 @@ export function BasicTopPerformers({
     customWatchlists
   ])
 
-  // Get all tickers in current view for navigation (winners + losers = 20 tickers)
-  const allTickersInView = React.useMemo(() => {
-    const tickers: string[] = []
-
-    // Add winners in order
-    winners.forEach(winner => {
-      tickers.push(winner.symbol)
-    })
-
-    // Add losers in order
-    losers.forEach(loser => {
-      tickers.push(loser.symbol)
-    })
-
-    return tickers
-  }, [winners, losers])
-
-  // Find current ticker index in the list
-  const currentTickerIndex = React.useMemo(() => {
-    if (!dialogTicker) return 0
-    const index = allTickersInView.indexOf(dialogTicker)
-    return index !== -1 ? index : 0
-  }, [dialogTicker, allTickersInView])
-
   const handleTickerSelect = (symbol: string) => {
-    // Always open chart dialog when card is clicked
-    setDialogTicker(symbol)
+    // Only call parent's onTickerSelect, no internal dialog
     if (onTickerSelect) {
       onTickerSelect(symbol)
     }
   }
-
-  const handleCloseDialog = () => {
-    setDialogTicker(null)
-  }
-
-  // Title generation callback for ChartFullscreenDialog
-  const getChartTitle = React.useCallback((ticker: string): string => {
-    // Find the ticker in winners or losers
-    const winner = winners.find(w => w.symbol === ticker)
-    const loser = losers.find(l => l.symbol === ticker)
-    const performer = winner || loser
-
-    if (!performer) {
-      return ticker
-    }
-
-    // Create custom title with translated sector name and performance info
-    const translatedSector = getSectorDisplayName(performer.sector, language)
-    let customTitle = `${ticker} - ${translatedSector}`
-    if (performer.change !== undefined && performer.change !== null) {
-      customTitle += ` (${performer.change >= 0 ? '+' : ''}${performer.change.toFixed(1)}%)`
-    }
-
-    return customTitle
-  }, [winners, losers, language])
 
   if (apiLoading || cryptoLoading) {
     return (
@@ -454,14 +400,6 @@ export function BasicTopPerformers({
         </div>
       )}
 
-      {/* Chart Dialog */}
-      <ChartFullscreenDialog
-        ticker={dialogTicker}
-        onClose={handleCloseDialog}
-        tickerList={allTickersInView}
-        currentIndex={currentTickerIndex}
-        getTitle={getChartTitle}
-      />
     </div>
   )
 }
