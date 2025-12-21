@@ -45,6 +45,8 @@ export function TopPerformerTable({
                 <TableHead className="text-center min-w-16">{t('common.topPerformers.tableHeaders.ma10')}</TableHead>
                 <TableHead className="text-center min-w-16">{t('common.topPerformers.tableHeaders.ma20')}</TableHead>
                 <TableHead className="text-center min-w-16">{t('common.topPerformers.tableHeaders.ma50')}</TableHead>
+                <TableHead className="text-center min-w-16">{t('common.topPerformers.tableHeaders.ma100')}</TableHead>
+                <TableHead className="text-center min-w-16">{t('common.topPerformers.tableHeaders.ma200')}</TableHead>
                 <TableHead className="text-center min-w-20">{t('common.topPerformers.tableHeaders.value')}</TableHead>
                 <TableHead className="text-center min-w-24">{t('common.topPerformers.tableHeaders.sector')}</TableHead>
               </TableRow>
@@ -96,6 +98,16 @@ export function TopPerformerTable({
                       performer.ma50_score != null && performer.ma50_score >= 0 ? 'text-green-700' : 'text-red-700'
                     }`}>
                       {performer.ma50_score != null ? `${performer.ma50_score.toFixed(1)}%` : '-'}
+                    </TableCell>
+                    <TableCell className={`text-center min-w-16 ${
+                      performer.ma100_score != null && performer.ma100_score >= 0 ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {performer.ma100_score != null ? `${performer.ma100_score.toFixed(1)}%` : '-'}
+                    </TableCell>
+                    <TableCell className={`text-center min-w-16 ${
+                      performer.ma200_score != null && performer.ma200_score >= 0 ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {performer.ma200_score != null ? `${performer.ma200_score.toFixed(1)}%` : '-'}
                     </TableCell>
                     <TableCell className="text-center font-mono min-w-20">
                       {performer.value >= 1000000000

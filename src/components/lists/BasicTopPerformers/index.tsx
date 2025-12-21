@@ -342,11 +342,6 @@ export function BasicTopPerformers({
         </div>
       )}
 
-      {/* View Mode Toggle - Cards | Table */}
-      {showControls && (
-        <ViewModeToggle value={viewMode} onChange={setViewMode} />
-      )}
-
       {/* Section Filter Buttons - matching SortableTickerList style */}
       <div>
         <SectionFilter value={sectionFilter} onChange={setSectionFilter} />
@@ -360,6 +355,11 @@ export function BasicTopPerformers({
           margin="bottom"
         />
       </div>
+
+      {/* View Mode Toggle - Cards | Table */}
+      {showControls && (
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
+      )}
 
       {/* Loading State */}
       {loading && (

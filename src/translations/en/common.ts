@@ -469,6 +469,8 @@ export default {
       ma10: 'MA10',
       ma20: 'MA20',
       ma50: 'MA50',
+      ma100: 'MA100',
+      ma200: 'MA200',
       value: 'Value',
     },
   },

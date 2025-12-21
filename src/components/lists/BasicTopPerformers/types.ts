@@ -18,9 +18,13 @@ export interface TopPerformer {
   ma20_score?: number | null
   ma50_score?: number | null
   ma10_score?: number | null
+  ma100_score?: number | null
+  ma200_score?: number | null
   ma20?: number | null
   ma50?: number | null
   ma10?: number | null
+  ma100?: number | null
+  ma200?: number | null
 }
 
 export interface BasicTopPerformersProps {

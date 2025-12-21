@@ -272,9 +272,13 @@ export function tickerToTopPerformer(ticker: TickerWithData): TopPerformer | nul
     ma10_score: data.ma10_score ?? null,
     ma20_score: data.ma20_score ?? null,
     ma50_score: data.ma50_score ?? null,
+    ma100_score: data.ma100_score ?? null,
+    ma200_score: data.ma200_score ?? null,
     ma10: data.ma10 ?? null,
     ma20: data.ma20 ?? null,
-    ma50: data.ma50 ?? null
+    ma50: data.ma50 ?? null,
+    ma100: data.ma100 ?? null,
+    ma200: data.ma200 ?? null
   }
 }
 
