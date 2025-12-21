@@ -2,7 +2,7 @@ import * as React from 'react'
 import type { TopCountToggleProps } from './types'
 
 export function TopCountToggle({ value, onChange }: TopCountToggleProps) {
-  const counts: Array<10 | 20 | 30> = [10, 20, 30]
+  const counts: Array<10 | 20 | 30 | 40 | 50> = [10, 20, 30, 40, 50]
 
   return (
     <div className="flex gap-1">
