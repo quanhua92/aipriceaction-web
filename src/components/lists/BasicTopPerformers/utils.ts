@@ -178,6 +178,17 @@ export function sortByMA100(tickers: TickerWithData[]): TickerWithData[] {
 }
 
 /**
+ * Sort tickers by MA200 score (highest score first)
+ */
+export function sortByMA200(tickers: TickerWithData[]): TickerWithData[] {
+  return [...tickers].sort((a, b) => {
+    const aScore = a.stockData?.ma200_score ?? -Infinity
+    const bScore = b.stockData?.ma200_score ?? -Infinity
+    return bScore - aScore
+  })
+}
+
+/**
  * Apply sorting based on selected criteria
  */
 export function applySorting(
@@ -185,6 +196,8 @@ export function applySorting(
   sortBy: SortBy
 ): TickerWithData[] {
   switch (sortBy) {
+    case 'az':
+      return [...tickers].sort((a, b) => a.symbol.localeCompare(b.symbol))
     case 'gainers':
       return sortByGainers(tickers)
     case 'losers':
@@ -201,6 +214,8 @@ export function applySorting(
       return sortByMA50(tickers)
     case 'ma100':
       return sortByMA100(tickers)
+    case 'ma200':
+      return sortByMA200(tickers)
     default:
       return tickers
   }
@@ -269,45 +284,84 @@ export function tickerToTopPerformer(ticker: TickerWithData): TopPerformer | nul
 export function calculateTopPerformers(
   sortedTickers: TickerWithData[],
   maxItems: number = 10,
-  sortBy: 'gainers' | 'losers' | 'volume' | 'value' | 'az' = 'gainers'
+  sortBy: 'gainers' | 'losers' | 'volume' | 'value' | 'az' | 'ma10' | 'ma20' | 'ma50' | 'ma100' | 'ma200' = 'gainers'
 ): { winners: TopPerformer[]; losers: TopPerformer[] } {
   // Convert to TopPerformer format and filter out invalid data
   const performers = sortedTickers
     .map(tickerToTopPerformer)
     .filter((p): p is TopPerformer => p !== null)
 
-  // Always get top winners: 10 tickers with highest positive changes
-  const winners = [...performers]
-    .filter(p => p.change > 0)
-    .sort((a, b) => b.change - a.change) // Highest positive first
-    .slice(0, maxItems)
-
-  // Always get top losers: 10 tickers with lowest (most negative) changes
-  const losers = [...performers]
-    .filter(p => p.change < 0)
-    .sort((a, b) => a.change - b.change) // Most negative first
-    .slice(0, maxItems)
-
-  // Sort the selected top 10 by the SortButtons criteria
-  const sortPerformers = (performers: TopPerformer[], criteria: string) => {
+  // Helper function to get sorting value based on criteria
+  const getSortValue = (performer: TopPerformer, criteria: string) => {
     switch (criteria) {
       case 'az':
-        return [...performers].sort((a, b) => a.symbol.localeCompare(b.symbol))
+        return performer.symbol.toLowerCase()
       case 'volume':
-        return [...performers].sort((a, b) => b.volume - a.volume)
+        return performer.volume
       case 'value':
-        return [...performers].sort((a, b) => b.value - a.value)
+        return performer.value
       case 'gainers':
-        return [...performers].sort((a, b) => b.change - a.change) // Highest gains first
+        return performer.change
       case 'losers':
-        return [...performers].sort((a, b) => a.change - b.change) // Most losses first
+        return performer.change
+      case 'ma10':
+        return performer.ma10_score ?? -Infinity
+      case 'ma20':
+        return performer.ma20_score ?? -Infinity
+      case 'ma50':
+        return performer.ma50_score ?? -Infinity
+      case 'ma100':
+        return performer.ma100_score ?? -Infinity
+      case 'ma200':
+        return performer.ma200_score ?? -Infinity
       default:
-        return performers
+        return performer.change
     }
   }
 
-  return {
-    winners: sortPerformers(winners, sortBy),
-    losers: sortPerformers(losers, sortBy)
+  // Get top winners based on the sorting criteria
+  let winners: TopPerformer[]
+  if (sortBy === 'losers') {
+    // For losers sorting, we still get winners by highest positive change
+    winners = [...performers]
+      .filter(p => p.change > 0)
+      .sort((a, b) => b.change - a.change)
+      .slice(0, maxItems)
+  } else if (sortBy === 'gainers') {
+    // For gainers sorting, we get winners by highest positive change
+    winners = [...performers]
+      .filter(p => p.change > 0)
+      .sort((a, b) => b.change - a.change)
+      .slice(0, maxItems)
+  } else {
+    // For other sorting criteria (az, volume, value, ma10, ma20, ma50, ma100, ma200)
+    // Get top 10 highest values (could be gains or losses depending on criteria)
+    winners = [...performers]
+      .sort((a, b) => getSortValue(b, sortBy) - getSortValue(a, sortBy))
+      .slice(0, maxItems)
   }
+
+  // Get top losers based on the sorting criteria
+  let losers: TopPerformer[]
+  if (sortBy === 'gainers') {
+    // For gainers sorting, we get losers by lowest (most negative) change
+    losers = [...performers]
+      .filter(p => p.change < 0)
+      .sort((a, b) => a.change - b.change)
+      .slice(0, maxItems)
+  } else if (sortBy === 'losers') {
+    // For losers sorting, we get losers by most negative change
+    losers = [...performers]
+      .filter(p => p.change < 0)
+      .sort((a, b) => a.change - b.change)
+      .slice(0, maxItems)
+  } else {
+    // For other sorting criteria (az, volume, value, ma10, ma20, ma50, ma100, ma200)
+    // Get top 10 lowest values (could be gains or losses depending on criteria)
+    losers = [...performers]
+      .sort((a, b) => getSortValue(a, sortBy) - getSortValue(b, sortBy))
+      .slice(0, maxItems)
+  }
+
+  return { winners, losers }
 }
