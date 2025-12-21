@@ -73,25 +73,25 @@ export default function Header() {
             </Link>
 
             <Link
-              to="/alert"
+              to="/ai"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
-              <span className="font-medium">Alerts</span>
+              <span className="font-medium">AI Context</span>
             </Link>
 
             <Link
-              to="/crypto"
+              to="/play"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
-              <span className="font-medium">Crypto</span>
+              <span className="font-medium">Playground</span>
             </Link>
 
             <Link
@@ -117,25 +117,25 @@ export default function Header() {
             </Link>
 
             <Link
-              to="/ai"
+              to="/alert"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
-              <span className="font-medium">AI Context</span>
+              <span className="font-medium">Alerts</span>
             </Link>
 
             <Link
-              to="/play"
+              to="/crypto"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
-              <span className="font-medium">Playground</span>
+              <span className="font-medium">Crypto</span>
             </Link>
 
             <Link

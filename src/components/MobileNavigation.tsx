@@ -84,7 +84,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             </Link>
 
             <Link
-              to="/alert"
+              to="/ai"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
               activeProps={{
@@ -92,12 +92,12 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
                   'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
               }}
             >
-              <Bell size={20} />
-              <span className="font-medium">Alerts</span>
+              <Brain size={20} />
+              <span className="font-medium">AI Context</span>
             </Link>
 
             <Link
-              to="/crypto"
+              to="/play"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
               activeProps={{
@@ -105,8 +105,8 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
                   'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
               }}
             >
-              <Coins size={20} />
-              <span className="font-medium">Crypto</span>
+              <Dices size={20} />
+              <span className="font-medium">Playground</span>
             </Link>
 
             <Link
@@ -136,7 +136,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             </Link>
 
             <Link
-              to="/ai"
+              to="/alert"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
               activeProps={{
@@ -144,12 +144,12 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
                   'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
               }}
             >
-              <Brain size={20} />
-              <span className="font-medium">AI Context</span>
+              <Bell size={20} />
+              <span className="font-medium">Alerts</span>
             </Link>
 
             <Link
-              to="/play"
+              to="/crypto"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
               activeProps={{
@@ -157,8 +157,8 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
                   'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
               }}
             >
-              <Dices size={20} />
-              <span className="font-medium">Playground</span>
+              <Coins size={20} />
+              <span className="font-medium">Crypto</span>
             </Link>
 
             <Link
