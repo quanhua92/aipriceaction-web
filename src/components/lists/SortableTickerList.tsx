@@ -411,7 +411,7 @@ export function SortableTickerList({
                       <button
                         key={index}
                         onClick={() => onSelectTicker(index)}
-                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{index}</span>
@@ -459,7 +459,7 @@ export function SortableTickerList({
                       <button
                         key={ticker.symbol}
                         onClick={() => onSelectTicker(ticker.symbol)}
-                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
@@ -507,7 +507,7 @@ export function SortableTickerList({
                       <button
                         key={ticker.symbol}
                         onClick={() => onSelectTicker(ticker.symbol)}
-                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
@@ -555,7 +555,7 @@ export function SortableTickerList({
                       <button
                         key={ticker.symbol}
                         onClick={() => onSelectTicker(ticker.symbol)}
-                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left"
+                        className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
