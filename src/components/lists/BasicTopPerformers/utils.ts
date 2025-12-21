@@ -134,6 +134,50 @@ export function sortByValue(tickers: TickerWithData[]): TickerWithData[] {
 }
 
 /**
+ * Sort tickers by MA10 score (highest score first)
+ */
+export function sortByMA10(tickers: TickerWithData[]): TickerWithData[] {
+  return [...tickers].sort((a, b) => {
+    const aScore = a.stockData?.ma10_score ?? -Infinity
+    const bScore = b.stockData?.ma10_score ?? -Infinity
+    return bScore - aScore
+  })
+}
+
+/**
+ * Sort tickers by MA20 score (highest score first)
+ */
+export function sortByMA20(tickers: TickerWithData[]): TickerWithData[] {
+  return [...tickers].sort((a, b) => {
+    const aScore = a.stockData?.ma20_score ?? -Infinity
+    const bScore = b.stockData?.ma20_score ?? -Infinity
+    return bScore - aScore
+  })
+}
+
+/**
+ * Sort tickers by MA50 score (highest score first)
+ */
+export function sortByMA50(tickers: TickerWithData[]): TickerWithData[] {
+  return [...tickers].sort((a, b) => {
+    const aScore = a.stockData?.ma50_score ?? -Infinity
+    const bScore = b.stockData?.ma50_score ?? -Infinity
+    return bScore - aScore
+  })
+}
+
+/**
+ * Sort tickers by MA100 score (highest score first)
+ */
+export function sortByMA100(tickers: TickerWithData[]): TickerWithData[] {
+  return [...tickers].sort((a, b) => {
+    const aScore = a.stockData?.ma100_score ?? -Infinity
+    const bScore = b.stockData?.ma100_score ?? -Infinity
+    return bScore - aScore
+  })
+}
+
+/**
  * Apply sorting based on selected criteria
  */
 export function applySorting(
@@ -149,6 +193,14 @@ export function applySorting(
       return sortByVolume(tickers)
     case 'value':
       return sortByValue(tickers)
+    case 'ma10':
+      return sortByMA10(tickers)
+    case 'ma20':
+      return sortByMA20(tickers)
+    case 'ma50':
+      return sortByMA50(tickers)
+    case 'ma100':
+      return sortByMA100(tickers)
     default:
       return tickers
   }
