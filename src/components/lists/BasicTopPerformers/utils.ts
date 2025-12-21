@@ -295,11 +295,9 @@ export function calculateTopPerformers(
     .map(tickerToTopPerformer)
     .filter((p): p is TopPerformer => p !== null)
 
-  // Helper function to get sorting value based on criteria
+  // Helper function to get sorting value based on criteria (for non-az sorting)
   const getSortValue = (performer: TopPerformer, criteria: string) => {
     switch (criteria) {
-      case 'az':
-        return performer.symbol.toLowerCase()
       case 'volume':
         return performer.volume
       case 'value':
@@ -323,48 +321,54 @@ export function calculateTopPerformers(
     }
   }
 
-  // Get top winners based on the sorting criteria
+  // Always select top winners by highest positive change (same selection regardless of sorting mode)
+  const topWinnersByChange = [...performers]
+    .filter(p => p.change > 0)
+    .sort((a, b) => b.change - a.change)
+    .slice(0, maxItems)
+
+  // Then reorder the selected winners based on sorting criteria
   let winners: TopPerformer[]
-  if (sortBy === 'losers') {
-    // For losers sorting, we still get winners by highest positive change
-    winners = [...performers]
-      .filter(p => p.change > 0)
-      .sort((a, b) => b.change - a.change)
-      .slice(0, maxItems)
-  } else if (sortBy === 'gainers') {
-    // For gainers sorting, we get winners by highest positive change
-    winners = [...performers]
-      .filter(p => p.change > 0)
-      .sort((a, b) => b.change - a.change)
-      .slice(0, maxItems)
+  if (sortBy === 'gainers') {
+    // For gainers sorting: highest positive on top (same order as selection)
+    winners = [...topWinnersByChange]
+  } else if (sortBy === 'losers') {
+    // For losers sorting: lowest positive on top (reverse order)
+    winners = [...topWinnersByChange].reverse()
   } else {
-    // For other sorting criteria (az, volume, value, ma10, ma20, ma50, ma100, ma200)
-    // Get top 10 highest values (could be gains or losses depending on criteria)
-    winners = [...performers]
-      .sort((a, b) => getSortValue(b, sortBy) - getSortValue(a, sortBy))
-      .slice(0, maxItems)
+    // For other sorting criteria: reorder the selected top 10 winners
+    winners = [...topWinnersByChange].sort((a, b) => {
+      if (sortBy === 'az') {
+        return a.symbol.localeCompare(b.symbol)
+      } else {
+        return getSortValue(b, sortBy) - getSortValue(a, sortBy)
+      }
+    })
   }
 
-  // Get top losers based on the sorting criteria
+  // Always select top losers by lowest (most negative) change (same selection regardless of sorting mode)
+  const topLosersByChange = [...performers]
+    .filter(p => p.change < 0)
+    .sort((a, b) => a.change - b.change)  // Most negative first
+    .slice(0, maxItems)
+
+  // Then reorder the selected losers based on sorting criteria
   let losers: TopPerformer[]
   if (sortBy === 'gainers') {
-    // For gainers sorting, we get losers by lowest (most negative) change
-    losers = [...performers]
-      .filter(p => p.change < 0)
-      .sort((a, b) => a.change - b.change)
-      .slice(0, maxItems)
+    // For gainers sorting: most negative on top (same order as selection)
+    losers = [...topLosersByChange]
   } else if (sortBy === 'losers') {
-    // For losers sorting, we get losers by most negative change
-    losers = [...performers]
-      .filter(p => p.change < 0)
-      .sort((a, b) => a.change - b.change)
-      .slice(0, maxItems)
+    // For losers sorting: least negative on top (reverse order)
+    losers = [...topLosersByChange].reverse()
   } else {
-    // For other sorting criteria (az, volume, value, ma10, ma20, ma50, ma100, ma200)
-    // Get top 10 lowest values (could be gains or losses depending on criteria)
-    losers = [...performers]
-      .sort((a, b) => getSortValue(a, sortBy) - getSortValue(b, sortBy))
-      .slice(0, maxItems)
+    // For other sorting criteria: reorder the selected top 10 losers
+    losers = [...topLosersByChange].sort((a, b) => {
+      if (sortBy === 'az') {
+        return a.symbol.localeCompare(b.symbol)
+      } else {
+        return getSortValue(b, sortBy) - getSortValue(a, sortBy)
+      }
+    })
   }
 
   return { winners, losers }
