@@ -15,6 +15,7 @@ import { TickerGroupSelector } from '@/components/TickerGroupSelector'
 import { TopPerformerCard } from './TopPerformerCard'
 import { TopPerformerTable } from './TopPerformerTable'
 import { ViewModeToggle } from './ViewModeToggle'
+import { TopCountToggle } from './TopCountToggle'
 import { SectionFilter } from './SectionFilter'
 import { IntervalButtons } from './IntervalButtons'
 import { BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY } from '@/lib/constants'
@@ -24,7 +25,8 @@ import type {
   IntervalType,
   TopPerformer,
   TickerWithData,
-  ViewMode
+  ViewMode,
+  TopCount
 } from './types'
 import {
   enrichTickerWithData,
@@ -81,6 +83,9 @@ export function BasicTopPerformers({
     }
     return 'table'
   })
+
+  // State for top count (10, 20, 30)
+  const [topCount, setTopCount] = React.useState<TopCount>(10)
 
   // State for internal ChartFullscreenDialog
   const [internalDialogTicker, setInternalDialogTicker] = React.useState<string | null>(null)
@@ -295,7 +300,7 @@ export function BasicTopPerformers({
       // 5. Calculate top winners and losers
       const { winners: topWinners, losers: topLosers } = calculateTopPerformers(
         sortedTickers,
-        maxItems,
+        topCount,
         selectedSort
       )
 
@@ -324,7 +329,7 @@ export function BasicTopPerformers({
     sectionFilter,
     selectedGroup,
     selectedSort,
-    maxItems,
+    topCount,
     tickerGroups,
     customWatchlists
   ])
@@ -396,9 +401,12 @@ export function BasicTopPerformers({
         />
       </div>
 
-      {/* View Mode Toggle - Cards | Table */}
+      {/* View Mode Toggle and Top Count Toggle */}
       {showControls && (
-        <ViewModeToggle value={viewMode} onChange={setViewMode} />
+        <div className="flex items-center justify-between mb-3">
+          <ViewModeToggle value={viewMode} onChange={setViewMode} />
+          <TopCountToggle value={topCount} onChange={setTopCount} />
+        </div>
       )}
 
       {/* Loading State */}
@@ -421,10 +429,10 @@ export function BasicTopPerformers({
         <div className="flex-1 space-y-4">
           {viewMode === 'cards' ? (
             <>
-              {/* Top 10 Winners - Cards View */}
+              {/* Top Winners - Cards View */}
               <div>
                 <h3 className="text-sm font-semibold text-green-600 mb-2">
-                  {t('common.topPerformers.topWinners', { count: maxItems })}
+                  {t('common.topPerformers.topWinners', { count: topCount })}
                 </h3>
                 {winners.length === 0 ? (
                   <div className="text-center py-4 text-muted-foreground text-sm">
@@ -443,10 +451,10 @@ export function BasicTopPerformers({
                 )}
               </div>
 
-              {/* Top 10 Losers - Cards View */}
+              {/* Top Losers - Cards View */}
               <div>
                 <h3 className="text-sm font-semibold text-red-600 mb-2">
-                  {t('common.topPerformers.topLosers', { count: maxItems })}
+                  {t('common.topPerformers.topLosers', { count: topCount })}
                 </h3>
                 {losers.length === 0 ? (
                   <div className="text-center py-4 text-muted-foreground text-sm">
@@ -467,18 +475,18 @@ export function BasicTopPerformers({
             </>
           ) : (
             <>
-              {/* Top 10 Winners - Table View */}
+              {/* Top Winners - Table View */}
               <TopPerformerTable
                 performers={winners}
-                title={t('common.topPerformers.topWinners', { count: maxItems })}
+                title={t('common.topPerformers.topWinners', { count: topCount })}
                 onTickerSelect={handleTickerSelect}
                 emptyMessage={t('common.topPerformers.noWinnersFound')}
               />
 
-              {/* Top 10 Losers - Table View */}
+              {/* Top Losers - Table View */}
               <TopPerformerTable
                 performers={losers}
-                title={t('common.topPerformers.topLosers', { count: maxItems })}
+                title={t('common.topPerformers.topLosers', { count: topCount })}
                 onTickerSelect={handleTickerSelect}
                 emptyMessage={t('common.topPerformers.noLosersFound')}
               />

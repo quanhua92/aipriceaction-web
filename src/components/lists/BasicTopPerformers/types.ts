@@ -58,6 +58,13 @@ export interface ViewModeToggleProps {
   onChange: (value: ViewMode) => void
 }
 
+export type TopCount = 10 | 20 | 30
+
+export interface TopCountToggleProps {
+  value: TopCount
+  onChange: (value: TopCount) => void
+}
+
 export interface TopPerformerTableProps {
   performers: TopPerformer[]
   title: string
