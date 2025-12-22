@@ -83,7 +83,7 @@ export function TrendSignal({
   const [buyPeriod, setBuyPeriod] = React.useState<number>(defaultBuyPeriod)
   const [sellPeriod, setSellPeriod] = React.useState<number>(defaultSellPeriod)
   const [showAll, setShowAll] = React.useState(false) // Default to hide non-signals
-  const [sortBy, setSortBy] = React.useState<SortBy>('gainers')
+  const [sortBy, setSortBy] = React.useState<SortBy>('value')
   const [signals, setSignals] = React.useState<TrendSignalData[]>([])
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
