@@ -205,14 +205,12 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
         const age = now - entry.timestamp
         if (age > API_CACHE_WINDOW_MS) {
           staleKeys.push(key)
-          info(`[CACHE] Removing stale entry: ${key} (${age}ms old)`)
         }
       }
 
       staleKeys.forEach(key => requestCache.delete(key))
       if (staleKeys.length > 0) {
         info(`[API] Cache cleanup: removed ${staleKeys.length} stale entries`)
-        info(`[CACHE] Current cache size: ${requestCache.size} entries`)
       }
     }
 
@@ -226,15 +224,10 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       const cacheKey = generateCacheKey(params)
       const now = Date.now()
 
-      // Debug: Log cache key generation for bug investigation
-      info(`[CACHE] Generated key: ${cacheKey} from params:`, params)
-
       // Check for existing in-flight request or fresh result
       if (requestCache.has(cacheKey)) {
         const entry = requestCache.get(cacheKey)!
         const age = now - entry.timestamp
-
-        info(`[CACHE] Found entry: ${cacheKey}, age: ${age}ms, TTL: ${API_CACHE_WINDOW_MS}ms`)
 
         // If fresh (within API_CACHE_WINDOW_MS), reuse
         if (age < API_CACHE_WINDOW_MS) {
@@ -244,14 +237,12 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
             return entry.result
           } else {
             // Wait for in-flight request
-            info(`[CACHE] Reusing promise for: ${cacheKey}, age: ${age}ms`)
             info(`[API] ${source} REUSE_PROMISE: ${cacheKey}`)
             return entry.promise
           }
         }
 
         // Remove stale entry
-        info(`[CACHE] Removing stale entry: ${cacheKey} (age: ${age}ms)`)
         requestCache.delete(cacheKey)
       }
 
