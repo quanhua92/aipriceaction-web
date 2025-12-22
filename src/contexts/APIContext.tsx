@@ -1,9 +1,34 @@
 import * as React from 'react'
 import { getTickerGroups, getCryptoTickerGroups, getTickersWithLogging, getCryptoTickersWithLogging, getHealth as getHealthApi, type TickerGroups, type StockData, type TickersQueryParams, type HealthResponse } from '@/lib/api-client'
-import { PRIORITY_GROUPS } from '@/lib/constants'
+import { PRIORITY_GROUPS, API_CACHE_WINDOW_MS } from '@/lib/constants'
 import { useLogs } from './LogsContext'
 import { useRefresh } from './RefreshContext'
 import { useChartSettings } from './ChartSettingsContext'
+
+// Request deduplication cache
+interface CacheEntry {
+  promise: Promise<Record<string, StockData[]>>
+  timestamp: number
+  result?: Record<string, StockData[]>  // Cached result for instant hits
+}
+
+const requestCache = new Map<string, CacheEntry>()
+
+// Generate deterministic cache key from request parameters
+function generateCacheKey(params?: TickersQueryParams): string {
+  const { symbol, interval, start_date, end_date, limit, mode, legacy } = params || {}
+
+  return [
+    // Normalize symbols: sort arrays, handle undefined as "ALL"
+    Array.isArray(symbol) ? symbol.sort().join(',') : symbol || 'ALL',
+    interval || '1D',
+    start_date || '',
+    end_date || '',
+    limit?.toString() || '',
+    mode || 'vn',
+    legacy ? '1' : '0'
+  ].filter(Boolean).join('|')
+}
 
 const sortTickerGroups = (groups: TickerGroups): TickerGroups => {
   const sortedEntries = Object.entries(groups)
@@ -170,10 +195,82 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastRefresh, globalEndDate])
 
-  // Provide logged API methods
+  // Automatic cache cleanup to prevent memory leaks
+  React.useEffect(() => {
+    const cleanup = () => {
+      const now = Date.now()
+      const staleKeys: string[] = []
+
+      for (const [key, entry] of requestCache.entries()) {
+        const age = now - entry.timestamp
+        if (age > API_CACHE_WINDOW_MS) {
+          staleKeys.push(key)
+          info(`[CACHE] Removing stale entry: ${key} (${age}ms old)`)
+        }
+      }
+
+      staleKeys.forEach(key => requestCache.delete(key))
+      if (staleKeys.length > 0) {
+        info(`[API] Cache cleanup: removed ${staleKeys.length} stale entries`)
+        info(`[CACHE] Current cache size: ${requestCache.size} entries`)
+      }
+    }
+
+    const interval = setInterval(cleanup, 5000) // Clean every 5s
+    return () => clearInterval(interval)
+  }, [info])
+
+  // Provide logged API methods with request deduplication
   const getTickers = React.useCallback(
     async (source: string, params?: TickersQueryParams) => {
-      return getTickersWithLogging(source, params ?? {}, { info, warn: info, error: logError })
+      const cacheKey = generateCacheKey(params)
+      const now = Date.now()
+
+      // Debug: Log cache key generation for bug investigation
+      info(`[CACHE] Generated key: ${cacheKey} from params:`, params)
+
+      // Check for existing in-flight request or fresh result
+      if (requestCache.has(cacheKey)) {
+        const entry = requestCache.get(cacheKey)!
+        const age = now - entry.timestamp
+
+        info(`[CACHE] Found entry: ${cacheKey}, age: ${age}ms, TTL: ${API_CACHE_WINDOW_MS}ms`)
+
+        // If fresh (within API_CACHE_WINDOW_MS), reuse
+        if (age < API_CACHE_WINDOW_MS) {
+          if (entry.result) {
+            // Return cached result immediately
+            info(`[API] ${source} CACHE_HIT: ${cacheKey} (${age}ms old)`)
+            return entry.result
+          } else {
+            // Wait for in-flight request
+            info(`[CACHE] Reusing promise for: ${cacheKey}, age: ${age}ms`)
+            info(`[API] ${source} REUSE_PROMISE: ${cacheKey}`)
+            return entry.promise
+          }
+        }
+
+        // Remove stale entry
+        info(`[CACHE] Removing stale entry: ${cacheKey} (age: ${age}ms)`)
+        requestCache.delete(cacheKey)
+      }
+
+      // Create new request and store in cache
+      const promise = getTickersWithLogging(source, params ?? {}, { info, warn: info, error: logError })
+      const cacheEntry: CacheEntry = { promise, timestamp: now }
+
+      // Cache the promise and store result when complete
+      requestCache.set(cacheKey, cacheEntry)
+
+      // Store result for future cache hits
+      promise.then(result => {
+        cacheEntry.result = result
+      }).catch(() => {
+        // Remove failed request from cache
+        requestCache.delete(cacheKey)
+      })
+
+      return promise
     },
     [info, logError]
   )
