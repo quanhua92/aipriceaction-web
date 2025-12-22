@@ -14,7 +14,7 @@ import {
 	type Time,
 } from "lightweight-charts";
 import { Loader2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MA_CONFIG, MA_SERIES_OPTIONS } from "./utils/chartConfig";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTicker } from "@/contexts/TickerContext";
@@ -191,7 +191,7 @@ export function BaseTradingViewChart({
 				horzLines: { visible: false },
 			},
 			crosshair: {
-				mode: CrosshairMode.Normal,
+				mode: CrosshairMode.Hidden, // Start hidden, enable after data loads
 			},
 			rightPriceScale: {
 				borderColor: "#27272a",
@@ -763,6 +763,17 @@ export function BaseTradingViewChart({
 		// Also listen to window resize for fullscreen/browser resize
 		window.addEventListener("resize", handleResize);
 
+		// Layer 2: Immediate crosshair clearing after chart creation
+		// Add requestAnimationFrame to ensure clearing happens after chart initialization
+		requestAnimationFrame(() => {
+			chartRef.current?.clearCrosshairPosition();
+			setCrosshairData(null);
+			if (tooltipRef.current) {
+				tooltipRef.current.innerHTML = "";
+				tooltipRef.current.style.display = "none";
+			}
+		});
+
 		return () => {
 			// Clean up resize listeners
 			window.removeEventListener("resize", handleResize);
@@ -800,8 +811,19 @@ export function BaseTradingViewChart({
 	}, [
 		height,
 		maVisibility,
-		chartContainerRef.current,
 	]);
+
+	// Layer 2: useLayoutEffect for immediate crosshair clearing
+	useLayoutEffect(() => {
+		if (chartRef.current && !isDataInitialized) {
+			chartRef.current?.clearCrosshairPosition();
+			setCrosshairData(null);
+			if (tooltipRef.current) {
+				tooltipRef.current.innerHTML = "";
+				tooltipRef.current.style.display = "none";
+			}
+		}
+	}, [isDataInitialized]);
 
 	// Update chart data when chartData changes
 	useEffect(() => {
@@ -839,7 +861,8 @@ export function BaseTradingViewChart({
 
 			chartRef.current.timeScale().setVisibleRange({ from, to });
 
-			// Clear crosshair when setting initial viewport to prevent default positioning
+			// Layer 3: Enhanced viewport clearing with additional safeguards
+			// Clear crosshair immediately
 			chartRef.current?.clearCrosshairPosition();
 			setCrosshairData(null);
 
@@ -848,6 +871,18 @@ export function BaseTradingViewChart({
 				tooltipRef.current.innerHTML = "";
 				tooltipRef.current.style.display = "none";
 			}
+
+			// Additional safeguard: Clear crosshair again in next frame
+			requestAnimationFrame(() => {
+				chartRef.current?.clearCrosshairPosition();
+			});
+
+			// Enable crosshair after everything is properly initialized
+			chartRef.current.applyOptions({
+				crosshair: {
+					mode: CrosshairMode.Normal,
+				},
+			});
 
 			setIsDataInitialized(true);
 		}
