@@ -190,9 +190,10 @@ export function ChartFullscreenDialog({
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
+    // Use capture phase to ensure this runs before element-specific handlers
+    window.addEventListener('keydown', handleKeyDown, { capture: true })
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keydown', handleKeyDown, { capture: true })
     }
   }, [isOpen, tickerList, navigateToPrevious, navigateToNext])
 
@@ -281,7 +282,11 @@ export function ChartFullscreenDialog({
         </DialogHeader>
 
         {displayTicker && (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col gap-0">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex-1 min-h-0 flex flex-col gap-0"
+          >
             <TabsList className="mx-auto mb-2 grid grid-cols-2 gap-4 w-fit">
               <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
               <TabsTrigger value="trendSignal">{t('dialogs.quickAddAlert.tabs.trendSignal')}</TabsTrigger>
