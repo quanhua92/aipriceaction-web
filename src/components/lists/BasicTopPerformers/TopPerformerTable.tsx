@@ -37,7 +37,7 @@ export function TopPerformerTable({
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead className="sticky left-0 bg-muted/30 z-10 min-w-20 text-center">{t('common.topPerformers.tableHeaders.symbol')}</TableHead>
+                <TableHead className="sticky left-0 bg-background z-10 min-w-20 text-center">{t('common.topPerformers.tableHeaders.symbol')}</TableHead>
                 <TableHead className="text-center min-w-24">{t('common.topPerformers.tableHeaders.price')}</TableHead>
                 <TableHead className="text-center min-w-20">{t('common.topPerformers.tableHeaders.changePercent')}</TableHead>
                 <TableHead className="text-center min-w-24">{t('common.topPerformers.tableHeaders.volume')}</TableHead>
