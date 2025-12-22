@@ -92,51 +92,84 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
       hiddenTimestampRef.current = null
 
       if (timePageWasHidden > VISIBILITY_MIN_REFRESH_INTERVAL_MS) {
-        // Page was hidden for more than 5 seconds - refresh immediately
-        info('Refresh triggered immediately', {
-          source: 'visibility-long-hidden',
-          timePageWasHidden,
-          minIntervalRequired: VISIBILITY_MIN_REFRESH_INTERVAL_MS
-        })
-        setLastRefresh(now)
-      } else if (timePageWasHidden > 0) {
-        // Page was hidden for less than 5 seconds - use debounce to prevent rapid switching
-        visibilityTimeoutRef.current = setTimeout(() => {
-          // Check time since last refresh to avoid duplicate refreshes
-          const timeSinceLastRefresh = Date.now() - lastRefreshRef.current
+      // Page was hidden for more than 30 seconds - refresh immediately
+      info('Refresh triggered immediately', {
+        source: 'visibility-long-hidden',
+        timePageWasHidden,
+        minIntervalRequired: VISIBILITY_MIN_REFRESH_INTERVAL_MS
+      })
+      setLastRefresh(now)
+    } else if (timePageWasHidden > 0) {
+      // Page was hidden for less than 30 seconds - use debounce to prevent rapid switching
+      // But wait a bit longer to let focus events potentially handle it
+      visibilityTimeoutRef.current = setTimeout(() => {
+        // Check time since last refresh to avoid duplicate refreshes
+        const timeSinceLastRefresh = Date.now() - lastRefreshRef.current
 
-          if (timeSinceLastRefresh >= VISIBILITY_MIN_REFRESH_INTERVAL_MS) {
-            info('Refresh triggered', {
-              source: 'visibility-short-hidden',
-              timePageWasHidden,
-              timeSinceLastRefresh,
-              debounceDelay: VISIBILITY_REFRESH_DEBOUNCE_MS
-            })
-            setLastRefresh(Date.now())
-          } else {
-            info('Skipping visibility refresh - recent refresh detected', {
-              timePageWasHidden,
-              timeSinceLastRefresh,
-              minIntervalRequired: VISIBILITY_MIN_REFRESH_INTERVAL_MS
-            })
-          }
-        }, VISIBILITY_REFRESH_DEBOUNCE_MS)
-      }
+        if (timeSinceLastRefresh >= VISIBILITY_MIN_REFRESH_INTERVAL_MS) {
+          info('Refresh triggered', {
+            source: 'visibility-short-hidden',
+            timePageWasHidden,
+            timeSinceLastRefresh,
+            debounceDelay: VISIBILITY_REFRESH_DEBOUNCE_MS
+          })
+          setLastRefresh(Date.now())
+        } else {
+          info('Skipping visibility refresh - recent refresh detected', {
+            timePageWasHidden,
+            timeSinceLastRefresh,
+            minIntervalRequired: VISIBILITY_MIN_REFRESH_INTERVAL_MS
+          })
+        }
+      }, VISIBILITY_REFRESH_DEBOUNCE_MS + 200) // Add extra delay to let focus events handle it first
+    }
       // If timePageWasHidden is 0, it means page wasn't actually hidden (initial load), do nothing
     }
   }, [info])
 
+  // Focus/blur coordination refs
+  const focusTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+  const lastFocusTimeRef = React.useRef<number>(0)
+
   // Handle window focus
   const handleWindowFocus = React.useCallback(() => {
-    // Window focus is another indication the page is visible
-    // This helps catch cases where visibility API might not fire
-    if (!isVisible) {
-      info('Window focused - triggering refresh', {
-        wasVisible: isVisible
-      })
-      triggerRefresh()
+    info('FOCUS EVENT DETECTED - window focus handler called', {
+      timestamp: Date.now(),
+      wasVisible: isVisible
+    })
+
+    const now = Date.now()
+    lastFocusTimeRef.current = now
+
+    // Clear any pending focus timeout
+    if (focusTimeoutRef.current) {
+      clearTimeout(focusTimeoutRef.current)
     }
-  }, [isVisible, info, triggerRefresh])
+
+    // Use a short debounce to coordinate with visibility change events
+    focusTimeoutRef.current = setTimeout(() => {
+      const currentlyVisible = !document.hidden
+      const timeSinceLastRefresh = now - lastRefreshRef.current
+
+      // Only trigger refresh if page is actually visible and enough time has passed
+      if (currentlyVisible && timeSinceLastRefresh >= VISIBILITY_MIN_REFRESH_INTERVAL_MS) {
+        info('Window focus refresh triggered', {
+          wasVisible: isVisible,
+          currentlyVisible,
+          timeSinceLastRefresh,
+          timeSinceFocus: Date.now() - now
+        })
+        setLastRefresh(now)
+      } else {
+        info('Window focus refresh skipped', {
+          wasVisible: isVisible,
+          currentlyVisible,
+          timeSinceLastRefresh,
+          reason: !currentlyVisible ? 'page not visible' : 'too soon since last refresh'
+        })
+      }
+    }, 100) // Very short debounce to let visibility change events process first
+  }, [isVisible, info])
 
   // Handle window blur
   const handleWindowBlur = React.useCallback(() => {
@@ -179,9 +212,12 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('focus', handleWindowFocus)
       window.removeEventListener('blur', handleWindowBlur)
 
-      // Clear any pending visibility timeout
+      // Clear any pending timeouts
       if (visibilityTimeoutRef.current) {
         clearTimeout(visibilityTimeoutRef.current)
+      }
+      if (focusTimeoutRef.current) {
+        clearTimeout(focusTimeoutRef.current)
       }
     }
   }, [handleVisibilityChange, handleWindowFocus, handleWindowBlur, info])
