@@ -320,7 +320,7 @@ export function formatVolume(volume: number | null | undefined): string {
 export function getResponsiveViewportSize(chartWidth: number): number {
   // Small containers (like mobile grid): < 400px
   if (chartWidth < 400) {
-    return 40
+    return 60
   }
 
   // Medium containers: 400px - 599px

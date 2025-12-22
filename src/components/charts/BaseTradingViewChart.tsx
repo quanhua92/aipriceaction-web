@@ -163,7 +163,7 @@ export function BaseTradingViewChart({
 
 	// Calculate responsive viewport size
 	const responsiveViewportSize = useMemo(() => {
-		return containerWidth > 0 ? getResponsiveViewportSize(containerWidth) : 40;
+		return containerWidth > 0 ? getResponsiveViewportSize(containerWidth) : 60;
 	}, [containerWidth]);
 
 	// Transform data to TradingView format
