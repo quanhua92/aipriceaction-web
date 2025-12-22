@@ -336,7 +336,7 @@ export function tickerToTopPerformer(ticker: TickerWithData): TopPerformer | nul
  */
 export function calculateTopPerformers(
   sortedTickers: TickerWithData[],
-  maxItems: number = 10,
+  maxItems: number,
   sortBy: 'gainers' | 'losers' | 'volume' | 'value' | 'az' | 'ma10' | 'ma20' | 'ma50' | 'ma100' | 'ma200' = 'gainers'
 ): { winners: TopPerformer[]; losers: TopPerformer[] } {
   // Convert to TopPerformer format and filter out invalid data

@@ -42,7 +42,7 @@ export function BasicTopPerformers({
   defaultSectionFilter = 'stocks',
   defaultInterval = '1D',
   defaultSortBy = 'gainers',
-  maxItems = 10,
+  defaultTopCount = 20,
   showControls = true,
   className = '',
   onTickerSelect
@@ -86,7 +86,7 @@ export function BasicTopPerformers({
   })
 
   // State for top count (10, 20, 30)
-  const [topCount, setTopCount] = React.useState<TopCount>(10)
+  const [topCount, setTopCount] = React.useState<TopCount>(defaultTopCount)
 
   // State for internal ChartFullscreenDialog
   const [internalDialogTicker, setInternalDialogTicker] = React.useState<string | null>(null)

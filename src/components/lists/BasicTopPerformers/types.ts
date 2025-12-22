@@ -32,7 +32,7 @@ export interface BasicTopPerformersProps {
   defaultSectionFilter?: SectionFilter
   defaultInterval?: IntervalType
   defaultSortBy?: SortBy
-  maxItems?: number // Default 10
+  defaultTopCount?: TopCount // Default 20
   showControls?: boolean
   className?: string
   onTickerSelect?: (symbol: string) => void
