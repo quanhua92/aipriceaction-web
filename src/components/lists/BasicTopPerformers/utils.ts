@@ -47,7 +47,6 @@ export function filterBySection(
       return tickers.filter(t => t.mode === 'vn')
     case 'crypto':
       return tickers.filter(t => t.mode === 'crypto')
-    case 'all':
     default:
       return tickers
   }
@@ -87,6 +86,56 @@ export function filterByGroup(
   const groupSymbols = tickerGroups[group] || []
   const groupSet = new Set(groupSymbols)
   return tickers.filter(t => groupSet.has(t.symbol))
+}
+
+/**
+ * Filter out tickers without current trading data matching VNINDEX's last trading day
+ * Only applies to Vietnamese stocks (mode: 'vn'), not crypto
+ */
+export function filterNonTradingTickers(
+  tickers: TickerWithData[],
+  stockData: Record<string, any[]>,
+  sectionFilter: SectionFilter
+): TickerWithData[] {
+  // Skip filtering for crypto-only mode
+  if (sectionFilter === 'crypto') {
+    return tickers
+  }
+
+  // Get VNINDEX data for last trading day reference
+  const vnindexData = stockData.VNINDEX
+  if (!vnindexData || vnindexData.length === 0) {
+    // Log warning but return all tickers (graceful degradation)
+    console.warn('[BasicTopPerformers] VNINDEX data not available for trading day filtering')
+    return tickers
+  }
+
+  // Extract last trading day from VNINDEX's latest bar
+  const vnindexLatestBar = vnindexData[vnindexData.length - 1]
+  const lastTradingDay = vnindexLatestBar?.time?.split('T')[0]
+
+  if (!lastTradingDay) {
+    console.warn('[BasicTopPerformers] Unable to extract last trading day from VNINDEX data')
+    return tickers
+  }
+
+  // Filter tickers whose data matches VNINDEX's last trading day
+  return tickers.filter(ticker => {
+    // Only apply to Vietnamese stocks
+    if (ticker.mode !== 'vn') {
+      return true
+    }
+
+    const tickerData = ticker.stockData
+    if (!tickerData) {
+      return false // Remove tickers without data
+    }
+
+    const tickerDate = tickerData.time?.split('T')[0]
+
+    // Keep ticker if its data matches VNINDEX's trading day
+    return tickerDate === lastTradingDay
+  })
 }
 
 /**

@@ -32,6 +32,7 @@ import {
   enrichTickerWithData,
   filterBySection,
   filterByGroup,
+  filterNonTradingTickers,
   applySorting,
   calculateTopPerformers
 } from './utils'
@@ -294,10 +295,13 @@ export function BasicTopPerformers({
           ).filter(Boolean) as TickerWithData[]
         : sectionFiltered
 
-      // 4. Apply sorting
-      const sortedTickers = applySorting(groupFiltered, selectedSort)
+      // 4. Filter out non-trading tickers (those with stale data)
+      const tradingFiltered = filterNonTradingTickers(groupFiltered, apiData, sectionFilter)
 
-      // 5. Calculate top winners and losers
+      // 5. Apply sorting
+      const sortedTickers = applySorting(tradingFiltered, selectedSort)
+
+      // 6. Calculate top winners and losers
       const { winners: topWinners, losers: topLosers } = calculateTopPerformers(
         sortedTickers,
         topCount,
