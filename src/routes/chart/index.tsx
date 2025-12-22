@@ -12,6 +12,7 @@ import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
 import { ALL_WATCHLIST_NAME, MARKET_INDICES } from "@/lib/constants";
 import { useAPI } from "@/contexts/APIContext";
+import { getChartLayout, saveChartLayout, type ChartPageLayout } from "@/lib/layout-storage";
 import type { StockData } from "@/lib/api-client";
 import {
 	Collapsible,
@@ -33,7 +34,7 @@ export const Route = createFileRoute("/chart/")({
 	component: ChartPage,
 });
 
-interface ChartPageLayout {
+interface ChartPageState {
 	chartCount: number;
 	gridColumns: number;
 	chartTickers: string[];
@@ -95,12 +96,16 @@ function ChartPage() {
 	// Get ticker groups and data from API context
 	const { tickerGroups, allTickersLastData } = useAPI();
 
-	// Layout state - initialize with responsive defaults, will update once data loads
-	const [layout, setLayout] = React.useState<ChartPageLayout>(() => ({
-		chartCount: 4,
-		gridColumns: typeof window !== 'undefined' && window.innerWidth >= 768 ? 2 : 1, // Responsive default
-		chartTickers: generateInitialTickers(null, null) // Use fallback initially
-	}));
+	// Layout state - initialize from localStorage with responsive defaults
+	const [layout, setLayout] = React.useState<ChartPageState>(() => {
+		const stored = getChartLayout();
+
+		return {
+			chartCount: stored.chartCount,
+			gridColumns: stored.gridColumns, // Respect user's localStorage preference
+			chartTickers: generateInitialTickers(null, null) // Use fallback initially
+		};
+	});
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
 	const [hasInitializedTickers, setHasInitializedTickers] = React.useState(false);
 
@@ -135,9 +140,18 @@ function ChartPage() {
 		return index !== -1 ? index : 0;
 	}, [fullscreenTicker, tickerSymbols]);
 
-	// Update layout helper
-	const updateLayout = (updates: Partial<ChartPageLayout>) => {
-		setLayout((prev) => ({ ...prev, ...updates }));
+	// Update layout helper with localStorage persistence
+	const updateLayout = (updates: Partial<ChartPageState>) => {
+		const newLayout = { ...layout, ...updates };
+		setLayout(newLayout);
+
+		// Only persist chart count and grid columns (not chartTickers)
+		if (updates.chartCount !== undefined || updates.gridColumns !== undefined) {
+			saveChartLayout({
+				chartCount: newLayout.chartCount,
+				gridColumns: newLayout.gridColumns
+			});
+		}
 	};
 
 	// Handler for watchlist ticker selection - open fullscreen dialog + sync chart + sidebar

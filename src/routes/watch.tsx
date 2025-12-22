@@ -10,12 +10,7 @@ import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
 import { MarketMatrix } from "@/components/MarketMatrix";
 import { TrendSignal } from "@/components/TrendSignal";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
-import {
-	ALL_WATCHLIST_NAME,
-	CUSTOM_WATCHLISTS_STORAGE_KEY,
-	WATCH_LEFT_SIDEBAR_OPEN_KEY,
-	WATCH_RIGHT_SIDEBAR_OPEN_KEY,
-} from "@/lib/constants";
+import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLogs } from "@/contexts/LogsContext";
@@ -33,10 +28,11 @@ import {
 	Collapsible,
 	CollapsibleContent,
 } from "@/components/ui/collapsible";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Upload, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 import type { Interval } from "@/lib/api-client";
 import { getCustomWatchlists, type CustomWatchlists } from "@/lib/watchlist-storage";
+import { getWatchLayout, saveWatchLayout, type WatchPageLayout } from "@/lib/layout-storage";
 
 export const Route = createFileRoute("/watch")({
 	component: WatchPage,
@@ -52,12 +48,18 @@ function WatchPage() {
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
 
 	
-	// Pagination state
+	// Initialize layout state from localStorage with responsive defaults
 	const [currentPage, setCurrentPage] = React.useState(0);
-	const [pageSize, setPageSize] = React.useState(10);
+	const [pageSize, setPageSize] = React.useState(() => {
+		const stored = getWatchLayout();
+		return stored.pageSize;
+	});
 
-	// Grid columns state - responsive default: 1 on mobile, 2 on desktop
-	const [columns, setColumns] = React.useState<1 | 2 | 3 | 4 | 5 | 6>(typeof window !== 'undefined' && window.innerWidth >= 768 ? 2 : 1);
+	// Grid columns state - respect stored value from localStorage
+	const [columns, setColumns] = React.useState<1 | 2 | 3 | 4 | 5 | 6>(() => {
+		const stored = getWatchLayout();
+		return stored.columns as 1 | 2 | 3 | 4 | 5 | 6;
+	});
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
@@ -92,11 +94,15 @@ function WatchPage() {
 	};
 
 	const handlePageSizeChange = (size: string) => {
-		setPageSize(Number(size));
+		const newSize = Number(size);
+		setPageSize(newSize);
+		saveWatchLayout({ pageSize: newSize });
 	};
 
 	const handleColumnsChange = (cols: string) => {
-		setColumns(Number(cols) as 2 | 3 | 4);
+		const newColumns = Number(cols) as 1 | 2 | 3 | 4 | 5 | 6;
+		setColumns(newColumns);
+		saveWatchLayout({ columns: newColumns });
 	};
 
 	const handleIntervalChange = (interval: Interval) => {

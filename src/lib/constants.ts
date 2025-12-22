@@ -250,3 +250,13 @@ export const TOOLTIP_HEIGHT = 90
  */
 export const BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY = 'basic-top-performers-view-mode'
 
+/**
+ * LocalStorage key for chart page layout settings (chart count and grid columns)
+ */
+export const CHART_LAYOUT_STORAGE_KEY = 'chart-page-layout'
+
+/**
+ * LocalStorage key for watch page layout settings (page size and columns)
+ */
+export const WATCH_LAYOUT_STORAGE_KEY = 'watch-page-layout'
+
