@@ -110,6 +110,7 @@ export function BaseTradingViewChart({
 	}
 	const chartContainerRef = useRef<HTMLDivElement>(null);
 	const chartRef = useRef<IChartApi | null>(null);
+	const tooltipRef = useRef<HTMLElement | null>(null);
 	const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
 	const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
 	const ma10SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
@@ -282,6 +283,7 @@ export function BaseTradingViewChart({
 
 		// Create tooltip element using extracted styles
 		const tooltip = createTooltipElement();
+		tooltipRef.current = tooltip;
 		chartContainerRef.current.appendChild(tooltip);
 
 		// Let lightweight-charts handle viewport management naturally
@@ -422,8 +424,8 @@ export function BaseTradingViewChart({
 				// Clear built-in crosshair position
 				chartRef.current?.clearCrosshairPosition();
 				// Clear tooltip completely when clearing to prevent hover from immediately showing
-				tooltip.innerHTML = "";
-				tooltip.style.display = "none";
+				tooltipRef.current!.innerHTML = "";
+				tooltipRef.current!.style.display = "none";
 				return;
 			}
 
@@ -465,7 +467,7 @@ export function BaseTradingViewChart({
 				);
 
 				// Show tooltip at clicked position, similar to hover
-				tooltip.style.display = "block";
+				tooltipRef.current!.style.display = "block";
 
 				// Format date with time (timestamp is already in Vietnam time)
 				const dateStr = formatTooltipDate(param.time);
@@ -482,7 +484,7 @@ export function BaseTradingViewChart({
 				const ma200Data = chartData.ma200.find((d) => d.time === param.time);
 
 				if (!candleData) {
-					tooltip.style.display = "none";
+					tooltipRef.current!.style.display = "none";
 					return;
 				}
 
@@ -512,7 +514,7 @@ export function BaseTradingViewChart({
 				const tickerSymbol = data.length > 0 ? data[0].symbol : "";
 
 				// Use unified tooltip builder
-				tooltip.innerHTML = buildTooltipHTML(clickedDataPoint, param.time);
+				tooltipRef.current!.innerHTML = buildTooltipHTML(clickedDataPoint, param.time);
 
 				// Position tooltip at clicked position (same logic as hover)
 				const y = param.point.y;
@@ -526,8 +528,8 @@ export function BaseTradingViewChart({
 					top = y - TOOLTIP_HEIGHT - TOOLTIP_MARGIN;
 				}
 
-				tooltip.style.left = `${left}px`;
-				tooltip.style.top = `${top}px`;
+				tooltipRef.current!.style.left = `${left}px`;
+				tooltipRef.current!.style.top = `${top}px`;
 			}
 		};
 
@@ -567,7 +569,7 @@ export function BaseTradingViewChart({
 						lockedChartTime,
 					);
 					if (tooltipHTML) {
-						tooltip.innerHTML = tooltipHTML;
+						tooltipRef.current!.innerHTML = tooltipHTML;
 
 						// Position tooltip in default location (top-right of chart)
 						const left =
@@ -576,16 +578,16 @@ export function BaseTradingViewChart({
 							TOOLTIP_MARGIN;
 						const top = TOOLTIP_MARGIN;
 
-						tooltip.style.left = `${left}px`;
-						tooltip.style.top = `${top}px`;
-						tooltip.style.display = "block";
+						tooltipRef.current!.style.left = `${left}px`;
+						tooltipRef.current!.style.top = `${top}px`;
+						tooltipRef.current!.style.display = "block";
 					} else {
 						if (process.env.NODE_ENV === "development") {
 							console.log(
 								"[BaseTradingViewChart] Failed to generate locked tooltip HTML",
 							);
 						}
-						tooltip.style.display = "none";
+						tooltipRef.current!.style.display = "none";
 					}
 
 					// IMPORTANT: Keep crosshair data for overlay display when locked
@@ -593,13 +595,13 @@ export function BaseTradingViewChart({
 					return;
 				} else {
 					// No locked crosshair, hide tooltip and clear crosshair data
-					tooltip.style.display = "none";
+					tooltipRef.current!.style.display = "none";
 					setCrosshairData(null);
 					return;
 				}
 			}
 
-			tooltip.style.display = "block";
+			tooltipRef.current!.style.display = "block";
 
 			// Get data from all series
 			const candleData = param.seriesData.get(candlestickSeries) as
@@ -630,7 +632,7 @@ export function BaseTradingViewChart({
 						"[BaseTradingViewChart] Hover ignored - no candle data found",
 					);
 				}
-				tooltip.style.display = "none";
+				tooltipRef.current!.style.display = "none";
 				setCrosshairData(null);
 				return;
 			}
@@ -692,14 +694,14 @@ export function BaseTradingViewChart({
 			// Use unified tooltip building function
 			const html = buildTooltipHTML(currentDataPoint, param.time);
 			if (html) {
-				tooltip.innerHTML = html;
+				tooltipRef.current!.innerHTML = html;
 			} else {
 				if (process.env.NODE_ENV === "development") {
 					console.log(
 						"[BaseTradingViewChart] Hover tooltip failed - no HTML generated",
 					);
 				}
-				tooltip.style.display = "none";
+				tooltipRef.current!.style.display = "none";
 				return;
 			}
 
@@ -732,8 +734,8 @@ export function BaseTradingViewChart({
 			// 	});
 			// }
 
-			tooltip.style.left = `${left}px`;
-			tooltip.style.top = `${top}px`;
+			tooltipRef.current!.style.left = `${left}px`;
+			tooltipRef.current!.style.top = `${top}px`;
 		});
 
 		// Handle resize using ResizeObserver to detect container size changes
@@ -769,9 +771,10 @@ export function BaseTradingViewChart({
 			// Remove tooltip
 			if (
 				chartContainerRef.current &&
-				tooltip.parentNode === chartContainerRef.current
+				tooltipRef.current &&
+				tooltipRef.current.parentNode === chartContainerRef.current
 			) {
-				chartContainerRef.current.removeChild(tooltip);
+				chartContainerRef.current.removeChild(tooltipRef.current);
 			}
 
 			// Remove watermark
@@ -779,6 +782,7 @@ export function BaseTradingViewChart({
 
 			// Clean up chart and series refs
 			chartRef.current = null;
+			tooltipRef.current = null;
 			candlestickSeriesRef.current = null;
 			volumeSeriesRef.current = null;
 			ma10SeriesRef.current = null;
@@ -834,6 +838,17 @@ export function BaseTradingViewChart({
 			const to = chartData.candlestick[chartData.candlestick.length - 1].time;
 
 			chartRef.current.timeScale().setVisibleRange({ from, to });
+
+			// Clear crosshair when setting initial viewport to prevent default positioning
+			chartRef.current?.clearCrosshairPosition();
+			setCrosshairData(null);
+
+			// Hide tooltip when clearing crosshair
+			if (tooltipRef.current) {
+				tooltipRef.current.innerHTML = "";
+				tooltipRef.current.style.display = "none";
+			}
+
 			setIsDataInitialized(true);
 		}
 	}, [
