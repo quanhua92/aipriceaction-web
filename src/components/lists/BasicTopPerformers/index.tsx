@@ -91,12 +91,12 @@ export function BasicTopPerformers({
   // State for internal ChartFullscreenDialog
   const [internalDialogTicker, setInternalDialogTicker] = React.useState<string | null>(null)
 
-  // Get 20 tickers from winners and losers for internal dialog navigation
+  // Get tickers for dialog navigation - include all winners and losers (e.g., 20 + 20 = 40 items)
   const navigationTickers = React.useMemo(() => {
     // Combine winners and losers, unique by symbol
     const combined = [...winners, ...losers]
     const uniqueTickers = Array.from(new Map(combined.map(t => [t.symbol, t])).values())
-    return uniqueTickers.map(t => t.symbol).slice(0, 20) // Limit to 20 tickers
+    return uniqueTickers.map(t => t.symbol)
   }, [winners, losers])
 
   // Get current index for internal dialog
