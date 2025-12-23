@@ -862,7 +862,8 @@ export function BaseTradingViewChart({
 		}
 
 		// Set initial viewport only on first data load
-		if (chartRef.current && chartData.candlestick.length > 0 && !isDataInitialized) {
+		// IMPORTANT: Wait for containerWidth to be set by ResizeObserver before initializing viewport
+		if (chartRef.current && chartData.candlestick.length > 0 && !isDataInitialized && containerWidth > 0) {
 			const symbol = data?.[0]?.symbol ?? 'unknown';
 
 			// Log viewport initialization start
@@ -920,6 +921,7 @@ export function BaseTradingViewChart({
 		maVisibility,
 		isDataInitialized,
 		responsiveViewportSize,
+		containerWidth,
 	]);
 
 	// Update candlestick series price format when data changes
