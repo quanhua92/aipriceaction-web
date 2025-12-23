@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { TOOLTIP_MARGIN, TOOLTIP_WIDTH, TOOLTIP_HEIGHT } from "@/lib/constants";
 import { RulerSection } from "./RulerSection";
 import { createTooltipElement, positionTooltip } from "@/lib/tooltipStyles";
+import { useLogs } from "@/contexts/LogsContext";
 import { getChangeColors, getVolumeColor, getVolumePercentColor, getMAColor, getBasicChangeColor } from "@/lib/chartColors";
 import { formatTooltipDate } from "@/lib/chartDateUtils";
 import { transformStockDataToChartData, type ChartData } from "@/lib/chartDataTransform";
@@ -63,6 +64,9 @@ export function BaseTradingViewChart({
 }: BaseTradingViewChartProps) {
 	// Get global settings
 	const { interval, rulerVisible, ...globalSettings } = useChartSettings();
+
+	// Initialize logging
+	const { info } = useLogs();
 
 	// Helper function to check if current interval is intraday
 	const isIntradayInterval = INTRADAY_INTERVALS.includes(interval);
@@ -148,6 +152,10 @@ export function BaseTradingViewChart({
 	// Reset data initialization flag when data changes
 	// Note: We intentionally preserve viewport position for comparison across tickers
 	useEffect(() => {
+		const symbol = data?.[0]?.symbol ?? 'unknown';
+		info(`[BaseChart][${symbol}] Data changed, resetting initialization`, {
+			dataLength: data?.length ?? 0
+		});
 		setIsDataInitialized(false);
 	}, [data]);
 
@@ -218,6 +226,14 @@ export function BaseTradingViewChart({
 		});
 
 		chartRef.current = chart;
+
+		// Log chart creation
+		const symbol = data?.[0]?.symbol ?? 'unknown';
+		info(`[BaseChart][${symbol}] Chart created`, {
+			width: chartContainerRef.current.clientWidth,
+			height,
+			timestamp: Date.now()
+		});
 
 		// Add candlestick series with custom price formatter
 		const candlestickSeries = chart.addSeries(CandlestickSeries, {
@@ -431,11 +447,8 @@ export function BaseTradingViewChart({
 
 			// After unlocking, only proceed with locking if we have valid data
 			if (!param.time || !data || data.length === 0) {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						"[BaseTradingViewChart] Click ignored - missing time or data for locking",
-					);
-				}
+				const symbol = data?.[0]?.symbol ?? 'unknown';
+				info(`[BaseChart][${symbol}] Click ignored - missing time or data`);
 				return;
 			}
 
@@ -582,11 +595,8 @@ export function BaseTradingViewChart({
 						tooltipRef.current!.style.top = `${top}px`;
 						tooltipRef.current!.style.display = "block";
 					} else {
-						if (process.env.NODE_ENV === "development") {
-							console.log(
-								"[BaseTradingViewChart] Failed to generate locked tooltip HTML",
-							);
-						}
+						const symbol = clickedCrosshairRef.current?.symbol ?? 'unknown';
+						info(`[BaseChart][${symbol}] Locked tooltip HTML generation failed`);
 						tooltipRef.current!.style.display = "none";
 					}
 
@@ -627,11 +637,8 @@ export function BaseTradingViewChart({
 				: undefined;
 
 			if (!candleData) {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						"[BaseTradingViewChart] Hover ignored - no candle data found",
-					);
-				}
+				const symbol = data?.[0]?.symbol ?? 'unknown';
+				info(`[BaseChart][${symbol}] Hover ignored - no candle data`);
 				tooltipRef.current!.style.display = "none";
 				setCrosshairData(null);
 				return;
@@ -696,11 +703,8 @@ export function BaseTradingViewChart({
 			if (html) {
 				tooltipRef.current!.innerHTML = html;
 			} else {
-				if (process.env.NODE_ENV === "development") {
-					console.log(
-						"[BaseTradingViewChart] Hover tooltip failed - no HTML generated",
-					);
-				}
+				const symbol = currentDataPoint?.symbol ?? 'unknown';
+				info(`[BaseChart][${symbol}] Hover tooltip HTML generation failed`);
 				tooltipRef.current!.style.display = "none";
 				return;
 			}
@@ -757,7 +761,12 @@ export function BaseTradingViewChart({
 		if (chartContainerRef.current) {
 			resizeObserver.observe(chartContainerRef.current);
 			// Set initial width
-			setContainerWidth(chartContainerRef.current.clientWidth);
+			const initialWidth = chartContainerRef.current.clientWidth;
+			setContainerWidth(initialWidth);
+			info(`[BaseChart][${symbol}] Container size observed`, {
+				width: initialWidth,
+				responsiveViewportSize: getResponsiveViewportSize(initialWidth)
+			});
 		}
 
 		// Also listen to window resize for fullscreen/browser resize
@@ -854,12 +863,30 @@ export function BaseTradingViewChart({
 
 		// Set initial viewport only on first data load
 		if (chartRef.current && chartData.candlestick.length > 0 && !isDataInitialized) {
+			const symbol = data?.[0]?.symbol ?? 'unknown';
+
+			// Log viewport initialization start
+			info(`[BaseChart][${symbol}] Initializing viewport`, {
+				dataLength: chartData.candlestick.length,
+				responsiveViewportSize,
+				containerWidth
+			});
+
 			const viewportSize = Math.min(responsiveViewportSize, chartData.candlestick.length); // Show responsive number of bars or all if less
 			const startIndex = Math.max(0, chartData.candlestick.length - viewportSize);
 			const from = chartData.candlestick[startIndex].time;
 			const to = chartData.candlestick[chartData.candlestick.length - 1].time;
 
+			info(`[BaseChart][${symbol}] Viewport calculation`, {
+				viewportSize,
+				startIndex,
+				fromTime: from,
+				toTime: to
+			});
+
 			chartRef.current.timeScale().setVisibleRange({ from, to });
+
+			info(`[BaseChart][${symbol}] Viewport initialized successfully`);
 
 			// Layer 3: Enhanced viewport clearing with additional safeguards
 			// Clear crosshair immediately
@@ -885,6 +912,8 @@ export function BaseTradingViewChart({
 			});
 
 			setIsDataInitialized(true);
+
+			info(`[BaseChart][${symbol}] Data initialization complete`);
 		}
 	}, [
 		chartData,
