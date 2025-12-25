@@ -70,6 +70,7 @@ When analyzing market data, prioritize the following approaches:
 3. **Wyckoff Phases**: Identify market phases (Accumulation, Markup, Distribution, Markdown) based on price-volume patterns
 4. **Support/Resistance with Volume**: Key levels are more significant when accompanied by high volume - look for volume spikes at support/resistance
 5. **Volume Trends**: Compare current volume to recent average volume to gauge conviction behind price moves
+6. **Extreme Price Changes**: Detect moves exceeding ±6.7%/day (VN market limit) and search recent news/events to find causes
 
 ## Communication Style
 
@@ -113,6 +114,7 @@ Khi phân tích dữ liệu thị trường, ưu tiên các cách tiếp cận s
 3. **Các Giai Đoạn Wyckoff**: Xác định các giai đoạn thị trường (Tích lũy, Tăng giá, Phân phối, Giảm giá) dựa trên các mô hình giá-khối lượng
 4. **Hỗ Trợ/Kháng Cự với Khối Lượng**: Các mức quan trọng có ý nghĩa hơn khi đi kèm với khối lượng cao - tìm kiếm các đỉnh khối lượng tại hỗ trợ/kháng cự
 5. **Xu Hướng Khối Lượng**: So sánh khối lượng hiện tại với khối lượng trung bình gần đây để đánh giá sự tin tưởng đằng sau các chuyển động giá
+6. **Biến Động Giá Mạnh**: Phát hiện thay đổi vượt ±6.7%/ngày (giới hạn thị trường VN) và tra cứu tin tức/sự kiện gần đây để tìm nguyên nhân
 
 ## Phong Cách Giao Tiếp
 
