@@ -18,13 +18,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MA_CONFIG, MA_SERIES_OPTIONS } from "./utils/chartConfig";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTicker } from "@/contexts/TickerContext";
-import { Interval, type StockData } from "@/lib/api-client";
+import { type StockData } from "@/lib/api-client";
 import { INTRADAY_INTERVALS } from "@/lib/constants";
 import {
 	formatPercent,
 	formatPrice,
-	formatToVietnamDateShort,
-	formatToVietnamDateTimeShort,
 	formatVolume,
 	getMarketDecimalPlaces,
 	getOptimalDecimalPlaces,
@@ -35,7 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 import { TOOLTIP_MARGIN, TOOLTIP_WIDTH, TOOLTIP_HEIGHT } from "@/lib/constants";
 import { RulerSection } from "./RulerSection";
-import { createTooltipElement, positionTooltip } from "@/lib/tooltipStyles";
+import { createTooltipElement } from "@/lib/tooltipStyles";
 import { useLogs } from "@/contexts/LogsContext";
 import { getChangeColors, getVolumeColor, getVolumePercentColor, getMAColor, getBasicChangeColor } from "@/lib/chartColors";
 import { formatTooltipDate } from "@/lib/chartDateUtils";
@@ -149,41 +147,13 @@ export function BaseTradingViewChart({
 	} | null>(null);
 	const [containerWidth, setContainerWidth] = useState(0);
 
-	// Reset data initialization flag when data changes
-	// Note: We intentionally preserve viewport position for comparison across tickers
-	useEffect(() => {
-		const symbol = data?.[0]?.symbol ?? 'unknown';
-		info(`[BaseChart][${symbol}] Data changed, resetting initialization`, {
-			dataLength: data?.length ?? 0
-		});
-		setIsDataInitialized(false);
-	}, [data]);
-
-	// Keep ref in sync with state for immediate access in event handlers
-	useEffect(() => {
-		clickedCrosshairRef.current = clickedCrosshairData;
-	}, [clickedCrosshairData]);
-
-	// Keep position ref in sync with state for immediate access in event handlers
-	useEffect(() => {
-		lockedCrosshairPositionRef.current = lockedCrosshairPosition;
-	}, [lockedCrosshairPosition]);
-
-	// Calculate responsive viewport size
-	const responsiveViewportSize = useMemo(() => {
-		return containerWidth > 0 ? getResponsiveViewportSize(containerWidth) : 60;
-	}, [containerWidth]);
-
-	// Transform data to TradingView format
-	const chartData = useMemo((): ChartData => {
-		return transformStockDataToChartData(data);
-	}, [data]);
-
-	// Initialize chart (only once on mount)
-	useEffect(() => {
-		if (!chartContainerRef.current) {
-			return;
+	// Helper function to create chart (called from data useEffect)
+	const createChartWithContext = () => {
+		if (!chartContainerRef.current || chartRef.current) {
+			return null;
 		}
+
+		const symbol = data?.[0]?.symbol ?? 'unknown';
 
 		// Create new chart
 		const chart = createChart(chartContainerRef.current, {
@@ -228,7 +198,6 @@ export function BaseTradingViewChart({
 		chartRef.current = chart;
 
 		// Log chart creation
-		const symbol = data?.[0]?.symbol ?? 'unknown';
 		info(`[BaseChart][${symbol}] Chart created`, {
 			width: chartContainerRef.current.clientWidth,
 			height,
@@ -302,7 +271,8 @@ export function BaseTradingViewChart({
 		tooltipRef.current = tooltip;
 		chartContainerRef.current.appendChild(tooltip);
 
-		// Let lightweight-charts handle viewport management naturally
+		// Store watermark for cleanup
+		(chartRef.current as any)._watermark = watermark;
 
 		// Unified tooltip building function
 		const buildTooltipHTML = (currentDataPoint: StockData, paramTime: any) => {
@@ -429,7 +399,7 @@ export function BaseTradingViewChart({
 		const handleChartClick = (param: any) => {
 			const currentLockedRef = clickedCrosshairRef.current; // Get current ref value
 
-			
+
 			// TOGGLE LOGIC: Always handle toggle first, before any validation
 			if (currentLockedRef) {
 				setClickedCrosshairData(null);
@@ -447,7 +417,6 @@ export function BaseTradingViewChart({
 
 			// After unlocking, only proceed with locking if we have valid data
 			if (!param.time || !data || data.length === 0) {
-				const symbol = data?.[0]?.symbol ?? 'unknown';
 				info(`[BaseChart][${symbol}] Click ignored - missing time or data`);
 				return;
 			}
@@ -458,7 +427,7 @@ export function BaseTradingViewChart({
 			);
 			const clickedDataPoint = currentIndex >= 0 ? data[currentIndex] : null;
 
-			
+
 			if (clickedDataPoint) {
 				setClickedCrosshairData(clickedDataPoint);
 				clickedCrosshairRef.current = clickedDataPoint; // Update ref immediately
@@ -482,62 +451,34 @@ export function BaseTradingViewChart({
 				// Show tooltip at clicked position, similar to hover
 				tooltipRef.current!.style.display = "block";
 
-				// Format date with time (timestamp is already in Vietnam time)
-				const dateStr = formatTooltipDate(param.time);
-
 				// Get data from all series for clicked position
 				const candleData = chartData.candlestick.find(
 					(d) => d.time === param.time,
 				);
-				const volumeData = chartData.volume.find((d) => d.time === param.time);
-				const ma10Data = chartData.ma10.find((d) => d.time === param.time);
-				const ma20Data = chartData.ma20.find((d) => d.time === param.time);
-				const ma50Data = chartData.ma50.find((d) => d.time === param.time);
-				const ma100Data = chartData.ma100.find((d) => d.time === param.time);
-				const ma200Data = chartData.ma200.find((d) => d.time === param.time);
 
 				if (!candleData) {
 					tooltipRef.current!.style.display = "none";
 					return;
 				}
 
-				// Use close_changed from StockData
-				let priceChangePercent = "";
-				if (
-					clickedDataPoint.close_changed !== null &&
-					clickedDataPoint.close_changed !== undefined
-				) {
-					const change = clickedDataPoint.close_changed;
-					const changeColor = getBasicChangeColor(change);
-					priceChangePercent = `<span style="color: ${changeColor}; font-size: 9px;">${formatPercent(change)}</span>`;
-				}
-
-				// Use volume_changed from StockData
-				let volumeChangePercent = "";
-				if (
-					clickedDataPoint.volume_changed !== null &&
-					clickedDataPoint.volume_changed !== undefined
-				) {
-					const volChange = clickedDataPoint.volume_changed;
-					const volChangeColor = getBasicChangeColor(volChange);
-					volumeChangePercent = `<span style="color: ${volChangeColor}; font-size: 9px;">${formatPercent(volChange)}</span>`;
-				}
-
-				// Get ticker symbol from the current chart
-				const tickerSymbol = data.length > 0 ? data[0].symbol : "";
-
 				// Use unified tooltip builder
-				tooltipRef.current!.innerHTML = buildTooltipHTML(clickedDataPoint, param.time);
+				const html = buildTooltipHTML(clickedDataPoint, param.time);
+				if (html) {
+					tooltipRef.current!.innerHTML = html;
+				} else {
+					tooltipRef.current!.style.display = "none";
+					return;
+				}
 
 				// Position tooltip at clicked position (same logic as hover)
 				const y = param.point.y;
 				let left = param.point.x + TOOLTIP_MARGIN;
-				if (left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH) {
+				if (chartContainerRef.current && left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH) {
 					left = param.point.x - TOOLTIP_MARGIN - TOOLTIP_WIDTH;
 				}
 
 				let top = y + TOOLTIP_MARGIN;
-				if (top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT) {
+				if (chartContainerRef.current && top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT) {
 					top = y - TOOLTIP_HEIGHT - TOOLTIP_MARGIN;
 				}
 
@@ -595,8 +536,7 @@ export function BaseTradingViewChart({
 						tooltipRef.current!.style.top = `${top}px`;
 						tooltipRef.current!.style.display = "block";
 					} else {
-						const symbol = clickedCrosshairRef.current?.symbol ?? 'unknown';
-						info(`[BaseChart][${symbol}] Locked tooltip HTML generation failed`);
+						info(`[BaseChart][${clickedCrosshairRef.current?.symbol ?? 'unknown'}] Locked tooltip HTML generation failed`);
 						tooltipRef.current!.style.display = "none";
 					}
 
@@ -617,44 +557,13 @@ export function BaseTradingViewChart({
 			const candleData = param.seriesData.get(candlestickSeries) as
 				| CandlestickData
 				| undefined;
-			const volumeData = param.seriesData.get(volumeSeries) as
-				| HistogramData
-				| undefined;
-			const ma10Data = ma10SeriesRef.current
-				? (param.seriesData.get(ma10SeriesRef.current) as LineData | undefined)
-				: undefined;
-			const ma20Data = ma20SeriesRef.current
-				? (param.seriesData.get(ma20SeriesRef.current) as LineData | undefined)
-				: undefined;
-			const ma50Data = ma50SeriesRef.current
-				? (param.seriesData.get(ma50SeriesRef.current) as LineData | undefined)
-				: undefined;
-			const ma100Data = ma100SeriesRef.current
-				? (param.seriesData.get(ma100SeriesRef.current) as LineData | undefined)
-				: undefined;
-			const ma200Data = ma200SeriesRef.current
-				? (param.seriesData.get(ma200SeriesRef.current) as LineData | undefined)
-				: undefined;
 
 			if (!candleData) {
-				const symbol = data?.[0]?.symbol ?? 'unknown';
 				info(`[BaseChart][${symbol}] Hover ignored - no candle data`);
 				tooltipRef.current!.style.display = "none";
 				setCrosshairData(null);
 				return;
 			}
-
-			// if (process.env.NODE_ENV === "development") {
-			// 	console.log("[BaseTradingViewChart] Processing hover data:", {
-			// 		paramTime: param.time,
-			// 		hasCandleData: !!candleData,
-			// 		hasVolumeData: !!volumeData,
-			// 		currentIndex: "calculating...",
-			// 	});
-			// }
-
-			// Format date with time (timestamp is already in Vietnam time)
-			const dateStr = formatTooltipDate(param.time);
 
 			// Find current index in original data to get change percentages
 			const currentIndex = chartData.candlestick.findIndex(
@@ -662,49 +571,21 @@ export function BaseTradingViewChart({
 			);
 			const currentDataPoint = currentIndex >= 0 ? data[currentIndex] : null;
 
-			// if (process.env.NODE_ENV === "development") {
-			// 	console.log("[BaseTradingViewChart] Hover data mapping:", {
-			// 		currentIndex,
-			// 		foundDataPoint: !!currentDataPoint,
-			// 		dataPointSymbol: currentDataPoint?.symbol,
-			// 		dataPointPrice: currentDataPoint?.close,
-			// 	});
-			// }
+			if (!currentDataPoint) {
+				tooltipRef.current!.style.display = "none";
+				setCrosshairData(null);
+				return;
+			}
 
 			// Update crosshair data for overlay
 			setCrosshairData(currentDataPoint);
-
-			// Use close_changed from StockData
-			let priceChangePercent = "";
-			if (
-				currentDataPoint &&
-				currentDataPoint.close_changed !== null &&
-				currentDataPoint.close_changed !== undefined
-			) {
-				const change = currentDataPoint.close_changed;
-				const changeColor = getBasicChangeColor(change);
-				priceChangePercent = `<span style="color: ${changeColor}; font-size: 9px;">${formatPercent(change)}</span>`;
-			}
-
-			// Use volume_changed from StockData
-			let volumeChangePercent = "";
-			if (
-				currentDataPoint &&
-				currentDataPoint.volume_changed !== null &&
-				currentDataPoint.volume_changed !== undefined
-			) {
-				const volChange = currentDataPoint.volume_changed;
-				const volChangeColor = getBasicChangeColor(volChange);
-				volumeChangePercent = `<span style="color: ${volChangeColor}; font-size: 9px;">${formatPercent(volChange)}</span>`;
-			}
 
 			// Use unified tooltip building function
 			const html = buildTooltipHTML(currentDataPoint, param.time);
 			if (html) {
 				tooltipRef.current!.innerHTML = html;
 			} else {
-				const symbol = currentDataPoint?.symbol ?? 'unknown';
-				info(`[BaseChart][${symbol}] Hover tooltip HTML generation failed`);
+				info(`[BaseChart][${currentDataPoint.symbol}] Hover tooltip HTML generation failed`);
 				tooltipRef.current!.style.display = "none";
 				return;
 			}
@@ -713,30 +594,17 @@ export function BaseTradingViewChart({
 			const y = param.point.y;
 			let left = param.point.x + TOOLTIP_MARGIN;
 			const leftAdjusted =
-				left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH;
+				chartContainerRef.current && left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH;
 			if (leftAdjusted) {
 				left = param.point.x - TOOLTIP_MARGIN - TOOLTIP_WIDTH;
 			}
 
 			let top = y + TOOLTIP_MARGIN;
 			const topAdjusted =
-				top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT;
+				chartContainerRef.current && top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT;
 			if (topAdjusted) {
 				top = y - TOOLTIP_HEIGHT - TOOLTIP_MARGIN;
 			}
-
-				// if (process.env.NODE_ENV === "development") {
-			// 	console.log("[BaseTradingViewChart] Tooltip positioning:", {
-			// 		pointX: param.point.x,
-			// 		pointY: param.point.y,
-			// 		left,
-			// 		top,
-			// 		leftAdjusted,
-			// 		topAdjusted,
-			// 		containerWidth: chartContainerRef.current.clientWidth,
-			// 		containerHeight: chartContainerRef.current.clientHeight,
-			// 	});
-			// }
 
 			tooltipRef.current!.style.left = `${left}px`;
 			tooltipRef.current!.style.top = `${top}px`;
@@ -772,8 +640,13 @@ export function BaseTradingViewChart({
 		// Also listen to window resize for fullscreen/browser resize
 		window.addEventListener("resize", handleResize);
 
+		// Store cleanup handlers
+		(chartRef.current as any)._cleanupHandlers = {
+			handleResize,
+			resizeObserver,
+		};
+
 		// Layer 2: Immediate crosshair clearing after chart creation
-		// Add requestAnimationFrame to ensure clearing happens after chart initialization
 		requestAnimationFrame(() => {
 			chartRef.current?.clearCrosshairPosition();
 			setCrosshairData(null);
@@ -783,10 +656,48 @@ export function BaseTradingViewChart({
 			}
 		});
 
+		return chart;
+	};
+
+	// Reset data initialization flag when data changes
+	// Note: We intentionally preserve viewport position for comparison across tickers
+	useEffect(() => {
+		const symbol = data?.[0]?.symbol ?? 'unknown';
+		info(`[BaseChart][${symbol}] Data changed, resetting initialization`, {
+			dataLength: data?.length ?? 0
+		});
+		setIsDataInitialized(false);
+	}, [data]);
+
+	// Keep ref in sync with state for immediate access in event handlers
+	useEffect(() => {
+		clickedCrosshairRef.current = clickedCrosshairData;
+	}, [clickedCrosshairData]);
+
+	// Keep position ref in sync with state for immediate access in event handlers
+	useEffect(() => {
+		lockedCrosshairPositionRef.current = lockedCrosshairPosition;
+	}, [lockedCrosshairPosition]);
+
+	// Calculate responsive viewport size
+	const responsiveViewportSize = useMemo(() => {
+		return containerWidth > 0 ? getResponsiveViewportSize(containerWidth) : 60;
+	}, [containerWidth]);
+
+	// Transform data to TradingView format
+	const chartData = useMemo((): ChartData => {
+		return transformStockDataToChartData(data);
+	}, [data]);
+
+	// Cleanup effect - only runs on unmount
+	useEffect(() => {
 		return () => {
 			// Clean up resize listeners
-			window.removeEventListener("resize", handleResize);
-			resizeObserver.disconnect();
+			const cleanupHandlers = (chartRef.current as any)?._cleanupHandlers;
+			if (cleanupHandlers) {
+				window.removeEventListener("resize", cleanupHandlers.handleResize);
+				cleanupHandlers.resizeObserver.disconnect();
+			}
 
 			// Remove tooltip
 			if (
@@ -798,9 +709,13 @@ export function BaseTradingViewChart({
 			}
 
 			// Remove watermark
-			watermark.detach();
+			const watermark = (chartRef.current as any)?._watermark;
+			if (watermark) {
+				watermark.detach();
+			}
 
-			// Clean up chart and series refs
+			// Clean up chart
+			const chart = chartRef.current;
 			chartRef.current = null;
 			tooltipRef.current = null;
 			candlestickSeriesRef.current = null;
@@ -811,16 +726,15 @@ export function BaseTradingViewChart({
 			ma100SeriesRef.current = null;
 			ma200SeriesRef.current = null;
 
-			try {
-				chart.remove();
-			} catch (error) {
-				// Chart already disposed, ignore error
+			if (chart) {
+				try {
+					chart.remove();
+				} catch (error) {
+					// Chart already disposed, ignore error
+				}
 			}
 		};
-	}, [
-		height,
-		maVisibility,
-	]);
+	}, []);
 
 	// Layer 2: useLayoutEffect for immediate crosshair clearing
 	useLayoutEffect(() => {
@@ -835,7 +749,17 @@ export function BaseTradingViewChart({
 	}, [isDataInitialized]);
 
 	// Update chart data when chartData changes
+	// Creates chart if it doesn't exist yet (single useEffect approach)
 	useEffect(() => {
+		// Create chart first if it doesn't exist
+		if (!chartRef.current) {
+			const createdChart = createChartWithContext();
+			if (!createdChart) {
+				// Chart creation failed, return early
+				return;
+			}
+		}
+
 		if (!candlestickSeriesRef.current || !volumeSeriesRef.current) {
 			return;
 		}
