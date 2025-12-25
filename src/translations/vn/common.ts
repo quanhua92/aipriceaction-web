@@ -28,7 +28,7 @@ export default {
     welcomeDescription: 'Phân tích chứng khoán Việt Nam với thông tin chi tiết từ AI và biểu đồ tương tác.',
     tryAIContext: 'Dùng Thử AI Context',
     tryPlayground: 'Dùng Thử Playground',
-    aiContextShort: 'Cung cấp AI dữ liệu thực tế - xem AI biến con số thành chiến lược giao dịch thông minh',
+    aiContextShort: 'Cung cấp AI dữ liệu thực tế từ thị trường chứng khoán - xem AI biến con số thành chiến lược giao dịch thông minh',
     playgroundShort: 'Thử ngay ý tưởng giao dịch của bạn - du hành qua thời gian và chứng kiến các mô hình thị trường hình thành',
   },
   ticker: {

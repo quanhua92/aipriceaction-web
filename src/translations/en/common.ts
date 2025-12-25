@@ -28,7 +28,7 @@ export default {
     welcomeDescription: 'Vietnamese stock market analysis with AI-powered insights and interactive charts.',
     tryAIContext: 'Try AI Context',
     tryPlayground: 'Try Playground',
-    aiContextShort: 'Give AI real market data - watch it transform numbers into brilliant trading strategies',
+    aiContextShort: 'Give AI real market data from Vietnamese stocks - watch it transform numbers into brilliant and profitable trading strategies',
     playgroundShort: 'Test your trading ideas instantly - jump through time and see how market patterns unfold',
   },
   ticker: {
