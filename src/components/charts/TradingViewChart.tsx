@@ -1,12 +1,15 @@
 import { useTranslation } from '@/hooks/useTranslation'
 import { TickerProvider, useTicker } from '@/contexts/TickerContext'
 import { useChartSettings, MaVisibility } from '@/contexts/ChartSettingsContext'
+import { useAPI } from '@/contexts/APIContext'
 import * as React from 'react'
 import { Interval } from '@/lib/api-client'
 import { BaseTradingViewChart } from './BaseTradingViewChart'
 import { ChartControlBar } from './ChartControlBar'
 import { ChartFullscreenDialog } from '@/components/ChartFullscreenDialog'
+import { isCryptoTicker } from '@/lib/ticker-utils'
 import { StockData } from '@/lib/api-client'
+import { MARKET_INDICES } from '@/lib/constants'
 
 interface TradingViewChartProps {
 	// Visual configuration
@@ -68,6 +71,12 @@ function TradingViewChartContent({
 	const { t } = useTranslation()
 	const globalSettings = useChartSettings()
 	const { selectedTicker, setSelectedTicker } = useTicker()
+	const {
+		allTickersLastData,
+		allCryptoTickersLastData,
+		tickers: stockTickers,
+		cryptoTickers
+	} = useAPI()
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null)
@@ -86,6 +95,71 @@ function TradingViewChartContent({
 	const handleCloseFullscreen = () => {
 		setFullscreenTicker(null)
 	}
+
+	// Create sorted tickerList for fullscreen dialog navigation (sorted by value = volume * close)
+	const navigationTickers = React.useMemo(() => {
+		// Check if current ticker is crypto
+		const isCrypto = selectedTicker && isCryptoTicker(selectedTicker, stockTickers, cryptoTickers)
+
+		// For crypto: iterate over cryptoTickers (known list)
+		if (isCrypto) {
+			const tickersWithValue = cryptoTickers
+				.map(ticker => {
+					const data = allCryptoTickersLastData[ticker.symbol]
+					if (!data || data.length === 0) return null
+					const latestData = data[0]
+					if (latestData?.close_changed === null || latestData?.close_changed === undefined) {
+						return null
+					}
+					const value = (latestData.close ?? 0) * (latestData.volume ?? 0)
+					return { symbol: ticker.symbol, value }
+				})
+				.filter((item): item is { symbol: string; value: number } => item !== null)
+
+			tickersWithValue.sort((a, b) => b.value - a.value)
+			return tickersWithValue.map(t => t.symbol)
+		}
+
+		// For stocks: create a Set of all known stock ticker symbols for fast lookup
+		const knownTickerSymbols = new Set(stockTickers.map(t => t.symbol))
+
+		const tickersWithValue = Object.entries(allTickersLastData)
+			.filter(([symbol, data]) => {
+				if (!knownTickerSymbols.has(symbol)) return false
+				return data && data.length > 0 && data[0]?.close_changed !== null && data[0]?.close_changed !== undefined
+			})
+			.map(([symbol, data]) => {
+				const latestData = data[0]
+				const value = (latestData.close ?? 0) * (latestData.volume ?? 0)
+				return { symbol, value }
+			})
+
+		// Sort by value (highest first)
+		tickersWithValue.sort((a, b) => b.value - a.value)
+
+		// Extract symbols
+		let symbols = tickersWithValue.map(t => t.symbol)
+
+		// Move market indices to front (keep original order: VNINDEX, VN30)
+		symbols = symbols.filter(s => !MARKET_INDICES.includes(s as any))
+		symbols.unshift(...MARKET_INDICES)
+
+		return symbols
+	}, [
+		selectedTicker,
+		stockTickers,
+		cryptoTickers,
+		allTickersLastData,
+		allCryptoTickersLastData,
+		MARKET_INDICES,
+	])
+
+	// Get current index for fullscreen dialog
+	const fullscreenTickerIndex = React.useMemo(() => {
+		if (!fullscreenTicker) return 0
+		const index = navigationTickers.indexOf(fullscreenTicker)
+		return index !== -1 ? index : 0
+	}, [fullscreenTicker, navigationTickers])
 
 	return (
 		<>
@@ -115,6 +189,8 @@ function TradingViewChartContent({
 			<ChartFullscreenDialog
 				ticker={fullscreenTicker}
 				onClose={handleCloseFullscreen}
+				tickerList={navigationTickers}
+				currentIndex={fullscreenTickerIndex}
 			/>
 		</>
 	)
