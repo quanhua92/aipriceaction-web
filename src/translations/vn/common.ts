@@ -474,4 +474,8 @@ export default {
       value: 'GTGD',
     },
   },
+  sortableTickerList: {
+    showAll: 'Hiển thị tất cả',
+    showLess: 'Thu gọn',
+  },
 }

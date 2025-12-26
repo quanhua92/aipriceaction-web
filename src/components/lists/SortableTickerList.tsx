@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ChevronDown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { MARKET_INDICES, MAJOR_CRYPTO } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getPriceChangeColor } from '@/lib/colors'
@@ -55,12 +56,19 @@ export function SortableTickerList({
 }: SortableTickerListProps) {
   const [sortBy, setSortBy] = React.useState<SortBy>('value')
   const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>(defaultSectionFilter)
+  const [showAll, setShowAll] = React.useState(false)
+  const MAX_VISIBLE = 100
   const { t, language } = useTranslation()
 
   // Reset filter when defaultSectionFilter changes (e.g., switching between watchlists)
   React.useEffect(() => {
     setSectionFilter(defaultSectionFilter)
   }, [defaultSectionFilter])
+
+  // Reset to collapsed when filters/sort/search changes
+  React.useEffect(() => {
+    setShowAll(false)
+  }, [searchQuery, sortBy, sectionFilter])
 
   const getLatestData = (symbol: string, isCrypto = false): StockData | undefined => {
     const dataSource = isCrypto ? allCryptoTickersLastData : allTickersLastData
@@ -330,6 +338,38 @@ export function SortableTickerList({
     return ordered
   }, [filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, sectionFilter])
 
+  // Calculate visible vs hidden items for each section
+  const { visibleMarketIndices, visibleMajorCrypto, visibleTickers, visibleCrypto, hasMore } = React.useMemo(() => {
+    if (showAll) {
+      return {
+        visibleMarketIndices: filteredMarketIndices,
+        visibleMajorCrypto: filteredMajorCrypto,
+        visibleTickers: filteredTickers,
+        visibleCrypto: filteredCryptoTickers,
+        hasMore: false
+      }
+    }
+
+    let remaining = MAX_VISIBLE
+    const takeVisible = <T,>(items: T[]): T[] => {
+      if (remaining <= 0) return []
+      const take = Math.min(items.length, remaining)
+      remaining -= take
+      return items.slice(0, take)
+    }
+
+    const totalItems = filteredMarketIndices.length + filteredMajorCrypto.length +
+                      filteredTickers.length + filteredCryptoTickers.length
+
+    return {
+      visibleMarketIndices: takeVisible(filteredMarketIndices),
+      visibleMajorCrypto: takeVisible(filteredMajorCrypto),
+      visibleTickers: takeVisible(filteredTickers),
+      visibleCrypto: takeVisible(filteredCryptoTickers),
+      hasMore: totalItems > MAX_VISIBLE
+    }
+  }, [showAll, filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, sectionFilter])
+
   // Notify parent component when sorted tickers change
   // Pass the visually ordered list so navigation matches what user sees
   React.useEffect(() => {
@@ -398,14 +438,14 @@ export function SortableTickerList({
           {!loading && !error && (
             <>
               {/* Market Indices */}
-              {filteredMarketIndices.length > 0 && sectionFilter !== 'crypto' && (
+              {visibleMarketIndices.length > 0 && sectionFilter !== 'crypto' && (
                 <div className="mb-2">
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       {t('dialogs.selectTicker.sections.marketIndices')}
                     </div>
                   )}
-                  {filteredMarketIndices.map((index) => {
+                  {visibleMarketIndices.map((index) => {
                     const latestData = getLatestData(index)
                     return (
                       <button
@@ -446,14 +486,14 @@ export function SortableTickerList({
               )}
 
               {/* Major Crypto */}
-              {filteredMajorCrypto.length > 0 && sectionFilter !== 'stocks' && (
+              {visibleMajorCrypto.length > 0 && sectionFilter !== 'stocks' && (
                 <div className="mb-2">
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       {t('dialogs.selectTicker.sections.majorCrypto')}
                     </div>
                   )}
-                  {filteredMajorCrypto.map((ticker) => {
+                  {visibleMajorCrypto.map((ticker) => {
                     const latestData = getLatestData(ticker.symbol, true)
                     return (
                       <button
@@ -494,14 +534,14 @@ export function SortableTickerList({
               )}
 
               {/* Regular Tickers */}
-              {filteredTickers.length > 0 && sectionFilter !== 'crypto' && (
+              {visibleTickers.length > 0 && sectionFilter !== 'crypto' && (
                 <div>
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       {t('dialogs.selectTicker.sections.stocks')}
                     </div>
                   )}
-                  {filteredTickers.map((ticker) => {
+                  {visibleTickers.map((ticker) => {
                     const latestData = getLatestData(ticker.symbol)
                     return (
                       <button
@@ -542,14 +582,14 @@ export function SortableTickerList({
               )}
 
               {/* Crypto Tickers */}
-              {filteredCryptoTickers.length > 0 && sectionFilter !== 'stocks' && (
+              {visibleCrypto.length > 0 && sectionFilter !== 'stocks' && (
                 <div>
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       {t('dialogs.selectTicker.sections.crypto')}
                     </div>
                   )}
-                  {filteredCryptoTickers.map((ticker) => {
+                  {visibleCrypto.map((ticker) => {
                     const latestData = getLatestData(ticker.symbol, true)
                     return (
                       <button
@@ -586,6 +626,34 @@ export function SortableTickerList({
                       </button>
                     )
                   })}
+                </div>
+              )}
+
+              {/* Show All / Show Less Button */}
+              {hasMore && !showAll && (
+                <div className="flex justify-center py-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAll(true)}
+                    className="w-full gap-1"
+                  >
+                    <ChevronDown className="h-4 w-4 animate-bounce" />
+                    {t('common.sortableTickerList.showAll')}
+                  </Button>
+                </div>
+              )}
+
+              {showAll && hasMore && (
+                <div className="flex justify-center py-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAll(false)}
+                    className="w-full"
+                  >
+                    {t('common.sortableTickerList.showLess')}
+                  </Button>
                 </div>
               )}
 

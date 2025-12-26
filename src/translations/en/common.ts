@@ -474,4 +474,8 @@ export default {
       value: 'Value',
     },
   },
+  sortableTickerList: {
+    showAll: 'Show All',
+    showLess: 'Show Less',
+  },
 }
