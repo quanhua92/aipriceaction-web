@@ -19,5 +19,10 @@ export default {
       snippet: 'Xác định các mức hỗ trợ và kháng cự chính, phân tích tỷ lệ rủi ro-phần thưởng và phát hiện dấu hiệu cảnh báo hoặc tín hiệu tăng',
       question: 'Đối với mỗi mã đã chọn, xác định các mức hỗ trợ và kháng cự chính dựa trên hành động giá gần đây. Phân tích tỷ lệ rủi ro-phần thưởng hiện tại từ góc độ hành động giá và làm nổi bật bất kỳ dấu hiệu cảnh báo hoặc xác nhận tăng giá tiềm năng trong dữ liệu.',
     },
+    {
+      title: 'Tìm Kiếm Tin Tức & Sự Kiện',
+      snippet: 'Tìm tin tức và sự kiện gần đây giải thích cho biến động giá mạnh hoặc khối lượng bất thường',
+      question: 'Kiểm tra xem có mã nào thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, tìm tin tức và sự kiện gần đây để hiểu nguyên nhân.',
+    },
   ],
 }

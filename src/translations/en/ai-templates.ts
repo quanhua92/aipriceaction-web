@@ -19,5 +19,10 @@ export default {
       snippet: 'Identify key support and resistance levels, analyze risk-reward ratios, and spot potential warning signs or bullish confirmations',
       question: 'For each selected ticker, identify the key support and resistance levels based on recent price action. Analyze the current risk-reward ratio from a price action perspective and highlight any potential warning signs or bullish confirmations in the data.',
     },
+    {
+      title: 'News & Events Research',
+      snippet: 'Find recent news and events that explain extreme price movements or unusual volume activity',
+      question: 'Check if any stocks moved more than ±6.7% in a single day or show unusual volume patterns. For each significant move, search recent news and events to understand what caused it.',
+    },
   ],
 }
