@@ -37,7 +37,7 @@ export function getWatchlistNames(): string[] {
 export function getWatchlistTickers(name: string): string[] {
   const watchlists = getCustomWatchlists()
   const tickersString = watchlists[name]
-  if (!tickersString) return []
+  if (!tickersString || typeof tickersString !== 'string') return []
   return tickersString.split(',').map(t => t.trim()).filter(Boolean)
 }
 
