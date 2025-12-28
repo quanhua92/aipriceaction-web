@@ -344,11 +344,8 @@ export function BasicWatchList({
         }
       }
 
-      // Get existing watchlists
-      const existingWatchlists = {}
-      customWatchlists.forEach(name => {
-        existingWatchlists[name] = getWatchlistTickers(name)
-      })
+      // Get existing watchlists - use getCustomWatchlists() to get raw string format
+      const existingWatchlists = getCustomWatchlists()
 
       const importedNames = Object.keys(importedWatchlists)
       const existingNames = Object.keys(existingWatchlists)
