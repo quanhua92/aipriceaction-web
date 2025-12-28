@@ -12,6 +12,7 @@ import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
 import { useTranslation } from '@/hooks/useTranslation'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TrendSignalTable } from '@/components/TrendSignalTable'
+import { useLogs } from '@/contexts/LogsContext'
 
 export type TitleGeneratorCallback = (ticker: string) => string | Promise<string>
 
@@ -35,6 +36,7 @@ export function ChartFullscreenDialog({
   getTitle,
 }: ChartFullscreenDialogProps) {
   const { t } = useTranslation()
+  const { info } = useLogs()
   const isOpen = ticker !== null
   const [chartHeight, setChartHeight] = React.useState(600)
   const dialogContentRef = React.useRef<HTMLDivElement>(null)
@@ -244,7 +246,28 @@ export function ChartFullscreenDialog({
           available -= NAVIGATION_HEIGHT
         }
 
-        setChartHeight(Math.max(available, 300))
+        const finalHeight = Math.max(available, 300)
+
+        info('[ChartFullscreenDialog] Height measurement', {
+          dialogHeight,
+          headerHeight,
+          gap,
+          padding,
+          tabsHeight: TABS_LIST_HEIGHT,
+          controlBarHeight: CHART_CONTROL_BAR_HEIGHT,
+          navHeight: tickerList && tickerList.length > 0 ? 48 : 0,
+          availableBeforeMax: available,
+          finalHeight,
+          currentHeight: chartHeight,
+          ticker: displayTicker,
+        })
+
+        setChartHeight(finalHeight)
+      } else {
+        info('[ChartFullscreenDialog] Height measurement skipped - ref not ready', {
+          currentHeight: chartHeight,
+          ticker: displayTicker,
+        })
       }
     }
 
@@ -255,6 +278,10 @@ export function ChartFullscreenDialog({
 
     // Observe the dialog content element
     const timer = setTimeout(() => {
+      info('[ChartFullscreenDialog] Height measurement timer fired', {
+        currentHeight: chartHeight,
+        ticker: displayTicker,
+      })
       if (dialogContentRef.current) {
         resizeObserver.observe(dialogContentRef.current)
         updateHeight()
@@ -269,7 +296,7 @@ export function ChartFullscreenDialog({
       resizeObserver.disconnect()
       window.removeEventListener('resize', updateHeight)
     }
-  }, [isOpen, tickerList])
+  }, [isOpen, tickerList, displayTicker, chartHeight, info])
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
