@@ -13,6 +13,7 @@ import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
 import { AlertProvider } from '../contexts/AlertContext'
 import { NoteProvider } from '../contexts/NoteContext'
 import { RefreshProvider } from '../contexts/RefreshContext'
+import { DialogProvider } from '../contexts/DialogContext'
 import { GoogleAnalyticsProvider } from '../contexts/GoogleAnalyticsProvider'
 import { LogsProvider } from '../contexts/LogsContext'
 import { PWAInstallProvider } from '../components/PWAInstallBanner'
@@ -78,7 +79,8 @@ function RootComponent() {
         <SiteSettingsProvider>
           <ThemeProvider>
             <RefreshProvider>
-              <ChartSettingsProvider>
+              <DialogProvider>
+                <ChartSettingsProvider>
                 <APIProvider>
                   <AlertProvider>
                     <NoteProvider>
@@ -92,9 +94,10 @@ function RootComponent() {
                   </AlertProvider>
                 </APIProvider>
               </ChartSettingsProvider>
-            </RefreshProvider>
-          </ThemeProvider>
-        </SiteSettingsProvider>
+            </DialogProvider>
+          </RefreshProvider>
+        </ThemeProvider>
+      </SiteSettingsProvider>
       </LogsProvider>
     </GoogleAnalyticsProvider>
   )

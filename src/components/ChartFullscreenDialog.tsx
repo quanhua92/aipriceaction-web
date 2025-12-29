@@ -13,6 +13,7 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TrendSignalTable } from '@/components/TrendSignalTable'
 import { useLogs } from '@/contexts/LogsContext'
+import { useDialog } from '@/contexts/DialogContext'
 
 export type TitleGeneratorCallback = (ticker: string) => string | Promise<string>
 
@@ -37,8 +38,8 @@ export function ChartFullscreenDialog({
 }: ChartFullscreenDialogProps) {
   const { t } = useTranslation()
   const { info } = useLogs()
+  const { viewportHeight } = useDialog()
   const isOpen = ticker !== null
-  const [chartHeight, setChartHeight] = React.useState(600)
   const dialogContentRef = React.useRef<HTMLDivElement>(null)
   const { prefetchTickers } = usePrefetchTicker()
 
@@ -217,86 +218,47 @@ export function ChartFullscreenDialog({
     return () => clearTimeout(timer)
   }, [isOpen, tickerList, internalIndex, getTickersToPrefetch, prefetchTickers])
 
-  // Measure available height when dialog opens or window resizes
-  React.useEffect(() => {
-    if (!isOpen) return
+  // Calculate chart height based on viewport height
+  // Dialog is 90vh, so calculate based on viewport height
+  const chartHeight = React.useMemo(() => {
+    // Dialog height is 90% of viewport height (h-[90vh] h-[90dvh])
+    const dialogHeight = viewportHeight * 0.9
 
-    const updateHeight = () => {
-      if (dialogContentRef.current) {
-        const dialogHeight = dialogContentRef.current.clientHeight
-        const headerElement = dialogContentRef.current.querySelector('[data-slot="header"]') as HTMLElement
-        const headerHeight = headerElement?.offsetHeight || 50
-        const gap = 8 // gap-2
-        const padding = 12 * 2 // p-3 top + bottom
+    // Fixed UI element heights
+    const headerHeight = 50
+    const gap = 8 // gap-2
+    const padding = 10 // p-3 top + bottom
+    const tabsHeight = 40 // TabsList
+    const controlBarHeight = 48 // Chart control bar + gap
 
-        let available = dialogHeight - headerHeight - gap - padding
+    let available = dialogHeight - headerHeight - gap - padding - tabsHeight - controlBarHeight
 
-        // Account for tabs list height (~40px)
-        const TABS_LIST_HEIGHT = 40
-        available -= TABS_LIST_HEIGHT
-
-        // Account for chart control bar (~32px) + space-y-4 gap (~16px) = 48px
-        const CHART_CONTROL_BAR_HEIGHT = 48
-        available -= CHART_CONTROL_BAR_HEIGHT
-
-        // Account for navigation controls if ticker list is provided
-        // Navigation height: ~40px (button height + padding + border)
-        if (tickerList && tickerList.length > 0) {
-          const NAVIGATION_HEIGHT = 48
-          available -= NAVIGATION_HEIGHT
-        }
-
-        const finalHeight = Math.max(available, 300)
-
-        info('[ChartFullscreenDialog] Height measurement', {
-          dialogHeight,
-          headerHeight,
-          gap,
-          padding,
-          tabsHeight: TABS_LIST_HEIGHT,
-          controlBarHeight: CHART_CONTROL_BAR_HEIGHT,
-          navHeight: tickerList && tickerList.length > 0 ? 48 : 0,
-          availableBeforeMax: available,
-          finalHeight,
-          currentHeight: chartHeight,
-          ticker: displayTicker,
-        })
-
-        setChartHeight(finalHeight)
-      } else {
-        info('[ChartFullscreenDialog] Height measurement skipped - ref not ready', {
-          currentHeight: chartHeight,
-          ticker: displayTicker,
-        })
-      }
+    // Account for navigation controls if ticker list is provided
+    if (tickerList && tickerList.length > 0) {
+      const navHeight = 48
+      available -= navHeight
     }
 
-    // Use ResizeObserver for more reliable measurement
-    const resizeObserver = new ResizeObserver(() => {
-      updateHeight()
+    // Enforce minimum height
+    const finalHeight = Math.max(available, 300)
+
+    // Log calculation for debugging
+    info('[ChartFullscreenDialog] Height calculation', {
+      viewportHeight,
+      dialogHeight,
+      headerHeight,
+      gap,
+      padding,
+      tabsHeight,
+      controlBarHeight,
+      navHeight: tickerList && tickerList.length > 0 ? 48 : 0,
+      availableBeforeMax: available,
+      finalHeight,
+      ticker: displayTicker,
     })
 
-    // Observe the dialog content element
-    const timer = setTimeout(() => {
-      info('[ChartFullscreenDialog] Height measurement timer fired', {
-        currentHeight: chartHeight,
-        ticker: displayTicker,
-      })
-      if (dialogContentRef.current) {
-        resizeObserver.observe(dialogContentRef.current)
-        updateHeight()
-      }
-    }, 100)
-
-    // Update on window resize
-    window.addEventListener('resize', updateHeight)
-
-    return () => {
-      clearTimeout(timer)
-      resizeObserver.disconnect()
-      window.removeEventListener('resize', updateHeight)
-    }
-  }, [isOpen, tickerList, displayTicker, chartHeight, info])
+    return finalHeight
+  }, [viewportHeight, tickerList, displayTicker, info])
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -341,7 +303,7 @@ export function ChartFullscreenDialog({
                   buyPeriod={20}
                   sellPeriod={10}
                   interval="1D"
-                  endDate={endDate}
+                  endDate={endDate ?? undefined}
                   shouldOpenFullscreen={false}
                 />
               </div>
