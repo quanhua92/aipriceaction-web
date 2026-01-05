@@ -78,23 +78,16 @@ export function ChartFullscreenDialog({
     }
   }, [isOpen])
 
-  // Get the current ticker to display
-  // If internalTicker is not in tickerList (user selected external ticker like crypto), use internalTicker directly
-  const displayTicker = tickerList && tickerList.length > 0 && tickerList.includes(internalTicker ?? '')
-    ? tickerList[internalIndex]
-    : internalTicker
-
-  
-  // Update title when displayTicker changes
+  // Update title when internalTicker changes
   React.useEffect(() => {
-    if (!displayTicker || !getTitle) {
+    if (!internalTicker || !getTitle) {
       setDynamicTitle(null)
       return
     }
 
     const updateTitle = async () => {
       try {
-        const newTitle = await getTitle(displayTicker)
+        const newTitle = await getTitle(internalTicker)
         setDynamicTitle(newTitle)
       } catch (error) {
         console.error('Error generating title:', error)
@@ -103,7 +96,7 @@ export function ChartFullscreenDialog({
     }
 
     updateTitle()
-  }, [displayTicker, getTitle])
+  }, [internalTicker, getTitle])
 
   // Helper function to get tickers to prefetch with wraparound
   const getTickersToPrefetch = React.useCallback((fromIndex: number, direction: 'next' | 'prev', count: number): string[] => {
@@ -174,7 +167,7 @@ export function ChartFullscreenDialog({
       // Ticker not in list - switch to single-ticker mode
       setInternalTicker(newTicker)
       setIsNavigationLocked(false) // Unlock for external tickers
-      // Note: Navigation will still show, but displayTicker will use internalTicker
+      // Note: Navigation will still show, but chart will use internalTicker directly
       // since it's not in the list at the current index
     }
   }, [tickerList])
@@ -254,23 +247,23 @@ export function ChartFullscreenDialog({
       navHeight: tickerList && tickerList.length > 0 ? 48 : 0,
       availableBeforeMax: available,
       finalHeight,
-      ticker: displayTicker,
+      ticker: internalTicker,
     })
 
     return finalHeight
-  }, [viewportHeight, tickerList, displayTicker, info])
+  }, [viewportHeight, tickerList, internalTicker, info])
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent ref={dialogContentRef} className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[90vh] h-[90dvh] p-2 gap-2 flex flex-col">
         <DialogHeader data-slot="header" className="flex-shrink-0">
           <DialogTitle className="text-base text-center">
-            {dynamicTitle || title || displayTicker}
+            {dynamicTitle || title || internalTicker}
             {endDate && ` - ${t('common.chart.ending')} ${endDate}`}
           </DialogTitle>
         </DialogHeader>
 
-        {displayTicker && (
+        {internalTicker && (
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
@@ -285,7 +278,7 @@ export function ChartFullscreenDialog({
             <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden pb-2">
               <div className="flex-1 min-h-0 w-full overflow-y-auto">
                 <TradingViewChart
-                  ticker={displayTicker}
+                  ticker={internalTicker}
                   onTickerChange={handleTickerChange}
                   height={chartHeight}
                   showControls={true}
@@ -298,7 +291,7 @@ export function ChartFullscreenDialog({
             <TabsContent value="trendSignal" className="flex-1 min-h-0 overflow-y-auto pb-2">
               <div className="h-full">
                 <TrendSignalTable
-                  ticker={displayTicker}
+                  ticker={internalTicker}
                   maxDays={40}
                   buyPeriod={20}
                   sellPeriod={10}
