@@ -49,6 +49,7 @@ export default {
       details: 'Chi Tiết',
       existing: 'Tất Cả',
       chart: 'Biểu Đồ',
+      compare: 'So Sánh',
       trendSignal: 'Tín Hiệu',
     },
     note: {

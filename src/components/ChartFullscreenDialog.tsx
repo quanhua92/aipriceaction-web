@@ -14,6 +14,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TrendSignalTable } from '@/components/TrendSignalTable'
 import { useLogs } from '@/contexts/LogsContext'
 import { useDialog } from '@/contexts/DialogContext'
+import { getCompareState, saveCompareState, type ChartCompareState } from '@/lib/compare-storage'
 
 export type TitleGeneratorCallback = (ticker: string) => string | Promise<string>
 
@@ -47,11 +48,30 @@ export function ChartFullscreenDialog({
   const [dynamicTitle, setDynamicTitle] = React.useState<string | null>(null)
 
   // Active tab state (Chart is default)
-  const [activeTab, setActiveTab] = React.useState("chart")
+  const [activeTab, setActiveTab] = React.useState<"chart" | "compare" | "trendSignal">("chart")
 
   // Internal state for navigation when tickerList is provided
   const [internalIndex, setInternalIndex] = React.useState(currentIndex)
   const [internalTicker, setInternalTicker] = React.useState<string | null>(ticker)
+
+  // Compare tab state
+  const [compareState, setCompareState] = React.useState<ChartCompareState>(() => {
+    if (typeof window !== 'undefined') {
+      return getCompareState()
+    }
+    return {
+      secondaryTicker: 'VNINDEX',
+      layout: 'vertical',
+      swapped: false
+    }
+  })
+
+  // Persist compare state to localStorage
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      saveCompareState(compareState)
+    }
+  }, [compareState])
 
   // Update internal state when ticker prop changes
   React.useEffect(() => {
@@ -247,11 +267,12 @@ export function ChartFullscreenDialog({
         {internalTicker && (
           <Tabs
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={(value) => setActiveTab(value as "chart" | "compare" | "trendSignal")}
             className="flex-1 min-h-0 flex flex-col gap-0"
           >
-            <TabsList className="mx-auto mb-2 grid grid-cols-2 gap-4 w-fit">
+            <TabsList className="mx-auto mb-2 grid grid-cols-3 gap-4 w-fit">
               <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
+              <TabsTrigger value="compare">{t('dialogs.quickAddAlert.tabs.compare')}</TabsTrigger>
               <TabsTrigger value="trendSignal">{t('dialogs.quickAddAlert.tabs.trendSignal')}</TabsTrigger>
             </TabsList>
 
@@ -265,6 +286,36 @@ export function ChartFullscreenDialog({
                   showControls={true}
                   endDateOverride={endDate}
                 />
+              </div>
+            </TabsContent>
+
+            {/* Compare Tab - two charts with layout controls */}
+            <TabsContent value="compare" className="flex-1 min-h-0 overflow-hidden pb-2">
+              <div className="h-full flex flex-col gap-2">
+                {/* Two charts container - always vertical */}
+                <div className="flex-1 min-h-0 gap-2 grid grid-cols-1">
+                  {/* VNINDEX chart (top) */}
+                  <div className="min-h-0 overflow-y-auto">
+                    <TradingViewChart
+                      ticker={compareState.secondaryTicker}
+                      onTickerChange={(newTicker) => setCompareState(prev => ({ ...prev, secondaryTicker: newTicker }))}
+                      height={chartHeight * 0.9 / 2}
+                      showControls={true}
+                      endDateOverride={endDate}
+                    />
+                  </div>
+
+                  {/* Primary ticker chart (bottom) */}
+                  <div className="min-h-0 overflow-y-auto">
+                    <TradingViewChart
+                      ticker={internalTicker}
+                      onTickerChange={handleTickerChange}
+                      height={chartHeight * 0.9 / 2}
+                      showControls={true}
+                      endDateOverride={endDate}
+                    />
+                  </div>
+                </div>
               </div>
             </TabsContent>
 

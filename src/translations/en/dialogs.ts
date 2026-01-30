@@ -49,6 +49,7 @@ export default {
       details: 'Alert Details',
       existing: 'All Alerts',
       chart: 'Chart',
+      compare: 'Compare',
       trendSignal: 'TrendSignal',
     },
     note: {
