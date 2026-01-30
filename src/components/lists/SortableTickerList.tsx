@@ -37,7 +37,11 @@ export interface SortableTickerListProps {
   defaultSectionFilter?: SectionFilter
 }
 
-export function SortableTickerList({
+export interface SortableTickerListRef {
+  selectFirstVisible: () => void
+}
+
+export const SortableTickerList = React.forwardRef<SortableTickerListRef, SortableTickerListProps>(({
   tickers,
   allTickersLastData,
   searchQuery = '',
@@ -53,7 +57,7 @@ export function SortableTickerList({
   cryptoTickers = [],
   allCryptoTickersLastData = {},
   defaultSectionFilter = 'stocks'
-}: SortableTickerListProps) {
+}, ref) => {
   const [sortBy, setSortBy] = React.useState<SortBy>('value')
   const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>(defaultSectionFilter)
   const [showAll, setShowAll] = React.useState(false)
@@ -337,6 +341,16 @@ export function SortableTickerList({
 
     return ordered
   }, [filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, sectionFilter])
+
+  // Expose selectFirstVisible method via ref
+  React.useImperativeHandle(ref, () => ({
+    selectFirstVisible: () => {
+      const firstTicker = visuallyOrderedTickers[0]
+      if (firstTicker) {
+        onSelectTicker(firstTicker.symbol)
+      }
+    }
+  }), [visuallyOrderedTickers, onSelectTicker])
 
   // Calculate visible vs hidden items for each section
   const { visibleMarketIndices, visibleMajorCrypto, visibleTickers, visibleCrypto, hasMore } = React.useMemo(() => {
@@ -672,4 +686,6 @@ export function SortableTickerList({
       </div>
     </div>
   )
-}
+})
+
+SortableTickerList.displayName = 'SortableTickerList'
