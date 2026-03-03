@@ -216,17 +216,6 @@ export function ChartControlBar({
 
 			{/* Right-aligned buttons group */}
 			<div className="ml-auto flex items-center gap-0.5">
-				{/* Ruler Button */}
-				<Button
-					variant="ghost"
-					size="sm"
-					className="h-7 w-7 p-0"
-					title="Toggle ruler"
-					onClick={() => setRulerVisible(!rulerVisible)}
-				>
-					<Ruler className="h-4 w-4" />
-				</Button>
-
 				{/* Load More Button - Icon Only */}
 				<Button
 					variant="ghost"
@@ -241,6 +230,17 @@ export function ChartControlBar({
 					) : (
 						<Download className="h-4 w-4" />
 					)}
+				</Button>
+
+				{/* Ruler Button */}
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-7 w-7 p-0"
+					title="Toggle ruler"
+					onClick={() => setRulerVisible(!rulerVisible)}
+				>
+					<Ruler className="h-4 w-4" />
 				</Button>
 
 				{/* Star Button - Add to Watchlist */}
