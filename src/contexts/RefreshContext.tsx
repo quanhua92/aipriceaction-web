@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useLogs } from './LogsContext'
 import { VISIBILITY_REFRESH_DEBOUNCE_MS, VISIBILITY_MIN_REFRESH_INTERVAL_MS } from '@/lib/constants'
+import { getHealth } from '@/lib/api-client'
 
 interface RefreshContextValue {
   isRefreshEnabled: boolean
@@ -33,6 +34,32 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     lastRefreshRef.current = lastRefresh
   }, [lastRefresh])
+
+  // Trading hours cache (5-minute cache)
+  const tradingHoursCacheRef = React.useRef<{ value: boolean; timestamp: number } | null>(null)
+
+  // Fetch trading hours status with 5-minute cache
+  const fetchTradingHours = React.useCallback(async (): Promise<boolean> => {
+    const now = Date.now()
+    const cache = tradingHoursCacheRef.current
+
+    // Use cache if less than 5 minutes old
+    if (cache && now - cache.timestamp < 5 * 60 * 1000) {
+      return cache.value
+    }
+
+    try {
+      const health = await getHealth()
+      tradingHoursCacheRef.current = { value: health.is_trading_hours, timestamp: now }
+      return health.is_trading_hours
+    } catch (error) {
+      info('Failed to fetch trading hours status, defaulting to true', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+      // Default to true on error (safe - will refresh)
+      return true
+    }
+  }, [info])
 
   // Manual refresh trigger
   const triggerRefresh = React.useCallback(() => {
@@ -91,6 +118,16 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
       // Reset hidden timestamp
       hiddenTimestampRef.current = null
 
+      // Check trading hours before refreshing
+      const cachedTradingHours = tradingHoursCacheRef.current?.value
+      if (cachedTradingHours === false) {
+        info('Skipping visibility refresh - outside trading hours', {
+          timePageWasHidden,
+          isTradingHours: false
+        })
+        return
+      }
+
       if (timePageWasHidden > VISIBILITY_MIN_REFRESH_INTERVAL_MS) {
       // Page was hidden for more than 30 seconds - refresh immediately
       info('Refresh triggered immediately', {
@@ -102,7 +139,17 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
     } else if (timePageWasHidden > 0) {
       // Page was hidden for less than 30 seconds - use debounce to prevent rapid switching
       // But wait a bit longer to let focus events potentially handle it
-      visibilityTimeoutRef.current = setTimeout(() => {
+      visibilityTimeoutRef.current = setTimeout(async () => {
+        // Check trading hours before refreshing
+        const tradingHours = await fetchTradingHours()
+        if (!tradingHours) {
+          info('Skipping visibility refresh - outside trading hours', {
+            timePageWasHidden,
+            isTradingHours: false
+          })
+          return
+        }
+
         // Check time since last refresh to avoid duplicate refreshes
         const timeSinceLastRefresh = Date.now() - lastRefreshRef.current
 
@@ -125,7 +172,7 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
     }
       // If timePageWasHidden is 0, it means page wasn't actually hidden (initial load), do nothing
     }
-  }, [info])
+  }, [info, fetchTradingHours])
 
   // Focus/blur coordination refs
   const focusTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
@@ -147,8 +194,20 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Use a short debounce to coordinate with visibility change events
-    focusTimeoutRef.current = setTimeout(() => {
+    focusTimeoutRef.current = setTimeout(async () => {
       const currentlyVisible = !document.hidden
+
+      // Check trading hours before refreshing
+      const tradingHours = await fetchTradingHours()
+      if (!tradingHours) {
+        info('Window focus refresh skipped - outside trading hours', {
+          wasVisible: isVisible,
+          currentlyVisible,
+          isTradingHours: false
+        })
+        return
+      }
+
       const timeSinceLastRefresh = now - lastRefreshRef.current
 
       // Only trigger refresh if page is actually visible and enough time has passed
@@ -169,7 +228,7 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
         })
       }
     }, 100) // Very short debounce to let visibility change events process first
-  }, [isVisible, info])
+  }, [isVisible, info, fetchTradingHours])
 
   // Handle window blur
   const handleWindowBlur = React.useCallback(() => {
@@ -187,6 +246,22 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     info(`Refresh ${isRefreshEnabled ? 'enabled' : 'disabled'}`)
   }, [isRefreshEnabled, info])
+
+  // Poll trading hours status every 5 minutes
+  React.useEffect(() => {
+    // Only setup on client-side
+    if (typeof document === 'undefined') return
+
+    // Initial fetch
+    fetchTradingHours()
+
+    // Poll every 5 minutes
+    const tradingHoursInterval = setInterval(fetchTradingHours, 5 * 60 * 1000)
+
+    return () => {
+      clearInterval(tradingHoursInterval)
+    }
+  }, [fetchTradingHours])
 
   // Setup visibility and focus event listeners
   React.useEffect(() => {
