@@ -897,7 +897,7 @@ export function BaseTradingViewChart({
 			)}
 
 			{/* Chart Container */}
-			<div className="relative" style={{ height: `${height}px` }}>
+			<div className="relative overflow-hidden" style={{ height: `${height}px` }}>
 				<div ref={chartContainerRef} className="absolute inset-0" />
 
 				{/* Overlay for current/crosshair data */}
