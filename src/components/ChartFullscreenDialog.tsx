@@ -295,26 +295,22 @@ export function ChartFullscreenDialog({
                 {/* Two charts container - always vertical */}
                 <div className="flex-1 min-h-0 gap-2 grid grid-cols-1">
                   {/* VNINDEX chart (top) */}
-                  <div className="min-h-0 overflow-y-auto">
-                    <TradingViewChart
-                      ticker={compareState.secondaryTicker}
-                      onTickerChange={(newTicker) => setCompareState(prev => ({ ...prev, secondaryTicker: newTicker }))}
-                      height={chartHeight * 0.9 / 2}
-                      showControls={true}
-                      endDateOverride={endDate}
-                    />
-                  </div>
+                  <TradingViewChart
+                    ticker={compareState.secondaryTicker}
+                    onTickerChange={(newTicker) => setCompareState(prev => ({ ...prev, secondaryTicker: newTicker }))}
+                    height={chartHeight * 0.9 / 2}
+                    showControls={true}
+                    endDateOverride={endDate}
+                  />
 
                   {/* Primary ticker chart (bottom) */}
-                  <div className="min-h-0 overflow-y-auto">
-                    <TradingViewChart
-                      ticker={internalTicker}
-                      onTickerChange={handleTickerChange}
-                      height={chartHeight * 0.9 / 2}
-                      showControls={true}
-                      endDateOverride={endDate}
-                    />
-                  </div>
+                  <TradingViewChart
+                    ticker={internalTicker}
+                    onTickerChange={handleTickerChange}
+                    height={chartHeight * 0.9 / 2}
+                    showControls={true}
+                    endDateOverride={endDate}
+                  />
                 </div>
               </div>
             </TabsContent>
