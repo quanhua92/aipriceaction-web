@@ -298,7 +298,7 @@ export function ChartFullscreenDialog({
                   <TradingViewChart
                     ticker={compareState.secondaryTicker}
                     onTickerChange={(newTicker) => setCompareState(prev => ({ ...prev, secondaryTicker: newTicker }))}
-                    height={chartHeight * 0.9 / 2}
+                    height={chartHeight * 0.95 / 2}
                     showControls={true}
                     endDateOverride={endDate}
                   />
@@ -307,7 +307,7 @@ export function ChartFullscreenDialog({
                   <TradingViewChart
                     ticker={internalTicker}
                     onTickerChange={handleTickerChange}
-                    height={chartHeight * 0.9 / 2}
+                    height={chartHeight * 0.95 / 2}
                     showControls={true}
                     endDateOverride={endDate}
                   />

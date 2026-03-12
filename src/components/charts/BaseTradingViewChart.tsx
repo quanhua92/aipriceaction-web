@@ -887,7 +887,7 @@ export function BaseTradingViewChart({
 
 			{/* Ruler Section - Above Chart */}
 			{rulerVisible && (
-				<div className="bg-muted/50 border-b p-2">
+				<div className="bg-muted/50 border-b px-2">
 					<RulerSection
 						data={data}
 						crosshairData={crosshairData ?? clickedCrosshairData}
