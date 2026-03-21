@@ -68,7 +68,8 @@ export function ChartControlBar({
 	onFullscreenClick,
 }: ChartControlBarProps) {
 	const { t } = useTranslation()
-	const { loadMoreHistoricalData, loadingMore } = useTicker()
+	const { loadMoreHistoricalData, loadingMore, chartData } = useTicker()
+	const chartEndDate = chartData[chartData.length - 1]?.time?.split('T')[0]
 	const {
 		interval: globalInterval,
 		setInterval: setGlobalInterval,
@@ -135,7 +136,7 @@ export function ChartControlBar({
 			{/* Ticker Selection Button */}
 			{showTickerSelect && (
 				<>
-					<SelectTickerDialog onSelectTicker={onTickerChange}>
+					<SelectTickerDialog onSelectTicker={onTickerChange} endDate={chartEndDate}>
 						<Button
 							variant="outline"
 							size="sm"
