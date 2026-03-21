@@ -174,7 +174,7 @@ export function PlaygroundInfoPanel() {
         {/* Ticker Selection */}
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground">{t('common.playground.info.ticker')}</label>
-          <SelectTickerDialog onSelectTicker={handleTickerSelect}>
+          <SelectTickerDialog onSelectTicker={handleTickerSelect} endDate={endDate}>
             <Button
               variant="outline"
               disabled={isLoading}
@@ -266,7 +266,7 @@ export function PlaygroundInfoPanel() {
         {showSecondaryChart && (
           <div className="space-y-2">
             <label className="text-xs text-muted-foreground">{t('common.playground.info.secondaryTicker')}</label>
-            <SelectTickerDialog onSelectTicker={handleSecondaryTickerSelect}>
+            <SelectTickerDialog onSelectTicker={handleSecondaryTickerSelect} endDate={endDate}>
               <Button
                 variant="outline"
                 disabled={secondaryIsLoading || isLoading}
