@@ -391,6 +391,7 @@ export default {
       positionHidden: 'Hidden',
       positionTop: 'On Top',
       positionBottom: 'Below',
+      smartRandom: 'Prefer active stocks',
     },
     controls: {
       title: 'Navigate Data',

@@ -391,6 +391,7 @@ export default {
       positionHidden: 'Ẩn',
       positionTop: 'Phía Trên',
       positionBottom: 'Phía Dưới',
+      smartRandom: 'Ưu tiên mã giao dịch sôi nổi',
     },
     controls: {
       title: 'Điều Hướng Dữ Liệu',

@@ -2,6 +2,11 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { useAPI } from '@/contexts/APIContext'
 import { type StockData } from '@/lib/api-client'
 
+const MARKET_INDICES = ['VNINDEX', 'VN30']
+
+// localStorage key for smart random toggle
+const SMART_RANDOM_KEY = 'playground-smart-random'
+
 // localStorage key for secondary chart visibility
 const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
 
@@ -9,7 +14,7 @@ export interface PlaygroundData {
   ticker: string          // Randomly selected Vietnamese stock or index
   allData: StockData[]    // 500 days cached from API
   currentIndex: number    // Current position (0-499)
-  endDate: string        // Random end date (2016-2025)
+  endDate: string        // End date of the 500-day window (2016-2025)
   isLoading: boolean
   error?: string
 
@@ -22,7 +27,7 @@ export interface PlaygroundData {
 }
 
 // Generate random date between 2016-01-01 and today, weighted towards recent years
-const generateRandomEndDate = (): string => {
+const generateRandomDate = (): string => {
   const start = new Date('2016-01-01')
   const end = new Date()
 
@@ -35,11 +40,18 @@ const generateRandomEndDate = (): string => {
   return new Date(randomTime).toISOString().split('T')[0]
 }
 
+// Derive endDate from a viewDate so that viewDate lands at ~index 99 of 500 trading days.
+// 400 trading days before endDate ≈ 580 calendar days, so endDate = viewDate + 580.
+const deriveEndDate = (viewDate: string): string => {
+  const d = new Date(viewDate)
+  d.setDate(d.getDate() + 580)
+  return d.toISOString().split('T')[0]
+}
+
 // Get random ticker from existing ticker groups
 const getRandomTicker = (tickerGroups: Record<string, string[]> | null): string => {
-  const marketIndices = ['VNINDEX', 'VN30']
   const allStocks = tickerGroups ? Object.values(tickerGroups).flat() : []
-  const allTickers = [...marketIndices, ...allStocks]
+  const allTickers = [...MARKET_INDICES, ...allStocks]
   const uniqueTickers = [...new Set(allTickers)]
 
   if (uniqueTickers.length === 0) {
@@ -48,6 +60,44 @@ const getRandomTicker = (tickerGroups: Record<string, string[]> | null): string 
   }
 
   return uniqueTickers[Math.floor(Math.random() * uniqueTickers.length)]
+}
+
+// Fetch all tickers' last bar as of a date, sort by trading value, pick random from top 10
+const getTopTickersByValue = async (
+  getTickers: (source: string, params: Record<string, unknown>) => Promise<Record<string, StockData[]>>,
+  viewDate: string,
+  tickerGroups: Record<string, string[]> | null,
+): Promise<string> => {
+  try {
+    const response = await getTickers('Playground.smartRandom.allTickers', {
+      end_date: viewDate,
+      limit: 1,
+      mode: 'vn',
+    })
+
+    // Build value list, excluding market indices
+    const candidates: { ticker: string; value: number }[] = []
+    for (const [ticker, data] of Object.entries(response)) {
+      if (MARKET_INDICES.includes(ticker)) continue
+      const bar = data?.[0]
+      if (!bar) continue
+      const tradingValue = (bar.close || 0) * (bar.volume || 0)
+      if (tradingValue > 0) {
+        candidates.push({ ticker, value: tradingValue })
+      }
+    }
+
+    if (candidates.length === 0) {
+      return getRandomTicker(tickerGroups)
+    }
+
+    // Sort descending by value, take top 10
+    candidates.sort((a, b) => b.value - a.value)
+    const top10 = candidates.slice(0, 10)
+    return top10[Math.floor(Math.random() * top10.length)].ticker
+  } catch {
+    return getRandomTicker(tickerGroups)
+  }
 }
 
 // Utility function to preserve position when updating data
@@ -124,7 +174,7 @@ export function usePlaygroundData(
   })
 
   // Fetch initial data
-  const fetchInitialData = useCallback(async () => {
+  const fetchInitialData = useCallback(async (smartRandom?: boolean) => {
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     try {
@@ -133,8 +183,24 @@ export function usePlaygroundData(
       // Use provided values or generate random ones
       // If initial values were provided, use them. Otherwise, generate random ones.
       const useInitial = initialTicker && initialEndDate
-      const ticker = useInitial ? initialTicker : getRandomTicker(tickerGroups)
-      const endDate = useInitial ? initialEndDate : generateRandomEndDate()
+      let endDate: string
+      let ticker: string
+
+      if (useInitial) {
+        // Shared URL params — use them directly
+        endDate = initialEndDate
+        ticker = initialTicker
+      } else if (smartRandom) {
+        // Smart random: generate viewDate first, pick ticker by activity at that date,
+        // then derive endDate so viewDate lands at ~index 99 of the 500-day window
+        const viewDate = generateRandomDate()
+        ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
+        endDate = deriveEndDate(viewDate)
+      } else {
+        // Plain random: generate endDate and pick any ticker
+        endDate = generateRandomDate()
+        ticker = getRandomTicker(tickerGroups)
+      }
 
       // To get exactly 500 days, we only specify endDate and limit
       // The API will return 500 trading days before the endDate
@@ -236,15 +302,26 @@ export function usePlaygroundData(
   }, [getTickers, tickerGroups, navigateFn, initialTicker, initialEndDate, initialSecondaryTicker])
 
   // Randomize data with new ticker and date
-  const randomizeData = useCallback(async () => {
+  const randomizeData = useCallback(async (smartRandom?: boolean) => {
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     try {
       const startTime = Date.now()
 
-      // Always generate random ones for randomization
-      const ticker = getRandomTicker(tickerGroups)
-      const endDate = generateRandomEndDate()
+      let endDate: string
+      let ticker: string
+
+      if (smartRandom) {
+        // Smart random: generate viewDate first, pick ticker by activity at that date,
+        // then derive endDate so viewDate lands at ~index 99 of the 500-day window
+        const viewDate = generateRandomDate()
+        ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
+        endDate = deriveEndDate(viewDate)
+      } else {
+        // Plain random
+        endDate = generateRandomDate()
+        ticker = getRandomTicker(tickerGroups)
+      }
 
       // To get exactly 500 days, we only specify endDate and limit
       const response = await getTickers('Playground.randomize', {
@@ -302,7 +379,10 @@ export function usePlaygroundData(
   useEffect(() => {
     if (!hasInitialized.current) {
       hasInitialized.current = true
-      fetchInitialData()
+      // Read smart random preference from localStorage (defaults to true)
+      const stored = localStorage.getItem(SMART_RANDOM_KEY)
+      const useSmartRandom = stored === null ? true : stored === 'true'
+      fetchInitialData(useSmartRandom)
     }
   }, []) // Empty dependency array - only run once on mount
 

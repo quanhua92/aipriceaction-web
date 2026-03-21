@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { usePlayground } from './PlaygroundDataProvider'
 import { useLogs } from '@/contexts/LogsContext'
@@ -11,6 +11,8 @@ import { DateInput } from '@/components/DateInput'
 
 // localStorage key for secondary chart visibility
 const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
+// localStorage key for smart random toggle
+const SMART_RANDOM_KEY = 'playground-smart-random'
 
 export function PlaygroundInfoPanel() {
   const {
@@ -26,6 +28,18 @@ export function PlaygroundInfoPanel() {
   } = usePlayground()
   const { info } = useLogs()
   const { t } = useTranslation()
+
+  // Smart random toggle state, persisted to localStorage
+  const [smartRandom, setSmartRandom] = useState<boolean>(() => {
+    const stored = localStorage.getItem(SMART_RANDOM_KEY)
+    return stored === null ? true : stored === 'true'
+  })
+
+  // Persist smart random toggle to localStorage
+  const handleSmartRandomChange = (checked: boolean) => {
+    setSmartRandom(checked)
+    localStorage.setItem(SMART_RANDOM_KEY, String(checked))
+  }
 
   // Initialize secondary chart visibility from localStorage on mount - run only once
   useEffect(() => {
@@ -64,8 +78,8 @@ export function PlaygroundInfoPanel() {
 
   // Handle randomize button click
   const handleRandomize = () => {
-    info('[Playground] 🎲 User clicked randomize - generating new ticker and date...')
-    randomizeData()
+    info(`[Playground] 🎲 User clicked randomize (smartRandom=${smartRandom}) - generating new ticker and date...`)
+    randomizeData(smartRandom)
   }
 
   // Handle manual ticker selection
@@ -174,7 +188,7 @@ export function PlaygroundInfoPanel() {
         {/* Ticker Selection */}
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground">{t('common.playground.info.ticker')}</label>
-          <SelectTickerDialog onSelectTicker={handleTickerSelect} endDate={endDate}>
+          <SelectTickerDialog onSelectTicker={handleTickerSelect} endDate={currentDate}>
             <Button
               variant="outline"
               disabled={isLoading}
@@ -266,7 +280,7 @@ export function PlaygroundInfoPanel() {
         {showSecondaryChart && (
           <div className="space-y-2">
             <label className="text-xs text-muted-foreground">{t('common.playground.info.secondaryTicker')}</label>
-            <SelectTickerDialog onSelectTicker={handleSecondaryTickerSelect} endDate={endDate}>
+            <SelectTickerDialog onSelectTicker={handleSecondaryTickerSelect} endDate={currentDate}>
               <Button
                 variant="outline"
                 disabled={secondaryIsLoading || isLoading}
@@ -359,6 +373,19 @@ export function PlaygroundInfoPanel() {
               <Dices className="h-3.5 w-3.5 mr-2" />
               {t('common.playground.info.randomizeButton')}
             </Button>
+            <div className="flex items-center space-x-2 mt-2">
+              <input
+                type="checkbox"
+                id="smart-random"
+                checked={smartRandom}
+                onChange={(e) => handleSmartRandomChange(e.target.checked)}
+                disabled={isLoading}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="smart-random" className="text-xs text-muted-foreground">
+                {t('common.playground.info.smartRandom')}
+              </label>
+            </div>
           </div>
         </div>
       )}
