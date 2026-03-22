@@ -15,7 +15,9 @@ export function PlaygroundChart() {
     viewportRange,
     secondaryVisibleData,
     secondaryViewportRange,
-    setCurrentIndex
+    setCurrentIndex,
+    updateTicker,
+    updateSecondaryTicker,
   } = usePlayground()
   const { t } = useTranslation()
 
@@ -110,6 +112,7 @@ export function PlaygroundChart() {
       endDate: currentEndDate || '',
       mode: 'vn'
     },
+    onTickerChange: updateTicker,
   }
 
   // Secondary chart props
@@ -127,6 +130,7 @@ export function PlaygroundChart() {
       endDate: secondaryVisibleData.length > 0 ? secondaryVisibleData[secondaryVisibleData.length - 1]?.time?.split('T')[0] || '' : '',
       mode: 'vn'
     },
+    onTickerChange: updateSecondaryTicker,
   }
 
   // Show loading state for secondary chart
