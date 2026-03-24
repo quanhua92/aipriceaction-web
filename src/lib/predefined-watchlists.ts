@@ -13,12 +13,12 @@ export interface PredefinedWatchlist {
  * VN30 Index - 30 largest companies by market cap in Vietnamese stock market
  */
 const VN30_TICKERS = [
-  'ACB', 'BCM', 'BID', 'CTG', 'DGC',
-  'FPT', 'GAS', 'GVR', 'HDB', 'HPG',
-  'LPB', 'MBB', 'MSN', 'MWG', 'PLX',
-  'SAB', 'SHB', 'SSB', 'SSI', 'STB',
-  'TCB', 'TPB', 'VCB', 'VHM', 'VIB',
-  'VIC', 'VJC', 'VNM', 'VPB', 'VRE'
+  'ACB', 'BID', 'CTG', 'DGC', 'FPT',
+  'GAS', 'GVR', 'HDB', 'HPG', 'LPB',
+  'MBB', 'MSN', 'MWG', 'PLX', 'SAB',
+  'SHB', 'SSB', 'SSI', 'STB', 'TCB',
+  'TPB', 'VCB', 'VHM', 'VIB', 'VIC',
+  'VJC', 'VNM', 'VPB', 'VRE', 'VPL'
 ]
 
 /**
