@@ -9,13 +9,15 @@ import {
   ChevronsRight,
 } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
+import { isIntradayInterval } from './hooks/usePlaygroundData'
 
 export function PlaygroundControls() {
   const { playgroundData, navigate, setCurrentIndex } = usePlayground()
   const { info } = useLogs()
   const { t } = useTranslation()
 
-  const { currentIndex, allData } = playgroundData
+  const { currentIndex, allData, interval } = playgroundData
+  const isIntraday = isIntradayInterval(interval)
 
   // Get current and end dates for display
   const currentDate = allData[currentIndex]?.time?.split('T')[0] || ''
@@ -61,7 +63,7 @@ export function PlaygroundControls() {
           onClick={handleBack5}
           disabled={isAtStart}
           className="h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-50 hover:border-green-700 hover:text-green-700"
-          title={t('common.playground.controls.back5Days')}
+          title={isIntraday ? t('common.playground.controls.back5') : t('common.playground.controls.back5Days')}
         >
           <ChevronsLeft className="h-4 w-4" />
         </Button>
@@ -71,7 +73,7 @@ export function PlaygroundControls() {
           onClick={handleBack1}
           disabled={isAtStart}
           className="h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-50 hover:border-green-700 hover:text-green-700"
-          title={t('common.playground.controls.back1Day')}
+          title={isIntraday ? t('common.playground.controls.back1') : t('common.playground.controls.back1Day')}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -81,7 +83,7 @@ export function PlaygroundControls() {
           onClick={handleNext1}
           disabled={isAtEnd}
           className="h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-50 hover:border-green-700 hover:text-green-700"
-          title={t('common.playground.controls.next1Day')}
+          title={isIntraday ? t('common.playground.controls.next1') : t('common.playground.controls.next1Day')}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -91,7 +93,7 @@ export function PlaygroundControls() {
           onClick={handleNext5}
           disabled={isAtEnd}
           className="h-10 w-10 p-0 border-green-600 text-green-600 hover:bg-green-50 hover:border-green-700 hover:text-green-700"
-          title={t('common.playground.controls.next5Days')}
+          title={isIntraday ? t('common.playground.controls.next5') : t('common.playground.controls.next5Days')}
         >
           <ChevronsRight className="h-4 w-4" />
         </Button>
@@ -99,7 +101,9 @@ export function PlaygroundControls() {
 
       {/* Navigation guide text */}
       <div className="text-center text-sm text-muted-foreground">
-        {t('common.playground.controls.navigationGuide')}
+        {isIntraday
+          ? t('common.playground.controls.navigationGuideBars')
+          : t('common.playground.controls.navigationGuide')}
       </div>
 
       {/* Slider for fine control */}

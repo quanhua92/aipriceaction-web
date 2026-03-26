@@ -8,6 +8,8 @@ import { format, parseISO } from 'date-fns'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { DateInput } from '@/components/DateInput'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { PLAYGROUND_INTERVALS, isIntradayInterval, type PlaygroundInterval } from './hooks/usePlaygroundData'
 
 // localStorage key for secondary chart visibility
 const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
@@ -24,7 +26,8 @@ export function PlaygroundInfoPanel() {
     setCurrentIndex,
     updateSecondaryTicker,
     toggleSecondaryChart,
-    setShowSecondaryChart
+    setShowSecondaryChart,
+    updateInterval,
   } = usePlayground()
   const { info } = useLogs()
   const { t } = useTranslation()
@@ -166,6 +169,11 @@ export function PlaygroundInfoPanel() {
   // Get latest price for display
   const latestPrice = currentDataPoint?.close || 0
 
+  // Label for bars vs days based on interval
+  const barsLabel = isIntradayInterval(playgroundData.interval)
+    ? t('common.playground.info.bars')
+    : t('common.playground.info.days')
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -184,7 +192,7 @@ export function PlaygroundInfoPanel() {
       </div>
 
       {/* Manual Controls Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {/* Ticker Selection */}
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground">{t('common.playground.info.ticker')}</label>
@@ -200,6 +208,29 @@ export function PlaygroundInfoPanel() {
           </SelectTickerDialog>
         </div>
 
+        {/* Interval Selection */}
+        <div className="space-y-2">
+          <label className="text-xs text-muted-foreground">{t('common.playground.info.interval')}</label>
+          <Select
+            value={playgroundData.interval}
+            onValueChange={(value) => {
+              const newInterval = value as PlaygroundInterval
+              info(`[Playground] User changed interval to ${newInterval}`)
+              updateInterval(newInterval)
+            }}
+            disabled={isLoading}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PLAYGROUND_INTERVALS.map(iv => (
+                <SelectItem key={iv} value={iv}>{iv}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* End Date Selection */}
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground flex items-center gap-1">
@@ -211,7 +242,6 @@ export function PlaygroundInfoPanel() {
               value={endDate}
               onChange={handleDateChange}
               placeholder="YYYY-MM-DD"
-              disabled={isLoading}
               clearable={false}
               className="flex-1"
             />
@@ -240,7 +270,6 @@ export function PlaygroundInfoPanel() {
               value={currentDate}
               onChange={handleCurrentDateChange}
               placeholder="YYYY-MM-DD"
-              disabled={isLoading}
               clearable={false}
               className="flex-1"
             />
@@ -343,7 +372,7 @@ export function PlaygroundInfoPanel() {
                 <>
                   {startDate} → {currentDate}
                   <span className="text-muted-foreground ml-1">
-                    ({currentIndex + 1} of {allData.length} {t('common.playground.info.days')})
+                    ({currentIndex + 1} of {allData.length} {barsLabel})
                   </span>
                 </>
               )}
@@ -354,11 +383,11 @@ export function PlaygroundInfoPanel() {
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <p className="text-muted-foreground">{t('common.playground.info.fetched')}</p>
-              <p className="font-medium">{allData.length} {t('common.playground.info.days')}</p>
+              <p className="font-medium">{allData.length} {barsLabel}</p>
             </div>
             <div>
               <p className="text-muted-foreground">{t('common.playground.info.visible')}</p>
-              <p className="font-medium">{visibleData.length} {t('common.playground.info.days')}</p>
+              <p className="font-medium">{visibleData.length} {barsLabel}</p>
             </div>
           </div>
 

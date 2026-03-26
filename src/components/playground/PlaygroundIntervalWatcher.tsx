@@ -1,10 +1,8 @@
 import * as React from 'react'
 import { usePlayground } from './PlaygroundDataProvider'
-import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useLogs } from '@/contexts/LogsContext'
 import { useTranslation } from '@/hooks/useTranslation'
-import { Interval } from '@/lib/api-client'
 
 /**
  * Component that watches for interval changes and checks data availability.
@@ -12,10 +10,12 @@ import { Interval } from '@/lib/api-client'
  */
 export function PlaygroundIntervalWatcher() {
   const { playgroundData } = usePlayground()
-  const { interval } = useChartSettings()
   const { getTickers } = useAPI()
   const { info } = useLogs()
   const { t } = useTranslation()
+
+  // Use playground interval instead of global chart settings
+  const interval = playgroundData.interval
 
   // State to track if data is available
   const [isDataAvailable, setIsDataAvailable] = React.useState<boolean | null>(null)
@@ -36,13 +36,10 @@ export function PlaygroundIntervalWatcher() {
       return
     }
 
-    // Debug: log the interval value
-    console.log('[PlaygroundIntervalWatcher] Checking interval:', interval, 'for date:', currentVisibleDate)
-
-    // Only check for intraday intervals (not daily)
-    const isIntraday = interval !== '1D'
+    // Only check for intraday intervals (not daily/weekly)
+    const isIntraday = interval !== '1D' && interval !== '1W'
     if (!isIntraday) {
-      setIsDataAvailable(true) // Daily data is always available
+      setIsDataAvailable(true) // Daily/weekly data is always available
       return
     }
 
@@ -82,9 +79,9 @@ export function PlaygroundIntervalWatcher() {
     checkDataAvailability()
   }, [currentVisibleDate, interval, playgroundData.ticker, getTickers, info])
 
-  // Reset when switching back to daily
+  // Reset when switching back to daily/weekly
   React.useEffect(() => {
-    if (interval === '1D') {
+    if (interval === '1D' || interval === '1W') {
       setIsDataAvailable(true)
     }
   }, [interval])
@@ -96,22 +93,23 @@ export function PlaygroundIntervalWatcher() {
 
   // Show warning message when no intraday data is available
   const getWarningMessage = () => {
+    const dateStr = currentVisibleDate || ''
     if (interval === '1H') {
       return t('common.playground.intervalWarning.hourlyUnavailable', {
-        date: currentVisibleDate
+        date: dateStr
       })
     }
 
-    if (interval === '15m' || interval === '5m' || interval === '1m' || interval === '30m') {
+    if (interval === '15m' || interval === '5m' || interval === '1m') {
       return t('common.playground.intervalWarning.minuteUnavailable', {
         interval,
-        date: currentVisibleDate
+        date: dateStr
       })
     }
 
     return t('common.playground.intervalWarning.generalUnavailable', {
       interval,
-      date: currentVisibleDate
+      date: dateStr
     })
   }
 

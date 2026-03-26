@@ -7,7 +7,6 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { TickerProvider } from '@/contexts/TickerContext'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-
 export function PlaygroundChart() {
   const {
     playgroundData,
@@ -107,12 +106,13 @@ export function PlaygroundChart() {
     cacheData: visibleData,
     cacheMetadata: {
       symbol: playgroundData.ticker,
-      interval: Interval.Daily,
+      interval: playgroundData.interval as Interval,
       startDate: currentStartDate || '',
       endDate: currentEndDate || '',
-      mode: 'vn'
+      mode: 'vn' as const
     },
     onTickerChange: updateTicker,
+    interval: playgroundData.interval as Interval,
   }
 
   // Secondary chart props
@@ -124,13 +124,14 @@ export function PlaygroundChart() {
     cacheData: secondaryVisibleData,
     cacheMetadata: {
       symbol: playgroundData.secondaryTicker!,
-      interval: Interval.Daily,
+      interval: playgroundData.interval as Interval,
       // Use secondary chart's own date metadata, not primary's
       startDate: secondaryVisibleData.length > 0 ? secondaryVisibleData[0]?.time?.split('T')[0] || '' : '',
       endDate: secondaryVisibleData.length > 0 ? secondaryVisibleData[secondaryVisibleData.length - 1]?.time?.split('T')[0] || '' : '',
-      mode: 'vn'
+      mode: 'vn' as const
     },
     onTickerChange: updateSecondaryTicker,
+    interval: playgroundData.interval as Interval,
   }
 
   // Show loading state for secondary chart

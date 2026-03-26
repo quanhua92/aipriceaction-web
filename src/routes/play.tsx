@@ -12,11 +12,12 @@ export const Route = createFileRoute('/play')({
   validateSearch: (search: Record<string, unknown>) => ({
     ticker: (search.ticker as string) || undefined,
     endDate: (search.endDate as string) || undefined,
+    interval: (search.interval as string) || undefined,
   }),
 })
 
 function PlayPage() {
-  const { ticker, endDate } = Route.useSearch()
+  const { ticker, endDate, interval } = Route.useSearch()
   const navigate = useNavigate()
 
   return (
@@ -32,6 +33,7 @@ function PlayPage() {
         initialTicker={ticker}
         initialEndDate={endDate}
         initialSecondaryTicker={'VNINDEX'}
+        initialInterval={interval}
         navigate={navigate}
       >
         <div className="space-y-4">
