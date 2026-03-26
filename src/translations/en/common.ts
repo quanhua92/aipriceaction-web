@@ -430,15 +430,19 @@ export default {
     description: {
       title: 'Playground',
       subtitle: 'Historical Market Data Simulator',
-      mainDescription: 'Test your trading strategies with 500 days of historical Vietnamese market data. Navigate through time, compare multiple charts, and discover market patterns.',
+      mainDescription: 'Test your trading strategies with 500 bars of historical Vietnamese market data across multiple timeframes. Navigate through time, compare charts, and discover market patterns.',
       features: {
         timeTravel: {
           title: 'Time Travel',
-          description: 'Navigate through 500 trading days with intuitive controls'
+          description: 'Navigate through 500 bars with intuitive controls'
         },
         dualCharts: {
           title: 'Dual Charts',
           description: 'Compare any ticker with market indices or other stocks'
+        },
+        multiTimeframe: {
+          title: 'Multiple Timeframes',
+          description: 'Practice on 1m, 5m, 15m, 1H, daily, or weekly bars'
         },
         interactiveControls: {
           title: 'Interactive Controls',

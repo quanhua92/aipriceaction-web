@@ -430,15 +430,19 @@ export default {
     description: {
       title: 'Sân Chơi',
       subtitle: 'Trình Giả Lập Dữ Liệu Lịch Sử Thị Trường',
-      mainDescription: 'Kiểm tra chiến lược giao dịch của bạn với 500 ngày dữ liệu lịch sử thị trường Việt Nam. Du hành qua thời gian, so sánh nhiều biểu đồ và khám phá các mô hình thị trường.',
+      mainDescription: 'Kiểm tra chiến lược giao dịch của bạn với 500 thanh dữ liệu lịch sử thị trường Việt Nam trên nhiều khung thời gian. Du hành qua thời gian, so sánh biểu đồ và khám phá các mô hình thị trường.',
       features: {
         timeTravel: {
           title: 'Du Hành Thời Gian',
-          description: 'Điều hướng qua 500 ngày giao dịch với các điều khiển trực quan'
+          description: 'Điều hướng qua 500 thanh dữ liệu với các điều khiển trực quan'
         },
         dualCharts: {
           title: 'Biểu Đồ Kép',
           description: 'So sánh bất kỳ mã cổ phiếu nào với chỉ số thị trường hoặc các cổ phiếu khác'
+        },
+        multiTimeframe: {
+          title: 'Nhiều Khung Thời Gian',
+          description: 'Luyện tập trên thanh 1 phút, 5 phút, 15 phút, 1 giờ, ngày, hoặc tuần'
         },
         interactiveControls: {
           title: 'Điều Khiển Tương Tác',

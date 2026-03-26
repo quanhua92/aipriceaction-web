@@ -24,7 +24,7 @@ export function PlaygroundDescription() {
       </div>
 
       {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
         <div className="flex items-start space-x-3 p-4 rounded-lg bg-card/50 border">
           <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center mt-0.5">
             <span className="text-green-600 text-xs font-bold">1</span>
@@ -50,8 +50,20 @@ export function PlaygroundDescription() {
         </div>
 
         <div className="flex items-start space-x-3 p-4 rounded-lg bg-card/50 border">
+          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-cyan-500/20 flex items-center justify-center mt-0.5">
+            <span className="text-cyan-600 text-xs font-bold">3</span>
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.multiTimeframe.title')}</h3>
+            <p className="text-sm text-muted-foreground">
+              {t('common.playground.description.features.multiTimeframe.description')}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start space-x-3 p-4 rounded-lg bg-card/50 border">
           <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center mt-0.5">
-            <span className="text-purple-600 text-xs font-bold">3</span>
+            <span className="text-purple-600 text-xs font-bold">4</span>
           </div>
           <div>
             <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.interactiveControls.title')}</h3>
@@ -63,7 +75,7 @@ export function PlaygroundDescription() {
 
         <div className="flex items-start space-x-3 p-4 rounded-lg bg-card/50 border">
           <div className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center mt-0.5">
-            <span className="text-orange-600 text-xs font-bold">4</span>
+            <span className="text-orange-600 text-xs font-bold">5</span>
           </div>
           <div>
             <h3 className="font-semibold text-sm mb-1">{t('common.playground.description.features.manualSelection.title')}</h3>
