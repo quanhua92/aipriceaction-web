@@ -1,6 +1,7 @@
 import React from 'react'
 import { Interval } from '@/lib/api-client'
-import { DEFAULT_CHART_LIMIT } from '@/lib/constants'
+import { DEFAULT_CHART_LIMIT, CHART_SETTINGS_STORAGE_KEY } from '@/lib/constants'
+import { SafeLocalStorage } from '@/lib/localStorage'
 
 export interface MaVisibility {
 	ma10: boolean
@@ -35,15 +36,20 @@ interface ChartSettingsState {
 	clearRuler: () => void
 }
 
+/** Shape of data persisted to localStorage */
+interface PersistedChartSettings {
+	interval: string
+	limit: number
+	maVisibility: MaVisibility
+	macdVisible: boolean
+}
+
 const ChartSettingsContext = React.createContext<ChartSettingsState | undefined>(
 	undefined
 )
 
 /**
  * Get default MA visibility based on interval
- * For intervals < 1H: MA10, MA20, MA50 enabled; MA100, MA200 disabled
- * For intervals >= 1H: MA10, MA20, MA50, MA100 enabled; MA200 disabled
- * MA200 is always hidden by default
  */
 function getDefaultMaVisibility(interval: Interval): MaVisibility {
 	const shortIntervals = [
@@ -60,25 +66,62 @@ function getDefaultMaVisibility(interval: Interval): MaVisibility {
 		ma20: true,
 		ma50: true,
 		ma100: !isShortInterval,
-		ma200: false, // Always hidden by default
+		ma200: false,
 	}
 }
 
+/** Load persisted settings from localStorage */
+function loadPersistedSettings(): Partial<PersistedChartSettings> {
+	const raw = SafeLocalStorage.getItem(CHART_SETTINGS_STORAGE_KEY)
+	if (!raw) return {}
+	try {
+		return JSON.parse(raw) as Partial<PersistedChartSettings>
+	} catch {
+		return {}
+	}
+}
+
+/** Save settings to localStorage */
+function savePersistedSettings(settings: PersistedChartSettings) {
+	SafeLocalStorage.setItem(CHART_SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+}
+
 export function ChartSettingsProvider({ children }: { children: React.ReactNode }) {
-	const [interval, setInterval] = React.useState<Interval>(Interval.Daily)
-	const [limit, setLimit] = React.useState<number>(DEFAULT_CHART_LIMIT)
+	const persisted = React.useRef(loadPersistedSettings())
+
+	const [interval, setInterval] = React.useState<Interval>(
+		() => {
+			const saved = persisted.current.interval
+			return saved ? (saved as Interval) : Interval.Daily
+		}
+	)
+	const [limit, setLimit] = React.useState<number>(
+		() => persisted.current.limit ?? DEFAULT_CHART_LIMIT
+	)
 	const [height, setHeight] = React.useState<number>(
 		typeof window !== 'undefined' && window.innerWidth >= 768 ? 400 : 300
 	)
-	const [maVisibility, setMaVisibility] = React.useState<MaVisibility>(() =>
-		getDefaultMaVisibility(Interval.Daily)
+	const [maVisibility, setMaVisibility] = React.useState<MaVisibility>(
+		() => persisted.current.maVisibility ?? getDefaultMaVisibility(Interval.Daily)
+	)
+	const [macdVisible, setMacdVisible] = React.useState<boolean>(
+		() => persisted.current.macdVisible ?? true
 	)
 	const [startDate, setStartDate] = React.useState<string | undefined>(undefined)
 	const [endDate, setEndDate] = React.useState<string | undefined>(undefined)
 	const [rulerVisible, setRulerVisible] = React.useState<boolean>(false)
 	const [rulerTimeA, setRulerTimeA] = React.useState<string | undefined>(undefined)
 	const [rulerTimeB, setRulerTimeB] = React.useState<string | undefined>(undefined)
-	const [macdVisible, setMacdVisible] = React.useState<boolean>(true)
+
+	// Persist settings to localStorage when they change
+	React.useEffect(() => {
+		savePersistedSettings({
+			interval,
+			limit,
+			maVisibility,
+			macdVisible,
+		})
+	}, [interval, limit, maVisibility, macdVisible])
 
 	// Update MA visibility when interval changes
 	React.useEffect(() => {

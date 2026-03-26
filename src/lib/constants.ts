@@ -264,3 +264,8 @@ export const WATCH_LAYOUT_STORAGE_KEY = 'watch-page-layout'
  * LocalStorage key for chart compare tab state (secondary ticker, layout, swap)
  */
 export const CHART_COMPARE_STORAGE_KEY = 'chart-compare-state'
+
+/**
+ * LocalStorage key for chart settings (interval, MA visibility, MACD, etc.)
+ */
+export const CHART_SETTINGS_STORAGE_KEY = 'chart-settings'
