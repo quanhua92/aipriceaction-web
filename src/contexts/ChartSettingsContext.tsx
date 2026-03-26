@@ -11,6 +11,9 @@ export interface MaVisibility {
 	ma200: boolean
 }
 
+export const MACD_HEIGHT_OPTIONS = [40, 60, 80, 100, 120, 150, 180, 200, 250] as const
+export type MacdHeight = (typeof MACD_HEIGHT_OPTIONS)[number]
+
 interface ChartSettingsState {
 	interval: Interval
 	setInterval: (interval: Interval) => void
@@ -23,6 +26,8 @@ interface ChartSettingsState {
 	resetMaVisibility: () => void
 	macdVisible: boolean
 	setMacdVisible: (visible: boolean) => void
+	macdHeight: MacdHeight
+	setMacdHeight: (height: MacdHeight) => void
 	startDate?: string
 	setStartDate: (date?: string) => void
 	endDate?: string
@@ -42,6 +47,7 @@ interface PersistedChartSettings {
 	limit: number
 	maVisibility: MaVisibility
 	macdVisible: boolean
+	macdHeight: MacdHeight
 }
 
 const ChartSettingsContext = React.createContext<ChartSettingsState | undefined>(
@@ -107,6 +113,12 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 	const [macdVisible, setMacdVisible] = React.useState<boolean>(
 		() => persisted.current.macdVisible ?? true
 	)
+	const [macdHeight, setMacdHeight] = React.useState<MacdHeight>(
+		() => {
+			const saved = persisted.current.macdHeight
+			return saved && MACD_HEIGHT_OPTIONS.includes(saved) ? saved : 80
+		}
+	)
 	const [startDate, setStartDate] = React.useState<string | undefined>(undefined)
 	const [endDate, setEndDate] = React.useState<string | undefined>(undefined)
 	const [rulerVisible, setRulerVisible] = React.useState<boolean>(false)
@@ -120,8 +132,9 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 			limit,
 			maVisibility,
 			macdVisible,
+			macdHeight,
 		})
-	}, [interval, limit, maVisibility, macdVisible])
+	}, [interval, limit, maVisibility, macdVisible, macdHeight])
 
 	// Update MA visibility when interval changes
 	const prevIntervalRef = React.useRef(interval)
@@ -153,6 +166,8 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		resetMaVisibility,
 		macdVisible,
 		setMacdVisible,
+		macdHeight,
+		setMacdHeight,
 		startDate,
 		setStartDate,
 		endDate,
@@ -164,7 +179,7 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		rulerTimeB,
 		setRulerTimeB,
 		clearRuler,
-	}), [interval, limit, height, maVisibility, macdVisible, startDate, endDate, resetMaVisibility, rulerVisible, rulerTimeA, rulerTimeB, clearRuler])
+	}), [interval, limit, height, maVisibility, macdVisible, macdHeight, startDate, endDate, resetMaVisibility, rulerVisible, rulerTimeA, rulerTimeB, clearRuler])
 
 	return (
 		<ChartSettingsContext.Provider value={value}>

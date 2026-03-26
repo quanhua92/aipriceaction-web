@@ -63,7 +63,7 @@ export function BaseTradingViewChart({
 	maVisibility: maVisibilityProp,
 }: BaseTradingViewChartProps) {
 	// Get global settings
-	const { interval, rulerVisible, macdVisible, ...globalSettings } = useChartSettings();
+	const { interval, rulerVisible, macdVisible, macdHeight, ...globalSettings } = useChartSettings();
 
 	// Initialize logging
 	const { info } = useLogs();
@@ -261,7 +261,7 @@ export function BaseTradingViewChart({
 		// Add MACD pane if enabled
 		if (macdVisible) {
 			const macdPane = chart.addPane();
-			macdPane.setHeight(80);
+			macdPane.setHeight(macdHeight);
 
 			macdHistogramSeriesRef.current = chart.addSeries(HistogramSeries, {
 				priceScaleId: "macd_histogram",
@@ -746,7 +746,7 @@ export function BaseTradingViewChart({
 
 		setIsDataInitialized(false);
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [macdVisible]);
+	}, [macdVisible, macdHeight]);
 
 	// Keep ref in sync with state for immediate access in event handlers
 	useEffect(() => {

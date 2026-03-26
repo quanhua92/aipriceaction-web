@@ -1,5 +1,5 @@
 import React from 'react'
-import { useChartSettings } from '@/contexts/ChartSettingsContext'
+import { useChartSettings, MACD_HEIGHT_OPTIONS } from '@/contexts/ChartSettingsContext'
 import {
 	Dialog,
 	DialogContent,
@@ -52,6 +52,8 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 		resetMaVisibility,
 		macdVisible,
 		setMacdVisible,
+		macdHeight,
+		setMacdHeight,
 		startDate,
 		setStartDate,
 		endDate,
@@ -172,22 +174,41 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 							{/* MACD Indicator */}
 							<div className="pt-2 border-t mt-2">
 								<h3 className="text-sm font-medium mb-3">Indicators</h3>
-								<div className="flex items-center space-x-2">
-									<Checkbox
-										id="macd"
-										checked={macdVisible}
-										onCheckedChange={(checked) => setMacdVisible(checked === true)}
-									/>
-									<Label
-										htmlFor="macd"
-										className="text-sm font-normal cursor-pointer flex items-center gap-2"
-									>
-										<span className="flex gap-0.5">
-											<span className="w-3 h-0.5 bg-[#2962FF]" />
-											<span className="w-3 h-0.5 bg-[#FF6D00]" />
-										</span>
-										MACD (12, 26, 9)
-									</Label>
+								<div className="space-y-2">
+									<div className="flex items-center justify-between">
+										<div className="flex items-center space-x-2">
+											<Checkbox
+												id="macd"
+												checked={macdVisible}
+												onCheckedChange={(checked) => setMacdVisible(checked === true)}
+											/>
+											<Label
+												htmlFor="macd"
+												className="text-sm font-normal cursor-pointer flex items-center gap-2"
+											>
+												<span className="flex gap-0.5">
+													<span className="w-3 h-0.5 bg-[#2563eb]" />
+													<span className="w-3 h-0.5 bg-[#ea580c]" />
+												</span>
+												MACD (12, 26, 9)
+											</Label>
+										</div>
+										{macdVisible && (
+											<Select
+												value={String(macdHeight)}
+												onValueChange={(val) => setMacdHeight(Number(val) as any)}
+											>
+												<SelectTrigger className="w-[70px] h-7 text-xs">
+												<SelectValue />
+											</SelectTrigger>
+												<SelectContent>
+													{MACD_HEIGHT_OPTIONS.map((h) => (
+														<SelectItem key={h} value={String(h)}>{h}px</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										)}
+									</div>
 								</div>
 							</div>
 
