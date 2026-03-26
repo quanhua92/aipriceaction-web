@@ -124,8 +124,12 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 	}, [interval, limit, maVisibility, macdVisible])
 
 	// Update MA visibility when interval changes
+	const prevIntervalRef = React.useRef(interval)
 	React.useEffect(() => {
-		setMaVisibility(getDefaultMaVisibility(interval))
+		if (prevIntervalRef.current !== interval) {
+			prevIntervalRef.current = interval
+			setMaVisibility(getDefaultMaVisibility(interval))
+		}
 	}, [interval])
 
 	const resetMaVisibility = React.useCallback(() => {
