@@ -112,7 +112,6 @@ export function PlaygroundChart() {
       mode: 'vn' as const
     },
     onTickerChange: updateTicker,
-    interval: playgroundData.interval as Interval,
   }
 
   // Secondary chart props
@@ -131,7 +130,6 @@ export function PlaygroundChart() {
       mode: 'vn' as const
     },
     onTickerChange: updateSecondaryTicker,
-    interval: playgroundData.interval as Interval,
   }
 
   // Show loading state for secondary chart
