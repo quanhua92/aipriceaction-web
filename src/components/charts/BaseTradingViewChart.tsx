@@ -211,11 +211,11 @@ export function BaseTradingViewChart({
 
 		// Add candlestick series with custom price formatter
 		const candlestickSeries = chart.addSeries(CandlestickSeries, {
-			upColor: "#16a34a",
-			downColor: "#dc2626",
+			upColor: "#1e8c82",
+			downColor: "#d94040",
 			borderVisible: false,
-			wickUpColor: "#16a34a",
-			wickDownColor: "#dc2626",
+			wickUpColor: "#1e8c82",
+			wickDownColor: "#d94040",
 			priceFormat: {
 				type: "custom",
 				formatter: (price: number) => {
@@ -271,7 +271,7 @@ export function BaseTradingViewChart({
 			});
 
 			macdLineSeriesRef.current = chart.addSeries(LineSeries, {
-				color: "#2962FF",
+				color: "#2563eb",
 				lineWidth: 1,
 				priceScaleId: "macd",
 				lastValueVisible: false,
@@ -279,7 +279,7 @@ export function BaseTradingViewChart({
 			}, 1);
 
 			macdSignalSeriesRef.current = chart.addSeries(LineSeries, {
-				color: "#FF6D00",
+				color: "#ea580c",
 				lineWidth: 1,
 				priceScaleId: "macd",
 				lastValueVisible: false,
@@ -1116,8 +1116,8 @@ export function BaseTradingViewChart({
 						style={{ bottom: 28, color: '#71717a', fontFamily: 'monospace' }}
 					>
 						MACD(12,26,9){' '}
-						<span style={{ color: '#2962FF' }}>━</span>{' '}
-						<span style={{ color: '#FF6D00' }}>━</span>
+						<span style={{ color: '#2563eb' }}>━</span>{' '}
+						<span style={{ color: '#ea580c' }}>━</span>
 					</div>
 				)}
 			</div>

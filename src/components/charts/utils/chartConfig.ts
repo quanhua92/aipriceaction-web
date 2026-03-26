@@ -9,7 +9,7 @@ export const MA_CONFIG = [
 ] as const;
 
 export const MA_SERIES_OPTIONS = {
-  lineWidth: 2,
+  lineWidth: 1,
   crosshairMarkerVisible: false,
   lastValueVisible: false,
   priceLineVisible: false,

@@ -91,11 +91,11 @@ export const transformVolumePoint = (point: StockData, index: number, data: Stoc
 	const prevPoint = index > 0 ? data[index - 1] : null;
 	const volumeColor = prevPoint
 		? point.close >= prevPoint.close
-			? "#16a34a"
-			: "#dc2626"
+			? "#1e8c82"
+			: "#d94040"
 		: point.close >= point.open
-			? "#16a34a"
-			: "#dc2626";
+			? "#1e8c82"
+			: "#d94040";
 
 	return {
 		time,
@@ -150,12 +150,20 @@ function calculateMACDFromStockData(data: StockData[], timestamps: number[]) {
 	const macdPlot = result.plots.plot1 ?? [];
 	const signalPlot = result.plots.plot2 ?? [];
 
+	// Darken the library's bright histogram colors to match app style
+	const histColorMap: Record<string, string> = {
+		'#26A69A': '#1e8c82', // bright teal → darker teal
+		'#B2DFDB': '#7cc0bb', // light teal → muted teal
+		'#FF5252': '#d94040', // bright red → darker red
+		'#FFCDD2': '#d9a0a3', // light pink → muted red
+	};
+
 	for (const item of histPlot) {
 		if (!isNaN(item.value)) {
 			macdHistogram.push({
 				time: item.time,
 				value: item.value,
-				color: item.color ?? (item.value >= 0 ? "#26A69A" : "#FF5252"),
+				color: (item.color && histColorMap[item.color]) ?? item.color,
 			});
 		}
 	}
@@ -236,11 +244,11 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 		const prevPoint = index > 0 ? data[index - 1] : null;
 		const volumeColor = prevPoint
 			? point.close >= prevPoint.close
-				? "#16a34a"
-				: "#dc2626"
+				? "#1e8c82"
+				: "#d94040"
 			: point.close >= point.open
-				? "#16a34a"
-				: "#dc2626";
+				? "#1e8c82"
+				: "#d94040";
 
 		volume.push({
 			time,
