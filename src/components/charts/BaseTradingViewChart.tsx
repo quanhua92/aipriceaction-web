@@ -63,7 +63,7 @@ export function BaseTradingViewChart({
 	maVisibility: maVisibilityProp,
 }: BaseTradingViewChartProps) {
 	// Get global settings
-	const { interval, rulerVisible, ...globalSettings } = useChartSettings();
+	const { interval, rulerVisible, macdVisible, ...globalSettings } = useChartSettings();
 
 	// Initialize logging
 	const { info } = useLogs();
@@ -122,6 +122,9 @@ export function BaseTradingViewChart({
 	const ma50SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const ma100SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const ma200SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+	const macdHistogramSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+	const macdLineSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+	const macdSignalSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 
 	// Dynamic ref mapping for MA series
 	const maSeriesRefs = {
@@ -254,6 +257,39 @@ export function BaseTradingViewChart({
 			// Dynamic ref mapping for backward compatibility
 			maSeriesRefs[key as keyof typeof maSeriesRefs].current = series;
 		});
+
+		// Add MACD pane if enabled
+		if (macdVisible) {
+			const macdPane = chart.addPane();
+			macdPane.setHeight(80);
+
+			macdHistogramSeriesRef.current = chart.addSeries(HistogramSeries, {
+				priceScaleId: "macd_histogram",
+			}, 1);
+			macdHistogramSeriesRef.current.priceScale().applyOptions({
+				scaleMargins: { top: 0.2, bottom: 0.0 },
+			});
+
+			macdLineSeriesRef.current = chart.addSeries(LineSeries, {
+				color: "#2962FF",
+				lineWidth: 1,
+				priceScaleId: "macd",
+				lastValueVisible: false,
+				priceLineVisible: false,
+			}, 1);
+
+			macdSignalSeriesRef.current = chart.addSeries(LineSeries, {
+				color: "#FF6D00",
+				lineWidth: 1,
+				priceScaleId: "macd",
+				lastValueVisible: false,
+				priceLineVisible: false,
+			}, 1);
+
+			// Hide price scale for MACD line/signal (keep histogram scale visible)
+			macdLineSeriesRef.current.priceScale().applyOptions({ visible: false });
+			macdSignalSeriesRef.current.priceScale().applyOptions({ visible: false });
+		}
 
 		// Create watermark using official API
 		const watermark = createTextWatermark(chart.panes()[0], {
@@ -671,6 +707,47 @@ export function BaseTradingViewChart({
 		setIsDataInitialized(false);
 	}, [data]);
 
+	// Destroy and recreate chart when MACD visibility changes
+	// (addPane is called during chart creation, so we must rebuild)
+	useEffect(() => {
+		const chart = chartRef.current;
+		if (!chart) return;
+
+		// Clean up resize listeners
+		const cleanupHandlers = (chartRef.current as any)?._cleanupHandlers;
+		if (cleanupHandlers) {
+			window.removeEventListener("resize", cleanupHandlers.handleResize);
+			cleanupHandlers.resizeObserver.disconnect();
+		}
+		// Remove tooltip
+		if (
+			chartContainerRef.current &&
+			tooltipRef.current &&
+			tooltipRef.current.parentNode === chartContainerRef.current
+		) {
+			chartContainerRef.current.removeChild(tooltipRef.current);
+		}
+		// Remove watermark
+		const watermark = (chartRef.current as any)?._watermark;
+		if (watermark) watermark.detach();
+
+		chart.remove();
+		chartRef.current = null;
+		candlestickSeriesRef.current = null;
+		volumeSeriesRef.current = null;
+		ma10SeriesRef.current = null;
+		ma20SeriesRef.current = null;
+		ma50SeriesRef.current = null;
+		ma100SeriesRef.current = null;
+		ma200SeriesRef.current = null;
+		macdHistogramSeriesRef.current = null;
+		macdLineSeriesRef.current = null;
+		macdSignalSeriesRef.current = null;
+
+		setIsDataInitialized(false);
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [macdVisible]);
+
 	// Keep ref in sync with state for immediate access in event handlers
 	useEffect(() => {
 		clickedCrosshairRef.current = clickedCrosshairData;
@@ -727,6 +804,9 @@ export function BaseTradingViewChart({
 			ma50SeriesRef.current = null;
 			ma100SeriesRef.current = null;
 			ma200SeriesRef.current = null;
+			macdHistogramSeriesRef.current = null;
+			macdLineSeriesRef.current = null;
+			macdSignalSeriesRef.current = null;
 
 			if (chart) {
 				try {
@@ -785,6 +865,17 @@ export function BaseTradingViewChart({
 		}
 		if (ma200SeriesRef.current) {
 			ma200SeriesRef.current.setData(maVisibility.ma200 ? chartData.ma200 : []);
+		}
+
+		// Update MACD series data
+		if (macdHistogramSeriesRef.current) {
+			macdHistogramSeriesRef.current.setData(chartData.macdHistogram);
+		}
+		if (macdLineSeriesRef.current) {
+			macdLineSeriesRef.current.setData(chartData.macdLine);
+		}
+		if (macdSignalSeriesRef.current) {
+			macdSignalSeriesRef.current.setData(chartData.macdSignal);
 		}
 
 		// Set initial viewport only on first data load
@@ -1017,6 +1108,18 @@ export function BaseTradingViewChart({
 						</div>
 					);
 				})()}
+
+				{/* MACD pane label overlay */}
+				{macdVisible && (
+					<div
+						className="absolute left-2 z-10 pointer-events-none text-[9px] tracking-wide"
+						style={{ bottom: 28, color: '#71717a', fontFamily: 'monospace' }}
+					>
+						MACD(12,26,9){' '}
+						<span style={{ color: '#2962FF' }}>━</span>{' '}
+						<span style={{ color: '#FF6D00' }}>━</span>
+					</div>
+				)}
 			</div>
 		</div>
 	);

@@ -16,6 +16,9 @@ const config = defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'favicon.png', 'logo.svg', 'logo-16.png', 'logo-32.png', 'logo-64.png', 'logo-128.png', 'logo-192.png', 'logo-256.png', 'logo-512.png'],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MB
+      },
       manifest: {
         name: 'AIPriceAction - Vietnamese Stock Market',
         short_name: 'AIPriceAction',
@@ -78,6 +81,15 @@ const config = defineConfig({
     }),
     viteReact(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'lightweight-charts-indicators': ['lightweight-charts-indicators', 'oakscriptjs'],
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/aipriceaction-api': {

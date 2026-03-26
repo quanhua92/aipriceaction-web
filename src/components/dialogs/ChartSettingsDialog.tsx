@@ -50,6 +50,8 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 		maVisibility,
 		setMaVisibility,
 		resetMaVisibility,
+		macdVisible,
+		setMacdVisible,
 		startDate,
 		setStartDate,
 		endDate,
@@ -163,6 +165,28 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 									>
 										<span className="w-8 h-0.5 bg-[#71717a]" />
 										MA200
+									</Label>
+								</div>
+							</div>
+
+							{/* MACD Indicator */}
+							<div className="pt-2 border-t mt-2">
+								<h3 className="text-sm font-medium mb-3">Indicators</h3>
+								<div className="flex items-center space-x-2">
+									<Checkbox
+										id="macd"
+										checked={macdVisible}
+										onCheckedChange={(checked) => setMacdVisible(checked === true)}
+									/>
+									<Label
+										htmlFor="macd"
+										className="text-sm font-normal cursor-pointer flex items-center gap-2"
+									>
+										<span className="flex gap-0.5">
+											<span className="w-3 h-0.5 bg-[#2962FF]" />
+											<span className="w-3 h-0.5 bg-[#FF6D00]" />
+										</span>
+										MACD (12, 26, 9)
 									</Label>
 								</div>
 							</div>

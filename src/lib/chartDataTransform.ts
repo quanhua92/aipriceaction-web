@@ -3,11 +3,13 @@
  * Extracts and modularizes data processing logic from chart components
  */
 
-import { type CandlestickData, type HistogramData, type LineData, type Time } from "lightweight-charts";
+import { type CandlestickData, type HistogramData, type LineData } from "lightweight-charts";
 import { type StockData } from "@/lib/api-client";
 import { parseUTCISOString, toVietnamUnixTime } from "@/lib/format";
 import { MA_CONFIG } from "@/components/charts/utils/chartConfig";
 import { getVolumeCandlestickColor } from "@/lib/chartColors";
+import { MACD } from "lightweight-charts-indicators";
+import type { Bar } from "oakscriptjs";
 
 export interface ChartData {
 	candlestick: CandlestickData[];
@@ -17,6 +19,9 @@ export interface ChartData {
 	ma50: LineData[];
 	ma100: LineData[];
 	ma200: LineData[];
+	macdHistogram: HistogramData[];
+	macdLine: LineData[];
+	macdSignal: LineData[];
 }
 
 /**
@@ -30,6 +35,9 @@ export const createEmptyChartData = (): ChartData => ({
 	ma50: [],
 	ma100: [],
 	ma200: [],
+	macdHistogram: [],
+	macdLine: [],
+	macdSignal: [],
 });
 
 /**
@@ -114,6 +122,66 @@ export const processMAData = (
 };
 
 /**
+ * Calculates MACD using the lightweight-charts-indicators library.
+ * Converts StockData to Bar format, runs MACD.calculate(), then maps
+ * the output TimeValue[] arrays to lightweight-charts data types.
+ */
+function calculateMACDFromStockData(data: StockData[], timestamps: number[]) {
+	if (data.length < 26) {
+		return { macdHistogram: [], macdLine: [], macdSignal: [] };
+	}
+
+	// Build Bar[] for the library (time must be Unix seconds as number)
+	const bars: Bar[] = data.map((point, i) => ({
+		time: timestamps[i],
+		open: point.open,
+		high: point.high,
+		low: point.low,
+		close: point.close,
+	}));
+
+	const result = MACD.calculate(bars);
+
+	const macdHistogram: HistogramData[] = [];
+	const macdLine: LineData[] = [];
+	const macdSignal: LineData[] = [];
+
+	const histPlot = result.plots.plot0 ?? [];
+	const macdPlot = result.plots.plot1 ?? [];
+	const signalPlot = result.plots.plot2 ?? [];
+
+	for (const item of histPlot) {
+		if (!isNaN(item.value)) {
+			macdHistogram.push({
+				time: item.time,
+				value: item.value,
+				color: item.color ?? (item.value >= 0 ? "#26A69A" : "#FF5252"),
+			});
+		}
+	}
+
+	for (const item of macdPlot) {
+		if (!isNaN(item.value)) {
+			macdLine.push({
+				time: item.time,
+				value: item.value,
+			});
+		}
+	}
+
+	for (const item of signalPlot) {
+		if (!isNaN(item.value)) {
+			macdSignal.push({
+				time: item.time,
+				value: item.value,
+			});
+		}
+	}
+
+	return { macdHistogram, macdLine, macdSignal };
+}
+
+/**
  * Main transformation function that converts StockData[] to ChartData
  */
 export const transformStockDataToChartData = (data: StockData[]): ChartData => {
@@ -124,6 +192,7 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 	const candlestick: CandlestickData[] = [];
 	const volume: HistogramData[] = [];
 	const maDataArrays = createMADataArrays();
+	const timestamps: number[] = [];
 
 	// Track seen timestamps to prevent duplicates
 	const seenTimestamps = new Set<number>();
@@ -151,6 +220,8 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 			return;
 		}
 		seenTimestamps.add(time);
+
+		timestamps.push(time);
 
 		// Transform candlestick data
 		candlestick.push({
@@ -181,6 +252,9 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 		processMAData(point, time, maDataArrays);
 	});
 
+	// Calculate MACD using the library
+	const { macdHistogram, macdLine, macdSignal } = calculateMACDFromStockData(data, timestamps);
+
 	return {
 		candlestick,
 		volume,
@@ -189,5 +263,8 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 		ma50: maDataArrays.ma50,
 		ma100: maDataArrays.ma100,
 		ma200: maDataArrays.ma200,
+		macdHistogram,
+		macdLine,
+		macdSignal,
 	};
 };
