@@ -429,7 +429,7 @@ export default {
     },
     description: {
       title: 'Backtesting',
-      subtitle: 'Historical Market Data Simulator',
+      subtitle: 'Trade Simulation with Historical Data',
       mainDescription: 'Test your trading strategies with 500 bars of historical Vietnamese market data across multiple timeframes. Navigate through time, compare charts, and discover market patterns.',
       features: {
         timeTravel: {

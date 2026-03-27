@@ -429,7 +429,7 @@ export default {
     },
     description: {
       title: 'Backtesting',
-      subtitle: 'Trình Giả Lập Dữ Liệu Lịch Sử Thị Trường',
+      subtitle: 'Mô Phỏng Giao Dịch Với Dữ Liệu Lịch Sử',
       mainDescription: 'Kiểm tra chiến lược giao dịch của bạn với 500 thanh dữ liệu lịch sử thị trường Việt Nam trên nhiều khung thời gian. Du hành qua thời gian, so sánh biểu đồ và khám phá các mô hình thị trường.',
       features: {
         timeTravel: {
