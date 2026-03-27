@@ -394,6 +394,7 @@ export default {
       positionTop: 'On Top',
       positionBottom: 'Below',
       smartRandom: 'Prefer active stocks',
+      limit: 'Bars',
     },
     controls: {
       title: 'Navigate Data',
@@ -425,16 +426,16 @@ export default {
       title: 'Manual Selection',
       selectTicker: 'Select Ticker',
       selectEndDate: 'End Date',
-      info: 'Manually choose a ticker and end date to load 500 trading days of data ending at the selected date.',
+      info: 'Manually choose a ticker and end date to load historical trading days of data ending at the selected date.',
     },
     description: {
       title: 'Backtesting',
       subtitle: 'Trade Simulation with Historical Data',
-      mainDescription: 'Test your trading strategies with 500 bars of historical Vietnamese market data across multiple timeframes. Navigate through time, compare charts, and discover market patterns.',
+      mainDescription: 'Test your trading strategies with historical Vietnamese market data across multiple timeframes. Navigate through time, compare charts, and discover market patterns.',
       features: {
         timeTravel: {
           title: 'Time Travel',
-          description: 'Navigate through 500 bars with intuitive controls'
+          description: 'Navigate through data bars with intuitive controls'
         },
         dualCharts: {
           title: 'Dual Charts',

@@ -14,11 +14,12 @@ export const Route = createFileRoute('/backtesting')({
     ticker: (search.ticker as string) || undefined,
     endDate: (search.endDate as string) || undefined,
     interval: (search.interval as string) || undefined,
+    limit: (search.limit as string) || undefined,
   }),
 })
 
 function PlayPage() {
-  const { ticker, endDate, interval } = Route.useSearch()
+  const { ticker, endDate, interval, limit } = Route.useSearch()
   const navigate = useNavigate()
   const { setInterval: setGlobalInterval } = useChartSettings()
 
@@ -36,6 +37,7 @@ function PlayPage() {
         initialEndDate={endDate}
         initialSecondaryTicker={'VNINDEX'}
         initialInterval={interval}
+        initialLimit={limit}
         navigate={navigate}
         onIntervalInit={(interval) => setGlobalInterval(interval as import('@/lib/api-client').Interval)}
       >

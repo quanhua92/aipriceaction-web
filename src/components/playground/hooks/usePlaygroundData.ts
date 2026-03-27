@@ -11,6 +11,16 @@ export function isIntradayInterval(interval: string): boolean {
   return interval !== '1D' && interval !== '1W'
 }
 
+// Data limit options
+export const PLAYGROUND_LIMITS = [100, 200, 300, 500, 1000, 1500, 2000] as const
+export type PlaygroundLimit = typeof PLAYGROUND_LIMITS[number]
+export const DEFAULT_PLAYGROUND_LIMIT: PlaygroundLimit = 500
+
+function isValidLimit(value: string | number | undefined): value is PlaygroundLimit {
+  const num = Number(value)
+  return (PLAYGROUND_LIMITS as readonly number[]).includes(num)
+}
+
 const MARKET_INDICES = ['VNINDEX', 'VN30']
 
 // localStorage key for smart random toggle
@@ -21,10 +31,11 @@ const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
 
 export interface PlaygroundData {
   ticker: string          // Randomly selected Vietnamese stock or index
-  allData: StockData[]    // 500 bars cached from API
-  currentIndex: number    // Current position (0-499)
-  endDate: string        // End date of the 500-bar window
+  allData: StockData[]    // Bars cached from API
+  currentIndex: number    // Current position within data
+  endDate: string        // End date of the data window
   interval: PlaygroundInterval  // Current interval
+  limit: PlaygroundLimit      // Number of bars to fetch
   isLoading: boolean
   error?: string
 
@@ -53,12 +64,15 @@ const generateRandomDate = (interval?: string): string => {
   return new Date(randomTime).toISOString().split('T')[0]
 }
 
-// Derive endDate from a viewDate so that viewDate lands at ~index 99 of 500 bars.
-// For daily: 400 trading days before endDate ≈ 580 calendar days.
-// For intraday: use shorter lookback since 500 bars covers less calendar time.
-const deriveEndDate = (viewDate: string, interval?: string): string => {
+// Derive endDate from a viewDate so that viewDate lands at ~20% into the data window.
+// For daily: limit*0.8 trading days before endDate ≈ limit*0.8*1.45 calendar days.
+// For intraday: use shorter lookback since bars cover less calendar time.
+const deriveEndDate = (viewDate: string, interval?: string, limit: PlaygroundLimit = DEFAULT_PLAYGROUND_LIMIT): string => {
   const d = new Date(viewDate)
-  const calDays = isIntradayInterval(interval || '1D') ? 90 : 580
+  const tradingBars = limit * 0.8
+  const calDays = isIntradayInterval(interval || '1D')
+    ? Math.ceil(tradingBars * 0.18)
+    : Math.ceil(tradingBars * 1.45)
   d.setDate(d.getDate() + calDays)
   return d.toISOString().split('T')[0]
 }
@@ -122,12 +136,12 @@ const findPreservedIndex = (
   currentIndex: number,
 ): number => {
   if (!currentData.length || !newData.length) {
-    return Math.min(99, Math.max(0, newData.length - 1))
+    return Math.min(Math.floor(newData.length * 0.2), Math.max(0, newData.length - 1))
   }
 
   const currentDate = currentData[currentIndex]?.time?.split('T')[0]
   if (!currentDate) {
-    return Math.min(99, Math.max(0, newData.length - 1))
+    return Math.min(Math.floor(newData.length * 0.2), Math.max(0, newData.length - 1))
   }
 
   // Try to find the exact date in new data
@@ -171,7 +185,8 @@ export function usePlaygroundData(
   navigateFn?: (options: { to: string; search?: Record<string, string> }) => void,
   initialSecondaryTicker?: string,
   initialInterval?: string,
-  onIntervalInit?: (interval: string) => void
+  onIntervalInit?: (interval: string) => void,
+  initialLimit?: string,
 ) {
   const { getTickers, tickerGroups } = useAPI()
 
@@ -187,12 +202,18 @@ export function usePlaygroundData(
     ? initialInterval as PlaygroundInterval
     : '1D'
 
+  // Resolve initial limit
+  const resolvedLimit: PlaygroundLimit = isValidLimit(initialLimit)
+    ? Number(initialLimit) as PlaygroundLimit
+    : DEFAULT_PLAYGROUND_LIMIT
+
   const [playgroundData, setPlaygroundData] = useState<PlaygroundData>({
     ticker: '',
     allData: [],
     currentIndex: 0,
     endDate: '',
     interval: resolvedInterval,
+    limit: resolvedLimit,
     isLoading: true,
     secondaryTicker: initialSecondaryTicker || 'VNINDEX',
     secondaryAllData: undefined,
@@ -206,10 +227,12 @@ export function usePlaygroundData(
     ticker: string,
     endDate: string,
     interval: PlaygroundInterval,
+    limit: PlaygroundLimit,
   ): Record<string, string> => ({
     ticker,
     endDate,
     interval,
+    limit: String(limit),
   }), [])
 
   // Fetch initial data
@@ -218,6 +241,7 @@ export function usePlaygroundData(
 
     try {
       const currentInterval = playgroundData.interval
+      const currentLimit = playgroundData.limit
 
       // Use provided values or generate random ones
       // If initial values were provided, use them. Otherwise, generate random ones.
@@ -231,10 +255,10 @@ export function usePlaygroundData(
         ticker = initialTicker
       } else if (smartRandom) {
         // Smart random: generate viewDate first, pick ticker by activity at that date,
-        // then derive endDate so viewDate lands at ~index 99 of the 500-bar window
+        // then derive endDate so viewDate lands at ~20% into the data window
         const viewDate = generateRandomDate(currentInterval)
         ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
-        endDate = deriveEndDate(viewDate, currentInterval)
+        endDate = deriveEndDate(viewDate, currentInterval, currentLimit)
       } else {
         // Plain random: generate endDate and pick any ticker
         endDate = generateRandomDate(currentInterval)
@@ -246,7 +270,7 @@ export function usePlaygroundData(
         getTickers('Playground.initialLoad.primary', {
           symbol: ticker,
           end_date: endDate,
-          limit: 500,
+          limit: currentLimit,
           mode: 'vn',
           interval: currentInterval,
         })
@@ -257,7 +281,7 @@ export function usePlaygroundData(
         getTickers('Playground.initialLoad.secondary', {
           symbol: secondaryTicker,
           end_date: endDate,
-          limit: 500,
+          limit: currentLimit,
           mode: 'vn',
           interval: currentInterval,
         })
@@ -289,8 +313,8 @@ export function usePlaygroundData(
         secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary ticker'
       }
 
-      // Start by showing first 100 bars (or all if less than 100)
-      const startIndex = Math.min(99, Math.max(0, primaryData.length - 1))
+      // Start at ~20% of data window
+      const startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
 
       setPlaygroundData({
         ticker,
@@ -298,6 +322,7 @@ export function usePlaygroundData(
         currentIndex: startIndex,
         endDate,
         interval: currentInterval,
+        limit: currentLimit,
         isLoading: false,
         error: primaryError,
         secondaryTicker,
@@ -313,7 +338,7 @@ export function usePlaygroundData(
       if (navigateFn && !useInitial) {
         navigateFn({
           to: '/backtesting',
-          search: buildSearchParams(ticker, endDate, currentInterval),
+          search: buildSearchParams(ticker, endDate, currentInterval, currentLimit),
         })
       }
     } catch (err) {
@@ -324,7 +349,7 @@ export function usePlaygroundData(
         error: errorMessage,
       }))
     }
-  }, [getTickers, tickerGroups, navigateFn, initialTicker, initialEndDate, initialSecondaryTicker, playgroundData.interval, buildSearchParams])
+  }, [getTickers, tickerGroups, navigateFn, initialTicker, initialEndDate, initialSecondaryTicker, playgroundData.interval, playgroundData.limit, buildSearchParams])
 
   // Randomize data with new ticker and date
   const randomizeData = useCallback(async (smartRandom?: boolean) => {
@@ -332,35 +357,36 @@ export function usePlaygroundData(
 
     try {
       const currentInterval = playgroundData.interval
+      const currentLimit = playgroundData.limit
 
       let endDate: string
       let ticker: string
 
       if (smartRandom) {
         // Smart random: generate viewDate first, pick ticker by activity at that date,
-        // then derive endDate so viewDate lands at ~index 99 of the 500-bar window
+        // then derive endDate so viewDate lands at ~20% into the data window
         const viewDate = generateRandomDate(currentInterval)
         ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
-        endDate = deriveEndDate(viewDate, currentInterval)
+        endDate = deriveEndDate(viewDate, currentInterval, currentLimit)
       } else {
         // Plain random
         endDate = generateRandomDate(currentInterval)
         ticker = getRandomTicker(tickerGroups)
       }
 
-      // Fetch with current interval
+      // Fetch with current interval and limit
       const response = await getTickers('Playground.randomize', {
         symbol: ticker,
         end_date: endDate,
-        limit: 500,
+        limit: currentLimit,
         mode: 'vn',
         interval: currentInterval,
       })
 
       const data = response[ticker] || []
 
-      // Start by showing first 100 bars (or all if less than 100)
-      const startIndex = Math.min(99, Math.max(0, data.length - 1))
+      // Start at ~20% of data window
+      const startIndex = Math.min(Math.floor(data.length * 0.2), Math.max(0, data.length - 1))
 
       setPlaygroundData(prev => ({
         ticker,
@@ -368,6 +394,7 @@ export function usePlaygroundData(
         currentIndex: startIndex,
         endDate,
         interval: prev.interval,
+        limit: prev.limit,
         isLoading: false,
         secondaryTicker: prev.secondaryTicker,
         secondaryAllData: prev.secondaryAllData,
@@ -380,7 +407,7 @@ export function usePlaygroundData(
       if (navigateFn) {
         navigateFn({
           to: '/backtesting',
-          search: buildSearchParams(ticker, endDate, playgroundData.interval),
+          search: buildSearchParams(ticker, endDate, playgroundData.interval, playgroundData.limit),
         })
       }
     } catch (err) {
@@ -391,7 +418,7 @@ export function usePlaygroundData(
         error: errorMessage,
       }))
     }
-  }, [getTickers, tickerGroups, navigateFn, playgroundData.interval, buildSearchParams])
+  }, [getTickers, tickerGroups, navigateFn, playgroundData.interval, playgroundData.limit, buildSearchParams])
 
   // Fetch data on mount (only once)
   useEffect(() => {
@@ -432,31 +459,105 @@ export function usePlaygroundData(
     // Only react to URL changes if they differ from current state
     const urlTicker = initialTicker || undefined
     const urlEndDate = initialEndDate || undefined
+    const urlLimit = isValidLimit(initialLimit) ? Number(initialLimit) as PlaygroundLimit : undefined
 
     // Skip if URL params are empty (not provided) or match current state
-    if ((!urlTicker && !urlEndDate) ||
-        (urlTicker === playgroundData.ticker && urlEndDate === playgroundData.endDate)) {
+    if ((!urlTicker && !urlEndDate && !urlLimit) ||
+        (urlTicker === playgroundData.ticker && urlEndDate === playgroundData.endDate && urlLimit === playgroundData.limit)) {
+      return
+    }
+
+    // If only limit changed, handle it directly (updateLimit not yet defined here)
+    if (urlLimit && urlLimit !== playgroundData.limit && urlTicker === playgroundData.ticker && urlEndDate === playgroundData.endDate) {
+      setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
+      const handleLimitOnlyChange = async () => {
+        try {
+          const ticker = playgroundData.ticker || 'VNINDEX'
+          const promises = [
+            getTickers('Playground.urlLimitChange.primary', {
+              symbol: ticker,
+              end_date: playgroundData.endDate,
+              limit: urlLimit,
+              mode: 'vn',
+              interval: playgroundData.interval,
+            })
+          ]
+          if (playgroundData.secondaryTicker) {
+            promises.push(
+              getTickers('Playground.urlLimitChange.secondary', {
+                symbol: playgroundData.secondaryTicker,
+                end_date: playgroundData.endDate,
+                limit: urlLimit,
+                mode: 'vn',
+                interval: playgroundData.interval,
+              })
+            )
+          }
+          const results = await Promise.allSettled(promises)
+          const primaryResult = results[0]
+          let primaryData: StockData[] = []
+          let primaryError: string | undefined
+          if (primaryResult.status === 'fulfilled') {
+            const response = primaryResult.value
+            primaryData = response[ticker] || []
+          } else {
+            primaryError = primaryResult.reason?.message || 'Failed to fetch data for new limit'
+          }
+          let secondaryData: StockData[] = playgroundData.secondaryAllData || []
+          let secondaryError: string | undefined = playgroundData.secondaryError
+          if (results.length > 1 && playgroundData.secondaryTicker) {
+            const secondaryResult = results[1]
+            if (secondaryResult.status === 'fulfilled') {
+              const response = secondaryResult.value
+              secondaryData = response[playgroundData.secondaryTicker!] || []
+            } else {
+              secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary data for new limit'
+            }
+          }
+          const startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
+          setPlaygroundData(prev => ({
+            ...prev,
+            limit: urlLimit,
+            allData: primaryData,
+            currentIndex: startIndex,
+            isLoading: false,
+            error: primaryError,
+            secondaryAllData: secondaryData,
+            secondaryError,
+          }))
+          if (navigateFn) {
+            navigateFn({
+              to: '/backtesting',
+              search: buildSearchParams(playgroundData.ticker, playgroundData.endDate, playgroundData.interval, urlLimit),
+            })
+          }
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to update limit'
+          setPlaygroundData(prev => ({ ...prev, isLoading: false, error: errorMessage }))
+        }
+      }
+      handleLimitOnlyChange()
       return
     }
 
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
-    const fetchDataForParams = async (ticker: string, endDate: string) => {
+    const fetchDataForParams = async (ticker: string, endDate: string, limit: PlaygroundLimit) => {
       try {
         const currentInterval = playgroundData.interval
 
         const response = await getTickers('Playground.urlChange', {
           symbol: ticker,
           end_date: endDate,
-          limit: 500,
+          limit,
           mode: 'vn',
           interval: currentInterval,
         })
 
         const data = response[ticker] || []
 
-        // Start by showing first 100 bars (or all if less than 100)
-        const startIndex = Math.min(99, Math.max(0, data.length - 1))
+        // Start at ~20% of data window
+        const startIndex = Math.min(Math.floor(data.length * 0.2), Math.max(0, data.length - 1))
 
         setPlaygroundData(prev => ({
           ticker,
@@ -464,6 +565,7 @@ export function usePlaygroundData(
           currentIndex: startIndex,
           endDate,
           interval: prev.interval,
+          limit,
           isLoading: false,
           secondaryTicker: prev.secondaryTicker,
           secondaryAllData: prev.secondaryAllData,
@@ -484,9 +586,10 @@ export function usePlaygroundData(
     // Use URL params if provided, otherwise use current state
     const tickerToLoad = urlTicker || playgroundData.ticker
     const endDateToUse = urlEndDate || playgroundData.endDate
+    const limitToUse = urlLimit || playgroundData.limit
 
-    fetchDataForParams(tickerToLoad, endDateToUse)
-  }, [initialTicker, initialEndDate, playgroundData.ticker, playgroundData.endDate, playgroundData.interval, getTickers])
+    fetchDataForParams(tickerToLoad, endDateToUse, limitToUse)
+  }, [initialTicker, initialEndDate, initialLimit, playgroundData.ticker, playgroundData.endDate, playgroundData.limit, playgroundData.interval, getTickers])
 
   // Navigation helpers
   const navigateDate = useCallback((direction: 'back5' | 'back1' | 'next1' | 'next5') => {
@@ -519,19 +622,20 @@ export function usePlaygroundData(
 
     try {
       const currentInterval = playgroundData.interval
+      const currentLimit = playgroundData.limit
 
       const response = await getTickers('Playground.updateTicker', {
         symbol: newTicker,
         end_date: playgroundData.endDate,
-        limit: 500,
+        limit: currentLimit,
         mode: 'vn',
         interval: currentInterval,
       })
 
       const data = response[newTicker] || []
 
-      // Start by showing first 100 bars (or all if less than 100)
-      const startIndex = Math.min(99, Math.max(0, data.length - 1))
+      // Start at ~20% of data window
+      const startIndex = Math.min(Math.floor(data.length * 0.2), Math.max(0, data.length - 1))
 
       setPlaygroundData(prev => ({
         ticker: newTicker,
@@ -539,6 +643,7 @@ export function usePlaygroundData(
         currentIndex: startIndex,
         endDate: prev.endDate,
         interval: prev.interval,
+        limit: prev.limit,
         isLoading: false,
         secondaryTicker: prev.secondaryTicker,
         secondaryAllData: prev.secondaryAllData,
@@ -551,7 +656,7 @@ export function usePlaygroundData(
       if (navigateFn) {
         navigateFn({
           to: '/backtesting',
-          search: buildSearchParams(newTicker, playgroundData.endDate, playgroundData.interval),
+          search: buildSearchParams(newTicker, playgroundData.endDate, playgroundData.interval, playgroundData.limit),
         })
       }
     } catch (err) {
@@ -562,7 +667,7 @@ export function usePlaygroundData(
         error: errorMessage,
       }))
     }
-  }, [getTickers, playgroundData.endDate, playgroundData.interval, navigateFn, buildSearchParams])
+  }, [getTickers, playgroundData.endDate, playgroundData.interval, playgroundData.limit, navigateFn, buildSearchParams])
 
   // Manual date change method
   const updateEndDate = useCallback(async (newEndDate: string) => {
@@ -587,13 +692,14 @@ export function usePlaygroundData(
       const currentState = playgroundData
       const ticker = currentState.ticker || initialTicker || 'VNINDEX'
       const currentInterval = currentState.interval
+      const currentLimit = currentState.limit
 
       // Fetch both primary and secondary tickers in parallel if secondary ticker exists
       const promises = [
         getTickers('Playground.updateDate.primary', {
           symbol: ticker,
           end_date: newEndDate,
-          limit: 500,
+          limit: currentLimit,
           mode: 'vn',
           interval: currentInterval,
         })
@@ -604,7 +710,7 @@ export function usePlaygroundData(
           getTickers('Playground.updateDate.secondary', {
             symbol: currentState.secondaryTicker,
             end_date: newEndDate,
-            limit: 500,
+            limit: currentLimit,
             mode: 'vn',
             interval: currentInterval,
           })
@@ -639,6 +745,7 @@ export function usePlaygroundData(
           currentIndex: startIndex,
           endDate: newEndDate,
           interval: prev.interval,
+          limit: prev.limit,
           isLoading: false,
           secondaryTicker: prev.secondaryTicker,
           secondaryAllData: prev.secondaryAllData,
@@ -671,11 +778,11 @@ export function usePlaygroundData(
         }
       }
 
-      // Update URL (only primary ticker, endDate, interval)
+      // Update URL (only primary ticker, endDate, interval, limit)
       if (navigateFn) {
         navigateFn({
           to: '/backtesting',
-          search: buildSearchParams(ticker, newEndDate, playgroundData.interval),
+          search: buildSearchParams(ticker, newEndDate, playgroundData.interval, playgroundData.limit),
         })
       }
     } catch (err) {
@@ -706,7 +813,7 @@ export function usePlaygroundData(
       const response = await getTickers('Playground.updateSecondaryTicker', {
         symbol: newSecondaryTicker,
         end_date: playgroundData.endDate,
-        limit: 500,
+        limit: playgroundData.limit,
         mode: 'vn',
         interval: playgroundData.interval,
       })
@@ -737,13 +844,14 @@ export function usePlaygroundData(
     try {
       const currentState = playgroundData
       const ticker = currentState.ticker || 'VNINDEX'
+      const currentLimit = currentState.limit
 
       // Fetch both primary and secondary in parallel
       const promises = [
         getTickers('Playground.updateInterval.primary', {
           symbol: ticker,
           end_date: currentState.endDate,
-          limit: 500,
+          limit: currentLimit,
           mode: 'vn',
           interval: newInterval,
         })
@@ -754,7 +862,7 @@ export function usePlaygroundData(
           getTickers('Playground.updateInterval.secondary', {
             symbol: currentState.secondaryTicker,
             end_date: currentState.endDate,
-            limit: 500,
+            limit: currentLimit,
             mode: 'vn',
             interval: newInterval,
           })
@@ -789,8 +897,8 @@ export function usePlaygroundData(
         }
       }
 
-      // Reset current index
-      const startIndex = Math.min(99, Math.max(0, primaryData.length - 1))
+      // Reset current index to ~20% of data window
+      const startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
 
       setPlaygroundData(prev => ({
         ...prev,
@@ -807,11 +915,103 @@ export function usePlaygroundData(
       if (navigateFn) {
         navigateFn({
           to: '/backtesting',
-          search: buildSearchParams(ticker, currentState.endDate, newInterval),
+          search: buildSearchParams(ticker, currentState.endDate, newInterval, currentState.limit),
         })
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update interval'
+      setPlaygroundData(prev => ({
+        ...prev,
+        isLoading: false,
+        error: errorMessage,
+      }))
+    }
+  }, [playgroundData, getTickers, navigateFn, buildSearchParams])
+
+  // Update limit method
+  const updateLimit = useCallback(async (newLimit: PlaygroundLimit) => {
+    if (newLimit === playgroundData.limit) return
+
+    setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
+
+    try {
+      const currentState = playgroundData
+      const ticker = currentState.ticker || 'VNINDEX'
+
+      // Fetch both primary and secondary in parallel
+      const promises = [
+        getTickers('Playground.updateLimit.primary', {
+          symbol: ticker,
+          end_date: currentState.endDate,
+          limit: newLimit,
+          mode: 'vn',
+          interval: currentState.interval,
+        })
+      ]
+
+      if (currentState.secondaryTicker) {
+        promises.push(
+          getTickers('Playground.updateLimit.secondary', {
+            symbol: currentState.secondaryTicker,
+            end_date: currentState.endDate,
+            limit: newLimit,
+            mode: 'vn',
+            interval: currentState.interval,
+          })
+        )
+      }
+
+      const results = await Promise.allSettled(promises)
+
+      // Process primary
+      const primaryResult = results[0]
+      let primaryData: StockData[] = []
+      let primaryError: string | undefined
+
+      if (primaryResult.status === 'fulfilled') {
+        const response = primaryResult.value
+        primaryData = response[ticker] || []
+      } else {
+        primaryError = primaryResult.reason?.message || 'Failed to fetch data for new limit'
+      }
+
+      // Process secondary
+      let secondaryData: StockData[] = currentState.secondaryAllData || []
+      let secondaryError: string | undefined = currentState.secondaryError
+
+      if (results.length > 1 && currentState.secondaryTicker) {
+        const secondaryResult = results[1]
+        if (secondaryResult.status === 'fulfilled') {
+          const response = secondaryResult.value
+          secondaryData = response[currentState.secondaryTicker!] || []
+        } else {
+          secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary data for new limit'
+        }
+      }
+
+      // Reset current index to ~20% of data window
+      const startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
+
+      setPlaygroundData(prev => ({
+        ...prev,
+        limit: newLimit,
+        allData: primaryData,
+        currentIndex: startIndex,
+        isLoading: false,
+        error: primaryError,
+        secondaryAllData: secondaryData,
+        secondaryError,
+      }))
+
+      // Update URL with new limit
+      if (navigateFn) {
+        navigateFn({
+          to: '/backtesting',
+          search: buildSearchParams(ticker, currentState.endDate, currentState.interval, newLimit),
+        })
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update limit'
       setPlaygroundData(prev => ({
         ...prev,
         isLoading: false,
@@ -923,6 +1123,7 @@ export function usePlaygroundData(
     updateTicker,
     updateEndDate,
     updateInterval,
+    updateLimit,
     updateSecondaryTicker,
     toggleSecondaryChart,
     setShowSecondaryChart,

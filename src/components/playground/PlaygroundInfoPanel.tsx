@@ -10,7 +10,7 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { DateInput } from '@/components/DateInput'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { PLAYGROUND_INTERVALS, isIntradayInterval, type PlaygroundInterval } from './hooks/usePlaygroundData'
+import { PLAYGROUND_INTERVALS, PLAYGROUND_LIMITS, isIntradayInterval, type PlaygroundInterval, type PlaygroundLimit } from './hooks/usePlaygroundData'
 
 // localStorage key for secondary chart visibility
 const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
@@ -29,6 +29,7 @@ export function PlaygroundInfoPanel() {
     toggleSecondaryChart,
     setShowSecondaryChart,
     updateInterval,
+    updateLimit,
   } = usePlayground()
   const { info } = useLogs()
   const { setInterval: setGlobalInterval } = useChartSettings()
@@ -229,6 +230,27 @@ export function PlaygroundInfoPanel() {
             <SelectContent>
               {PLAYGROUND_INTERVALS.map(iv => (
                 <SelectItem key={iv} value={iv}>{iv}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Limit Selection */}
+          <label className="text-xs text-muted-foreground">{t('common.playground.info.limit')}</label>
+          <Select
+            value={String(playgroundData.limit)}
+            onValueChange={(value) => {
+              const newLimit = Number(value) as PlaygroundLimit
+              info(`[Playground] User changed limit to ${newLimit}`)
+              updateLimit(newLimit)
+            }}
+            disabled={isLoading}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PLAYGROUND_LIMITS.map(lim => (
+                <SelectItem key={lim} value={String(lim)}>{lim}</SelectItem>
               ))}
             </SelectContent>
           </Select>

@@ -394,6 +394,7 @@ export default {
       positionTop: 'Phía Trên',
       positionBottom: 'Phía Dưới',
       smartRandom: 'Ưu tiên mã giao dịch sôi nổi',
+      limit: 'Số Nến',
     },
     controls: {
       title: 'Điều Hướng Dữ Liệu',
@@ -425,16 +426,16 @@ export default {
       title: 'Chọn Thủ Công',
       selectTicker: 'Chọn Mã Cổ Phiếu',
       selectEndDate: 'Ngày Kết Thúc',
-      info: 'Chọn thủ công mã cổ phiếu và ngày kết thúc để tải 500 ngày giao dịch kết thúc tại ngày đã chọn.',
+      info: 'Chọn thủ công mã cổ phiếu và ngày kết thúc để tải dữ liệu giao dịch lịch sử kết thúc tại ngày đã chọn.',
     },
     description: {
       title: 'Backtesting',
       subtitle: 'Mô Phỏng Giao Dịch Với Dữ Liệu Lịch Sử',
-      mainDescription: 'Kiểm tra chiến lược giao dịch của bạn với 500 thanh dữ liệu lịch sử thị trường Việt Nam trên nhiều khung thời gian. Du hành qua thời gian, so sánh biểu đồ và khám phá các mô hình thị trường.',
+      mainDescription: 'Kiểm tra chiến lược giao dịch của bạn với dữ liệu lịch sử thị trường Việt Nam trên nhiều khung thời gian. Du hành qua thời gian, so sánh biểu đồ và khám phá các mô hình thị trường.',
       features: {
         timeTravel: {
           title: 'Du Hành Thời Gian',
-          description: 'Điều hướng qua 500 thanh dữ liệu với các điều khiển trực quan'
+          description: 'Điều hướng qua các thanh dữ liệu với các điều khiển trực quan'
         },
         dualCharts: {
           title: 'Biểu Đồ Kép',

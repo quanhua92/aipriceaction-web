@@ -14,6 +14,7 @@ interface PlaygroundContextValue {
   updateTicker: ReturnType<typeof usePlaygroundData>['updateTicker']
   updateEndDate: ReturnType<typeof usePlaygroundData>['updateEndDate']
   updateInterval: ReturnType<typeof usePlaygroundData>['updateInterval']
+  updateLimit: ReturnType<typeof usePlaygroundData>['updateLimit']
   updateSecondaryTicker: ReturnType<typeof usePlaygroundData>['updateSecondaryTicker']
   toggleSecondaryChart: ReturnType<typeof usePlaygroundData>['toggleSecondaryChart']
   setShowSecondaryChart: ReturnType<typeof usePlaygroundData>['setShowSecondaryChart']
@@ -35,6 +36,7 @@ export interface PlaygroundDataProviderProps {
   initialEndDate?: string
   initialSecondaryTicker?: string
   initialInterval?: string
+  initialLimit?: string
   navigate?: (options: { to: string; search?: Record<string, string> }) => void
   onIntervalInit?: (interval: string) => void
 }
@@ -45,6 +47,7 @@ export function PlaygroundDataProvider({
   initialEndDate,
   initialSecondaryTicker,
   initialInterval,
+  initialLimit,
   navigate: navigateFn,
   onIntervalInit,
 }: PlaygroundDataProviderProps) {
@@ -54,7 +57,8 @@ export function PlaygroundDataProvider({
     navigateFn,
     initialSecondaryTicker,
     initialInterval,
-    onIntervalInit
+    onIntervalInit,
+    initialLimit
   )
 
   const value: PlaygroundContextValue = {
@@ -70,6 +74,7 @@ export function PlaygroundDataProvider({
     updateTicker: playgroundDataValue.updateTicker,
     updateEndDate: playgroundDataValue.updateEndDate,
     updateInterval: playgroundDataValue.updateInterval,
+    updateLimit: playgroundDataValue.updateLimit,
     updateSecondaryTicker: playgroundDataValue.updateSecondaryTicker,
     toggleSecondaryChart: playgroundDataValue.toggleSecondaryChart,
     setShowSecondaryChart: playgroundDataValue.setShowSecondaryChart,
