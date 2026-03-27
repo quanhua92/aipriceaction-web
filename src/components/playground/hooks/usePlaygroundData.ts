@@ -170,7 +170,8 @@ export function usePlaygroundData(
   initialEndDate?: string,
   navigateFn?: (options: { to: string; search?: Record<string, string> }) => void,
   initialSecondaryTicker?: string,
-  initialInterval?: string
+  initialInterval?: string,
+  onIntervalInit?: (interval: string) => void
 ) {
   const { getTickers, tickerGroups } = useAPI()
 
@@ -396,12 +397,16 @@ export function usePlaygroundData(
   useEffect(() => {
     if (!hasInitialized.current) {
       hasInitialized.current = true
+      // Sync the resolved interval to global ChartSettings (handles URL param case)
+      if (onIntervalInit) {
+        onIntervalInit(resolvedInterval)
+      }
       // Read smart random preference from localStorage (defaults to true)
       const stored = localStorage.getItem(SMART_RANDOM_KEY)
       const useSmartRandom = stored === null ? true : stored === 'true'
       fetchInitialData(useSmartRandom)
     }
-  }, []) // Empty dependency array - only run once on mount
+  }, [onIntervalInit]) // Run only once on mount
 
   // Navigate to new index
   const setCurrentIndex = useCallback((newIndex: number) => {

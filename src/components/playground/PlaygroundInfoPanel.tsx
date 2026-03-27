@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { usePlayground } from './PlaygroundDataProvider'
 import { useLogs } from '@/contexts/LogsContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Dices, Calendar, Edit, Share2, X } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -30,6 +31,7 @@ export function PlaygroundInfoPanel() {
     updateInterval,
   } = usePlayground()
   const { info } = useLogs()
+  const { setInterval: setGlobalInterval } = useChartSettings()
   const { t } = useTranslation()
 
   // Smart random toggle state, persisted to localStorage
@@ -217,6 +219,7 @@ export function PlaygroundInfoPanel() {
               const newInterval = value as PlaygroundInterval
               info(`[Playground] User changed interval to ${newInterval}`)
               updateInterval(newInterval)
+              setGlobalInterval(newInterval as import('@/lib/api-client').Interval)
             }}
             disabled={isLoading}
           >

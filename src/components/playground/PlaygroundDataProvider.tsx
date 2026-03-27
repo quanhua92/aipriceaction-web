@@ -36,6 +36,7 @@ export interface PlaygroundDataProviderProps {
   initialSecondaryTicker?: string
   initialInterval?: string
   navigate?: (options: { to: string; search?: Record<string, string> }) => void
+  onIntervalInit?: (interval: string) => void
 }
 
 export function PlaygroundDataProvider({
@@ -44,14 +45,16 @@ export function PlaygroundDataProvider({
   initialEndDate,
   initialSecondaryTicker,
   initialInterval,
-  navigate: navigateFn
+  navigate: navigateFn,
+  onIntervalInit,
 }: PlaygroundDataProviderProps) {
   const playgroundDataValue = usePlaygroundData(
     initialTicker,
     initialEndDate,
     navigateFn,
     initialSecondaryTicker,
-    initialInterval
+    initialInterval,
+    onIntervalInit
   )
 
   const value: PlaygroundContextValue = {

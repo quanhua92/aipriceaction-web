@@ -6,6 +6,7 @@ import { PlaygroundChart } from '@/components/playground/PlaygroundChart'
 import { PlaygroundDescription } from '@/components/playground/PlaygroundDescription'
 import { PlaygroundIntervalWatcher } from '@/components/playground/PlaygroundIntervalWatcher'
 import { useNavigate } from '@tanstack/react-router'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 
 export const Route = createFileRoute('/backtesting')({
   component: PlayPage,
@@ -19,6 +20,7 @@ export const Route = createFileRoute('/backtesting')({
 function PlayPage() {
   const { ticker, endDate, interval } = Route.useSearch()
   const navigate = useNavigate()
+  const { setInterval: setGlobalInterval } = useChartSettings()
 
   return (
     <div className="space-y-4">
@@ -35,6 +37,7 @@ function PlayPage() {
         initialSecondaryTicker={'VNINDEX'}
         initialInterval={interval}
         navigate={navigate}
+        onIntervalInit={(interval) => setGlobalInterval(interval as import('@/lib/api-client').Interval)}
       >
         <div className="space-y-4">
           {/* Top: Info */}
