@@ -97,7 +97,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             </Link>
 
             <Link
-              to="/play"
+              to="/backtesting"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
               activeProps={{
@@ -106,7 +106,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
               }}
             >
               <Dices size={20} />
-              <span className="font-medium">Playground</span>
+              <span className="font-medium">Backtesting</span>
             </Link>
 
             <Link

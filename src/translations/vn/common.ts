@@ -27,9 +27,9 @@ export default {
     welcomeTitle: 'Chào mừng đến với AIPriceAction',
     welcomeDescription: 'Phân tích chứng khoán Việt Nam với thông tin chi tiết từ AI và biểu đồ tương tác.',
     tryAIContext: 'Dùng Thử AI Context',
-    tryPlayground: 'Dùng Thử Playground',
+    tryPlayground: 'Dùng Thử Backtesting',
     aiContextShort: 'Cung cấp AI dữ liệu thực tế từ thị trường chứng khoán - xem AI biến con số thành chiến lược giao dịch thông minh',
-    playgroundShort: 'Thử ngay ý tưởng giao dịch của bạn - du hành qua thời gian và chứng kiến các mô hình thị trường hình thành',
+    playgroundShort: 'Backtest ngay ý tưởng giao dịch của bạn - du hành qua thời gian và chứng kiến các mô hình thị trường hình thành',
   },
   ticker: {
     open: 'Mở Cửa',
@@ -370,8 +370,8 @@ export default {
   },
   playground: {
     info: {
-      title: 'Thông Tin Playground',
-      badge: 'Playground',
+      title: 'Thông Tin Backtesting',
+      badge: 'Backtesting',
       ticker: 'Mã Cổ Phiếu',
       endDate: 'Ngày Kết Thúc',
       currentDate: 'Ngày Hiện Tại',
@@ -428,7 +428,7 @@ export default {
       info: 'Chọn thủ công mã cổ phiếu và ngày kết thúc để tải 500 ngày giao dịch kết thúc tại ngày đã chọn.',
     },
     description: {
-      title: 'Sân Chơi',
+      title: 'Backtesting',
       subtitle: 'Trình Giả Lập Dữ Liệu Lịch Sử Thị Trường',
       mainDescription: 'Kiểm tra chiến lược giao dịch của bạn với 500 thanh dữ liệu lịch sử thị trường Việt Nam trên nhiều khung thời gian. Du hành qua thời gian, so sánh biểu đồ và khám phá các mô hình thị trường.',
       features: {

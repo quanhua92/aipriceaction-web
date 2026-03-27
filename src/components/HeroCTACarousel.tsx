@@ -63,7 +63,7 @@ export function HeroCTACarousel() {
     },
     {
       id: 'play',
-      to: '/play',
+      to: '/backtesting',
       icon: BarChart3,
       title: t('common.home.tryPlayground'),
       subtitle: t('common.home.playgroundShort'),

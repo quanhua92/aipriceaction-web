@@ -27,9 +27,9 @@ export default {
     welcomeTitle: 'Welcome to AIPriceAction',
     welcomeDescription: 'Vietnamese stock market analysis with AI-powered insights and interactive charts.',
     tryAIContext: 'Try AI Context',
-    tryPlayground: 'Try Playground',
+    tryPlayground: 'Try Backtesting',
     aiContextShort: 'Give AI real market data from Vietnamese stocks - watch it transform numbers into brilliant and profitable trading strategies',
-    playgroundShort: 'Test your trading ideas instantly - jump through time and see how market patterns unfold',
+    playgroundShort: 'Backtest your trading ideas instantly - jump through time and see how market patterns unfold',
   },
   ticker: {
     open: 'Open',
@@ -370,8 +370,8 @@ export default {
   },
   playground: {
     info: {
-      title: 'Playground Info',
-      badge: 'Playground',
+      title: 'Backtesting Info',
+      badge: 'Backtesting',
       ticker: 'Ticker',
       endDate: 'End Date',
       currentDate: 'Current Date',
@@ -428,7 +428,7 @@ export default {
       info: 'Manually choose a ticker and end date to load 500 trading days of data ending at the selected date.',
     },
     description: {
-      title: 'Playground',
+      title: 'Backtesting',
       subtitle: 'Historical Market Data Simulator',
       mainDescription: 'Test your trading strategies with 500 bars of historical Vietnamese market data across multiple timeframes. Navigate through time, compare charts, and discover market patterns.',
       features: {

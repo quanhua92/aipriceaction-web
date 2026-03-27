@@ -11,10 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchRouteImport } from './routes/watch'
 import { Route as SignalsRouteImport } from './routes/signals'
-import { Route as PlayRouteImport } from './routes/play'
 import { Route as MatrixRouteImport } from './routes/matrix'
 import { Route as DebugRouteImport } from './routes/debug'
 import { Route as CryptoRouteImport } from './routes/crypto'
+import { Route as BacktestingRouteImport } from './routes/backtesting'
 import { Route as AlertRouteImport } from './routes/alert'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,11 +33,6 @@ const SignalsRoute = SignalsRouteImport.update({
   path: '/signals',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PlayRoute = PlayRouteImport.update({
-  id: '/play',
-  path: '/play',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MatrixRoute = MatrixRouteImport.update({
   id: '/matrix',
   path: '/matrix',
@@ -51,6 +46,11 @@ const DebugRoute = DebugRouteImport.update({
 const CryptoRoute = CryptoRouteImport.update({
   id: '/crypto',
   path: '/crypto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BacktestingRoute = BacktestingRouteImport.update({
+  id: '/backtesting',
+  path: '/backtesting',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertRoute = AlertRouteImport.update({
@@ -93,10 +93,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/alert': typeof AlertRoute
+  '/backtesting': typeof BacktestingRoute
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
   '/matrix': typeof MatrixRoute
-  '/play': typeof PlayRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
@@ -108,10 +108,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/alert': typeof AlertRoute
+  '/backtesting': typeof BacktestingRoute
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
   '/matrix': typeof MatrixRoute
-  '/play': typeof PlayRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
@@ -124,10 +124,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
   '/alert': typeof AlertRoute
+  '/backtesting': typeof BacktestingRoute
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
   '/matrix': typeof MatrixRoute
-  '/play': typeof PlayRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
@@ -141,10 +141,10 @@ export interface FileRouteTypes {
     | '/'
     | '/ai'
     | '/alert'
+    | '/backtesting'
     | '/crypto'
     | '/debug'
     | '/matrix'
-    | '/play'
     | '/signals'
     | '/watch'
     | '/note/$id'
@@ -156,10 +156,10 @@ export interface FileRouteTypes {
     | '/'
     | '/ai'
     | '/alert'
+    | '/backtesting'
     | '/crypto'
     | '/debug'
     | '/matrix'
-    | '/play'
     | '/signals'
     | '/watch'
     | '/note/$id'
@@ -171,10 +171,10 @@ export interface FileRouteTypes {
     | '/'
     | '/ai'
     | '/alert'
+    | '/backtesting'
     | '/crypto'
     | '/debug'
     | '/matrix'
-    | '/play'
     | '/signals'
     | '/watch'
     | '/note/$id'
@@ -187,10 +187,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AiRoute: typeof AiRoute
   AlertRoute: typeof AlertRoute
+  BacktestingRoute: typeof BacktestingRoute
   CryptoRoute: typeof CryptoRoute
   DebugRoute: typeof DebugRoute
   MatrixRoute: typeof MatrixRoute
-  PlayRoute: typeof PlayRoute
   SignalsRoute: typeof SignalsRoute
   WatchRoute: typeof WatchRoute
   NoteIdRoute: typeof NoteIdRoute
@@ -215,13 +215,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignalsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/play': {
-      id: '/play'
-      path: '/play'
-      fullPath: '/play'
-      preLoaderRoute: typeof PlayRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/matrix': {
       id: '/matrix'
       path: '/matrix'
@@ -241,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/crypto'
       fullPath: '/crypto'
       preLoaderRoute: typeof CryptoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backtesting': {
+      id: '/backtesting'
+      path: '/backtesting'
+      fullPath: '/backtesting'
+      preLoaderRoute: typeof BacktestingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alert': {
@@ -299,10 +299,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AiRoute: AiRoute,
   AlertRoute: AlertRoute,
+  BacktestingRoute: BacktestingRoute,
   CryptoRoute: CryptoRoute,
   DebugRoute: DebugRoute,
   MatrixRoute: MatrixRoute,
-  PlayRoute: PlayRoute,
   SignalsRoute: SignalsRoute,
   WatchRoute: WatchRoute,
   NoteIdRoute: NoteIdRoute,

@@ -311,7 +311,7 @@ export function usePlaygroundData(
       // Update URL if we have navigate function and this wasn't from initial URL params
       if (navigateFn && !useInitial) {
         navigateFn({
-          to: '/play',
+          to: '/backtesting',
           search: buildSearchParams(ticker, endDate, currentInterval),
         })
       }
@@ -378,7 +378,7 @@ export function usePlaygroundData(
       // Update URL with new random values
       if (navigateFn) {
         navigateFn({
-          to: '/play',
+          to: '/backtesting',
           search: buildSearchParams(ticker, endDate, playgroundData.interval),
         })
       }
@@ -545,7 +545,7 @@ export function usePlaygroundData(
       // Update URL
       if (navigateFn) {
         navigateFn({
-          to: '/play',
+          to: '/backtesting',
           search: buildSearchParams(newTicker, playgroundData.endDate, playgroundData.interval),
         })
       }
@@ -669,7 +669,7 @@ export function usePlaygroundData(
       // Update URL (only primary ticker, endDate, interval)
       if (navigateFn) {
         navigateFn({
-          to: '/play',
+          to: '/backtesting',
           search: buildSearchParams(ticker, newEndDate, playgroundData.interval),
         })
       }
@@ -801,7 +801,7 @@ export function usePlaygroundData(
       // Update URL with new interval
       if (navigateFn) {
         navigateFn({
-          to: '/play',
+          to: '/backtesting',
           search: buildSearchParams(ticker, currentState.endDate, newInterval),
         })
       }

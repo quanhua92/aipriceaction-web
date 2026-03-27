@@ -7,7 +7,7 @@ import { PlaygroundDescription } from '@/components/playground/PlaygroundDescrip
 import { PlaygroundIntervalWatcher } from '@/components/playground/PlaygroundIntervalWatcher'
 import { useNavigate } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/play')({
+export const Route = createFileRoute('/backtesting')({
   component: PlayPage,
   validateSearch: (search: Record<string, unknown>) => ({
     ticker: (search.ticker as string) || undefined,
