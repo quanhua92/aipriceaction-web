@@ -250,11 +250,11 @@ export function TrendSignalTable({
     if (latestSignal.signal && latestSignal.strength !== undefined && latestSignal.strength !== null) {
       if (latestSignal.signal === 'BUY' && latestSignal.previousHigh) {
         customTitle += ` - ${t('common.trendSignal.buy')} - ${t('common.trendSignal.above', {
-          price: latestSignal.previousHigh.toLocaleString()
+          price: (latestSignal.previousHigh ?? 0).toLocaleString()
         })} ${Math.abs(latestSignal.strength).toFixed(1)}%`
       } else if (latestSignal.signal === 'SELL' && latestSignal.previousLow) {
         customTitle += ` - ${t('common.trendSignal.sell')} - ${t('common.trendSignal.below', {
-          price: latestSignal.previousLow.toLocaleString()
+          price: (latestSignal.previousLow ?? 0).toLocaleString()
         })} ${Math.abs(latestSignal.strength).toFixed(1)}%`
       }
     }
@@ -521,7 +521,7 @@ function SignalCard({ signal, showDate, onClick }: SignalCardProps) {
         {/* Line 2: Current record (last price and change) */}
         <div className="flex items-baseline gap-3 text-sm">
           <span className="font-mono font-medium">
-            {signal.currentPrice.toLocaleString()}
+            {(signal.currentPrice ?? 0).toLocaleString()}
           </span>
           {signal.closeChange !== undefined && signal.closeChange !== null && (
             <span className={`text-xs font-medium ${
@@ -536,13 +536,13 @@ function SignalCard({ signal, showDate, onClick }: SignalCardProps) {
         <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
           {signal.highest20 && (
             <span className="text-green-700 dark:text-green-400">
-              {t('common.trendSignal.highest', { period: 20 })}: {signal.highest20.toLocaleString()}
+              {t('common.trendSignal.highest', { period: 20 })}: {(signal.highest20 ?? 0).toLocaleString()}
               {signal.currentPrice > signal.highest20 && <span className="ml-1">▲</span>}
             </span>
           )}
           {signal.lowest10 && (
             <span className="text-red-700 dark:text-red-400">
-              {t('common.trendSignal.lowest', { period: 10 })}: {signal.lowest10.toLocaleString()}
+              {t('common.trendSignal.lowest', { period: 10 })}: {(signal.lowest10 ?? 0).toLocaleString()}
               {signal.currentPrice < signal.lowest10 && <span className="ml-1">▼</span>}
             </span>
           )}
@@ -555,8 +555,8 @@ function SignalCard({ signal, showDate, onClick }: SignalCardProps) {
           }`}>
             {t(`common.trendSignal.${signal.signal === 'BUY' ? 'above' : 'below'}`, {
               price: signal.signal === 'BUY'
-                ? signal.previousHigh?.toLocaleString()
-                : signal.previousLow?.toLocaleString()
+                ? (signal.previousHigh ?? 0).toLocaleString()
+                : (signal.previousLow ?? 0).toLocaleString()
             })} {Math.abs(signal.strength).toFixed(1)}%
           </div>
         )}

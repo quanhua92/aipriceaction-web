@@ -84,7 +84,7 @@ export function StatusBar() {
               {/* Ticker Stats - Compact */}
               {health && (
                 <div className="text-muted-foreground font-mono hidden sm:block">
-                  {health.active_tickers_count.toLocaleString()}/{health.total_tickers_count.toLocaleString()}
+                  {(health.active_tickers_count ?? 0).toLocaleString()}/{(health.total_tickers_count ?? 0).toLocaleString()}
                 </div>
               )}
             </div>
@@ -210,28 +210,29 @@ export function StatusBar() {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('common.statusBar.totalTickers')}:</span>
-                      <span className="font-mono">{health.total_tickers_count.toLocaleString()}</span>
+                      <span className="font-mono">{(health.total_tickers_count ?? 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('common.statusBar.activeTickers')}:</span>
-                      <span className="font-mono">{health.active_tickers_count.toLocaleString()}</span>
+                      <span className="font-mono">{(health.active_tickers_count ?? 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('common.statusBar.dailyRecords')}:</span>
-                      <span className="font-mono">{health.daily_records_count.toLocaleString()}</span>
+                      <span className="font-mono">{(health.daily_records_count ?? 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('common.statusBar.hourlyRecords')}:</span>
-                      <span className="font-mono">{health.hourly_records_count.toLocaleString()}</span>
+                      <span className="font-mono">{(health.hourly_records_count ?? 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('common.statusBar.minuteRecords')}:</span>
-                      <span className="font-mono">{health.minute_records_count.toLocaleString()}</span>
+                      <span className="font-mono">{(health.minute_records_count ?? 0).toLocaleString()}</span>
                     </div>
                   </div>
                 </section>
 
-                {/* Worker Statistics */}
+                {/* Worker Statistics - only show if data available */}
+                {health.daily_iteration_count != null && (
                 <section>
                   <h3 className="font-semibold mb-2">{t('common.statusBar.workerStatistics')}</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
@@ -241,62 +242,20 @@ export function StatusBar() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('common.statusBar.slowIterations')}:</span>
-                      <span className="font-mono">{health.slow_iteration_count.toLocaleString()}</span>
+                      <span className="font-mono">{(health.slow_iteration_count ?? 0).toLocaleString()}</span>
                     </div>
                   </div>
                 </section>
+                )}
 
-                {/* System Resources */}
+                {/* Uptime */}
                 <section>
-                  <h3 className="font-semibold mb-2">{t('common.statusBar.systemResources')}</h3>
-                  <div className="space-y-3 text-sm">
-                    {/* Memory Usage */}
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-muted-foreground">{t('common.statusBar.memoryUsage')}:</span>
-                        <span className="font-mono">
-                          {health.memory_usage_mb.toFixed(1)}MB / {health.memory_limit_mb}MB ({health.memory_usage_percent.toFixed(1)}%)
-                        </span>
-                      </div>
-                      <div className="w-full bg-secondary rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${
-                            health.memory_usage_percent > 80 ? 'bg-red-500' : 'bg-green-500'
-                          }`}
-                          style={{ width: `${Math.min(health.memory_usage_percent, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Disk Cache */}
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-muted-foreground">{t('common.statusBar.diskCache')}:</span>
-                        <span className="font-mono">
-                          {health.disk_cache_size_mb.toFixed(1)}MB / {health.disk_cache_limit_mb}MB ({health.disk_cache_usage_percent.toFixed(1)}%)
-                        </span>
-                      </div>
-                      <div className="w-full bg-secondary rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full ${
-                            health.disk_cache_usage_percent > 80 ? 'bg-yellow-500' : 'bg-blue-500'
-                          }`}
-                          style={{ width: `${Math.min(health.disk_cache_usage_percent, 100)}%` }}
-                        />
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {health.disk_cache_entries.toLocaleString()} {t('common.statusBar.cacheEntries')}
-                      </div>
-                    </div>
-
-                    {/* Uptime */}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">{t('common.statusBar.uptime')}:</span>
-                      <span className="font-mono">
-                        {Math.floor(health.uptime_secs / 86400)}d {Math.floor((health.uptime_secs % 86400) / 3600)}h{' '}
-                        {Math.floor((health.uptime_secs % 3600) / 60)}m
-                      </span>
-                    </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t('common.statusBar.uptime')}:</span>
+                    <span className="font-mono">
+                      {Math.floor((health.uptime_secs ?? 0) / 86400)}d {Math.floor(((health.uptime_secs ?? 0) % 86400) / 3600)}h{' '}
+                      {Math.floor(((health.uptime_secs ?? 0) % 3600) / 60)}m
+                    </span>
                   </div>
                 </section>
               </div>

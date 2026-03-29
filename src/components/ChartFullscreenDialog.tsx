@@ -236,23 +236,24 @@ export function ChartFullscreenDialog({
     // Enforce minimum height
     const finalHeight = Math.max(available, 300)
 
-    // Log calculation for debugging
+    return finalHeight
+  }, [viewportHeight, tickerList, internalTicker])
+
+  // Log height calculation (outside render - must not setState during render)
+  React.useEffect(() => {
     info('[ChartFullscreenDialog] Height calculation', {
       viewportHeight,
-      dialogHeight,
-      headerHeight,
-      gap,
-      padding,
-      tabsHeight,
-      controlBarHeight,
+      dialogHeight: viewportHeight * 0.9,
+      headerHeight: 50,
+      gap: 8,
+      padding: 10,
+      tabsHeight: 40,
+      controlBarHeight: 48,
       navHeight: tickerList && tickerList.length > 0 ? 48 : 0,
-      availableBeforeMax: available,
-      finalHeight,
+      finalHeight: chartHeight,
       ticker: internalTicker,
     })
-
-    return finalHeight
-  }, [viewportHeight, tickerList, internalTicker, info])
+  }, [viewportHeight, tickerList, internalTicker, chartHeight, info])
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
