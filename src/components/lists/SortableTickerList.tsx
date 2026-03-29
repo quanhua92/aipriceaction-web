@@ -90,7 +90,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
         )
       : []
 
-    // Filter major crypto (BTC, ETH, XRP, TON)
+    // Filter major crypto (BTCUSDT, ETHUSDT, XRPUSDT, TONUSDT)
     const majorCrypto = cryptoTickers.filter(
       (ticker) =>
         MAJOR_CRYPTO.includes(ticker.symbol as any) &&

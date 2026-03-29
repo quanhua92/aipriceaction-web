@@ -75,9 +75,9 @@ async function main() {
     console.log();
 
     // Example 2: Crypto volume profile
-    console.log("₿  Crypto Volume Profile (BTC - Latest trading day):");
+    console.log("₿  Crypto Volume Profile (BTCUSDT - Latest trading day):");
     const btcProfile = await client.getVolumeProfile({
-      symbol: "BTC",
+      symbol: "BTCUSDT",
       date: "2025-11-20",
       mode: "crypto",
     });

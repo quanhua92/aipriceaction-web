@@ -9,9 +9,9 @@ interface Ticker {
 
 // Common crypto symbols for fallback detection when ticker lists haven't loaded yet
 const COMMON_CRYPTO_SYMBOLS = new Set([
-  'BTC', 'ETH', 'XRP', 'TON', 'SOL', 'BNB', 'ADA', 'DOGE', 'AVAX', 'DOT',
-  'LINK', 'MATIC', 'UNI', 'ATOM', 'LTC', 'BCH', 'XLM', 'ALGO', 'VET', 'FIL',
-  'AAVE', 'NEAR', 'APT', 'ARB', 'OP', 'INJ', 'SUI', 'SEI', 'TIA', 'PEPE',
+  'BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'TONUSDT', 'SOLUSDT', 'BNBUSDT', 'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT', 'DOTUSDT',
+  'LINKUSDT', 'MATICUSDT', 'UNIUSDT', 'ATOMUSDT', 'LTCUSDT', 'BCHUSDT', 'XLMUSDT', 'ALGOUSDT', 'VETUSDT', 'FILUSDT',
+  'AAVEUSDT', 'NEARUSDT', 'APTUSDT', 'ARBUSDT', 'OPUSDT', 'INJUSDT', 'SUIUSDT', 'SEIUSDT', 'TIAUSDT', 'PEPEUSDT',
 ])
 
 /**
@@ -25,17 +25,17 @@ const COMMON_CRYPTO_SYMBOLS = new Set([
  *
  * This ensures stocks take priority if a symbol exists in both lists (edge case)
  *
- * @param symbol - Ticker symbol to check (e.g., "BTC", "ACB", "VNINDEX")
+ * @param symbol - Ticker symbol to check (e.g., "BTCUSDT", "ACB", "VNINDEX")
  * @param stockTickers - Array of stock tickers from APIContext
  * @param cryptoTickers - Array of crypto tickers from APIContext
  * @returns true if crypto, false if stock or unknown (defaults to stock)
  *
  * @example
  * isCryptoTicker("ACB", stocks, crypto) // false - stock only
- * isCryptoTicker("BTC", stocks, crypto) // true - crypto only
+ * isCryptoTicker("BTCUSDT", stocks, crypto) // true - crypto only
  * isCryptoTicker("X", stocks, crypto) // false - if in both, stock wins
  * isCryptoTicker("???", stocks, crypto) // false - unknown defaults to stock
- * isCryptoTicker("BTC", [], []) // true - fallback to common crypto list
+ * isCryptoTicker("BTCUSDT", [], []) // true - fallback to common crypto list
  */
 export function isCryptoTicker(
   symbol: string,

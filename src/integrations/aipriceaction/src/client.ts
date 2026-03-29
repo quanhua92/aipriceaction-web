@@ -442,7 +442,7 @@ export class AIPriceActionClient {
    *
    * // Crypto volume profile
    * const btcProfile = await client.getVolumeProfile({
-   *   symbol: 'BTC',
+   *   symbol: 'BTCUSDT',
    *   date: '2024-01-15',
    *   mode: 'crypto'
    * });

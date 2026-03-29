@@ -8,7 +8,7 @@ export type MarketIndex = typeof MARKET_INDICES[number]
 /**
  * Major cryptocurrencies (shown at top like market indices)
  */
-export const MAJOR_CRYPTO = ['BTC', 'ETH', 'XRP', 'TON'] as const
+export const MAJOR_CRYPTO = ['BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'TONUSDT'] as const
 
 export type MajorCrypto = typeof MAJOR_CRYPTO[number]
 

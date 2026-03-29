@@ -194,7 +194,7 @@ export function TrendSignal({
               : Promise.resolve({}),
             cryptoSymbols.length > 0
               ? getTickers('TrendSignal.data.crypto', {
-                  symbol: ['BTC', ...cryptoSymbols],
+                  symbol: ['BTCUSDT', ...cryptoSymbols],
                   interval: interval === '1H' ? '1H' : '1D',
                   end_date: endDate,
                   limit: MATRIX_DAYS_PER_PAGE,

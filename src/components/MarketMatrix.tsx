@@ -289,7 +289,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
               : Promise.resolve({}),
             cryptoSymbols.length > 0
               ? getTickers('MarketMatrix.data.crypto', {
-                  symbol: ['BTC', ...cryptoSymbols],
+                  symbol: ['BTCUSDT', ...cryptoSymbols],
                   interval: '1D',
                   end_date: endDateForAPI,
                   limit: MATRIX_DAYS_PER_PAGE,
@@ -334,7 +334,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
         if (isMixed || isCryptoOnly) {
           // Use BTC as calendar reference for crypto-containing watchlists
-          const btcData = response['BTC'] || []
+          const btcData = response['BTCUSDT'] || []
           dates = btcData
             .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
             .sort((a, b) => b.localeCompare(a)) // Newest first
