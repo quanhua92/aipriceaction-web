@@ -410,6 +410,7 @@ export default {
       next5: 'Next 5',
       navigationGuide: 'Navigate through trading days',
       navigationGuideBars: 'Navigate through data bars',
+      keyboardShortcut: 'Shift + ← →',
       dayX: 'Day {index}',
       totalY: '{total} total',
       showingDays: 'Showing {visible} days ({percent}%)',

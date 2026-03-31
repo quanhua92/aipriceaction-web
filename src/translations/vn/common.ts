@@ -410,6 +410,7 @@ export default {
       next5: 'Tiếp 5',
       navigationGuide: 'Điều hướng qua các ngày giao dịch',
       navigationGuideBars: 'Điều hướng qua các thanh dữ liệu',
+      keyboardShortcut: 'Shift + ← →',
       dayX: 'Ngày {index}',
       totalY: '{total} tổng',
       showingDays: 'Hiển thị {visible} ngày ({percent}%)',

@@ -53,6 +53,24 @@ export function PlaygroundControls() {
   const isAtStart = currentIndex === 0
   const isAtEnd = currentIndex >= allData.length - 1
 
+  // Keyboard shortcuts: Shift+Arrow for navigation
+  const navigateRef = React.useRef(navigate)
+  navigateRef.current = navigate
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.shiftKey && e.key === 'ArrowRight') {
+        e.preventDefault()
+        navigateRef.current('next1')
+      } else if (e.shiftKey && e.key === 'ArrowLeft') {
+        e.preventDefault()
+        navigateRef.current('back1')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   return (
     <div className="space-y-4">
       {/* Navigation buttons */}
@@ -103,7 +121,8 @@ export function PlaygroundControls() {
       <div className="text-center text-sm text-muted-foreground">
         {isIntraday
           ? t('common.playground.controls.navigationGuideBars')
-          : t('common.playground.controls.navigationGuide')}
+          : t('common.playground.controls.navigationGuide')}{' '}
+        · {t('common.playground.controls.keyboardShortcut')}
       </div>
 
       {/* Slider for fine control */}
