@@ -6,11 +6,10 @@ export function ThemeToggle() {
   const { theme, setTheme } = useSiteSettings()
 
   const getNextTheme = (current: string) => {
-    switch (current) {
-      case 'light': return 'dark'
-      case 'dark': return 'system'
-      default: return 'light'
+    if (current === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark'
     }
+    return current === 'dark' ? 'light' : 'dark'
   }
 
   const getIcon = () => {
