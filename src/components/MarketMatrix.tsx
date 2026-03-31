@@ -82,10 +82,10 @@ function getViewModeLabel(viewMode: ViewMode): string {
 
 // Color coding helper (reference scheme)
 function getCellColor(value: number): { bg: string; text: string } {
-  if (value > 6.5) return { bg: 'bg-purple-500 dark:bg-purple-600', text: 'text-white' } // Ceiling
-  if (value < -6.5) return { bg: 'bg-cyan-500 dark:bg-cyan-600', text: 'text-white' } // Floor
-  if (value > 0) return { bg: 'bg-green-500 dark:bg-green-600', text: 'text-white' } // Gain
-  if (value < 0) return { bg: 'bg-red-500 dark:bg-red-600', text: 'text-white' } // Loss
+  if (value > 6.5) return { bg: 'bg-purple-600 dark:bg-purple-700', text: 'text-white' } // Ceiling
+  if (value < -6.5) return { bg: 'bg-cyan-600 dark:bg-cyan-700', text: 'text-white' } // Floor
+  if (value > 0) return { bg: 'bg-green-600 dark:bg-green-700', text: 'text-white' } // Gain
+  if (value < 0) return { bg: 'bg-red-600 dark:bg-red-700', text: 'text-white' } // Loss
   return { bg: 'bg-gray-200 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-300' } // No change
 }
 
