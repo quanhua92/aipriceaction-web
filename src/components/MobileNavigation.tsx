@@ -8,7 +8,6 @@ import {
   Eye,
   Bell,
   Coins,
-  FileText,
   TrendingUp,
   Dices,
 } from 'lucide-react'
@@ -58,32 +57,6 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             </Link>
 
             <Link
-              to="/chart"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <LineChart size={20} />
-              <span className="font-medium">Chart</span>
-            </Link>
-
-            <Link
-              to="/watch"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Eye size={20} />
-              <span className="font-medium">Watch</span>
-            </Link>
-
-            <Link
               to="/ai"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -107,6 +80,45 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             >
               <Dices size={20} />
               <span className="font-medium">Backtesting</span>
+            </Link>
+
+            <Link
+              to="/chart"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+              }}
+            >
+              <LineChart size={20} />
+              <span className="font-medium">Chart</span>
+            </Link>
+
+            <Link
+              to="/crypto"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+              }}
+            >
+              <Coins size={20} />
+              <span className="font-medium">Crypto</span>
+            </Link>
+
+            <Link
+              to="/watch"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+              }}
+            >
+              <Eye size={20} />
+              <span className="font-medium">Watch</span>
             </Link>
 
             <Link
@@ -146,32 +158,6 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             >
               <Bell size={20} />
               <span className="font-medium">Alerts</span>
-            </Link>
-
-            <Link
-              to="/crypto"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Coins size={20} />
-              <span className="font-medium">Crypto</span>
-            </Link>
-
-            <Link
-              to="/notes"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <FileText size={20} />
-              <span className="font-medium">Notes</span>
             </Link>
 
             {/* Mobile PWA Install Button */}
