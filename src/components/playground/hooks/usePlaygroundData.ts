@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useAPI } from '@/contexts/APIContext'
 import { type StockData } from '@/lib/api-client'
 
@@ -179,6 +179,20 @@ function isValidInterval(value: string): value is PlaygroundInterval {
   return (PLAYGROUND_INTERVALS as readonly string[]).includes(value)
 }
 
+// Fetch intent — describes what data to fetch and how to integrate it
+interface FetchIntent {
+  ticker: string
+  endDate: string
+  interval: PlaygroundInterval
+  limit: PlaygroundLimit
+  secondaryTicker?: string
+  source: string
+  preserveIndex?: boolean
+  // Snapshot of current data at intent creation (for findPreservedIndex)
+  _currentAllData?: StockData[]
+  _currentIndex?: number
+}
+
 export function usePlaygroundData(
   initialTicker?: string,
   initialEndDate?: string,
@@ -191,7 +205,12 @@ export function usePlaygroundData(
   const { getTickers, tickerGroups } = useAPI()
 
   // Ref to track if initialization has already happened
-  const hasInitialized = React.useRef(false)
+  const hasInitialized = useRef(false)
+  // Ref to track playgroundData for use in effects without adding to deps
+  const playgroundDataRef = useRef<PlaygroundData>({} as PlaygroundData)
+  // Ref to skip the URL→State sync after a State→URL navigation
+  const skipNextUrlSync = useRef(false)
+
   // Get initial value from localStorage
   const initialShowSecondaryChart = typeof window !== 'undefined'
     ? localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
@@ -222,6 +241,12 @@ export function usePlaygroundData(
     showSecondaryChart: initialShowSecondaryChart,
   })
 
+  // Keep ref in sync
+  playgroundDataRef.current = playgroundData
+
+  // Fetch intent state — the centralized fetch effect watches this
+  const [fetchIntent, setFetchIntent] = useState<FetchIntent | null>(null)
+
   // Helper to build search params with current state
   const buildSearchParams = useCallback((
     ticker: string,
@@ -235,205 +260,352 @@ export function usePlaygroundData(
     limit: String(limit),
   }), [])
 
-  // Fetch initial data
-  const fetchInitialData = useCallback(async (smartRandom?: boolean) => {
-    setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
+  // === Centralized fetch effect ===
+  // Watches fetchIntent, fetches data, updates playgroundData
+  useEffect(() => {
+    if (!fetchIntent) return
 
-    try {
-      const currentInterval = playgroundData.interval
-      const currentLimit = playgroundData.limit
+    const { ticker, endDate, interval, limit, secondaryTicker, source, preserveIndex, _currentAllData, _currentIndex } = fetchIntent
+    const controller = new AbortController()
 
-      // Use provided values or generate random ones
-      // If initial values were provided, use them. Otherwise, generate random ones.
-      const useInitial = initialTicker && initialEndDate
-      let endDate: string
-      let ticker: string
+    const fetchData = async () => {
+      setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined, secondaryIsLoading: !!secondaryTicker }))
 
-      if (useInitial) {
-        // Shared URL params — use them directly
-        endDate = initialEndDate
-        ticker = initialTicker
-      } else if (smartRandom) {
-        // Smart random: generate viewDate first, pick ticker by activity at that date,
-        // then derive endDate so viewDate lands at ~20% into the data window
-        const viewDate = generateRandomDate(currentInterval)
-        ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
-        endDate = deriveEndDate(viewDate, currentInterval, currentLimit)
-      } else {
-        // Plain random: generate endDate and pick any ticker
-        endDate = generateRandomDate(currentInterval)
-        ticker = getRandomTicker(tickerGroups)
-      }
+      try {
+        const promises = [
+          getTickers(`${source}.primary`, {
+            symbol: ticker,
+            end_date: endDate,
+            limit,
+            mode: 'vn',
+            interval,
+          })
+        ]
 
-      // Fetch both primary and secondary tickers in parallel if secondary ticker is set
-      const promises = [
-        getTickers('Playground.initialLoad.primary', {
-          symbol: ticker,
-          end_date: endDate,
-          limit: currentLimit,
-          mode: 'vn',
-          interval: currentInterval,
+        if (secondaryTicker) {
+          promises.push(
+            getTickers(`${source}.secondary`, {
+              symbol: secondaryTicker,
+              end_date: endDate,
+              limit,
+              mode: 'vn',
+              interval,
+            })
+          )
+        }
+
+        const results = await Promise.allSettled(promises)
+
+        // Process primary
+        const primaryResult = results[0]
+        let primaryData: StockData[] = []
+        let primaryError: string | undefined
+
+        if (primaryResult.status === 'fulfilled') {
+          primaryData = primaryResult.value[ticker] || []
+        } else {
+          primaryError = primaryResult.reason?.message || 'Failed to fetch data'
+        }
+
+        // Process secondary
+        let secondaryData: StockData[] = playgroundDataRef.current.secondaryAllData || []
+        let secondaryError: string | undefined = playgroundDataRef.current.secondaryError
+
+        if (results.length > 1 && secondaryTicker) {
+          const secondaryResult = results[1]
+          if (secondaryResult.status === 'fulfilled') {
+            secondaryData = secondaryResult.value[secondaryTicker] || []
+          } else {
+            secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary data'
+          }
+        }
+
+        // Calculate start index
+        let startIndex: number
+        if (preserveIndex && _currentAllData?.length && primaryData.length) {
+          startIndex = findPreservedIndex(primaryData, _currentAllData, _currentIndex ?? 0)
+        } else {
+          startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
+        }
+
+        // Clear intent BEFORE setting data to avoid stale-intent issues
+        setFetchIntent(null)
+
+        setPlaygroundData({
+          ticker,
+          allData: primaryData,
+          currentIndex: startIndex,
+          endDate,
+          interval,
+          limit,
+          isLoading: false,
+          error: primaryError,
+          secondaryTicker,
+          secondaryAllData: secondaryData,
+          secondaryIsLoading: false,
+          secondaryError,
+          showSecondaryChart: typeof window !== 'undefined'
+            ? localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
+            : false,
         })
-      ]
 
-      const secondaryTicker = initialSecondaryTicker || 'VNINDEX'
-      promises.push(
-        getTickers('Playground.initialLoad.secondary', {
-          symbol: secondaryTicker,
-          end_date: endDate,
-          limit: currentLimit,
-          mode: 'vn',
-          interval: currentInterval,
-        })
-      )
-
-      const results = await Promise.allSettled(promises)
-
-      // Process primary ticker result
-      const primaryResult = results[0]
-      let primaryData: StockData[] = []
-      let primaryError: string | undefined
-
-      if (primaryResult.status === 'fulfilled') {
-        const response = primaryResult.value
-        primaryData = response[ticker] || []
-      } else {
-        primaryError = primaryResult.reason?.message || 'Failed to fetch primary ticker'
+        // Mark that we wrote state so URL→State sync should skip
+        skipNextUrlSync.current = true
+      } catch (err) {
+        setFetchIntent(null)
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data'
+        setPlaygroundData(prev => ({
+          ...prev,
+          isLoading: false,
+          secondaryIsLoading: false,
+          error: errorMessage,
+        }))
       }
-
-      // Process secondary ticker result
-      const secondaryResult = results[1]
-      let secondaryData: StockData[] = []
-      let secondaryError: string | undefined
-
-      if (secondaryResult.status === 'fulfilled') {
-        const response = secondaryResult.value
-        secondaryData = response[secondaryTicker] || []
-      } else {
-        secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary ticker'
-      }
-
-      // Start at ~20% of data window
-      const startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
-
-      setPlaygroundData({
-        ticker,
-        allData: primaryData,
-        currentIndex: startIndex,
-        endDate,
-        interval: currentInterval,
-        limit: currentLimit,
-        isLoading: false,
-        error: primaryError,
-        secondaryTicker,
-        secondaryAllData: secondaryData,
-        secondaryIsLoading: false,
-        secondaryError,
-        showSecondaryChart: typeof window !== 'undefined'
-          ? localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
-          : false,
-      })
-
-      // Update URL if we have navigate function and this wasn't from initial URL params
-      if (navigateFn && !useInitial) {
-        navigateFn({
-          to: '/backtesting',
-          search: buildSearchParams(ticker, endDate, currentInterval, currentLimit),
-        })
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load playground data'
-      setPlaygroundData(prev => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }))
     }
-  }, [getTickers, tickerGroups, navigateFn, initialTicker, initialEndDate, initialSecondaryTicker, playgroundData.interval, playgroundData.limit, buildSearchParams])
+
+    fetchData()
+
+    return () => controller.abort()
+  }, [fetchIntent, getTickers])
+
+  // === State → URL sync effect ===
+  // Watches playgroundData URL-relevant fields, updates URL one-way
+  useEffect(() => {
+    if (!navigateFn || !playgroundData.ticker || !playgroundData.endDate) return
+    skipNextUrlSync.current = true
+    navigateFn({
+      to: '/backtesting',
+      search: buildSearchParams(playgroundData.ticker, playgroundData.endDate, playgroundData.interval, playgroundData.limit),
+    })
+  }, [playgroundData.ticker, playgroundData.endDate, playgroundData.interval, playgroundData.limit, navigateFn, buildSearchParams])
+
+  // === URL → State sync effect ===
+  // Watches initial* URL params, updates state if they differ (skips when skipNextUrlSync is set)
+  useEffect(() => {
+    if (skipNextUrlSync.current) {
+      skipNextUrlSync.current = false
+      return
+    }
+
+    const urlTicker = initialTicker || undefined
+    const urlEndDate = initialEndDate || undefined
+    const urlInterval = isValidInterval(initialInterval || '') ? initialInterval as PlaygroundInterval : undefined
+    const urlLimit = isValidLimit(initialLimit) ? Number(initialLimit) as PlaygroundLimit : undefined
+
+    const current = playgroundDataRef.current
+
+    // Skip if no URL params or all match current state
+    if (!urlTicker && !urlEndDate && !urlInterval && !urlLimit) return
+    if (
+      urlTicker === current.ticker &&
+      urlEndDate === current.endDate &&
+      urlInterval === current.interval &&
+      urlLimit === current.limit
+    ) return
+
+    // Only fire fetch intent if we have a ticker (skip if data hasn't loaded yet)
+    const ticker = urlTicker || current.ticker
+    const endDate = urlEndDate || current.endDate
+    const interval = urlInterval || current.interval
+    const limit = urlLimit || current.limit
+
+    if (!ticker || !endDate) return
+
+    setPlaygroundData(prev => ({ ...prev, ticker, endDate, interval, limit, isLoading: true, error: undefined }))
+
+    setFetchIntent({
+      ticker,
+      endDate,
+      interval,
+      limit,
+      secondaryTicker: current.secondaryTicker,
+      source: 'Playground.urlChange',
+    })
+  }, [initialTicker, initialEndDate, initialInterval, initialLimit])
+
+  // === Initialization ===
+  // Fire initial fetch once on mount
+  useEffect(() => {
+    if (!hasInitialized.current) {
+      hasInitialized.current = true
+      if (onIntervalInit) {
+        onIntervalInit(resolvedInterval)
+      }
+      const stored = localStorage.getItem(SMART_RANDOM_KEY)
+      const useSmartRandom = stored === null ? true : stored === 'true'
+
+      const doInit = async () => {
+        let ticker: string
+        let endDate: string
+        const useInitial = initialTicker && initialEndDate
+
+        if (useInitial) {
+          endDate = initialEndDate
+          ticker = initialTicker
+        } else if (useSmartRandom) {
+          const viewDate = generateRandomDate(resolvedInterval)
+          ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
+          endDate = deriveEndDate(viewDate, resolvedInterval, resolvedLimit)
+        } else {
+          endDate = generateRandomDate(resolvedInterval)
+          ticker = getRandomTicker(tickerGroups)
+        }
+
+        setFetchIntent({
+          ticker,
+          endDate,
+          interval: resolvedInterval,
+          limit: resolvedLimit,
+          secondaryTicker: initialSecondaryTicker || 'VNINDEX',
+          source: 'Playground.initialLoad',
+        })
+      }
+
+      doInit()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // === Update functions ===
 
   // Randomize data with new ticker and date
   const randomizeData = useCallback(async (smartRandom?: boolean) => {
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
+    const currentInterval = playgroundDataRef.current.interval
+    const currentLimit = playgroundDataRef.current.limit
+
+    let ticker: string
+    let endDate: string
+
+    if (smartRandom) {
+      const viewDate = generateRandomDate(currentInterval)
+      ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
+      endDate = deriveEndDate(viewDate, currentInterval, currentLimit)
+    } else {
+      endDate = generateRandomDate(currentInterval)
+      ticker = getRandomTicker(tickerGroups)
+    }
+
+    setPlaygroundData(prev => ({ ...prev, ticker, endDate, isLoading: true }))
+    setFetchIntent({
+      ticker,
+      endDate,
+      interval: currentInterval,
+      limit: currentLimit,
+      secondaryTicker: playgroundDataRef.current.secondaryTicker,
+      source: 'Playground.randomize',
+    })
+  }, [getTickers, tickerGroups])
+
+  // Manual ticker change
+  const updateTicker = useCallback((newTicker: string) => {
+    if (newTicker === playgroundDataRef.current.ticker) return
+
+    setPlaygroundData(prev => ({ ...prev, ticker: newTicker, isLoading: true, error: undefined }))
+    setFetchIntent({
+      ticker: newTicker,
+      endDate: playgroundDataRef.current.endDate,
+      interval: playgroundDataRef.current.interval,
+      limit: playgroundDataRef.current.limit,
+      secondaryTicker: playgroundDataRef.current.secondaryTicker,
+      source: 'Playground.updateTicker',
+    })
+  }, [])
+
+  // Manual date change
+  const updateEndDate = useCallback((newEndDate: string) => {
+    const current = playgroundDataRef.current
+    const ticker = current.ticker
+    if (!ticker) return
+
+    setPlaygroundData(prev => ({
+      ...prev,
+      endDate: newEndDate,
+      isLoading: true,
+      error: undefined,
+      secondaryIsLoading: !!prev.secondaryTicker,
+    }))
+
+    setFetchIntent({
+      ticker,
+      endDate: newEndDate,
+      interval: current.interval,
+      limit: current.limit,
+      secondaryTicker: current.secondaryTicker,
+      source: 'Playground.updateDate',
+      preserveIndex: true,
+      _currentAllData: current.allData,
+      _currentIndex: current.currentIndex,
+    })
+  }, [])
+
+  // Update interval
+  const updateInterval = useCallback((newInterval: PlaygroundInterval) => {
+    if (newInterval === playgroundDataRef.current.interval) return
+
+    setPlaygroundData(prev => ({ ...prev, interval: newInterval, isLoading: true, error: undefined }))
+    setFetchIntent({
+      ticker: playgroundDataRef.current.ticker || 'VNINDEX',
+      endDate: playgroundDataRef.current.endDate,
+      interval: newInterval,
+      limit: playgroundDataRef.current.limit,
+      secondaryTicker: playgroundDataRef.current.secondaryTicker,
+      source: 'Playground.updateInterval',
+    })
+  }, [])
+
+  // Update limit
+  const updateLimit = useCallback((newLimit: PlaygroundLimit) => {
+    if (newLimit === playgroundDataRef.current.limit) return
+
+    setPlaygroundData(prev => ({ ...prev, limit: newLimit, isLoading: true, error: undefined }))
+    setFetchIntent({
+      ticker: playgroundDataRef.current.ticker || 'VNINDEX',
+      endDate: playgroundDataRef.current.endDate,
+      interval: playgroundDataRef.current.interval,
+      limit: newLimit,
+      secondaryTicker: playgroundDataRef.current.secondaryTicker,
+      source: 'Playground.updateLimit',
+    })
+  }, [])
+
+  // Update secondary ticker
+  const updateSecondaryTicker = useCallback(async (newSecondaryTicker: string) => {
+    if (!playgroundDataRef.current.endDate) return
+
+    setPlaygroundData(prev => ({
+      ...prev,
+      secondaryTicker: newSecondaryTicker,
+      secondaryIsLoading: true,
+      secondaryError: undefined,
+    }))
+
     try {
-      const currentInterval = playgroundData.interval
-      const currentLimit = playgroundData.limit
-
-      let endDate: string
-      let ticker: string
-
-      if (smartRandom) {
-        // Smart random: generate viewDate first, pick ticker by activity at that date,
-        // then derive endDate so viewDate lands at ~20% into the data window
-        const viewDate = generateRandomDate(currentInterval)
-        ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
-        endDate = deriveEndDate(viewDate, currentInterval, currentLimit)
-      } else {
-        // Plain random
-        endDate = generateRandomDate(currentInterval)
-        ticker = getRandomTicker(tickerGroups)
-      }
-
-      // Fetch with current interval and limit
-      const response = await getTickers('Playground.randomize', {
-        symbol: ticker,
-        end_date: endDate,
-        limit: currentLimit,
+      const current = playgroundDataRef.current
+      const response = await getTickers('Playground.updateSecondaryTicker', {
+        symbol: newSecondaryTicker,
+        end_date: current.endDate,
+        limit: current.limit,
         mode: 'vn',
-        interval: currentInterval,
+        interval: current.interval,
       })
 
-      const data = response[ticker] || []
-
-      // Start at ~20% of data window
-      const startIndex = Math.min(Math.floor(data.length * 0.2), Math.max(0, data.length - 1))
-
-      setPlaygroundData(prev => ({
-        ticker,
-        allData: data,
-        currentIndex: startIndex,
-        endDate,
-        interval: prev.interval,
-        limit: prev.limit,
-        isLoading: false,
-        secondaryTicker: prev.secondaryTicker,
-        secondaryAllData: prev.secondaryAllData,
-        secondaryIsLoading: prev.secondaryIsLoading,
-        secondaryError: prev.secondaryError,
-        showSecondaryChart: prev.showSecondaryChart,
-      }))
-
-      // Update URL with new random values
-      if (navigateFn) {
-        navigateFn({
-          to: '/backtesting',
-          search: buildSearchParams(ticker, endDate, playgroundData.interval, playgroundData.limit),
-        })
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to randomize playground data'
+      const data = response[newSecondaryTicker] || []
       setPlaygroundData(prev => ({
         ...prev,
-        isLoading: false,
-        error: errorMessage,
+        secondaryAllData: data,
+        secondaryIsLoading: false,
+      }))
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update secondary ticker'
+      setPlaygroundData(prev => ({
+        ...prev,
+        secondaryIsLoading: false,
+        secondaryError: errorMessage,
       }))
     }
-  }, [getTickers, tickerGroups, navigateFn, playgroundData.interval, playgroundData.limit, buildSearchParams])
-
-  // Fetch data on mount (only once)
-  useEffect(() => {
-    if (!hasInitialized.current) {
-      hasInitialized.current = true
-      // Sync the resolved interval to global ChartSettings (handles URL param case)
-      if (onIntervalInit) {
-        onIntervalInit(resolvedInterval)
-      }
-      // Read smart random preference from localStorage (defaults to true)
-      const stored = localStorage.getItem(SMART_RANDOM_KEY)
-      const useSmartRandom = stored === null ? true : stored === 'true'
-      fetchInitialData(useSmartRandom)
-    }
-  }, [onIntervalInit]) // Run only once on mount
+  }, [getTickers])
 
   // Navigate to new index
   const setCurrentIndex = useCallback((newIndex: number) => {
@@ -443,153 +615,21 @@ export function usePlaygroundData(
     })
   }, [])
 
-  // Get visible data based on current index
-  const visibleData = useMemo(() => {
-    if (!playgroundData.allData.length) return []
+  // Toggle secondary chart visibility
+  const toggleSecondaryChart = useCallback(() => {
+    setPlaygroundData(prev => ({
+      ...prev,
+      showSecondaryChart: !prev.showSecondaryChart,
+    }))
+  }, [])
 
-    // Show data from index 0 to currentIndex (cumulative view)
-    const visible = playgroundData.allData.slice(0, playgroundData.currentIndex + 1)
-
-    return visible
-  }, [playgroundData.allData, playgroundData.currentIndex])
-
-
-  // Watch for URL param changes (e.g., when user manually changes URL in browser)
-  useEffect(() => {
-    // Only react to URL changes if they differ from current state
-    const urlTicker = initialTicker || undefined
-    const urlEndDate = initialEndDate || undefined
-    const urlLimit = isValidLimit(initialLimit) ? Number(initialLimit) as PlaygroundLimit : undefined
-
-    // Skip if URL params are empty (not provided) or match current state
-    if ((!urlTicker && !urlEndDate && !urlLimit) ||
-        (urlTicker === playgroundData.ticker && urlEndDate === playgroundData.endDate && urlLimit === playgroundData.limit)) {
-      return
-    }
-
-    // If only limit changed, handle it directly (updateLimit not yet defined here)
-    if (urlLimit && urlLimit !== playgroundData.limit && urlTicker === playgroundData.ticker && urlEndDate === playgroundData.endDate) {
-      setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
-      const handleLimitOnlyChange = async () => {
-        try {
-          const ticker = playgroundData.ticker || 'VNINDEX'
-          const promises = [
-            getTickers('Playground.urlLimitChange.primary', {
-              symbol: ticker,
-              end_date: playgroundData.endDate,
-              limit: urlLimit,
-              mode: 'vn',
-              interval: playgroundData.interval,
-            })
-          ]
-          if (playgroundData.secondaryTicker) {
-            promises.push(
-              getTickers('Playground.urlLimitChange.secondary', {
-                symbol: playgroundData.secondaryTicker,
-                end_date: playgroundData.endDate,
-                limit: urlLimit,
-                mode: 'vn',
-                interval: playgroundData.interval,
-              })
-            )
-          }
-          const results = await Promise.allSettled(promises)
-          const primaryResult = results[0]
-          let primaryData: StockData[] = []
-          let primaryError: string | undefined
-          if (primaryResult.status === 'fulfilled') {
-            const response = primaryResult.value
-            primaryData = response[ticker] || []
-          } else {
-            primaryError = primaryResult.reason?.message || 'Failed to fetch data for new limit'
-          }
-          let secondaryData: StockData[] = playgroundData.secondaryAllData || []
-          let secondaryError: string | undefined = playgroundData.secondaryError
-          if (results.length > 1 && playgroundData.secondaryTicker) {
-            const secondaryResult = results[1]
-            if (secondaryResult.status === 'fulfilled') {
-              const response = secondaryResult.value
-              secondaryData = response[playgroundData.secondaryTicker!] || []
-            } else {
-              secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary data for new limit'
-            }
-          }
-          const startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
-          setPlaygroundData(prev => ({
-            ...prev,
-            limit: urlLimit,
-            allData: primaryData,
-            currentIndex: startIndex,
-            isLoading: false,
-            error: primaryError,
-            secondaryAllData: secondaryData,
-            secondaryError,
-          }))
-          if (navigateFn) {
-            navigateFn({
-              to: '/backtesting',
-              search: buildSearchParams(playgroundData.ticker, playgroundData.endDate, playgroundData.interval, urlLimit),
-            })
-          }
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to update limit'
-          setPlaygroundData(prev => ({ ...prev, isLoading: false, error: errorMessage }))
-        }
-      }
-      handleLimitOnlyChange()
-      return
-    }
-
-    setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
-
-    const fetchDataForParams = async (ticker: string, endDate: string, limit: PlaygroundLimit) => {
-      try {
-        const currentInterval = playgroundData.interval
-
-        const response = await getTickers('Playground.urlChange', {
-          symbol: ticker,
-          end_date: endDate,
-          limit,
-          mode: 'vn',
-          interval: currentInterval,
-        })
-
-        const data = response[ticker] || []
-
-        // Start at ~20% of data window
-        const startIndex = Math.min(Math.floor(data.length * 0.2), Math.max(0, data.length - 1))
-
-        setPlaygroundData(prev => ({
-          ticker,
-          allData: data,
-          currentIndex: startIndex,
-          endDate,
-          interval: prev.interval,
-          limit,
-          isLoading: false,
-          secondaryTicker: prev.secondaryTicker,
-          secondaryAllData: prev.secondaryAllData,
-          secondaryIsLoading: prev.secondaryIsLoading,
-          secondaryError: prev.secondaryError,
-          showSecondaryChart: prev.showSecondaryChart,
-        }))
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load data from URL params'
-        setPlaygroundData(prev => ({
-          ...prev,
-          isLoading: false,
-          error: errorMessage,
-        }))
-      }
-    }
-
-    // Use URL params if provided, otherwise use current state
-    const tickerToLoad = urlTicker || playgroundData.ticker
-    const endDateToUse = urlEndDate || playgroundData.endDate
-    const limitToUse = urlLimit || playgroundData.limit
-
-    fetchDataForParams(tickerToLoad, endDateToUse, limitToUse)
-  }, [initialTicker, initialEndDate, initialLimit, playgroundData.ticker, playgroundData.endDate, playgroundData.limit, playgroundData.interval, getTickers])
+  // Set secondary chart visibility directly
+  const setShowSecondaryChart = useCallback((visible: boolean) => {
+    setPlaygroundData(prev => ({
+      ...prev,
+      showSecondaryChart: visible,
+    }))
+  }, [])
 
   // Navigation helpers
   const navigateDate = useCallback((direction: 'back5' | 'back1' | 'next1' | 'next5') => {
@@ -616,429 +656,15 @@ export function usePlaygroundData(
     setCurrentIndex(newIndex)
   }, [playgroundData.currentIndex, playgroundData.allData.length, setCurrentIndex])
 
-  // Manual ticker change method
-  const updateTicker = useCallback(async (newTicker: string) => {
-    setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
+  // Get visible data based on current index
+  const visibleData = useMemo(() => {
+    if (!playgroundData.allData.length) return []
 
-    try {
-      const currentInterval = playgroundData.interval
-      const currentLimit = playgroundData.limit
+    // Show data from index 0 to currentIndex (cumulative view)
+    const visible = playgroundData.allData.slice(0, playgroundData.currentIndex + 1)
 
-      const response = await getTickers('Playground.updateTicker', {
-        symbol: newTicker,
-        end_date: playgroundData.endDate,
-        limit: currentLimit,
-        mode: 'vn',
-        interval: currentInterval,
-      })
-
-      const data = response[newTicker] || []
-
-      // Start at ~20% of data window
-      const startIndex = Math.min(Math.floor(data.length * 0.2), Math.max(0, data.length - 1))
-
-      setPlaygroundData(prev => ({
-        ticker: newTicker,
-        allData: data,
-        currentIndex: startIndex,
-        endDate: prev.endDate,
-        interval: prev.interval,
-        limit: prev.limit,
-        isLoading: false,
-        secondaryTicker: prev.secondaryTicker,
-        secondaryAllData: prev.secondaryAllData,
-        secondaryIsLoading: prev.secondaryIsLoading,
-        secondaryError: prev.secondaryError,
-        showSecondaryChart: prev.showSecondaryChart,
-      }))
-
-      // Update URL
-      if (navigateFn) {
-        navigateFn({
-          to: '/backtesting',
-          search: buildSearchParams(newTicker, playgroundData.endDate, playgroundData.interval, playgroundData.limit),
-        })
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update ticker'
-      setPlaygroundData(prev => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }))
-    }
-  }, [getTickers, playgroundData.endDate, playgroundData.interval, playgroundData.limit, navigateFn, buildSearchParams])
-
-  // Manual date change method
-  const updateEndDate = useCallback(async (newEndDate: string) => {
-    // Set loading state first
-    setPlaygroundData(prev => {
-      const ticker = prev.ticker || initialTicker || 'VNINDEX'
-
-      if (!ticker || ticker === '') {
-        return prev // Return unchanged state
-      }
-
-      return {
-        ...prev,
-        isLoading: true,
-        error: undefined,
-        secondaryIsLoading: prev.secondaryTicker ? true : prev.secondaryIsLoading,
-      }
-    })
-
-    try {
-      // Get the current state with the ticker we need to use
-      const currentState = playgroundData
-      const ticker = currentState.ticker || initialTicker || 'VNINDEX'
-      const currentInterval = currentState.interval
-      const currentLimit = currentState.limit
-
-      // Fetch both primary and secondary tickers in parallel if secondary ticker exists
-      const promises = [
-        getTickers('Playground.updateDate.primary', {
-          symbol: ticker,
-          end_date: newEndDate,
-          limit: currentLimit,
-          mode: 'vn',
-          interval: currentInterval,
-        })
-      ]
-
-      if (currentState.secondaryTicker) {
-        promises.push(
-          getTickers('Playground.updateDate.secondary', {
-            symbol: currentState.secondaryTicker,
-            end_date: newEndDate,
-            limit: currentLimit,
-            mode: 'vn',
-            interval: currentInterval,
-          })
-        )
-      }
-
-      const results = await Promise.allSettled(promises)
-
-      // Process primary ticker result
-      const primaryResult = results[0]
-      if (primaryResult.status === 'fulfilled') {
-        const response = primaryResult.value
-        const data = response[ticker] || []
-
-        // Simple logic: if changing to earlier date, show end of data; otherwise try to preserve
-        const currentDate = currentState.allData[currentState.currentIndex]?.time?.split('T')[0]
-        let startIndex
-
-        if (currentDate && new Date(currentDate) > new Date(newEndDate)) {
-          // Current date is after new end date, jump to end
-          startIndex = data.length - 1
-        } else {
-          // Try to preserve position
-          startIndex = findPreservedIndex(data, currentState.allData, currentState.currentIndex)
-        }
-
-        // Update state using functional form to ensure we preserve the ticker
-        setPlaygroundData(prev => ({
-          ...prev,
-          ticker: ticker, // Explicitly set ticker to ensure it's preserved
-          allData: data,
-          currentIndex: startIndex,
-          endDate: newEndDate,
-          interval: prev.interval,
-          limit: prev.limit,
-          isLoading: false,
-          secondaryTicker: prev.secondaryTicker,
-          secondaryAllData: prev.secondaryAllData,
-          secondaryIsLoading: prev.secondaryIsLoading,
-          secondaryError: prev.secondaryError,
-          showSecondaryChart: prev.showSecondaryChart,
-        }))
-      } else {
-        throw primaryResult.reason
-      }
-
-      // Process secondary ticker result if it exists
-      if (results.length > 1 && currentState.secondaryTicker) {
-        const secondaryResult = results[1]
-        if (secondaryResult.status === 'fulfilled') {
-          const response = secondaryResult.value
-          const data = response[currentState.secondaryTicker] || []
-
-          setPlaygroundData(prev => ({
-            ...prev,
-            secondaryAllData: data,
-            secondaryIsLoading: false,
-          }))
-        } else {
-          setPlaygroundData(prev => ({
-            ...prev,
-            secondaryIsLoading: false,
-            secondaryError: secondaryResult.reason instanceof Error ? secondaryResult.reason.message : 'Failed to update secondary ticker',
-          }))
-        }
-      }
-
-      // Update URL (only primary ticker, endDate, interval, limit)
-      if (navigateFn) {
-        navigateFn({
-          to: '/backtesting',
-          search: buildSearchParams(ticker, newEndDate, playgroundData.interval, playgroundData.limit),
-        })
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update end date'
-      setPlaygroundData(prev => ({
-        ...prev,
-        isLoading: false,
-        secondaryIsLoading: false,
-        error: errorMessage,
-      }))
-    }
-  }, [playgroundData, getTickers, navigateFn, initialTicker, buildSearchParams])
-
-  // Update secondary ticker method
-  const updateSecondaryTicker = useCallback(async (newSecondaryTicker: string) => {
-    if (!playgroundData.endDate) {
-      return
-    }
-
-    setPlaygroundData(prev => ({
-      ...prev,
-      secondaryTicker: newSecondaryTicker,
-      secondaryIsLoading: true,
-      secondaryError: undefined,
-    }))
-
-    try {
-      const response = await getTickers('Playground.updateSecondaryTicker', {
-        symbol: newSecondaryTicker,
-        end_date: playgroundData.endDate,
-        limit: playgroundData.limit,
-        mode: 'vn',
-        interval: playgroundData.interval,
-      })
-
-      const data = response[newSecondaryTicker] || []
-
-      setPlaygroundData(prev => ({
-        ...prev,
-        secondaryAllData: data,
-        secondaryIsLoading: false,
-      }))
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update secondary ticker'
-      setPlaygroundData(prev => ({
-        ...prev,
-        secondaryIsLoading: false,
-        secondaryError: errorMessage,
-      }))
-    }
-  }, [getTickers, playgroundData.endDate, playgroundData.interval])
-
-  // Update interval method
-  const updateInterval = useCallback(async (newInterval: PlaygroundInterval) => {
-    if (newInterval === playgroundData.interval) return
-
-    setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
-
-    try {
-      const currentState = playgroundData
-      const ticker = currentState.ticker || 'VNINDEX'
-      const currentLimit = currentState.limit
-
-      // Fetch both primary and secondary in parallel
-      const promises = [
-        getTickers('Playground.updateInterval.primary', {
-          symbol: ticker,
-          end_date: currentState.endDate,
-          limit: currentLimit,
-          mode: 'vn',
-          interval: newInterval,
-        })
-      ]
-
-      if (currentState.secondaryTicker) {
-        promises.push(
-          getTickers('Playground.updateInterval.secondary', {
-            symbol: currentState.secondaryTicker,
-            end_date: currentState.endDate,
-            limit: currentLimit,
-            mode: 'vn',
-            interval: newInterval,
-          })
-        )
-      }
-
-      const results = await Promise.allSettled(promises)
-
-      // Process primary
-      const primaryResult = results[0]
-      let primaryData: StockData[] = []
-      let primaryError: string | undefined
-
-      if (primaryResult.status === 'fulfilled') {
-        const response = primaryResult.value
-        primaryData = response[ticker] || []
-      } else {
-        primaryError = primaryResult.reason?.message || 'Failed to fetch data for new interval'
-      }
-
-      // Process secondary
-      let secondaryData: StockData[] = currentState.secondaryAllData || []
-      let secondaryError: string | undefined = currentState.secondaryError
-
-      if (results.length > 1 && currentState.secondaryTicker) {
-        const secondaryResult = results[1]
-        if (secondaryResult.status === 'fulfilled') {
-          const response = secondaryResult.value
-          secondaryData = response[currentState.secondaryTicker!] || []
-        } else {
-          secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary data for new interval'
-        }
-      }
-
-      // Reset current index to ~20% of data window
-      const startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
-
-      setPlaygroundData(prev => ({
-        ...prev,
-        interval: newInterval,
-        allData: primaryData,
-        currentIndex: startIndex,
-        isLoading: false,
-        error: primaryError,
-        secondaryAllData: secondaryData,
-        secondaryError,
-      }))
-
-      // Update URL with new interval
-      if (navigateFn) {
-        navigateFn({
-          to: '/backtesting',
-          search: buildSearchParams(ticker, currentState.endDate, newInterval, currentState.limit),
-        })
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update interval'
-      setPlaygroundData(prev => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }))
-    }
-  }, [playgroundData, getTickers, navigateFn, buildSearchParams])
-
-  // Update limit method
-  const updateLimit = useCallback(async (newLimit: PlaygroundLimit) => {
-    if (newLimit === playgroundData.limit) return
-
-    setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
-
-    try {
-      const currentState = playgroundData
-      const ticker = currentState.ticker || 'VNINDEX'
-
-      // Fetch both primary and secondary in parallel
-      const promises = [
-        getTickers('Playground.updateLimit.primary', {
-          symbol: ticker,
-          end_date: currentState.endDate,
-          limit: newLimit,
-          mode: 'vn',
-          interval: currentState.interval,
-        })
-      ]
-
-      if (currentState.secondaryTicker) {
-        promises.push(
-          getTickers('Playground.updateLimit.secondary', {
-            symbol: currentState.secondaryTicker,
-            end_date: currentState.endDate,
-            limit: newLimit,
-            mode: 'vn',
-            interval: currentState.interval,
-          })
-        )
-      }
-
-      const results = await Promise.allSettled(promises)
-
-      // Process primary
-      const primaryResult = results[0]
-      let primaryData: StockData[] = []
-      let primaryError: string | undefined
-
-      if (primaryResult.status === 'fulfilled') {
-        const response = primaryResult.value
-        primaryData = response[ticker] || []
-      } else {
-        primaryError = primaryResult.reason?.message || 'Failed to fetch data for new limit'
-      }
-
-      // Process secondary
-      let secondaryData: StockData[] = currentState.secondaryAllData || []
-      let secondaryError: string | undefined = currentState.secondaryError
-
-      if (results.length > 1 && currentState.secondaryTicker) {
-        const secondaryResult = results[1]
-        if (secondaryResult.status === 'fulfilled') {
-          const response = secondaryResult.value
-          secondaryData = response[currentState.secondaryTicker!] || []
-        } else {
-          secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary data for new limit'
-        }
-      }
-
-      // Reset current index to ~20% of data window
-      const startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
-
-      setPlaygroundData(prev => ({
-        ...prev,
-        limit: newLimit,
-        allData: primaryData,
-        currentIndex: startIndex,
-        isLoading: false,
-        error: primaryError,
-        secondaryAllData: secondaryData,
-        secondaryError,
-      }))
-
-      // Update URL with new limit
-      if (navigateFn) {
-        navigateFn({
-          to: '/backtesting',
-          search: buildSearchParams(ticker, currentState.endDate, currentState.interval, newLimit),
-        })
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update limit'
-      setPlaygroundData(prev => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }))
-    }
-  }, [playgroundData, getTickers, navigateFn, buildSearchParams])
-
-  // Toggle secondary chart visibility
-  const toggleSecondaryChart = useCallback(() => {
-    setPlaygroundData(prev => {
-      const newState = !prev.showSecondaryChart
-
-      return {
-        ...prev,
-        showSecondaryChart: newState,
-      }
-    })
-  }, [])
-
-  // Set secondary chart visibility directly
-  const setShowSecondaryChart = useCallback((visible: boolean) => {
-    setPlaygroundData(prev => ({
-      ...prev,
-      showSecondaryChart: visible,
-    }))
-  }, [])
+    return visible
+  }, [playgroundData.allData, playgroundData.currentIndex])
 
   // Align primary and secondary data to common date range
   useEffect(() => {
@@ -1118,7 +744,6 @@ export function usePlaygroundData(
     secondaryViewportRange,
     setCurrentIndex,
     navigate: navigateDate,
-    fetchInitialData,
     randomizeData,
     updateTicker,
     updateEndDate,

@@ -9,7 +9,6 @@ interface PlaygroundContextValue {
   secondaryViewportRange: ReturnType<typeof usePlaygroundData>['secondaryViewportRange']
   setCurrentIndex: ReturnType<typeof usePlaygroundData>['setCurrentIndex']
   navigate: ReturnType<typeof usePlaygroundData>['navigate']
-  fetchInitialData: ReturnType<typeof usePlaygroundData>['fetchInitialData']
   randomizeData: ReturnType<typeof usePlaygroundData>['randomizeData']
   updateTicker: ReturnType<typeof usePlaygroundData>['updateTicker']
   updateEndDate: ReturnType<typeof usePlaygroundData>['updateEndDate']
@@ -69,7 +68,6 @@ export function PlaygroundDataProvider({
     secondaryViewportRange: playgroundDataValue.secondaryViewportRange,
     setCurrentIndex: playgroundDataValue.setCurrentIndex,
     navigate: playgroundDataValue.navigate,
-    fetchInitialData: playgroundDataValue.fetchInitialData,
     randomizeData: playgroundDataValue.randomizeData,
     updateTicker: playgroundDataValue.updateTicker,
     updateEndDate: playgroundDataValue.updateEndDate,
