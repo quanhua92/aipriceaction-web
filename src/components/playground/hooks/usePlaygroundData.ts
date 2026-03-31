@@ -136,12 +136,12 @@ const findPreservedIndex = (
   currentIndex: number,
 ): number => {
   if (!currentData.length || !newData.length) {
-    return Math.min(Math.floor(newData.length * 0.2), Math.max(0, newData.length - 1))
+    return Math.min(Math.floor(newData.length * 0.2), 100, Math.max(0, newData.length - 1))
   }
 
   const currentDate = currentData[currentIndex]?.time?.split('T')[0]
   if (!currentDate) {
-    return Math.min(Math.floor(newData.length * 0.2), Math.max(0, newData.length - 1))
+    return Math.min(Math.floor(newData.length * 0.2), 100, Math.max(0, newData.length - 1))
   }
 
   // Try to find the exact date in new data
@@ -325,7 +325,7 @@ export function usePlaygroundData(
         if (preserveIndex && _currentAllData?.length && primaryData.length) {
           startIndex = findPreservedIndex(primaryData, _currentAllData, _currentIndex ?? 0)
         } else {
-          startIndex = Math.min(Math.floor(primaryData.length * 0.2), Math.max(0, primaryData.length - 1))
+          startIndex = Math.min(Math.floor(primaryData.length * 0.2), 100, Math.max(0, primaryData.length - 1))
         }
 
         // Clear intent BEFORE setting data to avoid stale-intent issues
