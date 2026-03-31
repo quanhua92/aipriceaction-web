@@ -888,22 +888,17 @@ export function BaseTradingViewChart({
 		// Restore viewport after all setData calls (prevents zoom/scroll reset on subsequent updates)
 		if (savedLogicalRange && chartRef.current && prevDataLength > 0) {
 			const newDataLength = chartData.candlestick.length;
-			const addedBars = newDataLength - prevDataLength;
+			const barDelta = newDataLength - prevDataLength;
+			const wasAtRightEdge = savedLogicalRange.to >= prevDataLength - 1;
 
-			if (addedBars > 0 && savedLogicalRange.to >= prevDataLength - 1) {
-				// New bars appended and user was viewing the right edge — shift viewport right
+			if (barDelta !== 0 && wasAtRightEdge) {
+				// Bars added or removed and user was at the right edge — shift viewport to follow the edge
 				chartRef.current.timeScale().setVisibleLogicalRange({
-					from: savedLogicalRange.from + addedBars,
-					to: savedLogicalRange.to + addedBars,
-				});
-			} else if (addedBars < 0 && savedLogicalRange.to > newDataLength - 1) {
-				// Bars removed (e.g. Playground "Back") and viewport extends beyond new data — clamp
-				chartRef.current.timeScale().setVisibleLogicalRange({
-					from: Math.min(savedLogicalRange.from, Math.max(0, newDataLength - (savedLogicalRange.to - savedLogicalRange.from))),
-					to: newDataLength - 1,
+					from: savedLogicalRange.from + barDelta,
+					to: savedLogicalRange.to + barDelta,
 				});
 			} else {
-				// User viewing historical data or same bar count — restore same logical position
+				// Same bar count or user viewing historical data — restore same logical position
 				chartRef.current.timeScale().setVisibleLogicalRange(savedLogicalRange);
 			}
 		}
