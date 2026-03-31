@@ -8,6 +8,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from 'lucide-react'
+import { Slider } from '@/components/ui/slider'
 import { useTranslation } from '@/hooks/useTranslation'
 import { isIntradayInterval } from './hooks/usePlaygroundData'
 
@@ -42,12 +43,9 @@ export function PlaygroundControls() {
   }
 
   // Slider change handler
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentIndex(Number(e.target.value))
+  const handleSliderChange = (value: number[]) => {
+    setCurrentIndex(value[0])
   }
-
-  // Calculate progress percentage
-  const progress = allData.length > 0 ? (currentIndex / (allData.length - 1)) * 100 : 0
 
   // Check if buttons should be disabled
   const isAtStart = currentIndex === 0
@@ -127,17 +125,14 @@ export function PlaygroundControls() {
 
       {/* Slider for fine control */}
       {allData.length > 0 && (
-        <div className="space-y-2">
-          <input
-            type="range"
-            min="0"
+        <div className="space-y-2 px-1">
+          <Slider
+            min={0}
             max={allData.length - 1}
-            value={currentIndex}
-            onChange={handleSliderChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
-            style={{
-              background: `linear-gradient(to right, hsl(var(--primary)) ${progress}%, hsl(var(--muted)) ${progress}%)`
-            }}
+            step={1}
+            value={[currentIndex]}
+            onValueChange={handleSliderChange}
+            className="w-full"
           />
         </div>
       )}
