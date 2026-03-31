@@ -384,6 +384,8 @@ export default {
       bars: 'nến',
       interval: 'Khoảng Thời Gian',
       randomizeButton: 'Chọn Ngẫu Nghiên Mã & Ngày',
+      randomizeButtonDateOnly: 'Chọn Ngẫu Nghiên Ngày',
+      randomTicker: 'Ngẫu nhiên mã cổ phiếu',
       loadingData: 'Đang tải dữ liệu...',
       secondaryChart: 'Biểu Đồ Phụ',
       showSecondaryChart: 'Hiển Thị Biểu Đồ Phụ',

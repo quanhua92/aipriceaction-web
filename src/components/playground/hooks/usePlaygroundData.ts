@@ -468,8 +468,8 @@ export function usePlaygroundData(
 
   // === Update functions ===
 
-  // Randomize data with new ticker and date
-  const randomizeData = useCallback(async (smartRandom?: boolean) => {
+  // Randomize data with new ticker and/or date
+  const randomizeData = useCallback(async (smartRandom?: boolean, randomTicker?: boolean) => {
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     const currentInterval = playgroundDataRef.current.interval
@@ -478,7 +478,11 @@ export function usePlaygroundData(
     let ticker: string
     let endDate: string
 
-    if (smartRandom) {
+    if (randomTicker === false) {
+      // Date-only randomization: keep current ticker, randomize date
+      ticker = playgroundDataRef.current.ticker
+      endDate = generateRandomDate(currentInterval)
+    } else if (smartRandom) {
       const viewDate = generateRandomDate(currentInterval)
       ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
       endDate = deriveEndDate(viewDate, currentInterval, currentLimit)

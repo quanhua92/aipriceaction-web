@@ -1,11 +1,9 @@
-import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { usePlayground } from './PlaygroundDataProvider'
 import { useLogs } from '@/contexts/LogsContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Dices, Calendar, Edit, Share2, X } from 'lucide-react'
-import { format, parseISO } from 'date-fns'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { DateInput } from '@/components/DateInput'
@@ -16,6 +14,8 @@ import { PLAYGROUND_INTERVALS, PLAYGROUND_LIMITS, isIntradayInterval, type Playg
 const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
 // localStorage key for smart random toggle
 const SMART_RANDOM_KEY = 'playground-smart-random'
+// localStorage key for random ticker toggle
+const RANDOM_TICKER_KEY = 'playground-random-ticker'
 
 export function PlaygroundInfoPanel() {
   const {
@@ -45,6 +45,18 @@ export function PlaygroundInfoPanel() {
   const handleSmartRandomChange = (checked: boolean) => {
     setSmartRandom(checked)
     localStorage.setItem(SMART_RANDOM_KEY, String(checked))
+  }
+
+  // Random ticker toggle state, persisted to localStorage
+  const [randomTicker, setRandomTicker] = useState<boolean>(() => {
+    const stored = localStorage.getItem(RANDOM_TICKER_KEY)
+    return stored === null ? true : stored === 'true'
+  })
+
+  // Persist random ticker toggle to localStorage
+  const handleRandomTickerChange = (checked: boolean) => {
+    setRandomTicker(checked)
+    localStorage.setItem(RANDOM_TICKER_KEY, String(checked))
   }
 
   // Initialize secondary chart visibility from localStorage on mount - run only once
@@ -84,8 +96,8 @@ export function PlaygroundInfoPanel() {
 
   // Handle randomize button click
   const handleRandomize = () => {
-    info(`[Playground] 🎲 User clicked randomize (smartRandom=${smartRandom}) - generating new ticker and date...`)
-    randomizeData(smartRandom)
+    info(`[Playground] 🎲 User clicked randomize (randomTicker=${randomTicker}, smartRandom=${smartRandom})`)
+    randomizeData(randomTicker ? smartRandom : false, randomTicker)
   }
 
   // Handle manual ticker selection
@@ -425,15 +437,28 @@ export function PlaygroundInfoPanel() {
               className="w-full text-xs bg-green-600 text-white hover:bg-green-700"
             >
               <Dices className="h-3.5 w-3.5 mr-2" />
-              {t('common.playground.info.randomizeButton')}
+              {randomTicker ? t('common.playground.info.randomizeButton') : t('common.playground.info.randomizeButtonDateOnly')}
             </Button>
-            <div className="flex items-center space-x-2 mt-2">
+            <div className="flex items-center space-x-2 mt-3">
+              <input
+                type="checkbox"
+                id="random-ticker"
+                checked={randomTicker}
+                onChange={(e) => handleRandomTickerChange(e.target.checked)}
+                disabled={isLoading}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="random-ticker" className="text-xs text-muted-foreground">
+                {t('common.playground.info.randomTicker')}
+              </label>
+            </div>
+            <div className="flex items-center space-x-2 mt-3">
               <input
                 type="checkbox"
                 id="smart-random"
                 checked={smartRandom}
                 onChange={(e) => handleSmartRandomChange(e.target.checked)}
-                disabled={isLoading}
+                disabled={isLoading || !randomTicker}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="smart-random" className="text-xs text-muted-foreground">

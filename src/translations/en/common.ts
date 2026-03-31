@@ -384,6 +384,8 @@ export default {
       bars: 'bars',
       interval: 'Interval',
       randomizeButton: 'Randomize Ticker & Date',
+      randomizeButtonDateOnly: 'Randomize Date',
+      randomTicker: 'Random ticker',
       loadingData: 'Loading data...',
       secondaryChart: 'Secondary Chart',
       showSecondaryChart: 'Show Secondary Chart',
