@@ -7,7 +7,14 @@ import { useTranslation } from '@/hooks/useTranslation'
 import { TickerProvider } from '@/contexts/TickerContext'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useAPI } from '@/contexts/APIContext'
+import { isCryptoTicker } from '@/lib/ticker-utils'
+
+const getMode = (symbol: string, stockTickers: { symbol: string; sector: string }[], cryptoTickers: { symbol: string; sector: string }[]) =>
+  isCryptoTicker(symbol, stockTickers, cryptoTickers) ? 'crypto' as const : 'vn' as const
+
 export function PlaygroundChart() {
+  const { tickers, cryptoTickers } = useAPI()
   const {
     playgroundData,
     visibleData,
@@ -109,7 +116,7 @@ export function PlaygroundChart() {
       interval: playgroundData.interval as Interval,
       startDate: currentStartDate || '',
       endDate: currentEndDate || '',
-      mode: 'vn' as const
+      mode: getMode(playgroundData.ticker, tickers, cryptoTickers)
     },
     onTickerChange: updateTicker,
   }
@@ -127,7 +134,7 @@ export function PlaygroundChart() {
       // Use secondary chart's own date metadata, not primary's
       startDate: secondaryVisibleData.length > 0 ? secondaryVisibleData[0]?.time?.split('T')[0] || '' : '',
       endDate: secondaryVisibleData.length > 0 ? secondaryVisibleData[secondaryVisibleData.length - 1]?.time?.split('T')[0] || '' : '',
-      mode: 'vn' as const
+      mode: getMode(playgroundData.secondaryTicker!, tickers, cryptoTickers)
     },
     onTickerChange: updateSecondaryTicker,
   }

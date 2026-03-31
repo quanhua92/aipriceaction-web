@@ -3,6 +3,7 @@ import { usePlayground } from './PlaygroundDataProvider'
 import { useAPI } from '@/contexts/APIContext'
 import { useLogs } from '@/contexts/LogsContext'
 import { useTranslation } from '@/hooks/useTranslation'
+import { isCryptoTicker } from '@/lib/ticker-utils'
 
 /**
  * Component that watches for interval changes and checks data availability.
@@ -10,7 +11,7 @@ import { useTranslation } from '@/hooks/useTranslation'
  */
 export function PlaygroundIntervalWatcher() {
   const { playgroundData } = usePlayground()
-  const { getTickers } = useAPI()
+  const { getTickers, tickers, cryptoTickers } = useAPI()
   const { info } = useLogs()
   const { t } = useTranslation()
 
@@ -55,7 +56,7 @@ export function PlaygroundIntervalWatcher() {
           interval,
           end_date: currentVisibleDate,
           limit: 1, // Just check if any data exists
-          mode: 'vn'
+          mode: isCryptoTicker(playgroundData.ticker, tickers, cryptoTickers) ? 'crypto' : 'vn'
         })
 
         const data = response[playgroundData.ticker] || []
