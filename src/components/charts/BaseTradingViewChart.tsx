@@ -125,6 +125,7 @@ export function BaseTradingViewChart({
 	const macdHistogramSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
 	const macdLineSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const macdSignalSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+	const prevDataLengthRef = useRef<number>(0);
 
 	// Dynamic ref mapping for MA series
 	const maSeriesRefs = {
@@ -846,6 +847,12 @@ export function BaseTradingViewChart({
 			return;
 		}
 
+		// Save current viewport before setData resets it (only after initial load)
+		const prevDataLength = prevDataLengthRef.current;
+		const savedLogicalRange = isDataInitialized && chartRef.current
+			? chartRef.current.timeScale().getVisibleLogicalRange()
+			: null;
+
 		// Update series data (even if empty - this clears the chart)
 		candlestickSeriesRef.current.setData(chartData.candlestick);
 		volumeSeriesRef.current.setData(chartData.volume);
@@ -877,6 +884,31 @@ export function BaseTradingViewChart({
 		if (macdSignalSeriesRef.current) {
 			macdSignalSeriesRef.current.setData(chartData.macdSignal);
 		}
+
+		// Restore viewport after all setData calls (prevents zoom/scroll reset on subsequent updates)
+		if (savedLogicalRange && chartRef.current && prevDataLength > 0) {
+			const newDataLength = chartData.candlestick.length;
+			const addedBars = newDataLength - prevDataLength;
+
+			if (addedBars > 0 && savedLogicalRange.to >= prevDataLength - 1) {
+				// New bars appended and user was viewing the right edge — shift viewport right
+				chartRef.current.timeScale().setVisibleLogicalRange({
+					from: savedLogicalRange.from + addedBars,
+					to: savedLogicalRange.to + addedBars,
+				});
+			} else if (addedBars < 0 && savedLogicalRange.to > newDataLength - 1) {
+				// Bars removed (e.g. Playground "Back") and viewport extends beyond new data — clamp
+				chartRef.current.timeScale().setVisibleLogicalRange({
+					from: Math.min(savedLogicalRange.from, Math.max(0, newDataLength - (savedLogicalRange.to - savedLogicalRange.from))),
+					to: newDataLength - 1,
+				});
+			} else {
+				// User viewing historical data or same bar count — restore same logical position
+				chartRef.current.timeScale().setVisibleLogicalRange(savedLogicalRange);
+			}
+		}
+		// Update ref for next render
+		prevDataLengthRef.current = chartData.candlestick.length;
 
 		// Set initial viewport only on first data load
 		// IMPORTANT: Wait for containerWidth to be set by ResizeObserver before initializing viewport
