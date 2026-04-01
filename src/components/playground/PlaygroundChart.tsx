@@ -18,9 +18,7 @@ export function PlaygroundChart() {
   const {
     playgroundData,
     visibleData,
-    viewportRange,
     secondaryVisibleData,
-    secondaryViewportRange,
     setCurrentIndex,
     updateTicker,
     updateSecondaryTicker,

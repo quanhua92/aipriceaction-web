@@ -328,7 +328,17 @@ export function getResponsiveViewportSize(chartWidth: number): number {
     return 80
   }
 
-  // Large containers: >= 600px
-  return 120
+  // Large containers: 600px - 899px
+  if (chartWidth < 900) {
+    return 128
+  }
+
+  // Extra large containers: 900px - 1199px
+  if (chartWidth < 1200) {
+    return 192
+  }
+
+  // Full width: >= 1200px
+  return 256
 }
 

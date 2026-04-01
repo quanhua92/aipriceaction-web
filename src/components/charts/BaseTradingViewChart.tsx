@@ -892,13 +892,11 @@ export function BaseTradingViewChart({
 			const wasAtRightEdge = savedLogicalRange.to >= prevDataLength - 1;
 
 			if (barDelta !== 0 && wasAtRightEdge) {
-				// Bars added or removed and user was at the right edge — shift viewport to follow the edge
 				chartRef.current.timeScale().setVisibleLogicalRange({
 					from: savedLogicalRange.from + barDelta,
 					to: savedLogicalRange.to + barDelta,
 				});
 			} else {
-				// Same bar count or user viewing historical data — restore same logical position
 				chartRef.current.timeScale().setVisibleLogicalRange(savedLogicalRange);
 			}
 		}
@@ -922,14 +920,11 @@ export function BaseTradingViewChart({
 			const from = chartData.candlestick[startIndex].time;
 			const to = chartData.candlestick[chartData.candlestick.length - 1].time;
 
-			info(`[BaseChart][${symbol}] Viewport calculation`, {
-				viewportSize,
-				startIndex,
-				fromTime: from,
-				toTime: to
+			requestAnimationFrame(() => {
+				if (!chartRef.current) return;
+				chartRef.current.timeScale().setVisibleRange({ from, to });
+				setIsDataInitialized(true);
 			});
-
-			chartRef.current.timeScale().setVisibleRange({ from, to });
 
 			info(`[BaseChart][${symbol}] Viewport initialized successfully`);
 
@@ -955,8 +950,6 @@ export function BaseTradingViewChart({
 					mode: CrosshairMode.Normal,
 				},
 			});
-
-			setIsDataInitialized(true);
 
 			info(`[BaseChart][${symbol}] Data initialization complete`);
 		}

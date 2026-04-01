@@ -4,9 +4,7 @@ import { usePlaygroundData } from './hooks/usePlaygroundData'
 interface PlaygroundContextValue {
   playgroundData: ReturnType<typeof usePlaygroundData>['playgroundData']
   visibleData: ReturnType<typeof usePlaygroundData>['visibleData']
-  viewportRange: ReturnType<typeof usePlaygroundData>['viewportRange']
   secondaryVisibleData: ReturnType<typeof usePlaygroundData>['secondaryVisibleData']
-  secondaryViewportRange: ReturnType<typeof usePlaygroundData>['secondaryViewportRange']
   setCurrentIndex: ReturnType<typeof usePlaygroundData>['setCurrentIndex']
   navigate: ReturnType<typeof usePlaygroundData>['navigate']
   randomizeData: ReturnType<typeof usePlaygroundData>['randomizeData']
@@ -63,9 +61,7 @@ export function PlaygroundDataProvider({
   const value: PlaygroundContextValue = {
     playgroundData: playgroundDataValue.playgroundData,
     visibleData: playgroundDataValue.visibleData,
-    viewportRange: playgroundDataValue.viewportRange,
     secondaryVisibleData: playgroundDataValue.secondaryVisibleData,
-    secondaryViewportRange: playgroundDataValue.secondaryViewportRange,
     setCurrentIndex: playgroundDataValue.setCurrentIndex,
     navigate: playgroundDataValue.navigate,
     randomizeData: playgroundDataValue.randomizeData,

@@ -719,37 +719,11 @@ export function usePlaygroundData(
     return visible
   }, [playgroundData.secondaryAllData, playgroundData.currentIndex])
 
-  // Viewport range for chart performance (show last ~100 candles)
-  const viewportRange = useMemo(() => {
-    const visibleLength = visibleData.length
-    if (visibleLength <= 100) {
-      return { from: 0, to: visibleLength }
-    }
-    return {
-      from: visibleLength - 100,
-      to: visibleLength
-    }
-  }, [visibleData])
-
-  // Secondary viewport range
-  const secondaryViewportRange = useMemo(() => {
-    const visibleLength = secondaryVisibleData.length
-    if (visibleLength <= 100) {
-      return { from: 0, to: visibleLength }
-    }
-    return {
-      from: visibleLength - 100,
-      to: visibleLength
-    }
-  }, [secondaryVisibleData])
-
 
   return {
     playgroundData,
     visibleData,
-    viewportRange,
     secondaryVisibleData,
-    secondaryViewportRange,
     setCurrentIndex,
     navigate: navigateDate,
     randomizeData,
