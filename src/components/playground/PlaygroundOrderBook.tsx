@@ -69,20 +69,21 @@ export function PlaygroundOrderBook() {
 	const netPnL = realizedPnL + unrealizedPnL;
 	const netPosition = calculateNetPosition(orders);
 
-	// Closed trade stats
+	// Closed trade stats — only count original orders, not FIFO closers (entryDate === exitDate)
 	const closedOrders = orders.filter((o) => o.status === "closed");
-	const winCount = closedOrders.filter((o) => {
+	const tradeOrders = closedOrders.filter((o) => o.entryDate !== o.exitDate);
+	const winCount = tradeOrders.filter((o) => {
 		const pnl =
 			o.exitPrice != null
 				? (o.exitPrice - o.entryPrice) * (o.side === "long" ? 1 : -1)
 				: 0;
 		return pnl > 0;
 	}).length;
-	const lossCount = closedOrders.length - winCount;
+	const lossCount = tradeOrders.length - winCount;
 	const winRate =
-		closedOrders.length > 0 ? (winCount / closedOrders.length) * 100 : 0;
+		tradeOrders.length > 0 ? (winCount / tradeOrders.length) * 100 : 0;
 
-	const totalRealizedR = closedOrders.reduce((sum, o) => {
+	const totalRealizedR = tradeOrders.reduce((sum, o) => {
 		const r = calculateSignedR(o);
 		return sum + (r ?? 0);
 	}, 0);
@@ -97,7 +98,7 @@ export function PlaygroundOrderBook() {
 	const netR = totalRealizedR + totalUnrealizedR;
 
 	const avgRealizedR =
-		winCount + lossCount > 0 ? totalRealizedR / (winCount + lossCount) : 0;
+		tradeOrders.length > 0 ? totalRealizedR / tradeOrders.length : 0;
 
 	const handlePlace = useCallback(
 		(side: "long" | "short") => {
