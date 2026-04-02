@@ -698,15 +698,9 @@ export function BaseTradingViewChart({
 		return chart;
 	};
 
-	// Reset data initialization flag when data changes
-	// Note: We intentionally preserve viewport position for comparison across tickers
-	useEffect(() => {
-		const symbol = data?.[0]?.symbol ?? 'unknown';
-		info(`[BaseChart][${symbol}] Data changed, resetting initialization`, {
-			dataLength: data?.length ?? 0
-		});
-		setIsDataInitialized(false);
-	}, [data]);
+	// Note: isDataInitialized is intentionally never reset on data changes.
+	// This preserves the user's zoom/pan viewport across data updates,
+	// including playground navigation steps that create new array refs.
 
 	// Destroy and recreate chart when MACD visibility changes
 	// (addPane is called during chart creation, so we must rebuild)
@@ -849,6 +843,8 @@ export function BaseTradingViewChart({
 
 		// Save current viewport before setData resets it (only after initial load)
 		const prevDataLength = prevDataLengthRef.current;
+		const newDataLength = chartData.candlestick.length;
+
 		const savedLogicalRange = isDataInitialized && chartRef.current
 			? chartRef.current.timeScale().getVisibleLogicalRange()
 			: null;
@@ -886,19 +882,22 @@ export function BaseTradingViewChart({
 		}
 
 		// Restore viewport after all setData calls (prevents zoom/scroll reset on subsequent updates)
+		// Use requestAnimationFrame to ensure setData has been processed by the chart
 		if (savedLogicalRange && chartRef.current && prevDataLength > 0) {
-			const newDataLength = chartData.candlestick.length;
 			const barDelta = newDataLength - prevDataLength;
 			const wasAtRightEdge = savedLogicalRange.to >= prevDataLength - 1;
 
-			if (barDelta !== 0 && wasAtRightEdge) {
-				chartRef.current.timeScale().setVisibleLogicalRange({
-					from: savedLogicalRange.from + barDelta,
-					to: savedLogicalRange.to + barDelta,
-				});
-			} else {
-				chartRef.current.timeScale().setVisibleLogicalRange(savedLogicalRange);
-			}
+			requestAnimationFrame(() => {
+				if (!chartRef.current) return;
+				if (barDelta !== 0 && wasAtRightEdge) {
+					chartRef.current.timeScale().setVisibleLogicalRange({
+						from: savedLogicalRange.from + barDelta,
+						to: savedLogicalRange.to + barDelta,
+					});
+				} else {
+					chartRef.current.timeScale().setVisibleLogicalRange(savedLogicalRange);
+				}
+			});
 		}
 		// Update ref for next render
 		prevDataLengthRef.current = chartData.candlestick.length;
@@ -908,7 +907,6 @@ export function BaseTradingViewChart({
 		if (chartRef.current && chartData.candlestick.length > 0 && !isDataInitialized && containerWidth > 0) {
 			const symbol = data?.[0]?.symbol ?? 'unknown';
 
-			// Log viewport initialization start
 			info(`[BaseChart][${symbol}] Initializing viewport`, {
 				dataLength: chartData.candlestick.length,
 				responsiveViewportSize,
