@@ -641,28 +641,31 @@ export function usePlaygroundData(
 
   // Navigation helpers
   const navigateDate = useCallback((direction: 'back5' | 'back1' | 'next1' | 'next5') => {
-    const prevIndex = playgroundData.currentIndex
-    let newIndex: number
+    setPlaygroundData(prev => {
+      const prevIndex = prev.currentIndex
+      let newIndex: number
 
-    switch (direction) {
-      case 'back5':
-        newIndex = Math.max(0, prevIndex - 5)
-        break
-      case 'back1':
-        newIndex = Math.max(0, prevIndex - 1)
-        break
-      case 'next1':
-        newIndex = Math.min(playgroundData.allData.length - 1, prevIndex + 1)
-        break
-      case 'next5':
-        newIndex = Math.min(playgroundData.allData.length - 1, prevIndex + 5)
-        break
-      default:
-        newIndex = prevIndex
-    }
+      switch (direction) {
+        case 'back5':
+          newIndex = Math.max(0, prevIndex - 5)
+          break
+        case 'back1':
+          newIndex = Math.max(0, prevIndex - 1)
+          break
+        case 'next1':
+          newIndex = Math.min(prev.allData.length - 1, prevIndex + 1)
+          break
+        case 'next5':
+          newIndex = Math.min(prev.allData.length - 1, prevIndex + 5)
+          break
+        default:
+          newIndex = prevIndex
+      }
 
-    setCurrentIndex(newIndex)
-  }, [playgroundData.currentIndex, playgroundData.allData.length, setCurrentIndex])
+      if (newIndex === prevIndex) return prev
+      return { ...prev, currentIndex: newIndex }
+    })
+  }, [])
 
   // Get visible data based on current index
   const visibleData = useMemo(() => {

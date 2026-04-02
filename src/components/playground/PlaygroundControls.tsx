@@ -14,10 +14,12 @@ import { usePlayground } from "./PlaygroundDataProvider";
 
 interface PlaygroundControlsProps {
 	hideSliderAndDate?: boolean;
+	enableKeyboardShortcuts?: boolean;
 }
 
 export function PlaygroundControls({
 	hideSliderAndDate = false,
+	enableKeyboardShortcuts = false,
 }: PlaygroundControlsProps) {
 	const { playgroundData, navigate, setCurrentIndex } = usePlayground();
 	const { info } = useLogs();
@@ -57,10 +59,11 @@ export function PlaygroundControls({
 	const isAtStart = currentIndex === 0;
 	const isAtEnd = currentIndex >= allData.length - 1;
 
-	// Keyboard shortcuts: Shift+Arrow for navigation
+	// Keyboard shortcuts: Shift+Arrow for navigation (only one instance should register)
 	const navigateRef = React.useRef(navigate);
 	navigateRef.current = navigate;
 	React.useEffect(() => {
+		if (!enableKeyboardShortcuts) return;
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (
 				e.target instanceof HTMLInputElement ||

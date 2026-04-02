@@ -64,7 +64,7 @@ function PlayPage() {
 
 					{/* Bottom: Controls (nav buttons only) */}
 					<div className="px-4 md:px-6 pb-4 md:pb-6 pt-2">
-						<PlaygroundControls hideSliderAndDate />
+						<PlaygroundControls hideSliderAndDate enableKeyboardShortcuts />
 					</div>
 
 					{/* Order Book */}
