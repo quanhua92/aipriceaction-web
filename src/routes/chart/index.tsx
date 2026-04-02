@@ -55,6 +55,7 @@ const generateInitialTickers = (
 	// Add market indices first
 	allTickers.push({ symbol: "VNINDEX", sector: "Market Indices" });
 	allTickers.push({ symbol: "VN30", sector: "Market Indices" });
+	allTickers.push({ symbol: "VN30F1M", sector: "Market Indices" });
 
 	// Add tickers from all sector groups (similar to ALL watchlist logic)
 	Object.entries(tickerGroups).forEach(([sector, symbols]) => {

@@ -1,7 +1,7 @@
 /**
  * Market indices
  */
-export const MARKET_INDICES = ['VNINDEX', 'VN30'] as const
+export const MARKET_INDICES = ['VNINDEX', 'VN30', 'VN30F1M'] as const
 
 export type MarketIndex = typeof MARKET_INDICES[number]
 
@@ -32,7 +32,7 @@ export const PRIORITY_GROUPS = [
 /**
  * Default tickers for new custom watchlists
  */
-export const DEFAULT_WATCHLIST_TICKERS = 'VNINDEX,VN30'
+export const DEFAULT_WATCHLIST_TICKERS = 'VNINDEX,VN30,VN30F1M'
 
 /**
  * LocalStorage key for custom watchlists
