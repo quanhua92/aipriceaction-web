@@ -19,7 +19,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { formatPrice } from "@/lib/format";
+import {
+	formatPrice,
+	formatToVietnamDateShort,
+	formatToVietnamDateTimeShort,
+	parseUTCISOString,
+} from "@/lib/format";
 import {
 	calculateNetPosition,
 	calculatePotentialRR,
@@ -166,6 +171,17 @@ export function PlaygroundOrderBook() {
 
 	const formatDecimal = (value: number) => formatPrice(value, false);
 
+	const isIntraday =
+		playgroundData.interval !== "1D" && playgroundData.interval !== "1W";
+
+	const formatDate = (isoString: string) => {
+		if (!isoString) return "-";
+		const date = parseUTCISOString(isoString);
+		return isIntraday
+			? formatToVietnamDateTimeShort(date)
+			: formatToVietnamDateShort(date);
+	};
+
 	return (
 		<>
 			<div className="border rounded-lg overflow-hidden">
@@ -257,6 +273,7 @@ export function PlaygroundOrderBook() {
 								<TableHead className="sticky left-0 bg-muted/30 z-10 min-w-16 text-center">
 									Side
 								</TableHead>
+								<TableHead className="text-center min-w-24">Date</TableHead>
 								<TableHead className="text-center min-w-24">Entry</TableHead>
 								<TableHead className="text-center min-w-24">
 									Stop Loss
@@ -271,7 +288,7 @@ export function PlaygroundOrderBook() {
 							{orders.length === 0 ? (
 								<TableRow>
 									<TableCell
-										colSpan={7}
+										colSpan={8}
 										className="text-center text-muted-foreground py-6"
 									>
 										No trades yet
@@ -292,6 +309,9 @@ export function PlaygroundOrderBook() {
 												>
 													{order.side === "long" ? "L" : "S"}
 												</span>
+											</TableCell>
+											<TableCell className="text-center font-mono text-xs">
+												{formatDate(order.entryDate)}
 											</TableCell>
 											<TableCell className="text-center font-mono text-sm">
 												{formatDecimal(order.entryPrice)}
