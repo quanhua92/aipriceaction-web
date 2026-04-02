@@ -140,6 +140,13 @@ export function PlaygroundOrderBook() {
 		return formatted;
 	};
 
+	const formatPnLPct = (order: Order) => {
+		if (order.entryPrice === 0) return "-";
+		const pct = (orderPnL(order) / order.entryPrice) * 100;
+		if (pct > 0) return `+${pct.toFixed(1)}%`;
+		return `${pct.toFixed(1)}%`;
+	};
+
 	const pnLColor = (value: number) =>
 		value > 0
 			? "text-green-600"
@@ -282,6 +289,7 @@ export function PlaygroundOrderBook() {
 								<TableHead className="text-center min-w-24">Exit</TableHead>
 								<TableHead className="text-center min-w-20">R:R</TableHead>
 								<TableHead className="text-center min-w-20">P&L</TableHead>
+								<TableHead className="text-center min-w-20">%</TableHead>
 								<TableHead className="text-center min-w-20">Status</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -289,7 +297,7 @@ export function PlaygroundOrderBook() {
 							{orders.length === 0 ? (
 								<TableRow>
 									<TableCell
-										colSpan={8}
+										colSpan={9}
 										className="text-center text-muted-foreground py-6"
 									>
 										No trades yet
@@ -334,6 +342,11 @@ export function PlaygroundOrderBook() {
 												className={`text-center font-mono text-sm font-medium ${pnLColor(pnl)}`}
 											>
 												{formatPnL(pnl)}
+											</TableCell>
+											<TableCell
+												className={`text-center font-mono text-sm ${pnLColor(pnl)}`}
+											>
+												{formatPnLPct(order)}
 											</TableCell>
 											<TableCell className="text-center">
 												{order.status === "open" ? (
