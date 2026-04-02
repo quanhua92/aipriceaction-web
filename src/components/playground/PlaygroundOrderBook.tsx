@@ -274,7 +274,7 @@ export function PlaygroundOrderBook() {
 				</div>
 
 				{/* Table */}
-				<div className="overflow-x-auto">
+				<div className="overflow-auto max-h-[500px]">
 					<Table>
 						<TableHeader>
 							<TableRow className="bg-muted/30">
