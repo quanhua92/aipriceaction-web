@@ -48,13 +48,13 @@ export interface PlaygroundData {
   showSecondaryChart?: boolean
 }
 
-// Generate random date between 2016-01-01 and today, weighted towards recent years.
+// Generate random date between 2016-01-01 and maxDate (default: today), weighted towards recent years.
 // For intraday intervals, restrict to 2023+ since intraday data only available from then.
-const generateRandomDate = (interval?: string): string => {
+const generateRandomDate = (interval?: string, maxDate?: Date): string => {
   const start = isIntradayInterval(interval || '1D')
     ? new Date('2023-01-01')
     : new Date('2016-01-01')
-  const end = new Date()
+  const end = maxDate || new Date()
 
   // Use a power function to bias towards more recent dates
   // Math.random()^bias where bias < 1 gives more weight to recent dates
@@ -70,12 +70,15 @@ const generateRandomDate = (interval?: string): string => {
 // For intraday: use shorter lookback since bars cover less calendar time.
 const deriveEndDate = (viewDate: string, interval?: string, limit: PlaygroundLimit = DEFAULT_PLAYGROUND_LIMIT): string => {
   const d = new Date(viewDate)
+  d.setDate(d.getDate() + getCalDays(interval, limit))
+  return d.toISOString().split('T')[0]
+}
+
+const getCalDays = (interval?: string, limit: PlaygroundLimit = DEFAULT_PLAYGROUND_LIMIT): number => {
   const tradingBars = limit * 0.8
-  const calDays = isIntradayInterval(interval || '1D')
+  return isIntradayInterval(interval || '1D')
     ? Math.ceil(tradingBars * 0.18)
     : Math.ceil(tradingBars * 1.45)
-  d.setDate(d.getDate() + calDays)
-  return d.toISOString().split('T')[0]
 }
 
 // Get random ticker from existing ticker groups
@@ -447,7 +450,9 @@ export function usePlaygroundData(
           endDate = initialEndDate
           ticker = initialTicker
         } else if (useSmartRandom) {
-          const viewDate = generateRandomDate(resolvedInterval)
+          const maxDate = new Date()
+          maxDate.setDate(maxDate.getDate() - getCalDays(resolvedInterval, resolvedLimit))
+          const viewDate = generateRandomDate(resolvedInterval, maxDate)
           ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
           endDate = deriveEndDate(viewDate, resolvedInterval, resolvedLimit)
         } else {
@@ -487,7 +492,9 @@ export function usePlaygroundData(
       ticker = playgroundDataRef.current.ticker
       endDate = generateRandomDate(currentInterval)
     } else if (smartRandom) {
-      const viewDate = generateRandomDate(currentInterval)
+      const maxDate = new Date()
+      maxDate.setDate(maxDate.getDate() - getCalDays(currentInterval, currentLimit))
+      const viewDate = generateRandomDate(currentInterval, maxDate)
       ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
       endDate = deriveEndDate(viewDate, currentInterval, currentLimit)
     } else {
