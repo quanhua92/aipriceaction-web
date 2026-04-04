@@ -108,9 +108,7 @@ export function PlaygroundOrderBook() {
 			if (Number.isNaN(pct) || pct <= 0) return;
 
 			const sl =
-				side === "long"
-					? Math.round(price * (1 - pct / 100))
-					: Math.round(price * (1 + pct / 100));
+				side === "long" ? price * (1 - pct / 100) : price * (1 + pct / 100);
 
 			if (sl <= 0) return;
 
@@ -177,9 +175,11 @@ export function PlaygroundOrderBook() {
 		return 0;
 	};
 
-	const formatDecimal = (value: number) => formatPrice(value, false);
+	const formatDecimal = (value: number) => formatPrice(value, true);
 
-	const isIntraday = !["1D", "1W", "2W", "1M"].includes(playgroundData.interval);
+	const isIntraday = !["1D", "1W", "2W", "1M"].includes(
+		playgroundData.interval,
+	);
 
 	const formatDate = (isoString: string) => {
 		if (!isoString) return "-";
@@ -258,15 +258,11 @@ export function PlaygroundOrderBook() {
 						<span className="text-xs text-muted-foreground">
 							→{" "}
 							{formatDecimal(
-								Math.round(
-									currentBar.close * (1 - Number(stoplossPct || 0) / 100),
-								),
+								currentBar.close * (1 - Number(stoplossPct || 0) / 100),
 							)}{" "}
 							/{" "}
 							{formatDecimal(
-								Math.round(
-									currentBar.close * (1 + Number(stoplossPct || 0) / 100),
-								),
+								currentBar.close * (1 + Number(stoplossPct || 0) / 100),
 							)}
 						</span>
 					)}
