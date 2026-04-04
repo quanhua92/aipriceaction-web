@@ -33,7 +33,7 @@ export interface PlaygroundDataProviderProps {
   initialEndDate?: string
   initialSecondaryTicker?: string
   initialInterval?: string
-  initialLimit?: string
+  initialLimit?: number
   navigate?: (options: { to: string; search?: Record<string, string> }) => void
   onIntervalInit?: (interval: string) => void
 }

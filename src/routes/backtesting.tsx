@@ -14,7 +14,7 @@ export const Route = createFileRoute("/backtesting")({
 		ticker: (search.ticker as string) || undefined,
 		endDate: (search.endDate as string) || undefined,
 		interval: (search.interval as string) || undefined,
-		limit: (search.limit as string) || undefined,
+		limit: search.limit ? Number(search.limit) : undefined,
 	}),
 });
 

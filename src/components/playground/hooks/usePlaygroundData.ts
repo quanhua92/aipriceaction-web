@@ -201,7 +201,7 @@ export function usePlaygroundData(
   initialSecondaryTicker?: string,
   initialInterval?: string,
   onIntervalInit?: (interval: string) => void,
-  initialLimit?: string,
+  initialLimit?: number,
 ) {
   const { getTickers, tickerGroups, tickers, cryptoTickers } = useAPI()
 
@@ -227,7 +227,7 @@ export function usePlaygroundData(
 
   // Resolve initial limit
   const resolvedLimit: PlaygroundLimit = isValidLimit(initialLimit)
-    ? Number(initialLimit) as PlaygroundLimit
+    ? initialLimit as PlaygroundLimit
     : DEFAULT_PLAYGROUND_LIMIT
 
   const [playgroundData, setPlaygroundData] = useState<PlaygroundData>({
@@ -394,7 +394,7 @@ export function usePlaygroundData(
     const urlTicker = initialTicker || undefined
     const urlEndDate = initialEndDate || undefined
     const urlInterval = isValidInterval(initialInterval || '') ? initialInterval as PlaygroundInterval : undefined
-    const urlLimit = isValidLimit(initialLimit) ? Number(initialLimit) as PlaygroundLimit : undefined
+    const urlLimit = isValidLimit(initialLimit) ? initialLimit as PlaygroundLimit : undefined
 
     const current = playgroundDataRef.current
 
