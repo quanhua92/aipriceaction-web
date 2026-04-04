@@ -21,7 +21,7 @@ import type {
 	CreatePriceLineOptions,
 	Time,
 } from "lightweight-charts";
-import { calculateRR } from "@/lib/order-book-storage";
+import { calculateSignedR } from "@/lib/order-book-storage";
 
 const getMode = (
 	symbol: string,
@@ -133,14 +133,13 @@ export function PlaygroundChart() {
 					const exitTime = toVietnamUnixTime(
 						parseUTCISOString(order.exitDate),
 					) as Time;
-					const rr = calculateRR(order);
+					const rr = calculateSignedR(order);
 					const rrText = rr != null ? `${rr > 0 ? "+" : ""}${rr.toFixed(1)}R` : "X";
-					const pnl = (order.exitPrice! - order.entryPrice) * (order.side === "long" ? 1 : -1);
-					const color = pnl > 0 ? "#22c55e" : "#ef4444";
+					const color = rr != null && rr > 0 ? "#22c55e" : "#ef4444";
 					markers.push({
 						time: exitTime,
-						position: pnl > 0 ? "belowBar" as const : "aboveBar" as const,
-						shape: pnl > 0 ? "arrowUp" as const : "arrowDown" as const,
+						position: rr != null && rr > 0 ? "belowBar" as const : "aboveBar" as const,
+						shape: rr != null && rr > 0 ? "arrowUp" as const : "arrowDown" as const,
 						color,
 						text: rrText,
 					});

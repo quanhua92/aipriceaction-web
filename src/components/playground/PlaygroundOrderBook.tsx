@@ -27,10 +27,8 @@ import {
 } from "@/lib/format";
 import {
 	calculateNetPosition,
-	calculatePotentialRR,
 	calculatePotentialSignedR,
 	calculateRealizedPnL,
-	calculateRR,
 	calculateSignedR,
 	calculateUnrealizedPnL,
 	type Order,
@@ -112,13 +110,13 @@ export function PlaygroundOrderBook() {
 
 	const rrDisplay = (order: Order) => {
 		if (order.status === "closed") {
-			const rr = calculateRR(order);
+			const rr = calculateSignedR(order);
 			if (rr == null) return "-";
-			return `${rr.toFixed(1)}R`;
+			return `${rr > 0 ? "+" : ""}${rr.toFixed(1)}R`;
 		}
-		const rr = calculatePotentialRR(order, currentPrice);
+		const rr = calculatePotentialSignedR(order, currentPrice);
 		if (rr == null) return "-";
-		return `${rr.toFixed(1)}R`;
+		return `${rr > 0 ? "+" : ""}${rr.toFixed(1)}R`;
 	};
 
 	const orderPnL = (order: Order) => {

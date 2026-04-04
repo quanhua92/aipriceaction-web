@@ -139,19 +139,6 @@ export function calculateNetPosition(orders: Order[]): number {
 }
 
 /**
- * Calculate R:R for a closed trade.
- * Risk = |entryPrice - stoploss|
- * Reward = |exitPrice - entryPrice|
- */
-export function calculateRR(order: Order): number | null {
-	const risk = Math.abs(order.entryPrice - order.stoploss);
-	if (risk === 0) return null;
-	if (order.status !== "closed" || order.exitPrice == null) return null;
-	const reward = Math.abs(order.exitPrice - order.entryPrice);
-	return reward / risk;
-}
-
-/**
  * Calculate signed R-multiple for a closed trade.
  * Positive for winners, negative for losers.
  */
@@ -176,17 +163,4 @@ export function calculatePotentialSignedR(
 	const pnl =
 		(currentPrice - order.entryPrice) * (order.side === "long" ? 1 : -1);
 	return pnl / risk;
-}
-
-/**
- * Calculate potential R:R for an open trade at a given current price.
- */
-export function calculatePotentialRR(
-	order: Order,
-	currentPrice: number,
-): number | null {
-	const risk = Math.abs(order.entryPrice - order.stoploss);
-	if (risk === 0) return null;
-	const reward = Math.abs(currentPrice - order.entryPrice);
-	return reward / risk;
 }
