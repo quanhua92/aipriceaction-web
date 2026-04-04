@@ -100,13 +100,18 @@ export function PlaygroundChart() {
 		playgroundData.showSecondaryChart && playgroundData.secondaryTicker;
 
 	// Convert orders to chart overlay (markers + price lines)
+	// Only include markers for bars visible up to currentIndex
 	const overlay = useMemo(() => {
-		if (!orders.length) return undefined;
+		if (!orders.length || !visibleData.length) return undefined;
 
+		const currentBarTime = visibleData[visibleData.length - 1]?.time ?? "";
 		const markers: SeriesMarker<Time>[] = [];
 		const priceLines: CreatePriceLineOptions[] = [];
 
 		for (const order of orders) {
+			// Entry: only show if entry bar is visible
+			if (order.entryDate > currentBarTime) continue;
+
 			// Entry marker
 			const entryTime = toVietnamUnixTime(
 				parseUTCISOString(order.entryDate),
@@ -123,23 +128,26 @@ export function PlaygroundChart() {
 
 			// Exit marker for closed orders (skip FIFO closers where entry === exit)
 			if (order.status === "closed" && order.exitDate && order.exitDate !== order.entryDate) {
-				const exitTime = toVietnamUnixTime(
-					parseUTCISOString(order.exitDate),
-				) as Time;
-				const rr = calculateRR(order);
-				const rrText = rr != null ? `${rr > 0 ? "+" : ""}${rr.toFixed(1)}R` : "X";
-				const pnl = (order.exitPrice! - order.entryPrice) * (order.side === "long" ? 1 : -1);
-				const color = pnl > 0 ? "#22c55e" : "#ef4444";
-				markers.push({
-					time: exitTime,
-					position: pnl > 0 ? "belowBar" as const : "aboveBar" as const,
-					shape: pnl > 0 ? "arrowUp" as const : "arrowDown" as const,
-					color,
-					text: rrText,
-				});
+				// Only show exit if exit bar is visible
+				if (order.exitDate <= currentBarTime) {
+					const exitTime = toVietnamUnixTime(
+						parseUTCISOString(order.exitDate),
+					) as Time;
+					const rr = calculateRR(order);
+					const rrText = rr != null ? `${rr > 0 ? "+" : ""}${rr.toFixed(1)}R` : "X";
+					const pnl = (order.exitPrice! - order.entryPrice) * (order.side === "long" ? 1 : -1);
+					const color = pnl > 0 ? "#22c55e" : "#ef4444";
+					markers.push({
+						time: exitTime,
+						position: pnl > 0 ? "belowBar" as const : "aboveBar" as const,
+						shape: pnl > 0 ? "arrowUp" as const : "arrowDown" as const,
+						color,
+						text: rrText,
+					});
+				}
 			}
 
-			// Stop-loss price line for open orders
+			// Stop-loss price line for open orders (entry is visible, order still open)
 			if (order.status === "open") {
 				priceLines.push({
 					price: order.stoploss,
@@ -157,7 +165,7 @@ export function PlaygroundChart() {
 		markers.sort((a, b) => (a.time as number) - (b.time as number));
 
 		return { markers, priceLines };
-	}, [orders]);
+	}, [orders, visibleData]);
 
 	// Charts will use their natural height since page scrolls vertically
 
