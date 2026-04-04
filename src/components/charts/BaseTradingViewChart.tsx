@@ -148,6 +148,11 @@ export function BaseTradingViewChart({
 	const markersApiRef = useRef<any>(null);
 	const priceLinesRef = useRef<Map<string, IPriceLine>>(new Map());
 
+	// Refs to keep latest data accessible inside crosshair callbacks
+	// (createChartWithContext runs once but crosshair callback needs current data)
+	const dataRef = useRef(data);
+	const chartDataRef = useRef<ChartData>(transformStockDataToChartData(data));
+
 	const [seriesGeneration, setSeriesGeneration] = useState(0);
 
 	// Dynamic ref mapping for MA series
@@ -354,14 +359,15 @@ export function BaseTradingViewChart({
 			// Format date with time (timestamp is already in Vietnam time)
 			const dateStr = formatTooltipDate(paramTime);
 
-			// Find chart data for this time
-			const candleData = chartData.candlestick.find(
+			// Find chart data for this time (use ref to always get latest data)
+			const cd = chartDataRef.current;
+			const candleData = cd.candlestick.find(
 				(d) => d.time === paramTime,
 			);
-			const volumeData = chartData.volume.find((d) => d.time === paramTime);
-			const ma10Data = chartData.ma10.find((d) => d.time === paramTime);
-			const ma20Data = chartData.ma20.find((d) => d.time === paramTime);
-			const ma50Data = chartData.ma50.find((d) => d.time === paramTime);
+			const volumeData = cd.volume.find((d) => d.time === paramTime);
+			const ma10Data = cd.ma10.find((d) => d.time === paramTime);
+			const ma20Data = cd.ma20.find((d) => d.time === paramTime);
+			const ma50Data = cd.ma50.find((d) => d.time === paramTime);
 			const ma100Data = chartData.ma100.find((d) => d.time === paramTime);
 			const ma200Data = chartData.ma200.find((d) => d.time === paramTime);
 
@@ -490,16 +496,17 @@ export function BaseTradingViewChart({
 			}
 
 			// After unlocking, only proceed with locking if we have valid data
-			if (!param.time || !data || data.length === 0) {
+			const latestData = dataRef.current;
+			if (!param.time || !latestData || latestData.length === 0) {
 				info(`[BaseChart][${symbol}] Click ignored - missing time or data`);
 				return;
 			}
 
 			// Find the data point at the clicked position
-			const currentIndex = chartData.candlestick.findIndex(
+			const currentIndex = chartDataRef.current.candlestick.findIndex(
 				(d) => d.time === param.time,
 			);
-			const clickedDataPoint = currentIndex >= 0 ? data[currentIndex] : null;
+			const clickedDataPoint = currentIndex >= 0 ? latestData[currentIndex] : null;
 
 			if (clickedDataPoint) {
 				setClickedCrosshairData(clickedDataPoint);
@@ -525,7 +532,7 @@ export function BaseTradingViewChart({
 				tooltipRef.current!.style.display = "block";
 
 				// Get data from all series for clicked position
-				const candleData = chartData.candlestick.find(
+				const candleData = chartDataRef.current.candlestick.find(
 					(d) => d.time === param.time,
 				);
 
@@ -646,10 +653,12 @@ export function BaseTradingViewChart({
 			}
 
 			// Find current index in original data to get change percentages
-			const currentIndex = chartData.candlestick.findIndex(
+			const latestChartData = chartDataRef.current;
+			const latestData = dataRef.current;
+			const currentIndex = latestChartData.candlestick.findIndex(
 				(d) => d.time === param.time,
 			);
-			const currentDataPoint = currentIndex >= 0 ? data[currentIndex] : null;
+			const currentDataPoint = currentIndex >= 0 ? latestData[currentIndex] : null;
 
 			if (!currentDataPoint) {
 				tooltipRef.current!.style.display = "none";
@@ -883,7 +892,10 @@ export function BaseTradingViewChart({
 
 	// Transform data to TradingView format
 	const chartData = useMemo((): ChartData => {
-		return transformStockDataToChartData(data);
+		const cd = transformStockDataToChartData(data);
+		dataRef.current = data;
+		chartDataRef.current = cd;
+		return cd;
 	}, [data]);
 
 	// Cleanup effect - only runs on unmount
