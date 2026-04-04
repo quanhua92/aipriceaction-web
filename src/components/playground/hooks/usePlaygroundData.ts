@@ -4,12 +4,12 @@ import { type StockData } from '@/lib/api-client'
 import { isCryptoTicker } from '@/lib/ticker-utils'
 
 // Intervals offered in the playground selector
-export const PLAYGROUND_INTERVALS = ['1m', '5m', '15m', '1H', '1D', '1W'] as const
+export const PLAYGROUND_INTERVALS = ['1m', '5m', '15m', '1h', '4h', '1D', '1W', '2W', '1M'] as const
 export type PlaygroundInterval = typeof PLAYGROUND_INTERVALS[number]
 
 // Check if an interval is intraday (not daily or weekly)
 export function isIntradayInterval(interval: string): boolean {
-  return interval !== '1D' && interval !== '1W'
+  return !['1D', '1W', '2W', '1M'].includes(interval)
 }
 
 // Data limit options

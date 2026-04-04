@@ -36,7 +36,7 @@ interface TrendSignalTableProps {
   maxDays?: number           // Default 40, for API fetch
   buyPeriod?: number         // Default 20
   sellPeriod?: number        // Default 10
-  interval?: IntervalType    // '1H' | '1D'
+  interval?: IntervalType    // '1h' | '1D'
   endDate?: string           // Optional: End date for API fetch
   shouldOpenFullscreen?: boolean  // Default false: Allow ticker clicks to open dialog
 }
@@ -117,7 +117,7 @@ export function TrendSignalTable({
         if (stockTickersList.length > 0) {
           apiCalls.push(getTickers('TrendSignalTable.fetch.stocks', {
             symbol: undefined, // Fetch all for cache efficiency
-            interval: selectedInterval === '1H' ? '1H' : '1D',
+            interval: selectedInterval === '1h' ? '1h' : '1D',
             end_date: endDate,
             limit: maxDays,
             mode: 'vn'
@@ -127,7 +127,7 @@ export function TrendSignalTable({
         if (cryptoTickersList.length > 0) {
           apiCalls.push(getTickers('TrendSignalTable.fetch.crypto', {
             symbol: undefined, // Fetch all for cache efficiency
-            interval: selectedInterval === '1H' ? '1H' : '1D',
+            interval: selectedInterval === '1h' ? '1h' : '1D',
             end_date: endDate,
             limit: maxDays,
             mode: 'crypto'
@@ -299,7 +299,7 @@ export function TrendSignalTable({
         <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
           {/* Interval Selector */}
           <div className="flex gap-1">
-            {(['1H', '1D'] as const).map((int) => (
+            {(['1h', '1D'] as const).map((int) => (
               <Button
                 key={int}
                 variant={selectedInterval === int ? 'outline' : 'ghost'}

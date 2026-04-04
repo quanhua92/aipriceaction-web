@@ -2,7 +2,7 @@ import type { StockData } from '@/lib/api-client'
 import type { SortBy } from '@/components/SortButtons'
 
 export type SectionFilter = 'all' | 'stocks' | 'crypto'
-export type IntervalType = '1H' | '1D' | '1W' | '1M'
+export type IntervalType = '1h' | '1D' | '1W' | '1M'
 export type ViewMode = 'cards' | 'table'
 
 export interface TopPerformer {

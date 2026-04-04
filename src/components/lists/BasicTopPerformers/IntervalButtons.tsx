@@ -2,7 +2,7 @@ import * as React from 'react'
 import type { IntervalButtonsProps } from './types'
 
 export function IntervalButtons({ value, onChange }: IntervalButtonsProps) {
-  const intervals: Array<'1H' | '1D' | '1W' | '1M'> = ['1H', '1D', '1W', '1M']
+  const intervals: Array<'1h' | '1D' | '1W' | '1M'> = ['1h', '1D', '1W', '1M']
 
   return (
     <div className="flex gap-1">

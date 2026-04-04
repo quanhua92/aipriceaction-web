@@ -304,7 +304,8 @@ function AIContextPage() {
 								<SelectContent>
 									<SelectItem value="5m">5m</SelectItem>
 									<SelectItem value="15m">15m</SelectItem>
-									<SelectItem value="1H">1H</SelectItem>
+									<SelectItem value="1h">1h</SelectItem>
+									<SelectItem value="4h">4h</SelectItem>
 									<SelectItem value="1D">1D</SelectItem>
 									<SelectItem value="2W">2W</SelectItem>
 									<SelectItem value="1M">1M</SelectItem>

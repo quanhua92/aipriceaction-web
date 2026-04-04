@@ -179,8 +179,7 @@ export function PlaygroundOrderBook() {
 
 	const formatDecimal = (value: number) => formatPrice(value, false);
 
-	const isIntraday =
-		playgroundData.interval !== "1D" && playgroundData.interval !== "1W";
+	const isIntraday = !["1D", "1W", "2W", "1M"].includes(playgroundData.interval);
 
 	const formatDate = (isoString: string) => {
 		if (!isoString) return "-";

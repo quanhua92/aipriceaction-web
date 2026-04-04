@@ -14,7 +14,7 @@ import { getWatchlistTickers } from './watchlist-storage'
 
 // Types to export
 export type SignalType = 'BUY' | 'SELL' | null
-export type IntervalType = '1H' | '1D'
+export type IntervalType = '1h' | '1D'
 
 export interface TrendSignalData {
   ticker: string

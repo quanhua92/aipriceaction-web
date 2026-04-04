@@ -82,7 +82,7 @@ async function main() {
     console.log("5️⃣  Hourly data (VCB, latest 3 hours):");
     const hourlyData = await client.getTickers({
       symbol: "VCB",
-      interval: "1H",
+      interval: "1h",
       limit: 3,
     });
     if (hourlyData.VCB && hourlyData.VCB.length > 0) {

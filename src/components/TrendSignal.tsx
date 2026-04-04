@@ -186,7 +186,7 @@ export function TrendSignal({
             stockSymbols.length > 0
               ? getTickers('TrendSignal.data.stocks', {
                   symbol: ['VNINDEX', ...stockSymbols],
-                  interval: interval === '1H' ? '1H' : '1D',
+                  interval: interval === '1h' ? '1h' : '1D',
                   end_date: endDate,
                   limit: MATRIX_DAYS_PER_PAGE,
                   mode: 'vn',
@@ -195,7 +195,7 @@ export function TrendSignal({
             cryptoSymbols.length > 0
               ? getTickers('TrendSignal.data.crypto', {
                   symbol: ['BTCUSDT', ...cryptoSymbols],
-                  interval: interval === '1H' ? '1H' : '1D',
+                  interval: interval === '1h' ? '1h' : '1D',
                   end_date: endDate,
                   limit: MATRIX_DAYS_PER_PAGE,
                   mode: 'crypto',
@@ -208,7 +208,7 @@ export function TrendSignal({
           // Single crypto call
           cryptoResponse = await getTickers('TrendSignal.data.crypto', {
             symbol: selectedTickers,
-            interval: interval === '1H' ? '1H' : '1D',
+            interval: interval === '1h' ? '1h' : '1D',
             end_date: endDate,
             limit: MATRIX_DAYS_PER_PAGE,
             mode: 'crypto',
@@ -219,7 +219,7 @@ export function TrendSignal({
             symbol: selectedWatchlist === ALL_WATCHLIST_NAME
               ? undefined
               : ['VNINDEX', ...selectedTickers],
-            interval: interval === '1H' ? '1H' : '1D',
+            interval: interval === '1h' ? '1h' : '1D',
             end_date: endDate,
             limit: MATRIX_DAYS_PER_PAGE,
             mode: 'vn',
@@ -499,7 +499,7 @@ export function TrendSignal({
 
             {/* Interval Selector */}
             <div className="flex gap-1">
-              {(['1H', '1D'] as const).map((int) => (
+              {(['1h', '1D'] as const).map((int) => (
                 <Button
                   key={int}
                   variant={interval === int ? 'outline' : 'ghost'}

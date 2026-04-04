@@ -38,7 +38,7 @@ export function PlaygroundIntervalWatcher() {
     }
 
     // Only check for intraday intervals (not daily/weekly)
-    const isIntraday = interval !== '1D' && interval !== '1W'
+    const isIntraday = !['1D', '1W', '2W', '1M'].includes(interval)
     if (!isIntraday) {
       setIsDataAvailable(true) // Daily/weekly data is always available
       return
@@ -82,7 +82,7 @@ export function PlaygroundIntervalWatcher() {
 
   // Reset when switching back to daily/weekly
   React.useEffect(() => {
-    if (interval === '1D' || interval === '1W') {
+    if (['1D', '1W', '2W', '1M'].includes(interval)) {
       setIsDataAvailable(true)
     }
   }, [interval])
@@ -95,7 +95,7 @@ export function PlaygroundIntervalWatcher() {
   // Show warning message when no intraday data is available
   const getWarningMessage = () => {
     const dateStr = currentVisibleDate || ''
-    if (interval === '1H') {
+    if (interval === '1h') {
       return t('common.playground.intervalWarning.hourlyUnavailable', {
         date: dateStr
       })

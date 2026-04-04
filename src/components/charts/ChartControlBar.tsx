@@ -50,6 +50,7 @@ const ALL_INTERVALS: Interval[] = [
 	Interval.Minutes15,
 	Interval.Minutes30,
 	Interval.Hourly,
+	Interval.Hours4,
 	Interval.Daily,
 	Interval.Weekly,
 	Interval.BiWeekly,
