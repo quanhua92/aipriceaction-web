@@ -4,14 +4,18 @@ import {
 	ColorType,
 	CrosshairMode,
 	createChart,
+	createSeriesMarkers,
 	createTextWatermark,
 	type HistogramData,
 	HistogramSeries,
 	type IChartApi,
+	type IPriceLine,
 	type ISeriesApi,
 	type LineData,
 	LineSeries,
 	type Time,
+	type CreatePriceLineOptions,
+	type SeriesMarker,
 } from "lightweight-charts";
 import { Loader2 } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -37,21 +41,34 @@ import { TOOLTIP_MARGIN, TOOLTIP_WIDTH, TOOLTIP_HEIGHT } from "@/lib/constants";
 import { RulerSection } from "./RulerSection";
 import { createTooltipElement } from "@/lib/tooltipStyles";
 import { useLogs } from "@/contexts/LogsContext";
-import { getChangeColors, getVolumeColor, getVolumePercentColor, getMAColor, getBasicChangeColor } from "@/lib/chartColors";
+import {
+	getChangeColors,
+	getVolumeColor,
+	getVolumePercentColor,
+	getMAColor,
+	getBasicChangeColor,
+} from "@/lib/chartColors";
 import { formatTooltipDate } from "@/lib/chartDateUtils";
-import { transformStockDataToChartData, type ChartData } from "@/lib/chartDataTransform";
+import {
+	transformStockDataToChartData,
+	type ChartData,
+} from "@/lib/chartDataTransform";
 
 interface BaseTradingViewChartProps {
 	title?: string;
 	height?: number;
 	showControls?: boolean;
-		noDataMessage?: string;
+	noDataMessage?: string;
 	maVisibility?: {
 		ma10: boolean;
 		ma20: boolean;
 		ma50: boolean;
 		ma100: boolean;
 		ma200: boolean;
+	};
+	overlay?: {
+		markers?: SeriesMarker<Time>[];
+		priceLines?: CreatePriceLineOptions[];
 	};
 }
 
@@ -61,9 +78,11 @@ export function BaseTradingViewChart({
 	showControls = true,
 	noDataMessage = "No data available",
 	maVisibility: maVisibilityProp,
+	overlay,
 }: BaseTradingViewChartProps) {
 	// Get global settings
-	const { interval, rulerVisible, macdVisible, macdHeight, ...globalSettings } = useChartSettings();
+	const { interval, rulerVisible, macdVisible, macdHeight, ...globalSettings } =
+		useChartSettings();
 
 	// Initialize logging
 	const { info } = useLogs();
@@ -126,6 +145,10 @@ export function BaseTradingViewChart({
 	const macdLineSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const macdSignalSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const prevDataLengthRef = useRef<number>(0);
+	const markersApiRef = useRef<any>(null);
+	const priceLinesRef = useRef<Map<string, IPriceLine>>(new Map());
+
+	const [seriesGeneration, setSeriesGeneration] = useState(0);
 
 	// Dynamic ref mapping for MA series
 	const maSeriesRefs = {
@@ -159,7 +182,7 @@ export function BaseTradingViewChart({
 			return null;
 		}
 
-		const symbol = data?.[0]?.symbol ?? 'unknown';
+		const symbol = data?.[0]?.symbol ?? "unknown";
 
 		// Create new chart
 		const chart = createChart(chartContainerRef.current, {
@@ -207,7 +230,7 @@ export function BaseTradingViewChart({
 		info(`[BaseChart][${symbol}] Chart created`, {
 			width: chartContainerRef.current.clientWidth,
 			height,
-			timestamp: Date.now()
+			timestamp: Date.now(),
 		});
 
 		// Add candlestick series with custom price formatter
@@ -231,6 +254,7 @@ export function BaseTradingViewChart({
 			},
 		});
 		candlestickSeriesRef.current = candlestickSeries;
+		setSeriesGeneration((prev) => prev + 1);
 
 		// Add volume series on secondary scale
 		const volumeSeries = chart.addSeries(HistogramSeries, {
@@ -264,28 +288,40 @@ export function BaseTradingViewChart({
 			const macdPane = chart.addPane();
 			macdPane.setHeight(macdHeight);
 
-			macdHistogramSeriesRef.current = chart.addSeries(HistogramSeries, {
-				priceScaleId: "macd_histogram",
-			}, 1);
+			macdHistogramSeriesRef.current = chart.addSeries(
+				HistogramSeries,
+				{
+					priceScaleId: "macd_histogram",
+				},
+				1,
+			);
 			macdHistogramSeriesRef.current.priceScale().applyOptions({
 				scaleMargins: { top: 0.2, bottom: 0.0 },
 			});
 
-			macdLineSeriesRef.current = chart.addSeries(LineSeries, {
-				color: "#2563eb",
-				lineWidth: 1,
-				priceScaleId: "macd",
-				lastValueVisible: false,
-				priceLineVisible: false,
-			}, 1);
+			macdLineSeriesRef.current = chart.addSeries(
+				LineSeries,
+				{
+					color: "#2563eb",
+					lineWidth: 1,
+					priceScaleId: "macd",
+					lastValueVisible: false,
+					priceLineVisible: false,
+				},
+				1,
+			);
 
-			macdSignalSeriesRef.current = chart.addSeries(LineSeries, {
-				color: "#ea580c",
-				lineWidth: 1,
-				priceScaleId: "macd",
-				lastValueVisible: false,
-				priceLineVisible: false,
-			}, 1);
+			macdSignalSeriesRef.current = chart.addSeries(
+				LineSeries,
+				{
+					color: "#ea580c",
+					lineWidth: 1,
+					priceScaleId: "macd",
+					lastValueVisible: false,
+					priceLineVisible: false,
+				},
+				1,
+			);
 
 			// Hide price scale for MACD line/signal (keep histogram scale visible)
 			macdLineSeriesRef.current.priceScale().applyOptions({ visible: false });
@@ -438,7 +474,6 @@ export function BaseTradingViewChart({
 		const handleChartClick = (param: any) => {
 			const currentLockedRef = clickedCrosshairRef.current; // Get current ref value
 
-
 			// TOGGLE LOGIC: Always handle toggle first, before any validation
 			if (currentLockedRef) {
 				setClickedCrosshairData(null);
@@ -466,7 +501,6 @@ export function BaseTradingViewChart({
 			);
 			const clickedDataPoint = currentIndex >= 0 ? data[currentIndex] : null;
 
-
 			if (clickedDataPoint) {
 				setClickedCrosshairData(clickedDataPoint);
 				clickedCrosshairRef.current = clickedDataPoint; // Update ref immediately
@@ -484,7 +518,7 @@ export function BaseTradingViewChart({
 				chartRef.current?.setCrosshairPosition(
 					lockedPosition.price,
 					lockedPosition.horizontalPosition,
-					candlestickSeriesRef.current!
+					candlestickSeriesRef.current!,
 				);
 
 				// Show tooltip at clicked position, similar to hover
@@ -512,12 +546,18 @@ export function BaseTradingViewChart({
 				// Position tooltip at clicked position (same logic as hover)
 				const y = param.point.y;
 				let left = param.point.x + TOOLTIP_MARGIN;
-				if (chartContainerRef.current && left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH) {
+				if (
+					chartContainerRef.current &&
+					left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH
+				) {
 					left = param.point.x - TOOLTIP_MARGIN - TOOLTIP_WIDTH;
 				}
 
 				let top = y + TOOLTIP_MARGIN;
-				if (chartContainerRef.current && top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT) {
+				if (
+					chartContainerRef.current &&
+					top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT
+				) {
 					top = y - TOOLTIP_HEIGHT - TOOLTIP_MARGIN;
 				}
 
@@ -540,14 +580,13 @@ export function BaseTradingViewChart({
 				param.point.y < 0 ||
 				param.point.y > chartContainerRef.current.clientHeight
 			) {
-
 				// If there's a locked crosshair, restore built-in crosshair position and show tooltip
 				if (clickedCrosshairRef.current && lockedCrosshairPositionRef.current) {
 					// Restore built-in crosshair position when hovering out of bounds
 					chartRef.current?.setCrosshairPosition(
 						lockedCrosshairPositionRef.current.price,
 						lockedCrosshairPositionRef.current.horizontalPosition,
-						candlestickSeriesRef.current!
+						candlestickSeriesRef.current!,
 					);
 
 					// Convert the locked position time to Vietnam timezone Unix timestamp for chart display
@@ -575,7 +614,9 @@ export function BaseTradingViewChart({
 						tooltipRef.current!.style.top = `${top}px`;
 						tooltipRef.current!.style.display = "block";
 					} else {
-						info(`[BaseChart][${clickedCrosshairRef.current?.symbol ?? 'unknown'}] Locked tooltip HTML generation failed`);
+						info(
+							`[BaseChart][${clickedCrosshairRef.current?.symbol ?? "unknown"}] Locked tooltip HTML generation failed`,
+						);
 						tooltipRef.current!.style.display = "none";
 					}
 
@@ -624,7 +665,9 @@ export function BaseTradingViewChart({
 			if (html) {
 				tooltipRef.current!.innerHTML = html;
 			} else {
-				info(`[BaseChart][${currentDataPoint.symbol}] Hover tooltip HTML generation failed`);
+				info(
+					`[BaseChart][${currentDataPoint.symbol}] Hover tooltip HTML generation failed`,
+				);
 				tooltipRef.current!.style.display = "none";
 				return;
 			}
@@ -633,14 +676,16 @@ export function BaseTradingViewChart({
 			const y = param.point.y;
 			let left = param.point.x + TOOLTIP_MARGIN;
 			const leftAdjusted =
-				chartContainerRef.current && left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH;
+				chartContainerRef.current &&
+				left > chartContainerRef.current.clientWidth - TOOLTIP_WIDTH;
 			if (leftAdjusted) {
 				left = param.point.x - TOOLTIP_MARGIN - TOOLTIP_WIDTH;
 			}
 
 			let top = y + TOOLTIP_MARGIN;
 			const topAdjusted =
-				chartContainerRef.current && top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT;
+				chartContainerRef.current &&
+				top > chartContainerRef.current.clientHeight - TOOLTIP_HEIGHT;
 			if (topAdjusted) {
 				top = y - TOOLTIP_HEIGHT - TOOLTIP_MARGIN;
 			}
@@ -672,7 +717,7 @@ export function BaseTradingViewChart({
 			setContainerWidth(initialWidth);
 			info(`[BaseChart][${symbol}] Container size observed`, {
 				width: initialWidth,
-				responsiveViewportSize: getResponsiveViewportSize(initialWidth)
+				responsiveViewportSize: getResponsiveViewportSize(initialWidth),
 			});
 		}
 
@@ -738,10 +783,88 @@ export function BaseTradingViewChart({
 		macdHistogramSeriesRef.current = null;
 		macdLineSeriesRef.current = null;
 		macdSignalSeriesRef.current = null;
+		markersApiRef.current = null;
+		priceLinesRef.current = new Map();
 
 		setIsDataInitialized(false);
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [macdVisible, macdHeight]);
+
+	// Overlay effect: markers and price lines
+	useEffect(() => {
+		const series = candlestickSeriesRef.current;
+		if (!series) return;
+
+		// --- Markers ---
+		const markers = overlay?.markers;
+		if (markers && markers.length > 0) {
+			if (markersApiRef.current) {
+				markersApiRef.current.setMarkers(markers);
+			} else {
+				markersApiRef.current = createSeriesMarkers(series, markers);
+			}
+		} else {
+			if (markersApiRef.current) {
+				markersApiRef.current.detach();
+				markersApiRef.current = null;
+			}
+		}
+
+		// --- Price Lines ---
+		const priceLines = overlay?.priceLines;
+		if (priceLines && priceLines.length > 0) {
+			// Build set of incoming IDs
+			const incomingIds = new Set(
+				priceLines.map((pl) => pl.id).filter(Boolean) as string[],
+			);
+
+			// Remove lines no longer present
+			for (const [id, line] of priceLinesRef.current) {
+				if (!incomingIds.has(id)) {
+					try {
+						series.removePriceLine(line);
+					} catch {
+						/* already removed */
+					}
+					priceLinesRef.current.delete(id);
+				}
+			}
+
+			// Create new lines
+			for (const pl of priceLines) {
+				if (pl.id && !priceLinesRef.current.has(pl.id as string)) {
+					const line = series.createPriceLine(pl);
+					priceLinesRef.current.set(pl.id as string, line);
+				}
+			}
+		} else {
+			// Remove all price lines
+			for (const [id, line] of priceLinesRef.current) {
+				try {
+					series.removePriceLine(line);
+				} catch {
+					/* already removed */
+				}
+			}
+			priceLinesRef.current = new Map();
+		}
+
+		return () => {
+			if (markersApiRef.current) {
+				markersApiRef.current.detach();
+				markersApiRef.current = null;
+			}
+			for (const [, line] of priceLinesRef.current) {
+				try {
+					series.removePriceLine(line);
+				} catch {
+					/* already removed */
+				}
+			}
+			priceLinesRef.current = new Map();
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [overlay, seriesGeneration]);
 
 	// Keep ref in sync with state for immediate access in event handlers
 	useEffect(() => {
@@ -802,6 +925,8 @@ export function BaseTradingViewChart({
 			macdHistogramSeriesRef.current = null;
 			macdLineSeriesRef.current = null;
 			macdSignalSeriesRef.current = null;
+			markersApiRef.current = null;
+			priceLinesRef.current = new Map();
 
 			if (chart) {
 				try {
@@ -845,9 +970,10 @@ export function BaseTradingViewChart({
 		const prevDataLength = prevDataLengthRef.current;
 		const newDataLength = chartData.candlestick.length;
 
-		const savedLogicalRange = isDataInitialized && chartRef.current
-			? chartRef.current.timeScale().getVisibleLogicalRange()
-			: null;
+		const savedLogicalRange =
+			isDataInitialized && chartRef.current
+				? chartRef.current.timeScale().getVisibleLogicalRange()
+				: null;
 
 		// Update series data (even if empty - this clears the chart)
 		candlestickSeriesRef.current.setData(chartData.candlestick);
@@ -895,7 +1021,9 @@ export function BaseTradingViewChart({
 						to: savedLogicalRange.to + barDelta,
 					});
 				} else {
-					chartRef.current.timeScale().setVisibleLogicalRange(savedLogicalRange);
+					chartRef.current
+						.timeScale()
+						.setVisibleLogicalRange(savedLogicalRange);
 				}
 			});
 		}
@@ -904,17 +1032,28 @@ export function BaseTradingViewChart({
 
 		// Set initial viewport only on first data load
 		// IMPORTANT: Wait for containerWidth to be set by ResizeObserver before initializing viewport
-		if (chartRef.current && chartData.candlestick.length > 0 && !isDataInitialized && containerWidth > 0) {
-			const symbol = data?.[0]?.symbol ?? 'unknown';
+		if (
+			chartRef.current &&
+			chartData.candlestick.length > 0 &&
+			!isDataInitialized &&
+			containerWidth > 0
+		) {
+			const symbol = data?.[0]?.symbol ?? "unknown";
 
 			info(`[BaseChart][${symbol}] Initializing viewport`, {
 				dataLength: chartData.candlestick.length,
 				responsiveViewportSize,
-				containerWidth
+				containerWidth,
 			});
 
-			const viewportSize = Math.min(responsiveViewportSize, chartData.candlestick.length); // Show responsive number of bars or all if less
-			const startIndex = Math.max(0, chartData.candlestick.length - viewportSize);
+			const viewportSize = Math.min(
+				responsiveViewportSize,
+				chartData.candlestick.length,
+			); // Show responsive number of bars or all if less
+			const startIndex = Math.max(
+				0,
+				chartData.candlestick.length - viewportSize,
+			);
 			const from = chartData.candlestick[startIndex].time;
 			const to = chartData.candlestick[chartData.candlestick.length - 1].time;
 
@@ -1006,7 +1145,10 @@ export function BaseTradingViewChart({
 			)}
 
 			{/* Chart Container */}
-			<div className="relative overflow-hidden" style={{ height: `${height}px` }}>
+			<div
+				className="relative overflow-hidden"
+				style={{ height: `${height}px` }}
+			>
 				<div ref={chartContainerRef} className="absolute inset-0" />
 
 				{/* Overlay for current/crosshair data */}
@@ -1072,10 +1214,18 @@ export function BaseTradingViewChart({
 									);
 								})()}
 								<span className="mx-1"></span>
-								<span className={cn(getVolumeColor(displayData.volume_changed ?? 0))}>
+								<span
+									className={cn(
+										getVolumeColor(displayData.volume_changed ?? 0),
+									)}
+								>
 									{formatVolume(displayData.volume)}
 								</span>{" "}
-								<span className={cn(getVolumePercentColor(displayData.volume_changed ?? 0))}>
+								<span
+									className={cn(
+										getVolumePercentColor(displayData.volume_changed ?? 0),
+									)}
+								>
 									{formatPercent(displayData.volume_changed ?? 0)}
 								</span>
 								<span className="text-zinc-400 ml-2">
@@ -1131,11 +1281,10 @@ export function BaseTradingViewChart({
 				{macdVisible && (
 					<div
 						className="absolute left-2 z-10 pointer-events-none text-[9px] tracking-wide"
-						style={{ bottom: 28, color: '#71717a', fontFamily: 'monospace' }}
+						style={{ bottom: 28, color: "#71717a", fontFamily: "monospace" }}
 					>
-						MACD(12,26,9){' '}
-						<span style={{ color: '#2563eb' }}>━</span>{' '}
-						<span style={{ color: '#ea580c' }}>━</span>
+						MACD(12,26,9) <span style={{ color: "#2563eb" }}>━</span>{" "}
+						<span style={{ color: "#ea580c" }}>━</span>
 					</div>
 				)}
 			</div>

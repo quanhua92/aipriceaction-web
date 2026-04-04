@@ -1,51 +1,65 @@
-import { useTranslation } from '@/hooks/useTranslation'
-import { TickerProvider, useTicker } from '@/contexts/TickerContext'
-import { useChartSettings, MaVisibility } from '@/contexts/ChartSettingsContext'
-import { useAPI } from '@/contexts/APIContext'
-import * as React from 'react'
-import { Interval } from '@/lib/api-client'
-import { BaseTradingViewChart } from './BaseTradingViewChart'
-import { ChartControlBar } from './ChartControlBar'
-import { ChartFullscreenDialog } from '@/components/ChartFullscreenDialog'
-import { isCryptoTicker } from '@/lib/ticker-utils'
-import { StockData } from '@/lib/api-client'
-import { MARKET_INDICES } from '@/lib/constants'
+import { useTranslation } from "@/hooks/useTranslation";
+import { TickerProvider, useTicker } from "@/contexts/TickerContext";
+import {
+	useChartSettings,
+	MaVisibility,
+} from "@/contexts/ChartSettingsContext";
+import { useAPI } from "@/contexts/APIContext";
+import * as React from "react";
+import { Interval } from "@/lib/api-client";
+import { BaseTradingViewChart } from "./BaseTradingViewChart";
+import type {
+	CreatePriceLineOptions,
+	SeriesMarker,
+	Time,
+} from "lightweight-charts";
+import { ChartControlBar } from "./ChartControlBar";
+import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
+import { isCryptoTicker } from "@/lib/ticker-utils";
+import { StockData } from "@/lib/api-client";
+import { MARKET_INDICES } from "@/lib/constants";
 
 interface TradingViewChartProps {
 	// Visual configuration
-	title?: string
-	height?: number
-	showControls?: boolean
+	title?: string;
+	height?: number;
+	showControls?: boolean;
 
 	// Ticker control
-	initialTicker?: string    // Static setup only
-	ticker?: string          // External control
-	onTickerChange?: (ticker: string) => void
+	initialTicker?: string; // Static setup only
+	ticker?: string; // External control
+	onTickerChange?: (ticker: string) => void;
 
 	// Settings control (optional - defaults to global settings)
-	interval?: Interval
-	onIntervalChange?: (interval: Interval) => void
-	limit?: number
-	setLimit?: (limit: number) => void
-	setHeight?: (height: number) => void
-	maVisibility?: MaVisibility
-	setMaVisibility?: (visibility: MaVisibility) => void
-	resetMaVisibility?: () => void
-	startDate?: string
-	setStartDate?: (date?: string) => void
-	endDate?: string
-	setEndDate?: (date?: string) => void
-	endDateOverride?: string | null  // Local endDate override (for dialogs)
+	interval?: Interval;
+	onIntervalChange?: (interval: Interval) => void;
+	limit?: number;
+	setLimit?: (limit: number) => void;
+	setHeight?: (height: number) => void;
+	maVisibility?: MaVisibility;
+	setMaVisibility?: (visibility: MaVisibility) => void;
+	resetMaVisibility?: () => void;
+	startDate?: string;
+	setStartDate?: (date?: string) => void;
+	endDate?: string;
+	setEndDate?: (date?: string) => void;
+	endDateOverride?: string | null; // Local endDate override (for dialogs)
 
 	// NEW: Cache support props
-	cacheData?: StockData[]
+	cacheData?: StockData[];
 	cacheMetadata?: {
-		symbol: string
-		interval: Interval
-		startDate: string
-		endDate: string
-		mode: 'vn' | 'crypto'
-	}
+		symbol: string;
+		interval: Interval;
+		startDate: string;
+		endDate: string;
+		mode: "vn" | "crypto";
+	};
+
+	// Overlay: markers and price lines
+	overlay?: {
+		markers?: SeriesMarker<Time>[];
+		priceLines?: CreatePriceLineOptions[];
+	};
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -68,83 +82,97 @@ function TradingViewChartContent({
 	showControls = true,
 	...visualProps
 }: TradingViewChartProps) {
-	const { t } = useTranslation()
-	const globalSettings = useChartSettings()
-	const { selectedTicker, setSelectedTicker } = useTicker()
+	const { t } = useTranslation();
+	const globalSettings = useChartSettings();
+	const { selectedTicker, setSelectedTicker } = useTicker();
 	const {
 		allTickersLastData,
 		allCryptoTickersLastData,
 		tickers: stockTickers,
-		cryptoTickers
-	} = useAPI()
+		cryptoTickers,
+	} = useAPI();
 
 	// Fullscreen dialog state
-	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null)
+	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(
+		null,
+	);
 
 	// Use global settings as defaults, override with props if provided
-	const currentInterval = interval ?? globalSettings.interval
-	const currentHeight = height ?? globalSettings.height
-	const currentMaVisibility = maVisibility ?? globalSettings.maVisibility
-	const handleIntervalChange = onIntervalChange ?? globalSettings.setInterval
+	const currentInterval = interval ?? globalSettings.interval;
+	const currentHeight = height ?? globalSettings.height;
+	const currentMaVisibility = maVisibility ?? globalSettings.maVisibility;
+	const handleIntervalChange = onIntervalChange ?? globalSettings.setInterval;
 
 	// Fullscreen handlers
 	const handleFullscreenClick = () => {
-		setFullscreenTicker(selectedTicker)
-	}
+		setFullscreenTicker(selectedTicker);
+	};
 
 	const handleCloseFullscreen = () => {
-		setFullscreenTicker(null)
-	}
+		setFullscreenTicker(null);
+	};
 
 	// Create sorted tickerList for fullscreen dialog navigation (sorted by value = volume * close)
 	const navigationTickers = React.useMemo(() => {
 		// Check if current ticker is crypto
-		const isCrypto = selectedTicker && isCryptoTicker(selectedTicker, stockTickers, cryptoTickers)
+		const isCrypto =
+			selectedTicker &&
+			isCryptoTicker(selectedTicker, stockTickers, cryptoTickers);
 
 		// For crypto: iterate over cryptoTickers (known list)
 		if (isCrypto) {
 			const tickersWithValue = cryptoTickers
-				.map(ticker => {
-					const data = allCryptoTickersLastData[ticker.symbol]
-					if (!data || data.length === 0) return null
-					const latestData = data[0]
-					if (latestData?.close_changed === null || latestData?.close_changed === undefined) {
-						return null
+				.map((ticker) => {
+					const data = allCryptoTickersLastData[ticker.symbol];
+					if (!data || data.length === 0) return null;
+					const latestData = data[0];
+					if (
+						latestData?.close_changed === null ||
+						latestData?.close_changed === undefined
+					) {
+						return null;
 					}
-					const value = (latestData.close ?? 0) * (latestData.volume ?? 0)
-					return { symbol: ticker.symbol, value }
+					const value = (latestData.close ?? 0) * (latestData.volume ?? 0);
+					return { symbol: ticker.symbol, value };
 				})
-				.filter((item): item is { symbol: string; value: number } => item !== null)
+				.filter(
+					(item): item is { symbol: string; value: number } => item !== null,
+				);
 
-			tickersWithValue.sort((a, b) => b.value - a.value)
-			return tickersWithValue.map(t => t.symbol)
+			tickersWithValue.sort((a, b) => b.value - a.value);
+			return tickersWithValue.map((t) => t.symbol);
 		}
 
 		// For stocks: create a Set of all known stock ticker symbols for fast lookup
-		const knownTickerSymbols = new Set(stockTickers.map(t => t.symbol))
+		const knownTickerSymbols = new Set(stockTickers.map((t) => t.symbol));
 
 		const tickersWithValue = Object.entries(allTickersLastData)
 			.filter(([symbol, data]) => {
-				if (!knownTickerSymbols.has(symbol)) return false
-				return data && data.length > 0 && data[0]?.close_changed !== null && data[0]?.close_changed !== undefined
+				if (!knownTickerSymbols.has(symbol)) return false;
+				return (
+					data &&
+					data.length > 0 &&
+					data[0]?.close_changed !== null &&
+					data[0]?.close_changed !== undefined
+				);
 			})
 			.map(([symbol, data]) => {
-				const latestData = data[0]
-				const value = (latestData.close ?? 0) * (latestData.volume ?? 0)
-				return { symbol, value }
-			})
+				const latestData = data[0];
+				const value = (latestData.close ?? 0) * (latestData.volume ?? 0);
+				return { symbol, value };
+			});
 
 		// Sort by value (highest first)
-		tickersWithValue.sort((a, b) => b.value - a.value)
+		tickersWithValue.sort((a, b) => b.value - a.value);
 
 		// Extract symbols
-		let symbols = tickersWithValue.map(t => t.symbol)
+		let symbols = tickersWithValue.map((t) => t.symbol);
 
 		// Move market indices to front (keep original order: VNINDEX, VN30)
-		symbols = symbols.filter(s => !MARKET_INDICES.includes(s as any))
-		symbols.unshift(...MARKET_INDICES)
+		symbols = symbols.filter((s) => !MARKET_INDICES.includes(s as any));
+		symbols.unshift(...MARKET_INDICES);
 
-		return symbols
+		return symbols;
 	}, [
 		selectedTicker,
 		stockTickers,
@@ -152,14 +180,14 @@ function TradingViewChartContent({
 		allTickersLastData,
 		allCryptoTickersLastData,
 		MARKET_INDICES,
-	])
+	]);
 
 	// Get current index for fullscreen dialog
 	const fullscreenTickerIndex = React.useMemo(() => {
-		if (!fullscreenTicker) return 0
-		const index = navigationTickers.indexOf(fullscreenTicker)
-		return index !== -1 ? index : 0
-	}, [fullscreenTicker, navigationTickers])
+		if (!fullscreenTicker) return 0;
+		const index = navigationTickers.indexOf(fullscreenTicker);
+		return index !== -1 ? index : 0;
+	}, [fullscreenTicker, navigationTickers]);
 
 	return (
 		<>
@@ -170,8 +198,8 @@ function TradingViewChartContent({
 						interval={currentInterval}
 						onIntervalChange={handleIntervalChange}
 						onTickerChange={(newTicker) => {
-							setSelectedTicker(newTicker)
-							onTickerChange?.(newTicker)
+							setSelectedTicker(newTicker);
+							onTickerChange?.(newTicker);
 						}}
 						showTickerSelect={true}
 						onFullscreenClick={handleFullscreenClick}
@@ -181,7 +209,7 @@ function TradingViewChartContent({
 					{...visualProps}
 					height={currentHeight}
 					maVisibility={currentMaVisibility}
-					noDataMessage={t('common.noDataAvailable')}
+					noDataMessage={t("common.noDataAvailable")}
 				/>
 			</div>
 
@@ -193,7 +221,7 @@ function TradingViewChartContent({
 				currentIndex={fullscreenTickerIndex}
 			/>
 		</>
-	)
+	);
 }
 
 // Main export - wrapper component that provides TickerProvider
@@ -210,5 +238,5 @@ export function TradingViewChart(props: TradingViewChartProps) {
 		>
 			<TradingViewChartContent {...props} />
 		</TickerProvider>
-	)
+	);
 }

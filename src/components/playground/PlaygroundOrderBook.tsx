@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,36 +33,27 @@ import {
 	calculateRR,
 	calculateSignedR,
 	calculateUnrealizedPnL,
-	clearOrderBook,
-	loadOrderBook,
 	type Order,
-	placeOrder,
-	saveOrderBook,
 } from "@/lib/order-book-storage";
 import { usePlayground } from "./PlaygroundDataProvider";
 
 export function PlaygroundOrderBook() {
-	const { playgroundData, visibleData } = usePlayground();
+	const {
+		playgroundData,
+		visibleData,
+		orders,
+		stoplossPct,
+		setStoplossPct,
+		handlePlaceOrder,
+		handleClearOrders,
+	} = usePlayground();
 	const ticker = playgroundData.ticker;
 	const currentIndex = playgroundData.currentIndex;
 	const currentBar = visibleData[currentIndex];
 
-	const [orders, setOrders] = useState<Order[]>(() => loadOrderBook(ticker));
-	const [stoplossPct, setStoplossPct] = useState("1");
 	const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
-	// Load orders when ticker changes
-	useEffect(() => {
-		setOrders(loadOrderBook(ticker));
-	}, [ticker]);
-
-	// Persist orders on change
-	useEffect(() => {
-		saveOrderBook(ticker, orders);
-	}, [ticker, orders]);
-
 	const currentPrice = currentBar?.close ?? 0;
-	const currentDate = currentBar?.time ?? "";
 
 	const realizedPnL = calculateRealizedPnL(orders);
 	const unrealizedPnL = calculateUnrealizedPnL(orders, currentPrice);
@@ -99,39 +90,6 @@ export function PlaygroundOrderBook() {
 
 	const avgRealizedR =
 		tradeOrders.length > 0 ? totalRealizedR / tradeOrders.length : 0;
-
-	const handlePlace = useCallback(
-		(side: "long" | "short") => {
-			if (!currentBar) return;
-			const price = currentBar.close;
-			const pct = Number.parseFloat(stoplossPct);
-			if (Number.isNaN(pct) || pct <= 0) return;
-
-			const sl =
-				side === "long" ? price * (1 - pct / 100) : price * (1 + pct / 100);
-
-			if (sl <= 0) return;
-
-			setOrders((prev) => {
-				const next = placeOrder(
-					prev,
-					ticker,
-					side,
-					price,
-					sl,
-					currentPrice,
-					currentDate,
-				);
-				return next;
-			});
-		},
-		[currentBar, stoplossPct, ticker, currentPrice, currentDate],
-	);
-
-	const handleClear = useCallback(() => {
-		setOrders([]);
-		clearOrderBook(ticker);
-	}, [ticker]);
 
 	const formatPnL = (value: number) => {
 		const formatted = value >= 0 ? `+${value.toFixed(0)}` : value.toFixed(0);
@@ -199,7 +157,7 @@ export function PlaygroundOrderBook() {
 							size="sm"
 							variant="default"
 							className="bg-green-600 hover:bg-green-700 text-white"
-							onClick={() => handlePlace("long")}
+							onClick={() => handlePlaceOrder("long")}
 							disabled={!currentBar}
 						>
 							Long
@@ -208,7 +166,7 @@ export function PlaygroundOrderBook() {
 							size="sm"
 							variant="default"
 							className="bg-red-600 hover:bg-red-700 text-white"
-							onClick={() => handlePlace("short")}
+							onClick={() => handlePlaceOrder("short")}
 							disabled={!currentBar}
 						>
 							Short
@@ -461,7 +419,7 @@ export function PlaygroundOrderBook() {
 						<Button
 							variant="destructive"
 							onClick={() => {
-								handleClear();
+								handleClearOrders();
 								setClearDialogOpen(false);
 							}}
 						>
