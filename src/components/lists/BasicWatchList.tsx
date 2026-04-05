@@ -20,6 +20,7 @@ import { CUSTOM_WATCHLISTS_STORAGE_KEY } from '@/lib/constants'
 
 export interface BasicWatchListProps {
   defaultGroup?: string
+  defaultSectionFilter?: 'stocks' | 'crypto' | 'global'
   maxHeight?: string
   className?: string
   showMarketIndices?: boolean
@@ -31,6 +32,7 @@ export interface BasicWatchListProps {
 
 export function BasicWatchList({
   defaultGroup,
+  defaultSectionFilter,
   maxHeight = '300px',
   className = '',
   showMarketIndices = false,
@@ -510,11 +512,12 @@ export function BasicWatchList({
         maxHeight={maxHeight}
         className="h-full"
         defaultSectionFilter={
-          selectedGroup === CRYPTO_WATCHLIST_NAME
-            ? 'crypto'
-            : selectedGroup === GLOBAL_WATCHLIST_NAME
-              ? 'global'
-              : 'stocks'
+          defaultSectionFilter
+            ?? (selectedGroup === CRYPTO_WATCHLIST_NAME
+              ? 'crypto'
+              : selectedGroup === GLOBAL_WATCHLIST_NAME
+                ? 'global'
+                : 'stocks')
         }
         cryptoTickers={
           // ALL: show all crypto

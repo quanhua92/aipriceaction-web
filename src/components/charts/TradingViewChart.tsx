@@ -88,6 +88,7 @@ function TradingViewChartContent({
 	const {
 		allTickersLastData,
 		allCryptoTickersLastData,
+		allGlobalTickersLastData,
 		tickers: stockTickers,
 		cryptoTickers,
 		globalTickers,
@@ -132,12 +133,37 @@ function TradingViewChartContent({
 			? getTickerMode(selectedTicker, stockTickers, globalTickers, cryptoTickers)
 			: 'vn';
 		const isCrypto = tickerMode === 'crypto';
+		const isGlobal = tickerMode === 'yahoo';
 
 		// For crypto: iterate over cryptoTickers (known list)
 		if (isCrypto) {
 			const tickersWithValue = cryptoTickers
 				.map((ticker) => {
 					const data = allCryptoTickersLastData[ticker.symbol];
+					if (!data || data.length === 0) return null;
+					const latestData = data[0];
+					if (
+						latestData?.close_changed === null ||
+						latestData?.close_changed === undefined
+					) {
+						return null;
+					}
+					const value = (latestData.close ?? 0) * (latestData.volume ?? 0);
+					return { symbol: ticker.symbol, value };
+				})
+				.filter(
+					(item): item is { symbol: string; value: number } => item !== null,
+				);
+
+			tickersWithValue.sort((a, b) => b.value - a.value);
+			return tickersWithValue.map((t) => t.symbol);
+		}
+
+		// For global/yahoo: iterate over globalTickers (known list)
+		if (isGlobal) {
+			const tickersWithValue = globalTickers
+				.map((ticker) => {
+					const data = allGlobalTickersLastData[ticker.symbol];
 					if (!data || data.length === 0) return null;
 					const latestData = data[0];
 					if (
@@ -194,6 +220,7 @@ function TradingViewChartContent({
 		globalTickers,
 		allTickersLastData,
 		allCryptoTickersLastData,
+		allGlobalTickersLastData,
 		MARKET_INDICES,
 	]);
 

@@ -128,6 +128,7 @@ function CryptoPage() {
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					<div>
 						<BasicWatchList
+							defaultSectionFilter="crypto"
 							maxHeight="800px"
 							showMarketIndices={true}
 							showControls={false}
