@@ -20,9 +20,10 @@ interface BasicTickerWidgetProps {
 export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerChange }: BasicTickerWidgetProps) {
   const { t } = useTranslation()
 
-  
+  const effectiveInitialTicker = ticker ?? initialTicker
+
   return (
-    <TickerProvider initialTicker={initialTicker} limit={1} enableFetching={true}>
+    <TickerProvider initialTicker={effectiveInitialTicker} limit={1} enableFetching={true}>
       {({ selectedTicker, setSelectedTicker, loading, chartData }) => {
         
         // Get the latest data (last day)
