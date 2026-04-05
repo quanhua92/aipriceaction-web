@@ -722,7 +722,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
                           {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
-                          <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
+                          {!['CRYPTO_TOP_100', 'GLOBAL'].includes(ticker.sector) && <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>}
                         </div>
                         {latestData && (
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
@@ -771,7 +771,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
                           {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
-                          <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
+                          {!['CRYPTO_TOP_100', 'GLOBAL'].includes(ticker.sector) && <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>}
                         </div>
                         {latestData && (
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
@@ -820,7 +820,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
                           {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
-                          <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
+                          {!['CRYPTO_TOP_100', 'GLOBAL'].includes(ticker.sector) && <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>}
                         </div>
                         {latestData && (
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
@@ -869,7 +869,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
                           {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
-                          <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
+                          {!['CRYPTO_TOP_100', 'GLOBAL'].includes(ticker.sector) && <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>}
                         </div>
                         {latestData && (
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
@@ -918,7 +918,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         <div className="flex flex-col min-w-0 flex-shrink">
                           <span className="font-extrabold">{ticker.symbol}</span>
                           {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
-                          <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
+                          {!['CRYPTO_TOP_100', 'GLOBAL'].includes(ticker.sector) && <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>}
                         </div>
                         {latestData && (
                           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
