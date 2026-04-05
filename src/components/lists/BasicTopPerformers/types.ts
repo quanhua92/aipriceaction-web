@@ -1,7 +1,7 @@
 import type { StockData } from '@/lib/api-client'
 import type { SortBy } from '@/components/SortButtons'
 
-export type SectionFilter = 'all' | 'stocks' | 'crypto'
+export type SectionFilter = 'stocks' | 'crypto' | 'global'
 export type IntervalType = '1h' | '1D' | '1W' | '1M'
 export type ViewMode = 'cards' | 'table'
 
@@ -14,7 +14,7 @@ export interface TopPerformer {
   volume: number
   volumeChanged?: number | null  // volume_changed percentage
   value: number  // price * volume (traded value)
-  mode: 'vn' | 'crypto'
+  mode: 'vn' | 'crypto' | 'yahoo'
   ma20_score?: number | null
   ma50_score?: number | null
   ma10_score?: number | null
@@ -77,5 +77,5 @@ export interface TickerWithData {
   symbol: string
   sector: string
   stockData: StockData | undefined
-  mode: 'vn' | 'crypto'
+  mode: 'vn' | 'crypto' | 'yahoo'
 }

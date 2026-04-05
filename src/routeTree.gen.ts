@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchRouteImport } from './routes/watch'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as MatrixRouteImport } from './routes/matrix'
+import { Route as GlobalRouteImport } from './routes/global'
 import { Route as DebugRouteImport } from './routes/debug'
 import { Route as CryptoRouteImport } from './routes/crypto'
 import { Route as BacktestingRouteImport } from './routes/backtesting'
@@ -36,6 +37,11 @@ const SignalsRoute = SignalsRouteImport.update({
 const MatrixRoute = MatrixRouteImport.update({
   id: '/matrix',
   path: '/matrix',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GlobalRoute = GlobalRouteImport.update({
+  id: '/global',
+  path: '/global',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DebugRoute = DebugRouteImport.update({
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/backtesting': typeof BacktestingRoute
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
+  '/global': typeof GlobalRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/backtesting': typeof BacktestingRoute
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
+  '/global': typeof GlobalRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/backtesting': typeof BacktestingRoute
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
+  '/global': typeof GlobalRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/backtesting'
     | '/crypto'
     | '/debug'
+    | '/global'
     | '/matrix'
     | '/signals'
     | '/watch'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/backtesting'
     | '/crypto'
     | '/debug'
+    | '/global'
     | '/matrix'
     | '/signals'
     | '/watch'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/backtesting'
     | '/crypto'
     | '/debug'
+    | '/global'
     | '/matrix'
     | '/signals'
     | '/watch'
@@ -190,6 +202,7 @@ export interface RootRouteChildren {
   BacktestingRoute: typeof BacktestingRoute
   CryptoRoute: typeof CryptoRoute
   DebugRoute: typeof DebugRoute
+  GlobalRoute: typeof GlobalRoute
   MatrixRoute: typeof MatrixRoute
   SignalsRoute: typeof SignalsRoute
   WatchRoute: typeof WatchRoute
@@ -220,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/matrix'
       fullPath: '/matrix'
       preLoaderRoute: typeof MatrixRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/global': {
+      id: '/global'
+      path: '/global'
+      fullPath: '/global'
+      preLoaderRoute: typeof GlobalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/debug': {
@@ -302,6 +322,7 @@ const rootRouteChildren: RootRouteChildren = {
   BacktestingRoute: BacktestingRoute,
   CryptoRoute: CryptoRoute,
   DebugRoute: DebugRoute,
+  GlobalRoute: GlobalRoute,
   MatrixRoute: MatrixRoute,
   SignalsRoute: SignalsRoute,
   WatchRoute: WatchRoute,

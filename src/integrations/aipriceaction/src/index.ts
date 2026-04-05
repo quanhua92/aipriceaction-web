@@ -33,6 +33,7 @@ export type {
   SectorMAScore,
   HealthResponse,
   TickerGroups,
+  TickerNames,
   TickersQueryParams,
   TopPerformersQueryParams,
   MAScoresBySectorQueryParams,

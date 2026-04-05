@@ -13,6 +13,13 @@ export const MAJOR_CRYPTO = ['BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'TONUSDT'] as cons
 export type MajorCrypto = typeof MAJOR_CRYPTO[number]
 
 /**
+ * Major global indices (shown at top like market indices on /global page)
+ */
+export const MAJOR_GLOBAL = ['^GSPC', '^DJI', '^NDX', 'GC=F', 'CL=F'] as const
+
+export type MajorGlobal = typeof MAJOR_GLOBAL[number]
+
+/**
  * Number of tickers to prefetch ahead in BasicWatchList
  */
 export const BASIC_WATCHLIST_PREFETCH_COUNT = 3
@@ -90,6 +97,11 @@ export const ALL_WATCHLIST_NAME = 'ALL'
 export const CRYPTO_WATCHLIST_NAME = 'CRYPTO'
 
 /**
+ * Special watchlist name for showing only global/yahoo tickers
+ */
+export const GLOBAL_WATCHLIST_NAME = 'GLOBAL'
+
+/**
  * Names of predefined watchlists (VN30, VINGROUP, TM, etc.)
  * These appear between "ALL" and custom watchlists in the UI
  */
@@ -145,6 +157,9 @@ export const API_RECENT_CALLS_LIMIT = 10
 export const SECTOR_ABBREVIATIONS: Record<string, string> = {
 	// Major crypto (for CRYPTO watchlist)
 	MAJOR_CRYPTO: 'MAJOR',
+
+	// Global/yahoo groups
+	GLOBAL: 'GLB',
 
 	// Priority sectors
 	NGAN_HANG: 'NH',

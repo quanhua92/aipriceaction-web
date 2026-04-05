@@ -10,7 +10,7 @@ import {
   type TickerSignalHistory,
   type IntervalType
 } from '@/lib/trendsignal-utils'
-import { isCryptoTicker } from '@/lib/ticker-utils'
+import { getTickerMode } from '@/lib/ticker-utils'
 import type { StockData } from '@/lib/api-client'
 import { formatToVietnamDate, parseUTCISOString } from '@/lib/format'
 import { format } from 'date-fns'
@@ -61,7 +61,7 @@ export function TrendSignalTable({
     }
     return []
   }, [tickers, ticker])
-  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, tickers: stockTickers } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, tickers: stockTickers, globalTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { t, language } = useTranslation()
 
@@ -71,7 +71,8 @@ export function TrendSignalTable({
     const stockTickersList: string[] = []
 
     internalTickers.forEach(ticker => {
-      if (isCryptoTicker(ticker, stockTickers, cryptoTickers)) {
+      const mode = getTickerMode(ticker, stockTickers, globalTickers, cryptoTickers)
+      if (mode === 'crypto') {
         cryptoTickersList.push(ticker)
       } else {
         stockTickersList.push(ticker)
@@ -79,7 +80,7 @@ export function TrendSignalTable({
     })
 
     return { cryptoTickersList, stockTickersList }
-  }, [internalTickers, cryptoTickers, stockTickers])
+  }, [internalTickers, cryptoTickers, stockTickers, globalTickers])
 
   // State management
   const [selectedInterval, setSelectedInterval] = React.useState<IntervalType>(interval)

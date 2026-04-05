@@ -4,7 +4,7 @@ import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
 import { useAPI } from './APIContext'
 import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT, DEFAULT_CHART_LIMIT, LOAD_MORE_LIMIT } from '@/lib/constants'
-import { isCryptoTicker } from '@/lib/ticker-utils'
+import { getTickerMode } from '@/lib/ticker-utils'
 
 interface TickerContextValue {
   selectedTicker: string
@@ -33,7 +33,7 @@ interface TickerProviderProps {
     interval: Interval
     startDate: string
     endDate: string
-    mode: 'vn' | 'crypto'
+    mode: 'vn' | 'crypto' | 'yahoo'
   }
 }
 
@@ -97,6 +97,7 @@ function isCacheValid(
   interval: string,
   endDate: string | null,
   tickers: any[],
+  globalTickers: any[],
   cryptoTickers: any[]
 ): boolean {
   if (!cachedData || !cacheMetadata || cachedData.length === 0) {
@@ -104,7 +105,7 @@ function isCacheValid(
   }
 
   // Determine mode from ticker
-  const mode = isCryptoTicker(ticker, tickers, cryptoTickers) ? 'crypto' : 'vn'
+  const mode = getTickerMode(ticker, tickers, globalTickers, cryptoTickers)
 
   return (
     cacheMetadata.symbol === ticker &&
@@ -128,7 +129,7 @@ export function TickerProvider({
   const settings = enableFetching ? useChartSettings() : null
   const { setLimit } = settings || {}
   const { lastRefresh } = useRefresh()
-  const { getTickers, tickers, cryptoTickers } = useAPI()
+  const { getTickers, tickers, globalTickers, cryptoTickers } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
 
   // Cache - read-only from props
@@ -155,17 +156,19 @@ export function TickerProvider({
     }
   }, [cacheData, cacheMetadata, ticker, initialTicker, settings?.interval])
 
-  
+
   // Refs for stable access
   const loadingMoreRef = React.useRef(false)
   const tickersRef = React.useRef(tickers)
+  const globalTickersRef = React.useRef(globalTickers)
   const cryptoTickersRef = React.useRef(cryptoTickers)
 
   // Update refs when tickers change (but don't trigger re-fetch)
   React.useEffect(() => {
     tickersRef.current = tickers
+    globalTickersRef.current = globalTickers
     cryptoTickersRef.current = cryptoTickers
-  }, [tickers, cryptoTickers])
+  }, [tickers, globalTickers, cryptoTickers])
 
   // Load more historical data (for Load More button)
   const loadMoreHistoricalData = React.useCallback(async () => {
@@ -223,6 +226,7 @@ export function TickerProvider({
     lastRefresh?: number
     localEndDate?: string | null
     tickers?: any[]
+    globalTickers?: any[]
     cryptoTickers?: any[]
   }>({})
 
@@ -244,6 +248,7 @@ export function TickerProvider({
       lastRefresh,
       localEndDate,
       tickersLen: tickers?.length,
+      globalTickersLen: globalTickers?.length,
       cryptoTickersLen: cryptoTickers?.length,
     }
 
@@ -259,7 +264,7 @@ export function TickerProvider({
     prevDepsRef.current = currentDeps
 
     // 1. Perfect cache match (symbol, interval, date, mode)
-    if (isCacheValid(cacheData, cacheMetadata, selectedTicker, settings?.interval, localEndDate ?? settings?.endDate, tickersRef.current, cryptoTickersRef.current)) {
+    if (isCacheValid(cacheData, cacheMetadata, selectedTicker, settings?.interval, localEndDate ?? settings?.endDate, tickersRef.current, globalTickersRef.current, cryptoTickersRef.current)) {
       setChartData(cacheData)
       setLoading(false)
       setError(null)
@@ -291,8 +296,8 @@ export function TickerProvider({
               await sleep(delay)
             }
 
-            // Determine mode: crypto or stock (stock takes priority if symbol in both lists)
-            const mode = isCryptoTicker(selectedTicker, tickersRef.current, cryptoTickersRef.current) ? 'crypto' : 'vn'
+            // Determine mode: vn > yahoo > crypto (stock takes priority if symbol in both lists)
+            const mode = getTickerMode(selectedTicker, tickersRef.current, globalTickersRef.current, cryptoTickersRef.current)
 
             // Build source string for interval change
             const source = `TickerContext.intervalChange [${cacheMetadata.interval}→${settings.interval}]`
@@ -356,8 +361,8 @@ export function TickerProvider({
             await sleep(delay)
           }
 
-          // Determine mode: crypto or stock (stock takes priority if symbol in both lists)
-          const mode = isCryptoTicker(selectedTicker, tickersRef.current, cryptoTickersRef.current) ? 'crypto' : 'vn'
+          // Determine mode: vn > yahoo > crypto (stock takes priority if symbol in both lists)
+          const mode = getTickerMode(selectedTicker, tickersRef.current, globalTickersRef.current, cryptoTickersRef.current)
 
           // Build source string with dependency changes
           const source = changedDeps.length > 0
@@ -413,7 +418,7 @@ export function TickerProvider({
     localEndDate,
     getTickers,
     // NOTE: Don't include cacheData/cacheMetadata as dependencies to avoid infinite loops
-    // isCacheValid, tickersRef, cryptoTickersRef are stable and don't need to be listed
+    // isCacheValid, tickersRef, globalTickersRef, cryptoTickersRef are stable and don't need to be listed
   ])
 
   const contextValue = {
@@ -428,7 +433,7 @@ export function TickerProvider({
     setLocalEndDate,
   }
 
-  
+
   return (
     <TickerContext.Provider value={contextValue}>
       {typeof children === 'function' ? children(contextValue) : children}

@@ -21,7 +21,7 @@ export { type SortBy }
 export function SortButtons({
   value,
   onChange,
-  availableOptions = ['volume', 'gainers', 'losers', 'value', 'az', 'ma10', 'ma20', 'ma50', 'ma100'],
+  availableOptions = ['volume', 'gainers', 'losers', 'value', 'ma10', 'ma20', 'ma50', 'ma100', 'az'],
   margin = 'top',
   className = ''
 }: SortButtonsProps) {
@@ -30,8 +30,9 @@ export function SortButtons({
   // Define the order and display of buttons
   const defaultOrder: SortBy[] = [
     'volume', 'gainers', 'losers', // Row 1
-    'value', 'az', 'ma10',         // Row 2
-    'ma20', 'ma50', 'ma100'        // Row 3 (MA scores)
+    'value', 'az',                // Row 2
+    'ma10', 'ma20',               // Row 3 (MA scores)
+    'ma50', 'ma100'               // Row 4 (MA scores)
   ]
 
   const marginClass = margin === 'top' ? 'mt-3' : 'mb-3'

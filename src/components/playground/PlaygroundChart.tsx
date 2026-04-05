@@ -13,7 +13,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useAPI } from "@/contexts/APIContext";
-import { isCryptoTicker } from "@/lib/ticker-utils";
+import { getTickerMode } from "@/lib/ticker-utils";
 import { parseUTCISOString, toVietnamUnixTime } from "@/lib/format";
 import { useMemo } from "react";
 import type {
@@ -26,14 +26,13 @@ import { calculateSignedR } from "@/lib/order-book-storage";
 const getMode = (
 	symbol: string,
 	stockTickers: { symbol: string; sector: string }[],
+	globalTickers: { symbol: string; sector: string }[],
 	cryptoTickers: { symbol: string; sector: string }[],
 ) =>
-	isCryptoTicker(symbol, stockTickers, cryptoTickers)
-		? ("crypto" as const)
-		: ("vn" as const);
+	getTickerMode(symbol, stockTickers, globalTickers, cryptoTickers);
 
 export function PlaygroundChart() {
-	const { tickers, cryptoTickers } = useAPI();
+	const { tickers, cryptoTickers, globalTickers } = useAPI();
 	const {
 		playgroundData,
 		visibleData,
@@ -210,7 +209,7 @@ export function PlaygroundChart() {
 			interval: playgroundData.interval as Interval,
 			startDate: currentStartDate || "",
 			endDate: currentEndDate || "",
-			mode: getMode(playgroundData.ticker, tickers, cryptoTickers),
+			mode: getMode(playgroundData.ticker, tickers, globalTickers, cryptoTickers),
 		},
 		onTickerChange: updateTicker,
 		overlay,
@@ -237,7 +236,7 @@ export function PlaygroundChart() {
 							"T",
 						)[0] || ""
 					: "",
-			mode: getMode(playgroundData.secondaryTicker!, tickers, cryptoTickers),
+			mode: getMode(playgroundData.secondaryTicker!, tickers, globalTickers, cryptoTickers),
 		},
 		onTickerChange: updateSecondaryTicker,
 	};

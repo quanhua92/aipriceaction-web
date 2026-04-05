@@ -197,6 +197,8 @@ export function getMarketDecimalPlaces(mode?: string): number | undefined {
       return 2 // Gold, oil: 2 decimal places
     case 'stock':
       return 2 // International stocks: 2 decimal places
+    case 'yahoo':
+      return 2 // Yahoo/Global: 2 decimal places (indices, commodities, stocks)
     case 'crypto':
     default:
       return undefined // Use dynamic precision based on price
@@ -219,7 +221,7 @@ export function getMarketDecimalPlaces(mode?: string): number | undefined {
  */
 export function formatPrice(
   price: number | null | undefined,
-  useDecimalsOrData?: boolean | { symbol?: string; mode?: 'vn' | 'crypto' | 'forex' | 'commodity' | 'stock' }
+  useDecimalsOrData?: boolean | { symbol?: string; mode?: 'vn' | 'crypto' | 'yahoo' | 'forex' | 'commodity' | 'stock' }
 ): string {
   const safePrice = price ?? 0
 

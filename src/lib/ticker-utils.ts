@@ -14,51 +14,67 @@ const COMMON_CRYPTO_SYMBOLS = new Set([
   'AAVEUSDT', 'NEARUSDT', 'APTUSDT', 'ARBUSDT', 'OPUSDT', 'INJUSDT', 'SUIUSDT', 'SEIUSDT', 'TIAUSDT', 'PEPEUSDT',
 ])
 
+// Common global/yahoo symbols for fallback detection
+const COMMON_GLOBAL_SYMBOLS = new Set([
+  'GC=F', 'SI=F', 'CL=F', '^GSPC', '^DJI', '^NDX', '^N225', '^HSI', 'DX-Y.NYB',
+  'AAPL', 'NVDA', 'GOOGL', 'SPY', 'QQQ', 'MSFT', 'AMZN', 'TSLA', 'META',
+])
+
 /**
- * Determines if a ticker symbol is crypto (with stock priority)
+ * Determines the mode of a ticker symbol: 'vn', 'crypto', or 'yahoo'
  *
  * Priority logic:
- * 1. Check stock tickers first - if found, it's a stock (not crypto)
- * 2. Only check crypto if NOT in stock list
- * 3. If both lists are empty, fallback to common crypto symbols list
- * 4. If in neither, default to false (stock mode)
+ * 1. Check stock tickers first - if found, it's a stock (vn)
+ * 2. Check yahoo tickers second
+ * 3. Check crypto tickers third
+ * 4. If all lists are empty, fallback to common symbol sets
+ * 5. Default to 'vn' if in none
  *
- * This ensures stocks take priority if a symbol exists in both lists (edge case)
- *
- * @param symbol - Ticker symbol to check (e.g., "BTCUSDT", "ACB", "VNINDEX")
+ * @param symbol - Ticker symbol to check
  * @param stockTickers - Array of stock tickers from APIContext
+ * @param yahooTickers - Array of yahoo/global tickers from APIContext
  * @param cryptoTickers - Array of crypto tickers from APIContext
- * @returns true if crypto, false if stock or unknown (defaults to stock)
+ * @returns 'vn' | 'crypto' | 'yahoo'
+ */
+export function getTickerMode(
+  symbol: string,
+  stockTickers: Ticker[],
+  yahooTickers: Ticker[],
+  cryptoTickers: Ticker[]
+): 'vn' | 'crypto' | 'yahoo' {
+  // Check stock tickers FIRST - highest priority
+  if (stockTickers.some(t => t.symbol === symbol)) {
+    return 'vn'
+  }
+
+  // Check yahoo tickers second
+  if (yahooTickers.some(t => t.symbol === symbol)) {
+    return 'yahoo'
+  }
+
+  // Check crypto tickers third
+  if (cryptoTickers.some(t => t.symbol === symbol)) {
+    return 'crypto'
+  }
+
+  // Fallback: if all lists are empty, check common symbol sets
+  if (stockTickers.length === 0 && yahooTickers.length === 0 && cryptoTickers.length === 0) {
+    if (COMMON_CRYPTO_SYMBOLS.has(symbol)) return 'crypto'
+    if (COMMON_GLOBAL_SYMBOLS.has(symbol)) return 'yahoo'
+  }
+
+  return 'vn'
+}
+
+/**
+ * Determines if a ticker symbol is crypto (backward compatibility shim)
  *
- * @example
- * isCryptoTicker("ACB", stocks, crypto) // false - stock only
- * isCryptoTicker("BTCUSDT", stocks, crypto) // true - crypto only
- * isCryptoTicker("X", stocks, crypto) // false - if in both, stock wins
- * isCryptoTicker("???", stocks, crypto) // false - unknown defaults to stock
- * isCryptoTicker("BTCUSDT", [], []) // true - fallback to common crypto list
+ * @deprecated Use getTickerMode() instead
  */
 export function isCryptoTicker(
   symbol: string,
   stockTickers: Ticker[],
   cryptoTickers: Ticker[]
 ): boolean {
-  // Check stock tickers FIRST - if found, it's a stock (not crypto)
-  // This gives stock priority in case of symbol collision
-  const isStock = stockTickers.some(t => t.symbol === symbol)
-  if (isStock) {
-    return false
-  }
-
-  // Check crypto tickers
-  const isCrypto = cryptoTickers.some(t => t.symbol === symbol)
-  if (isCrypto) {
-    return true
-  }
-
-  // Fallback: if both lists are empty (not loaded yet), check common crypto symbols
-  if (stockTickers.length === 0 && cryptoTickers.length === 0) {
-    return COMMON_CRYPTO_SYMBOLS.has(symbol)
-  }
-
-  return false
+  return getTickerMode(symbol, stockTickers, [], cryptoTickers) === 'crypto'
 }

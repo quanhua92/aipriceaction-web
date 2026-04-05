@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { getTickerGroups, getCryptoTickerGroups, getTickersWithLogging, getCryptoTickersWithLogging, getHealth as getHealthApi, type TickerGroups, type StockData, type TickersQueryParams, type HealthResponse } from '@/lib/api-client'
+import { getTickerGroups, getCryptoTickerGroups, getYahooTickerGroups, getTickersWithLogging, getCryptoTickersWithLogging, getYahooTickersWithLogging, getTickerNamesWithLogging, getHealth as getHealthApi, type TickerGroups, type TickerNames, type StockData, type TickersQueryParams, type HealthResponse } from '@/lib/api-client'
 import { PRIORITY_GROUPS, API_CACHE_WINDOW_MS } from '@/lib/constants'
 import { useLogs } from './LogsContext'
 import { useRefresh } from './RefreshContext'
@@ -70,10 +70,23 @@ interface APIContextValue {
   cryptoLoading: boolean
   cryptoError: string | null
 
+  // Global (Yahoo)
+  globalTickerGroups: TickerGroups | null
+  globalTickers: Ticker[]
+  allGlobalTickersLastData: Record<string, StockData[]>
+  globalLoading: boolean
+  globalError: string | null
+
+  // Ticker names
+  tickerNames: TickerNames | null
+  cryptoTickerNames: TickerNames | null
+  globalTickerNames: TickerNames | null
+
   // Methods
   refetch: () => Promise<void>
   refetchStock: () => Promise<void>
   refetchCrypto: () => Promise<void>
+  refetchGlobal: () => Promise<void>
   getTickers: (source: string, params?: TickersQueryParams) => Promise<Record<string, StockData[]>>
   getHealth: (source: string) => Promise<HealthResponse>
 }
@@ -98,6 +111,18 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
   const [allCryptoTickersLastData, setAllCryptoTickersLastData] = React.useState<Record<string, StockData[]>>({})
   const [cryptoLoading, setCryptoLoading] = React.useState(true)
   const [cryptoError, setCryptoError] = React.useState<string | null>(null)
+
+  // Global (Yahoo) state
+  const [globalTickerGroups, setGlobalTickerGroups] = React.useState<TickerGroups | null>(null)
+  const [globalTickers, setGlobalTickers] = React.useState<Ticker[]>([])
+  const [allGlobalTickersLastData, setAllGlobalTickersLastData] = React.useState<Record<string, StockData[]>>({})
+  const [globalLoading, setGlobalLoading] = React.useState(true)
+  const [globalError, setGlobalError] = React.useState<string | null>(null)
+
+  // Ticker names state
+  const [tickerNames, setTickerNames] = React.useState<TickerNames | null>(null)
+  const [cryptoTickerNames, setCryptoTickerNames] = React.useState<TickerNames | null>(null)
+  const [globalTickerNames, setGlobalTickerNames] = React.useState<TickerNames | null>(null)
 
   const fetchStockData = React.useCallback(async () => {
     setStockLoading(true)
@@ -189,9 +214,70 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
     }
   }, [info, logError, globalEndDate])
 
-  // Fetch both stock and crypto data in parallel on mount and when refresh/date changes
+  const fetchGlobalData = React.useCallback(async () => {
+    setGlobalLoading(true)
+    setGlobalError(null)
+    const startTime = Date.now()
+
+    try {
+      // Fetch both global ticker groups and all global tickers data in parallel
+      const [groups, tickersData] = await Promise.all([
+        getYahooTickerGroups(),
+        getYahooTickersWithLogging('APIContext.init.global', { limit: 1, end_date: globalEndDate }, { info, warn: info, error: logError })
+      ])
+
+      const duration = Date.now() - startTime
+      info(`[API] Global data fetch completed in ${duration}ms`)
+
+      setGlobalTickerGroups(groups)
+      setAllGlobalTickersLastData(tickersData)
+
+      // Flatten groups into ticker list with sector/category info
+      const tickerList: Ticker[] = []
+      for (const [sector, symbols] of Object.entries(groups)) {
+        for (const symbol of symbols) {
+          tickerList.push({ symbol, sector })
+        }
+      }
+
+      // Remove duplicates (a ticker can be in multiple groups)
+      const uniqueTickers = Array.from(
+        new Map(tickerList.map(t => [t.symbol, t])).values()
+      )
+
+      // Sort alphabetically
+      uniqueTickers.sort((a, b) => a.symbol.localeCompare(b.symbol))
+      setGlobalTickers(uniqueTickers)
+    } catch (err) {
+      console.error('Failed to fetch global data:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load global market data'
+      logError(`[API] Global data fetch failed: ${errorMessage}`)
+      setGlobalError('Failed to load global market data')
+    } finally {
+      setGlobalLoading(false)
+    }
+  }, [info, logError, globalEndDate])
+
+  const fetchTickerNames = React.useCallback(async () => {
+    try {
+      const [vnNames, cryptoNames, globalNames] = await Promise.all([
+        getTickerNamesWithLogging('APIContext.names.vn', 'vn', { info, warn: info, error: logError }),
+        getTickerNamesWithLogging('APIContext.names.crypto', 'crypto', { info, warn: info, error: logError }),
+        getTickerNamesWithLogging('APIContext.names.global', 'yahoo', { info, warn: info, error: logError }),
+      ])
+      setTickerNames(vnNames)
+      setCryptoTickerNames(cryptoNames)
+      setGlobalTickerNames(globalNames)
+    } catch (err) {
+      // Non-critical: just log, don't set error state
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      info(`[API] Ticker names fetch failed (non-critical): ${errorMessage}`)
+    }
+  }, [info, logError])
+
+  // Fetch all data in parallel on mount and when refresh/date changes
   React.useEffect(() => {
-    Promise.all([fetchStockData(), fetchCryptoData()])
+    Promise.all([fetchStockData(), fetchCryptoData(), fetchGlobalData(), fetchTickerNames()])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastRefresh, globalEndDate])
 
@@ -298,10 +384,23 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       cryptoLoading,
       cryptoError,
 
+      // Global (Yahoo)
+      globalTickerGroups,
+      globalTickers,
+      allGlobalTickersLastData,
+      globalLoading,
+      globalError,
+
+      // Ticker names
+      tickerNames,
+      cryptoTickerNames,
+      globalTickerNames,
+
       // Methods
-      refetch: async () => { await Promise.all([fetchStockData(), fetchCryptoData()]) },
+      refetch: async () => { await Promise.all([fetchStockData(), fetchCryptoData(), fetchGlobalData(), fetchTickerNames()]) },
       refetchStock: fetchStockData,
       refetchCrypto: fetchCryptoData,
+      refetchGlobal: fetchGlobalData,
       getTickers,
       getHealth,
     }),
@@ -320,9 +419,23 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       cryptoLoading,
       cryptoError,
 
+      // Global (Yahoo)
+      globalTickerGroups,
+      globalTickers,
+      allGlobalTickersLastData,
+      globalLoading,
+      globalError,
+
+      // Ticker names
+      tickerNames,
+      cryptoTickerNames,
+      globalTickerNames,
+
       // Methods
       fetchStockData,
       fetchCryptoData,
+      fetchGlobalData,
+      fetchTickerNames,
       getTickers,
       getHealth,
     ]

@@ -20,7 +20,7 @@ import { MARKET_INDICES } from "@/lib/constants";
 interface SelectTickerDialogProps {
 	children: React.ReactNode;
 	onSelectTicker: (ticker: string) => void;
-	defaultSectionFilter?: "all" | "stocks" | "crypto";
+	defaultSectionFilter?: "stocks" | "crypto" | "global";
 	/** When set, fetches historical last-data as of this date instead of using live context data */
 	endDate?: string;
 }
@@ -48,6 +48,10 @@ export function SelectTickerDialog({
 		cryptoLoading,
 		cryptoError,
 		allCryptoTickersLastData,
+		globalTickers,
+		allGlobalTickersLastData,
+		globalLoading,
+		globalError,
 		getTickers,
 	} = useAPI();
 	const { t } = useTranslation();
@@ -133,12 +137,14 @@ export function SelectTickerDialog({
 						searchQuery={search}
 						marketIndices={[...MARKET_INDICES]}
 						onSelectTicker={handleSelectTicker}
-						loading={loading || cryptoLoading || historicalLoading}
-						error={error || cryptoError}
+						loading={loading || cryptoLoading || globalLoading || historicalLoading}
+						error={error || cryptoError || globalError}
 						maxHeight="none"
 						className="h-full"
 						cryptoTickers={cryptoTickers}
 						allCryptoTickersLastData={effectiveCryptoData}
+						globalTickers={globalTickers}
+						allGlobalTickersLastData={allGlobalTickersLastData}
 						defaultSectionFilter={defaultSectionFilter}
 					/>
 				</div>

@@ -158,6 +158,14 @@ function DebugFooterContent() {
 			? Object.keys(apiContext.cryptoTickerGroups).length
 			: 0,
 		'Crypto all tickers last data count': Object.keys(apiContext.allCryptoTickersLastData).length,
+		// Global (Yahoo)
+		'Global loading': apiContext.globalLoading,
+		'Global error': apiContext.globalError || 'None',
+		'Global tickers count': apiContext.globalTickers.length,
+		'Global ticker groups count': apiContext.globalTickerGroups
+			? Object.keys(apiContext.globalTickerGroups).length
+			: 0,
+		'Global all tickers last data count': Object.keys(apiContext.allGlobalTickersLastData).length,
 	}
 
 	const chartData = {

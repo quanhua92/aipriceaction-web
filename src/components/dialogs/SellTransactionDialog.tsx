@@ -51,8 +51,8 @@ export function SellTransactionDialog({
   const [notes, setNotes] = React.useState('')
   const [loading, setLoading] = React.useState(false)
 
-  // Get API context data for current prices (both stock and crypto)
-  const { allTickersLastData, allCryptoTickersLastData } = useAPI()
+  // Get API context data for current prices (stock, crypto, and global)
+  const { allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData } = useAPI()
   const { lastRefresh } = useRefresh()
 
   // Get fresh data from localStorage - simple and direct
@@ -94,6 +94,11 @@ export function SellTransactionDialog({
       return { price: cryptoData[cryptoData.length - 1].close, source: 'api' }
     }
 
+    const globalData = allGlobalTickersLastData[symbol]
+    if (globalData && globalData.length > 0) {
+      return { price: globalData[globalData.length - 1].close, source: 'api' }
+    }
+
     // Fallback to latest transaction price from localStorage
     const latestTransaction = localData.transactions
       .filter(t => t.ticker === symbol)
@@ -110,7 +115,7 @@ export function SellTransactionDialog({
     }
 
     return { price: 0, source: 'fallback' }
-  }, [allTickersLastData, allCryptoTickersLastData, localData.transactions, positions])
+  }, [allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, localData.transactions, positions])
 
   // Effect to resolve prices when component mounts or data changes
   React.useEffect(() => {
@@ -147,7 +152,7 @@ export function SellTransactionDialog({
     }
 
     resolvePrices()
-  }, [positions, allTickersLastData, allCryptoTickersLastData, lastRefresh, getRobustPrice])
+  }, [positions, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, lastRefresh, getRobustPrice])
 
   // Automatic retry logic with exponential backoff
   React.useEffect(() => {

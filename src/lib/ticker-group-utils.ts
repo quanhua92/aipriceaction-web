@@ -1,19 +1,20 @@
 import { getWatchlistTickers } from './watchlist-storage'
 import { getPredefinedWatchlistTickers, isPredefinedWatchlist } from './predefined-watchlists'
-import { ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, MARKET_INDICES } from './constants'
+import { ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, GLOBAL_WATCHLIST_NAME, MARKET_INDICES } from './constants'
 
 export interface TickerGroupInfo {
 	tickers: string[]
-	type: 'all' | 'crypto' | 'predefined' | 'custom' | 'sector'
+	type: 'all' | 'crypto' | 'global' | 'predefined' | 'custom' | 'sector'
 }
 
 /**
- * Get tickers for any group name (ALL, CRYPTO, predefined, custom, or sector)
+ * Get tickers for any group name (ALL, CRYPTO, GLOBAL, predefined, custom, or sector)
  */
 export function getTickersForGroup(
 	groupName: string,
 	tickerGroups: Record<string, string[]> | null,
 	cryptoTickers: { symbol: string; sector: string }[],
+	globalTickers: { symbol: string; sector: string }[],
 	customWatchlistNames: string[]
 ): TickerGroupInfo {
 	// ALL watchlist - all sectors
@@ -34,6 +35,14 @@ export function getTickersForGroup(
 		return {
 			tickers: cryptoTickers.map((t) => t.symbol),
 			type: 'crypto',
+		}
+	}
+
+	// GLOBAL watchlist
+	if (groupName === GLOBAL_WATCHLIST_NAME) {
+		return {
+			tickers: globalTickers.map((t) => t.symbol),
+			type: 'global',
 		}
 	}
 

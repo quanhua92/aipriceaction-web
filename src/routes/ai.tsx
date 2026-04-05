@@ -25,7 +25,7 @@ const MAX_TICKERS = 100;
 function AIContextPage() {
 	const { t, language } = useTranslation();
 	const translations = loadTranslations(language);
-	const { getTickers, getHealth, cryptoTickers, tickerGroups } = useAPI();
+	const { getTickers, getHealth, cryptoTickers, tickerGroups, globalTickers } = useAPI();
 	const { lastRefresh } = useRefresh();
 	const { endDate } = useChartSettings();
 	const [copied, setCopied] = React.useState(false);
@@ -127,6 +127,7 @@ function AIContextPage() {
 			groupName,
 			tickerGroups,
 			cryptoTickers || [],
+			globalTickers || [],
 			customWatchlistNames
 		);
 

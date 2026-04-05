@@ -63,7 +63,7 @@ export interface StockData {
   /** Time in YYYY-MM-DD (daily) or YYYY-MM-DD HH:MM:SS (hourly/minute) */
   time: string;
   /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (injected by client) */
-  mode?: 'vn' | 'crypto';
+  mode?: 'vn' | 'crypto' | 'yahoo';
   /** Opening price */
   open: number;
   /** Highest price */
@@ -194,6 +194,11 @@ export interface HealthResponse {
  */
 export type TickerGroups = Record<string, string[]>;
 
+/**
+ * Ticker name mapping (symbol → human-readable name)
+ */
+export type TickerNames = Record<string, string>;
+
 // ===== Query Parameters =====
 
 /**
@@ -217,7 +222,7 @@ export interface TickersQueryParams {
   /** Use cache (default: true) */
   cache?: boolean;
   /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (default: 'vn') */
-  mode?: 'vn' | 'crypto' | string;
+  mode?: 'vn' | 'crypto' | 'yahoo' | string;
 }
 
 /**
@@ -267,7 +272,7 @@ export interface VolumeProfileQueryParams {
   /** End date for multi-day analysis in YYYY-MM-DD format (defaults to start_date) */
   end_date?: string;
   /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (default: 'vn') */
-  mode?: 'vn' | 'crypto' | string;
+  mode?: 'vn' | 'crypto' | 'yahoo' | string;
   /** Number of price bins for aggregation (default: 50, range: 2-200) */
   bins?: number;
   /** Value area percentage (default: 70.0, range: 60-90) */

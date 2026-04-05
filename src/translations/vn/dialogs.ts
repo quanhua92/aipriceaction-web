@@ -6,6 +6,7 @@ export default {
       all: 'Tất cả',
       stocks: 'Cổ phiếu',
       crypto: 'Crypto',
+      global: 'Thế giới',
     },
     sortBy: {
       volume: 'KL GD',
@@ -24,6 +25,8 @@ export default {
       stocks: 'Cổ Phiếu',
       crypto: 'Crypto',
       majorCrypto: 'Tiền Mã Hóa Chính',
+      majorGlobal: 'Thế Giới Chính',
+      global: 'Thị Trường Thế Giới',
     },
     labels: {
       marketIndex: 'Chỉ số thị trường',

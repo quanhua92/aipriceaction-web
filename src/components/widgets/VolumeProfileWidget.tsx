@@ -13,7 +13,7 @@ import { getVolumeProfile } from '@/lib/api-client'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useAPI } from '@/contexts/APIContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
-import { isCryptoTicker } from '@/lib/ticker-utils'
+import { getTickerMode } from '@/lib/ticker-utils'
 import type { VolumeProfileData, PriceLevelVolume } from '@/lib/api-client'
 
 interface VolumeProfileWidgetProps {
@@ -54,7 +54,7 @@ export function VolumeProfileWidget({
   onEndDateChange,
 }: VolumeProfileWidgetProps) {
   const { t } = useTranslation()
-  const { tickers: stockTickers, cryptoTickers, getTickers } = useAPI()
+  const { tickers: stockTickers, cryptoTickers, globalTickers, getTickers } = useAPI()
   const { startDate: globalStartDate, endDate: globalEndDate } = useChartSettings()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? null)
@@ -71,8 +71,8 @@ export function VolumeProfileWidget({
 
   // Determine mode for price formatting
   const currentMode = React.useMemo(() => {
-    return isCryptoTicker(selectedTicker, stockTickers, cryptoTickers) ? 'crypto' : 'vn'
-  }, [selectedTicker, stockTickers, cryptoTickers])
+    return getTickerMode(selectedTicker, stockTickers, globalTickers, cryptoTickers)
+  }, [selectedTicker, stockTickers, cryptoTickers, globalTickers])
   const priceFormatData = { mode: currentMode as 'vn' | 'crypto', symbol: selectedTicker }
 
   // Fetch last trading day for default date if not provided
@@ -83,8 +83,7 @@ export function VolumeProfileWidget({
 
     async function fetchLastTradingDay() {
       try {
-        const isCrypto = isCryptoTicker(selectedTicker, stockTickers, cryptoTickers)
-        const mode = isCrypto ? 'crypto' : 'vn'
+        const mode = getTickerMode(selectedTicker, stockTickers, globalTickers, cryptoTickers)
         const response = await getTickers('VolumeProfileWidget.lastTradingDay', { symbol: selectedTicker, limit: 1, end_date: globalEndDate, mode })
 
         console.log(`[VolumeProfileWidget] Response:`, response)
@@ -112,7 +111,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, stockTickers, cryptoTickers, getTickers, selectedDate, globalEndDate])
+  }, [selectedTicker, stockTickers, cryptoTickers, globalTickers, getTickers, selectedDate, globalEndDate])
 
   // Sync with external ticker prop
   React.useEffect(() => {
@@ -173,9 +172,8 @@ export function VolumeProfileWidget({
       setDailyData(null) // Reset daily data
 
       try {
-        // Determine if ticker is crypto
-        const isCrypto = isCryptoTicker(selectedTicker, stockTickers, cryptoTickers)
-        const mode = isCrypto ? 'crypto' : 'vn'
+        // Determine mode (crypto vs stock vs yahoo)
+        const mode = getTickerMode(selectedTicker, stockTickers, globalTickers, cryptoTickers)
 
         // Use date range params if in range mode, otherwise single date
         const params = isRangeMode
@@ -227,7 +225,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins, stockTickers, cryptoTickers, getTickers])
+  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins, stockTickers, cryptoTickers, globalTickers, getTickers])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)

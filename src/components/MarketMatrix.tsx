@@ -8,7 +8,9 @@ import { parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import {
   ALL_WATCHLIST_NAME,
   CRYPTO_WATCHLIST_NAME,
+  GLOBAL_WATCHLIST_NAME,
   MAJOR_CRYPTO,
+  MAJOR_GLOBAL,
   MARKET_INDICES,
   MATRIX_DAYS_PER_PAGE,
   MATRIX_OPEN_SECTORS_STORAGE_KEY,
@@ -100,7 +102,7 @@ interface MarketMatrixProps {
 }
 
 export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
-  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { endDate: globalEndDate } = useChartSettings()
   const { t, language } = useTranslation()
@@ -204,6 +206,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       return cryptoTickers.map(t => t.symbol)
     }
 
+    // Check if GLOBAL watchlist
+    if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
+      // Return all global ticker symbols
+      return globalTickers.map(t => t.symbol)
+    }
+
     // Check if predefined watchlist
     if (checkIsPredefinedWatchlist(selectedWatchlist)) {
       return getPredefinedWatchlistTickers(selectedWatchlist)
@@ -216,7 +224,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
     // Regular sector group
     return tickerGroups[selectedWatchlist] || []
-  }, [tickerGroups, selectedWatchlist, customWatchlists, cryptoTickers])
+  }, [tickerGroups, selectedWatchlist, customWatchlists, cryptoTickers, globalTickers])
 
   // Split selected tickers into stocks and crypto
   const { stockSymbols, cryptoSymbols, watchlistType } = React.useMemo(() => {
@@ -242,6 +250,8 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       selectedWatchlist === ALL_WATCHLIST_NAME ? 'stock' as const :
       // Special case: CRYPTO watchlist is always crypto-only
       selectedWatchlist === CRYPTO_WATCHLIST_NAME ? 'crypto' as const :
+      // Special case: GLOBAL watchlist is always global-only
+      selectedWatchlist === GLOBAL_WATCHLIST_NAME ? 'global' as const :
       // For other watchlists (custom/predefined/sectors), detect based on actual symbols
       detectWatchlistType(selectedTickers, cryptoTickers)
 
@@ -266,14 +276,16 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             ? globalEndDate || format(new Date(), 'yyyy-MM-dd')
             : matrixData?.dates[matrixData.dates.length - 1] || globalEndDate || format(new Date(), 'yyyy-MM-dd')
 
-        // Determine if this is a mixed, crypto-only, or stock-only watchlist
+        // Determine if this is a mixed, crypto-only, global-only, or stock-only watchlist
         const isMixed = watchlistType === 'mixed'
         const isCryptoOnly = watchlistType === 'crypto' || selectedWatchlist === CRYPTO_WATCHLIST_NAME
+        const isGlobalOnly = watchlistType === 'global' || selectedWatchlist === GLOBAL_WATCHLIST_NAME
         const isStockOnly = watchlistType === 'stock'
 
         // Fetch ticker data - make separate calls for mixed watchlists
         let stockResponse: Record<string, StockData[]> = {}
         let cryptoResponse: Record<string, StockData[]> = {}
+        let globalResponse: Record<string, StockData[]> = {}
 
         if (isMixed) {
           // Two parallel API calls for mixed watchlist
@@ -308,6 +320,15 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             limit: MATRIX_DAYS_PER_PAGE,
             mode: 'crypto',
           })
+        } else if (isGlobalOnly) {
+          // Single global call
+          globalResponse = await getTickers('MarketMatrix.data.global', {
+            symbol: selectedTickers,
+            interval: '1D',
+            end_date: endDateForAPI,
+            limit: MATRIX_DAYS_PER_PAGE,
+            mode: 'yahoo',
+          })
         } else {
           // Single stock call (existing behavior)
           // Optimization: When "ALL" watchlist is selected, omit symbol parameter
@@ -325,17 +346,18 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
         }
 
         // Merge responses
-        const response = { ...stockResponse, ...cryptoResponse }
+        const response = { ...stockResponse, ...cryptoResponse, ...globalResponse }
 
         // Extract dates from reference ticker
         // For mixed/crypto watchlists: use BTC (crypto calendar, 24/7)
         // For stock-only watchlists: use VNINDEX (trading days only)
         let dates: string[] = []
 
-        if (isMixed || isCryptoOnly) {
-          // Use BTC as calendar reference for crypto-containing watchlists
-          const btcData = response['BTCUSDT'] || []
-          dates = btcData
+        if (isMixed || isCryptoOnly || isGlobalOnly) {
+          // Use BTC or ^GSPC as calendar reference for non-stock watchlists
+          const refSymbol = isGlobalOnly ? '^GSPC' : 'BTCUSDT'
+          const refData = response[refSymbol] || []
+          dates = refData
             .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
             .sort((a, b) => b.localeCompare(a)) // Newest first
         } else {
@@ -364,6 +386,19 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             } else if (cryptoTickerGroups) {
               // Use cryptoTickerGroups for other crypto
               for (const [sectorName, symbols] of Object.entries(cryptoTickerGroups)) {
+                if (symbols.includes(ticker)) {
+                  sector = sectorName
+                  break
+                }
+              }
+            }
+          } else if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
+            // Check if this is a major global index first (^GSPC, ^DJI, ^NDX, GC=F, CL=F)
+            if (MAJOR_GLOBAL.includes(ticker as any)) {
+              sector = 'MAJOR_GLOBAL'
+            } else if (globalTickerGroups) {
+              // Use globalTickerGroups for other global tickers
+              for (const [sectorName, symbols] of Object.entries(globalTickerGroups)) {
                 if (symbols.includes(ticker)) {
                   sector = sectorName
                   break
@@ -469,7 +504,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTickers, stockSymbols, cryptoSymbols, watchlistType, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, lastRefresh, globalEndDate])
+  }, [selectedTickers, stockSymbols, cryptoSymbols, watchlistType, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers, lastRefresh, globalEndDate])
 
   // Group rows by sector and sort within each sector
   const rowsBySector = React.useMemo(() => {
@@ -491,9 +526,6 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
         const bData = sortReferenceData[b.ticker] || b.latestData
 
         switch (sortBy) {
-          case 'az':
-            return a.ticker.localeCompare(b.ticker)
-
           case 'gainers':
             // Sort by price change descending (highest gain first)
             const aChange = aData?.close_changed ?? -Infinity
@@ -548,6 +580,10 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             const bValue = (bData?.close ?? 0) * (bData?.volume ?? 0)
             return bValue - aValue
 
+          case 'az':
+            // Sort alphabetically by ticker symbol
+            return a.ticker.localeCompare(b.ticker)
+
           default:
             return 0
         }
@@ -566,6 +602,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
         if (a === 'MAJOR_CRYPTO') return -1
         if (b === 'MAJOR_CRYPTO') return 1
+      }
+
+      // MAJOR_GLOBAL goes first for GLOBAL watchlist
+      if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
+        if (a === 'MAJOR_GLOBAL') return -1
+        if (b === 'MAJOR_GLOBAL') return 1
       }
 
       const priorityA = PRIORITY_GROUPS.indexOf(a as any)
@@ -807,6 +849,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                       if (b === 'MAJOR_CRYPTO') return 1
                     }
 
+                    // MAJOR_GLOBAL goes first for GLOBAL watchlist
+                    if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
+                      if (a === 'MAJOR_GLOBAL') return -1
+                      if (b === 'MAJOR_GLOBAL') return 1
+                    }
+
                     const priorityA = PRIORITY_GROUPS.indexOf(a as any)
                     const priorityB = PRIORITY_GROUPS.indexOf(b as any)
 
@@ -896,6 +944,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                     if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
                       if (a === 'MAJOR_CRYPTO') return -1
                       if (b === 'MAJOR_CRYPTO') return 1
+                    }
+
+                    // MAJOR_GLOBAL goes first for GLOBAL watchlist
+                    if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
+                      if (a === 'MAJOR_GLOBAL') return -1
+                      if (b === 'MAJOR_GLOBAL') return 1
                     }
 
                     const priorityA = PRIORITY_GROUPS.indexOf(a as any)

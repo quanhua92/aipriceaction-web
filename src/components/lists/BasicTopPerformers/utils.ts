@@ -5,7 +5,7 @@ import type {
   SectionFilter,
   SortBy
 } from './types'
-import { isCryptoTicker } from '@/lib/ticker-utils'
+import { getTickerMode } from '@/lib/ticker-utils'
 import { getWatchlistTickers } from '@/lib/watchlist-storage'
 import { isPredefinedWatchlist, getPredefinedWatchlistTickers } from '@/lib/predefined-watchlists'
 import { ALL_WATCHLIST_NAME } from '@/lib/constants'
@@ -18,11 +18,13 @@ export function enrichTickerWithData(
   stockData: Record<string, any[]>,
   cryptoData: Record<string, any[]>,
   stockTickers: Array<{ symbol: string; sector: string }>,
-  cryptoTickers: Array<{ symbol: string; sector: string }>
+  cryptoTickers: Array<{ symbol: string; sector: string }>,
+  globalTickers?: Array<{ symbol: string; sector: string }>,
+  globalData?: Record<string, any[]>
 ): TickerWithData[] {
   return tickers.map(ticker => {
-    const isCrypto = isCryptoTicker(ticker.symbol, stockTickers, cryptoTickers)
-    const dataSource = isCrypto ? cryptoData : stockData
+    const mode = getTickerMode(ticker.symbol, stockTickers, globalTickers || [], cryptoTickers)
+    const dataSource = mode === 'crypto' ? cryptoData : mode === 'yahoo' && globalData ? globalData : stockData
     const data = dataSource[ticker.symbol]
     const latestData = data?.[data.length - 1]
 
@@ -30,7 +32,7 @@ export function enrichTickerWithData(
       symbol: ticker.symbol,
       sector: ticker.sector,
       stockData: latestData,
-      mode: isCrypto ? 'crypto' : 'vn'
+      mode
     }
   })
 }
@@ -47,6 +49,8 @@ export function filterBySection(
       return tickers.filter(t => t.mode === 'vn')
     case 'crypto':
       return tickers.filter(t => t.mode === 'crypto')
+    case 'global':
+      return tickers.filter(t => t.mode === 'yahoo')
     default:
       return tickers
   }
@@ -97,8 +101,8 @@ export function filterNonTradingTickers(
   stockData: Record<string, any[]>,
   sectionFilter: SectionFilter
 ): TickerWithData[] {
-  // Skip filtering for crypto-only mode
-  if (sectionFilter === 'crypto') {
+  // Skip filtering for crypto and global modes
+  if (sectionFilter === 'crypto' || sectionFilter === 'global') {
     return tickers
   }
 
@@ -245,8 +249,6 @@ export function applySorting(
   sortBy: SortBy
 ): TickerWithData[] {
   switch (sortBy) {
-    case 'az':
-      return [...tickers].sort((a, b) => a.symbol.localeCompare(b.symbol))
     case 'gainers':
       return sortByGainers(tickers)
     case 'losers':
@@ -265,6 +267,9 @@ export function applySorting(
       return sortByMA100(tickers)
     case 'ma200':
       return sortByMA200(tickers)
+    case 'az':
+      // Sort alphabetically by symbol
+      return [...tickers].sort((a, b) => a.symbol.localeCompare(b.symbol))
     default:
       return tickers
   }
@@ -337,7 +342,7 @@ export function tickerToTopPerformer(ticker: TickerWithData): TopPerformer | nul
 export function calculateTopPerformers(
   sortedTickers: TickerWithData[],
   maxItems: number,
-  sortBy: 'gainers' | 'losers' | 'volume' | 'value' | 'az' | 'ma10' | 'ma20' | 'ma50' | 'ma100' | 'ma200' = 'gainers'
+  sortBy: 'gainers' | 'losers' | 'volume' | 'value' | 'ma10' | 'ma20' | 'ma50' | 'ma100' | 'ma200' | 'az' = 'gainers'
 ): { winners: TopPerformer[]; losers: TopPerformer[] } {
   // Convert to TopPerformer format and filter out invalid data
   const performers = sortedTickers
@@ -387,11 +392,7 @@ export function calculateTopPerformers(
   } else {
     // For other sorting criteria: reorder the selected top 10 winners
     winners = [...topWinnersByChange].sort((a, b) => {
-      if (sortBy === 'az') {
-        return a.symbol.localeCompare(b.symbol)
-      } else {
-        return getSortValue(b, sortBy) - getSortValue(a, sortBy)
-      }
+      return getSortValue(b, sortBy) - getSortValue(a, sortBy)
     })
   }
 
@@ -412,11 +413,7 @@ export function calculateTopPerformers(
   } else {
     // For other sorting criteria: reorder the selected top 10 losers
     losers = [...topLosersByChange].sort((a, b) => {
-      if (sortBy === 'az') {
-        return a.symbol.localeCompare(b.symbol)
-      } else {
-        return getSortValue(b, sortBy) - getSortValue(a, sortBy)
-      }
+      return getSortValue(b, sortBy) - getSortValue(a, sortBy)
     })
   }
 

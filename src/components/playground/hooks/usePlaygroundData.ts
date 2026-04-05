@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useAPI } from '@/contexts/APIContext'
 import { type StockData } from '@/lib/api-client'
-import { isCryptoTicker } from '@/lib/ticker-utils'
+import { getTickerMode } from '@/lib/ticker-utils'
 
 // Intervals offered in the playground selector
 export const PLAYGROUND_INTERVALS = ['1m', '5m', '15m', '1h', '4h', '1D', '1W', '2W', '1M'] as const
@@ -206,10 +206,10 @@ export function usePlaygroundData(
   onIntervalInit?: (interval: string) => void,
   initialLimit?: number,
 ) {
-  const { getTickers, tickerGroups, tickers, cryptoTickers } = useAPI()
+  const { getTickers, tickerGroups, tickers, cryptoTickers, globalTickers } = useAPI()
 
   const getMode = (symbol: string) =>
-    isCryptoTicker(symbol, tickers, cryptoTickers) ? 'crypto' : 'vn'
+    getTickerMode(symbol, tickers, globalTickers, cryptoTickers)
 
   // Ref to track if initialization has already happened
   const hasInitialized = useRef(false)

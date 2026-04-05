@@ -15,6 +15,7 @@ import { getSectorDisplayName } from '@/lib/sector-names'
 import {
 	ALL_WATCHLIST_NAME,
 	CRYPTO_WATCHLIST_NAME,
+	GLOBAL_WATCHLIST_NAME,
 	MARKET_INDICES,
 	PRIORITY_GROUPS,
 } from '@/lib/constants'
@@ -24,6 +25,7 @@ export interface TickerGroupSelectorProps {
 	onValueChange: (group: string) => void
 	showAll?: boolean
 	showCrypto?: boolean
+	showGlobal?: boolean
 	showPredefined?: boolean
 	showCustom?: boolean
 	showSectors?: boolean
@@ -37,6 +39,7 @@ export function TickerGroupSelector({
 	onValueChange,
 	showAll = true,
 	showCrypto = true,
+	showGlobal = true,
 	showPredefined = true,
 	showCustom = true,
 	showSectors = true,
@@ -80,6 +83,7 @@ export function TickerGroupSelector({
 		const groups: string[] = []
 		if (showAll) groups.push(ALL_WATCHLIST_NAME)
 		if (showCrypto) groups.push(CRYPTO_WATCHLIST_NAME)
+		if (showGlobal) groups.push(GLOBAL_WATCHLIST_NAME)
 		groups.push(...predefinedWatchlists)
 		if (showCustom) groups.push(...customWatchlists)
 		groups.push(...sectorGroups)
@@ -87,6 +91,7 @@ export function TickerGroupSelector({
 	}, [
 		showAll,
 		showCrypto,
+		showGlobal,
 		predefinedWatchlists,
 		customWatchlists,
 		sectorGroups,

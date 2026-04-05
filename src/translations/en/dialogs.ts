@@ -6,6 +6,7 @@ export default {
       all: 'All',
       stocks: 'Stocks',
       crypto: 'Crypto',
+      global: 'Global',
     },
     sortBy: {
       volume: 'Volume',
@@ -24,6 +25,8 @@ export default {
       stocks: 'Stocks',
       crypto: 'Cryptocurrencies',
       majorCrypto: 'Major Crypto',
+      majorGlobal: 'Major Global',
+      global: 'Global Markets',
     },
     labels: {
       marketIndex: 'Market Index',

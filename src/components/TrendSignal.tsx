@@ -72,7 +72,7 @@ export function TrendSignal({
   defaultBuyPeriod = 20,
   defaultSellPeriod = 10
 }: TrendSignalProps) {
-  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { endDate: globalEndDate } = useChartSettings()
   const { t, language } = useTranslation()
@@ -143,18 +143,19 @@ export function TrendSignal({
   }, [openSectors, selectedWatchlist, signals])
 
   // Get tickers for selected watchlist and determine type
-  const { stockSymbols, cryptoSymbols, watchlistType } = React.useMemo(() => {
+  const { stockSymbols, cryptoSymbols, globalSymbols, watchlistType } = React.useMemo(() => {
     return getWatchlistTickersByType(
       selectedWatchlist,
       tickerGroups,
       cryptoTickers,
+      globalTickers,
       customWatchlists
     )
-  }, [selectedWatchlist, tickerGroups, cryptoTickers, customWatchlists])
+  }, [selectedWatchlist, tickerGroups, cryptoTickers, globalTickers, customWatchlists])
 
   const selectedTickers = React.useMemo(() => {
-    return [...stockSymbols, ...cryptoSymbols]
-  }, [stockSymbols, cryptoSymbols])
+    return [...stockSymbols, ...cryptoSymbols, ...(globalSymbols || [])]
+  }, [stockSymbols, cryptoSymbols, globalSymbols])
 
   // Fetch and process signals
   React.useEffect(() => {
@@ -171,18 +172,20 @@ export function TrendSignal({
         // Always fetch 40 records for browser cache efficiency
         const endDate = globalEndDate || format(new Date(), 'yyyy-MM-dd')
 
-        // Determine if this is a mixed, crypto-only, or stock-only watchlist
+        // Determine if this is a mixed, crypto-only, global-only, or stock-only watchlist
         const isMixed = watchlistType === 'mixed'
         const isCryptoOnly = watchlistType === 'crypto'
+        const isGlobalOnly = watchlistType === 'global'
         const isStockOnly = watchlistType === 'stock'
 
         // Fetch ticker data
         let stockResponse: Record<string, StockData[]> = {}
-        let cryptoResponse: Record<string, StockData[]> = []
+        let cryptoResponse: Record<string, StockData[]> = {}
+        let globalResponse: Record<string, StockData[]> = {}
 
         if (isMixed) {
-          // Two parallel API calls for mixed watchlist
-          const [stocks, crypto] = await Promise.all([
+          // Parallel API calls for mixed watchlist
+          const [stocks, crypto, global] = await Promise.all([
             stockSymbols.length > 0
               ? getTickers('TrendSignal.data.stocks', {
                   symbol: ['VNINDEX', ...stockSymbols],
@@ -201,9 +204,19 @@ export function TrendSignal({
                   mode: 'crypto',
                 })
               : Promise.resolve({}),
+            globalSymbols.length > 0
+              ? getTickers('TrendSignal.data.global', {
+                  symbol: globalSymbols,
+                  interval: interval === '1h' ? '1h' : '1D',
+                  end_date: endDate,
+                  limit: MATRIX_DAYS_PER_PAGE,
+                  mode: 'yahoo',
+                })
+              : Promise.resolve({}),
           ])
           stockResponse = stocks
           cryptoResponse = crypto
+          globalResponse = global
         } else if (isCryptoOnly) {
           // Single crypto call
           cryptoResponse = await getTickers('TrendSignal.data.crypto', {
@@ -212,6 +225,15 @@ export function TrendSignal({
             end_date: endDate,
             limit: MATRIX_DAYS_PER_PAGE,
             mode: 'crypto',
+          })
+        } else if (isGlobalOnly) {
+          // Single global (yahoo) call
+          globalResponse = await getTickers('TrendSignal.data.global', {
+            symbol: selectedTickers,
+            interval: interval === '1h' ? '1h' : '1D',
+            end_date: endDate,
+            limit: MATRIX_DAYS_PER_PAGE,
+            mode: 'yahoo',
           })
         } else {
           // Single stock call
@@ -227,7 +249,7 @@ export function TrendSignal({
         }
 
         // Merge responses
-        const response = { ...stockResponse, ...cryptoResponse }
+        const response = { ...stockResponse, ...cryptoResponse, ...globalResponse }
 
         // Process signals using utility function
         let processedSignals = processTickerSignals(
@@ -236,7 +258,8 @@ export function TrendSignal({
           tickerGroups,
           cryptoTickerGroups,
           buyPeriod,
-          sellPeriod
+          sellPeriod,
+          globalTickerGroups
         )
 
         // Add signalDate formatting
@@ -275,7 +298,7 @@ export function TrendSignal({
     }
 
     fetchSignals()
-  }, [selectedTickers, interval, buyPeriod, sellPeriod, lastRefresh, globalEndDate, watchlistType, stockSymbols, cryptoSymbols, tickerGroups, cryptoTickerGroups])
+  }, [selectedTickers, interval, buyPeriod, sellPeriod, lastRefresh, globalEndDate, watchlistType, stockSymbols, cryptoSymbols, globalSymbols, tickerGroups, cryptoTickerGroups, globalTickerGroups])
 
   // Filter signals based on showAll setting
   const filteredSignals = React.useMemo(() => {

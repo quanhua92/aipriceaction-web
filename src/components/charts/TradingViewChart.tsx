@@ -15,7 +15,7 @@ import type {
 } from "lightweight-charts";
 import { ChartControlBar } from "./ChartControlBar";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
-import { isCryptoTicker } from "@/lib/ticker-utils";
+import { getTickerMode } from "@/lib/ticker-utils";
 import { StockData } from "@/lib/api-client";
 import { MARKET_INDICES } from "@/lib/constants";
 
@@ -52,7 +52,7 @@ interface TradingViewChartProps {
 		interval: Interval;
 		startDate: string;
 		endDate: string;
-		mode: "vn" | "crypto";
+		mode: "vn" | "crypto" | "yahoo";
 	};
 
 	// Overlay: markers and price lines
@@ -90,6 +90,7 @@ function TradingViewChartContent({
 		allCryptoTickersLastData,
 		tickers: stockTickers,
 		cryptoTickers,
+		globalTickers,
 	} = useAPI();
 
 	// Fullscreen dialog state
@@ -115,9 +116,10 @@ function TradingViewChartContent({
 	// Create sorted tickerList for fullscreen dialog navigation (sorted by value = volume * close)
 	const navigationTickers = React.useMemo(() => {
 		// Check if current ticker is crypto
-		const isCrypto =
-			selectedTicker &&
-			isCryptoTicker(selectedTicker, stockTickers, cryptoTickers);
+		const tickerMode = selectedTicker
+			? getTickerMode(selectedTicker, stockTickers, globalTickers, cryptoTickers)
+			: 'vn';
+		const isCrypto = tickerMode === 'crypto';
 
 		// For crypto: iterate over cryptoTickers (known list)
 		if (isCrypto) {
@@ -177,6 +179,7 @@ function TradingViewChartContent({
 		selectedTicker,
 		stockTickers,
 		cryptoTickers,
+		globalTickers,
 		allTickersLastData,
 		allCryptoTickersLastData,
 		MARKET_INDICES,

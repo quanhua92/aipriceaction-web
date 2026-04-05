@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 import { useAPI } from '@/contexts/APIContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
-import { isCryptoTicker } from '@/lib/ticker-utils'
+import { getTickerMode } from '@/lib/ticker-utils'
 
 /**
  * Hook to prefetch ticker data for browser cache warming
  * Uses fire-and-forget pattern - errors are silently ignored
  */
 export function usePrefetchTicker() {
-  const { getTickers, tickers, cryptoTickers } = useAPI()
+  const { getTickers, tickers, cryptoTickers, globalTickers } = useAPI()
   const settings = useChartSettings()
 
   /**
@@ -25,7 +25,7 @@ export function usePrefetchTicker() {
         if (!symbol) continue
 
         // Detect mode for each symbol (crypto vs stock)
-        const mode = isCryptoTicker(symbol, tickers, cryptoTickers) ? 'crypto' : 'vn'
+        const mode = getTickerMode(symbol, tickers, globalTickers, cryptoTickers)
 
         getTickers(`prefetch:${source}`, {
           symbol,
@@ -37,7 +37,7 @@ export function usePrefetchTicker() {
         }).catch(() => {}) // Ignore errors
       }
     },
-    [settings, getTickers, tickers, cryptoTickers],
+    [settings, getTickers, tickers, cryptoTickers, globalTickers],
   )
 
   return { prefetchTickers }

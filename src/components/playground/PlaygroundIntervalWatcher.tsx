@@ -3,7 +3,7 @@ import { usePlayground } from './PlaygroundDataProvider'
 import { useAPI } from '@/contexts/APIContext'
 import { useLogs } from '@/contexts/LogsContext'
 import { useTranslation } from '@/hooks/useTranslation'
-import { isCryptoTicker } from '@/lib/ticker-utils'
+import { getTickerMode } from '@/lib/ticker-utils'
 
 /**
  * Component that watches for interval changes and checks data availability.
@@ -11,7 +11,7 @@ import { isCryptoTicker } from '@/lib/ticker-utils'
  */
 export function PlaygroundIntervalWatcher() {
   const { playgroundData } = usePlayground()
-  const { getTickers, tickers, cryptoTickers } = useAPI()
+  const { getTickers, tickers, cryptoTickers, globalTickers } = useAPI()
   const { info } = useLogs()
   const { t } = useTranslation()
 
@@ -56,7 +56,7 @@ export function PlaygroundIntervalWatcher() {
           interval,
           end_date: currentVisibleDate,
           limit: 1, // Just check if any data exists
-          mode: isCryptoTicker(playgroundData.ticker, tickers, cryptoTickers) ? 'crypto' : 'vn'
+          mode: getTickerMode(playgroundData.ticker, tickers, globalTickers, cryptoTickers)
         })
 
         const data = response[playgroundData.ticker] || []
@@ -78,7 +78,7 @@ export function PlaygroundIntervalWatcher() {
     }
 
     checkDataAvailability()
-  }, [currentVisibleDate, interval, playgroundData.ticker, getTickers, info])
+  }, [currentVisibleDate, interval, playgroundData.ticker, getTickers, info, tickers, globalTickers, cryptoTickers])
 
   // Reset when switching back to daily/weekly
   React.useEffect(() => {

@@ -50,12 +50,16 @@ export function BasicTopPerformers({
   const {
     tickerGroups,
     cryptoTickerGroups,
+    globalTickerGroups,
     allTickersLastData,
     allCryptoTickersLastData,
+    allGlobalTickersLastData,
     loading: apiLoading,
     cryptoLoading,
+    globalLoading,
     tickers: stockTickers,
     cryptoTickers,
+    globalTickers,
     getTickers
   } = useAPI()
 
@@ -162,13 +166,22 @@ export function BasicTopPerformers({
       })
     }
 
+    // Add global tickers
+    if (globalTickerGroups) {
+      Object.entries(globalTickerGroups).forEach(([sector, symbols]) => {
+        symbols.forEach(symbol => {
+          tickers.push({ symbol, sector })
+        })
+      })
+    }
+
     // Remove duplicates
     const uniqueTickers = Array.from(
       new Map(tickers.map(t => [t.symbol, t])).values()
     )
 
     return uniqueTickers
-  }, [tickerGroups, cryptoTickerGroups])
+  }, [tickerGroups, cryptoTickerGroups, globalTickerGroups])
 
   // Fetch data when interval, refresh, or section filter changes - like TrendSignalTable
   React.useEffect(() => {
@@ -182,7 +195,7 @@ export function BasicTopPerformers({
         const apiCalls: Promise<any>[] = []
 
         // Fetch stocks data if needed - like TrendSignalTable does
-        if (sectionFilter !== 'crypto') {
+        if (sectionFilter === 'stocks') {
           apiCalls.push(
             getTickers('BasicTopPerformers.stocks', {
               symbol: undefined, // Fetch all for cache efficiency (like TrendSignalTable)
@@ -198,7 +211,7 @@ export function BasicTopPerformers({
         }
 
         // Fetch crypto data if needed - like TrendSignalTable
-        if (sectionFilter !== 'stocks') {
+        if (sectionFilter === 'crypto') {
           apiCalls.push(
             getTickers('BasicTopPerformers.crypto', {
               symbol: undefined, // Fetch all for cache efficiency
@@ -208,6 +221,22 @@ export function BasicTopPerformers({
               mode: 'crypto'
             }).catch(err => {
               console.warn('Crypto API call failed:', err)
+              return {}
+            })
+          )
+        }
+
+        // Fetch global (yahoo) data if needed
+        if (sectionFilter === 'global') {
+          apiCalls.push(
+            getTickers('BasicTopPerformers.global', {
+              symbol: undefined, // Fetch all for cache efficiency
+              interval: selectedInterval, // Use selected interval (1H, 1D, 1W)
+              limit: 1, // Only need latest bar for current performance
+              end_date: globalEndDate,
+              mode: 'yahoo'
+            }).catch(err => {
+              console.warn('Global API call failed:', err)
               return {}
             })
           )
@@ -276,7 +305,8 @@ export function BasicTopPerformers({
         apiData, // Use fresh stock data for the selected interval
         apiData, // Use fresh crypto data for the selected interval
         stockTickers,
-        cryptoTickers
+        cryptoTickers,
+        globalTickers
       )
 
       
@@ -328,8 +358,10 @@ export function BasicTopPerformers({
     allTickers,
     allTickersLastData,
     allCryptoTickersLastData,
+    allGlobalTickersLastData,
     stockTickers,
     cryptoTickers,
+    globalTickers,
     sectionFilter,
     selectedGroup,
     selectedSort,
@@ -349,7 +381,7 @@ export function BasicTopPerformers({
     setInternalDialogTicker(symbol)
   }
 
-  if (apiLoading || cryptoLoading) {
+  if (apiLoading || cryptoLoading || globalLoading) {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

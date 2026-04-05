@@ -3,6 +3,7 @@ import type { SortBy } from '@/components/lists/SortableTickerList'
 import {
   ALL_WATCHLIST_NAME,
   CRYPTO_WATCHLIST_NAME,
+  GLOBAL_WATCHLIST_NAME,
   MARKET_INDICES,
   PRIORITY_GROUPS,
 } from './constants'
@@ -105,11 +106,21 @@ export function detectSignal(
 export function getTickerSector(
   ticker: string,
   tickerGroups: Record<string, string[]> | null,
-  cryptoTickerGroups: Record<string, string[]> | null
+  cryptoTickerGroups: Record<string, string[]> | null,
+  globalTickerGroups?: Record<string, string[]> | null
 ): string {
   // Check crypto groups first
   if (cryptoTickerGroups) {
     for (const [sector, symbols] of Object.entries(cryptoTickerGroups)) {
+      if (symbols.includes(ticker)) {
+        return sector
+      }
+    }
+  }
+
+  // Check global/yahoo groups second
+  if (globalTickerGroups) {
+    for (const [sector, symbols] of Object.entries(globalTickerGroups)) {
       if (symbols.includes(ticker)) {
         return sector
       }
@@ -138,7 +149,8 @@ export function processTickerSignals(
   tickerGroups: Record<string, string[]> | null,
   cryptoTickerGroups: Record<string, string[]> | null,
   buyPeriod: number,
-  sellPeriod: number
+  sellPeriod: number,
+  globalTickerGroups?: Record<string, string[]> | null
 ): TrendSignalData[] {
   const processedSignals: TrendSignalData[] = []
 
@@ -148,7 +160,7 @@ export function processTickerSignals(
 
     if (latest) {
       const detection = detectSignal(tickerData, buyPeriod, sellPeriod)
-      const sector = getTickerSector(ticker, tickerGroups, cryptoTickerGroups)
+      const sector = getTickerSector(ticker, tickerGroups, cryptoTickerGroups, globalTickerGroups)
 
       // Calculate highest buyPeriod and lowest sellPeriod for reference
       let highestBuyPeriod: number | undefined
@@ -215,6 +227,12 @@ export function groupSignalsBySector(
       if (b === 'MAJOR_CRYPTO') return 1
     }
 
+    // GLOBAL goes first for GLOBAL watchlist
+    if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
+      if (a === 'GLOBAL') return -1
+      if (b === 'GLOBAL') return 1
+    }
+
     const priorityA = PRIORITY_GROUPS.indexOf(a as any)
     const priorityB = PRIORITY_GROUPS.indexOf(b as any)
 
@@ -231,9 +249,6 @@ export function groupSignalsBySector(
   sortedSectors.forEach(sector => {
     grouped[sector].sort((a, b) => {
       switch (sortBy) {
-        case 'az':
-          return a.ticker.localeCompare(b.ticker)
-
         case 'gainers':
           // Sort by price change descending (highest gain first)
           const aChange = a.closeChange ?? -Infinity
@@ -288,6 +303,10 @@ export function groupSignalsBySector(
           const bValue = (b.currentPrice ?? 0) * (b.volume ?? 0)
           return bValue - aValue
 
+        case 'az':
+          // Sort alphabetically by ticker symbol
+          return a.ticker.localeCompare(b.ticker)
+
         default:
           // Default sorting: signals first by strength
           if (a.signal && b.signal) {
@@ -314,10 +333,11 @@ export function getWatchlistTickersByType(
   selectedWatchlist: string,
   tickerGroups: Record<string, string[]> | null,
   cryptoTickers: { symbol: string }[],
+  globalTickers: { symbol: string }[],
   customWatchlists: string[]
-): { stockSymbols: string[]; cryptoSymbols: string[]; watchlistType: 'stock' | 'crypto' | 'mixed' } {
+): { stockSymbols: string[]; cryptoSymbols: string[]; globalSymbols: string[]; watchlistType: 'stock' | 'crypto' | 'global' | 'mixed' } {
   if (!tickerGroups) {
-    return { stockSymbols: [], cryptoSymbols: [], watchlistType: 'stock' as const }
+    return { stockSymbols: [], cryptoSymbols: [], globalSymbols: [], watchlistType: 'stock' as const }
   }
 
   let selectedTickers: string[] = []
@@ -332,6 +352,8 @@ export function getWatchlistTickersByType(
     })
   } else if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
     selectedTickers = cryptoTickers.map(t => t.symbol)
+  } else if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
+    selectedTickers = globalTickers.map(t => t.symbol)
   } else if (isPredefinedWatchlist(selectedWatchlist)) {
     selectedTickers = getPredefinedWatchlistTickers(selectedWatchlist)
   } else if (customWatchlists.includes(selectedWatchlist)) {
@@ -340,14 +362,18 @@ export function getWatchlistTickersByType(
     selectedTickers = tickerGroups[selectedWatchlist] || []
   }
 
-  // Split into stocks and crypto
+  // Split into stocks, crypto, and global
   const cryptoSymbolSet = new Set(cryptoTickers.map(t => t.symbol))
+  const globalSymbolSet = new Set(globalTickers.map(t => t.symbol))
   const stocks: string[] = []
   const crypto: string[] = []
+  const global: string[] = []
 
   selectedTickers.forEach(symbol => {
     if (cryptoSymbolSet.has(symbol)) {
       crypto.push(symbol)
+    } else if (globalSymbolSet.has(symbol)) {
+      global.push(symbol)
     } else {
       stocks.push(symbol)
     }
@@ -357,11 +383,13 @@ export function getWatchlistTickersByType(
   const type =
     selectedWatchlist === ALL_WATCHLIST_NAME ? 'stock' as const :
     selectedWatchlist === CRYPTO_WATCHLIST_NAME ? 'crypto' as const :
-    crypto.length > 0 && stocks.length > 0 ? 'mixed' as const :
+    selectedWatchlist === GLOBAL_WATCHLIST_NAME ? 'global' as const :
+    (crypto.length > 0 || global.length > 0) && stocks.length > 0 ? 'mixed' as const :
+    global.length > 0 ? 'global' as const :
     crypto.length > 0 ? 'crypto' as const :
     'stock' as const
 
-  return { stockSymbols: stocks, cryptoSymbols: crypto, watchlistType: type }
+  return { stockSymbols: stocks, cryptoSymbols: crypto, globalSymbols: global, watchlistType: type }
 }
 
 /**
@@ -374,7 +402,8 @@ export function calculateHistoricalSignals(
   tickerGroups: Record<string, string[]> | null,
   cryptoTickerGroups: Record<string, string[]> | null,
   buyPeriod: number,
-  sellPeriod: number
+  sellPeriod: number,
+  globalTickerGroups?: Record<string, string[]> | null
 ): TickerSignalHistory[] {
   const histories: TickerSignalHistory[] = []
 
@@ -386,7 +415,7 @@ export function calculateHistoricalSignals(
     }
 
     const signals: HistoricalSignalData[] = []
-    const sector = getTickerSector(ticker, tickerGroups, cryptoTickerGroups)
+    const sector = getTickerSector(ticker, tickerGroups, cryptoTickerGroups, globalTickerGroups)
 
     // Calculate signals for each window position
     for (let windowEnd = Math.max(buyPeriod, sellPeriod); windowEnd < tickerData.length; windowEnd++) {

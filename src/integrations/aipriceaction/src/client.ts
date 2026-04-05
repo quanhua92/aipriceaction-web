@@ -14,6 +14,7 @@ import type {
   MAScoresBySectorQueryParams,
   MAScoresBySectorResponse,
   TickerGroups,
+  TickerNames,
   TickersQueryParams,
   TickersResponse,
   TopPerformersQueryParams,
@@ -331,9 +332,26 @@ export class AIPriceActionClient {
    * const cryptoGroups = await client.getTickerGroups('crypto');
    * ```
    */
-  async getTickerGroups(mode: 'vn' | 'crypto' | string = 'vn'): Promise<TickerGroups> {
+  async getTickerGroups(mode: 'vn' | 'crypto' | 'yahoo' | string = 'vn'): Promise<TickerGroups> {
     const queryString = mode !== 'vn' ? `?mode=${mode}` : '';
     return this.request<TickerGroups>(`/tickers/group${queryString}`) as Promise<TickerGroups>;
+  }
+
+  /**
+   * GET /tickers/name - Get ticker name mapping (symbol → human-readable name)
+   *
+   * @param mode - Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies, 'yahoo' for Yahoo Finance (default: 'vn')
+   *
+   * @example
+   * ```ts
+   * const names = await client.getTickerNames('yahoo');
+   * console.log(names['GC=F']); // 'Gold Futures'
+   * console.log(names['^GSPC']); // 'S&P 500 Index'
+   * ```
+   */
+  async getTickerNames(mode: 'vn' | 'crypto' | 'yahoo' | string = 'vn'): Promise<TickerNames> {
+    const queryString = mode !== 'vn' ? `?mode=${mode}` : '';
+    return this.request<TickerNames>(`/tickers/name${queryString}`) as Promise<TickerNames>;
   }
 
   /**

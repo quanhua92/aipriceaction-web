@@ -2,7 +2,7 @@ import * as React from 'react'
 import { ChevronLeft, ChevronRight, Plus, Edit2, Download, Upload } from 'lucide-react'
 import { useAPI } from '@/contexts/APIContext'
 import { usePrefetchTicker } from '@/hooks/usePrefetchTicker'
-import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
+import { BASIC_WATCHLIST_PREFETCH_COUNT, ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, GLOBAL_WATCHLIST_NAME, MARKET_INDICES } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { SortableTickerList, type Ticker } from './SortableTickerList'
 import { CreateWatchListDialog } from '@/components/dialogs/CreateWatchListDialog'
@@ -47,7 +47,11 @@ export function BasicWatchList({
     cryptoTickers,
     cryptoLoading,
     cryptoError,
-    allCryptoTickersLastData
+    allCryptoTickersLastData,
+    globalTickers,
+    globalLoading,
+    globalError,
+    allGlobalTickersLastData
   } = useAPI()
   const { prefetchTickers } = usePrefetchTicker()
   const { t } = useTranslation()
@@ -133,6 +137,12 @@ export function BasicWatchList({
       return []
     }
 
+    // Check if this is the GLOBAL watchlist - return empty array for tickers
+    // Global will be passed separately via globalTickers prop to SortableTickerList
+    if (selectedGroup === GLOBAL_WATCHLIST_NAME) {
+      return []
+    }
+
     // Check if this is a predefined watchlist
     if (checkIsPredefinedWatchlist(selectedGroup)) {
       const watchlistTickers = getPredefinedWatchlistTickers(selectedGroup)
@@ -168,8 +178,8 @@ export function BasicWatchList({
 
   // Calculate price change distribution
   const priceDistribution = React.useMemo(() => {
-    // Combine stock and crypto data
-    const allData = { ...allTickersLastData, ...allCryptoTickersLastData }
+    // Combine stock, crypto, and global data
+    const allData = { ...allTickersLastData, ...allCryptoTickersLastData, ...allGlobalTickersLastData }
 
     // Get tickers to check - regular tickers, plus crypto if CRYPTO watchlist is selected
     let tickersToCheck = [...tickers]
@@ -177,6 +187,11 @@ export function BasicWatchList({
     // Add crypto tickers when CRYPTO watchlist is selected (since tickers array is empty for crypto)
     if (selectedGroup === CRYPTO_WATCHLIST_NAME) {
       tickersToCheck = [...cryptoTickers]
+    }
+
+    // Add global tickers when GLOBAL watchlist is selected (since tickers array is empty for global)
+    if (selectedGroup === GLOBAL_WATCHLIST_NAME) {
+      tickersToCheck = [...globalTickers]
     }
 
     // Get only tickers with price data
@@ -214,7 +229,7 @@ export function BasicWatchList({
     })
 
     return { distribution, totalTickers: tickersWithData.length }
-  }, [tickers, cryptoTickers, selectedGroup, allTickersLastData, allCryptoTickersLastData])
+  }, [tickers, cryptoTickers, globalTickers, selectedGroup, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData])
 
   // Navigation state - use sorted tickers from SortableTickerList
   const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([])
@@ -454,7 +469,7 @@ export function BasicWatchList({
       </div>
 
       {/* Price Change Distribution Summary */}
-      {!loading && !error && priceDistribution.totalTickers > 0 && (
+      {!loading && !error && !globalLoading && !globalError && priceDistribution.totalTickers > 0 && (
         <div className="px-3 mb-3">
           <PriceDistributionBars
             distribution={priceDistribution.distribution}
@@ -508,14 +523,14 @@ export function BasicWatchList({
         showSections={true} // Show section headers to distinguish stocks from crypto
         onSelectTicker={handleSelectTicker}
         onSortedTickersChange={handleSortedTickersChange}
-        loading={loading || cryptoLoading}
-        error={error || cryptoError}
+        loading={loading || cryptoLoading || globalLoading}
+        error={error || cryptoError || globalError}
         maxHeight={maxHeight}
         className="h-full"
         defaultSectionFilter={
-          // Custom watchlists and CRYPTO watchlist default to 'all'
-          customWatchlists.includes(selectedGroup) || selectedGroup === CRYPTO_WATCHLIST_NAME
-            ? 'all'
+          // Custom watchlists, CRYPTO, and GLOBAL watchlist default to no override (show all)
+          customWatchlists.includes(selectedGroup) || selectedGroup === CRYPTO_WATCHLIST_NAME || selectedGroup === GLOBAL_WATCHLIST_NAME
+            ? null
             : 'stocks'
         }
         cryptoTickers={
@@ -538,6 +553,28 @@ export function BasicWatchList({
           // Only pass crypto data when crypto might be shown
           selectedGroup === ALL_WATCHLIST_NAME || selectedGroup === CRYPTO_WATCHLIST_NAME || customWatchlists.includes(selectedGroup)
             ? allCryptoTickersLastData
+            : {}
+        }
+        globalTickers={
+          // ALL: show all global
+          selectedGroup === ALL_WATCHLIST_NAME
+            ? globalTickers
+          // GLOBAL: show all global
+          : selectedGroup === GLOBAL_WATCHLIST_NAME
+            ? globalTickers
+          // Custom watchlist: only show global symbols that are IN the watchlist
+          : customWatchlists.includes(selectedGroup)
+            ? (() => {
+                const watchlistSymbols = getWatchlistTickers(selectedGroup)
+                return globalTickers.filter(ticker => watchlistSymbols.includes(ticker.symbol))
+              })()
+          // Stock sectors/predefined: no global
+          : []
+        }
+        allGlobalTickersLastData={
+          // Only pass global data when global might be shown
+          selectedGroup === ALL_WATCHLIST_NAME || selectedGroup === GLOBAL_WATCHLIST_NAME || customWatchlists.includes(selectedGroup)
+            ? allGlobalTickersLastData
             : {}
         }
       />

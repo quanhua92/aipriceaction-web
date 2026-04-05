@@ -44,11 +44,11 @@ export function BuyTransactionDialog({
   const [notes, setNotes] = React.useState('')
   const [loading, setLoading] = React.useState(false)
 
-  // Get API context data for current prices (both stock and crypto)
-  const { allTickersLastData, allCryptoTickersLastData } = useAPI()
+  // Get API context data for current prices (stock, crypto, and global)
+  const { allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData } = useAPI()
   const { lastRefresh } = useRefresh()
 
-  // Helper function to get latest data from either stock or crypto
+  // Helper function to get latest data from stock, crypto, or global
   const getLatestData = (symbol: string): number => {
     // Try stock data first
     const stockData = allTickersLastData[symbol]
@@ -62,13 +62,19 @@ export function BuyTransactionDialog({
       return cryptoData[cryptoData.length - 1].close
     }
 
+    // Try global (Yahoo) data
+    const globalData = allGlobalTickersLastData[symbol]
+    if (globalData && globalData.length > 0) {
+      return globalData[globalData.length - 1].close
+    }
+
     return 0
   }
 
   // Alternative validation that uses direct price fetching as fallback
   const fallbackPrice = React.useMemo(() => {
     return selectedTicker ? getLatestData(selectedTicker) : 0
-  }, [selectedTicker, allTickersLastData, allCryptoTickersLastData, lastRefresh])
+  }, [selectedTicker, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, lastRefresh])
 
   // Calculate total cost based on quantity and price
   const totalCost = React.useMemo(() => {
@@ -86,7 +92,7 @@ export function BuyTransactionDialog({
 
     const price = getLatestData(selectedTicker)
     setCurrentTickerPrice(price)
-  }, [selectedTicker, allTickersLastData, allCryptoTickersLastData, lastRefresh])
+  }, [selectedTicker, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, lastRefresh])
 
   const handleBuy = async () => {
     console.log('handleBuy called with:', {
@@ -181,7 +187,7 @@ export function BuyTransactionDialog({
       rawPrice: getLatestData(selectedTicker),
       validationCheck
     })
-  }, [selectedTicker, quantity, currentTickerPrice, totalCost, isValid, validationCheck, allTickersLastData, allCryptoTickersLastData])
+  }, [selectedTicker, quantity, currentTickerPrice, totalCost, isValid, validationCheck, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData])
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
