@@ -1,8 +1,9 @@
 import * as React from 'react'
 import { Loader2, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { MARKET_INDICES, MAJOR_CRYPTO, MAJOR_GLOBAL } from '@/lib/constants'
+import { MARKET_INDICES, MAJOR_CRYPTO, MAJOR_GLOBAL, TICKER_LIST_SECTION_FILTER_STORAGE_KEY, TICKER_LIST_SORT_BY_STORAGE_KEY } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
+import { SafeLocalStorage } from '@/lib/localStorage'
 import { getPriceChangeColor } from '@/lib/colors'
 import { getSectorDisplayName } from '@/lib/sector-names'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -63,18 +64,32 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
   allGlobalTickersLastData = {},
   defaultSectionFilter = 'stocks'
 }, ref) => {
-  const [sortBy, setSortBy] = React.useState<SortBy>('value')
-  const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>(defaultSectionFilter ?? 'stocks')
+  // Initialize from localStorage, fall back to prop default
+  const [sortBy, setSortBy] = React.useState<SortBy>(() => {
+    const saved = SafeLocalStorage.getItem(TICKER_LIST_SORT_BY_STORAGE_KEY)
+    if (saved) return saved as SortBy
+    return 'value'
+  })
+  const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>(() => {
+    const saved = SafeLocalStorage.getItem(TICKER_LIST_SECTION_FILTER_STORAGE_KEY)
+    if (saved && saved !== 'all') return saved as SectionFilter
+    return defaultSectionFilter ?? 'stocks'
+  })
   const [showAll, setShowAll] = React.useState(false)
   const MAX_VISIBLE = 100
   const { t, language } = useTranslation()
 
-  // Reset filter when defaultSectionFilter changes (e.g., switching between watchlists)
+  // Persist sort and section filter to localStorage
   React.useEffect(() => {
-    setSectionFilter(defaultSectionFilter ?? 'stocks')
-  }, [defaultSectionFilter])
+    SafeLocalStorage.setItem(TICKER_LIST_SORT_BY_STORAGE_KEY, sortBy)
+  }, [sortBy])
+  React.useEffect(() => {
+    SafeLocalStorage.setItem(TICKER_LIST_SECTION_FILTER_STORAGE_KEY, sectionFilter)
+  }, [sectionFilter])
 
-  // Reset to collapsed when filters/sort/search changes
+  // No effect for defaultSectionFilter — localStorage is the source of truth.
+  // Consumers that need to force a section (e.g. BasicWatchList switching watchlists)
+  // should pass a `key` prop to force remount.
   React.useEffect(() => {
     setShowAll(false)
   }, [searchQuery, sortBy, sectionFilter])
