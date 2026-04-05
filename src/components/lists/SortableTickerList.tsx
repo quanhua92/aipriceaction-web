@@ -39,6 +39,8 @@ export interface SortableTickerListProps {
   allGlobalTickersLastData?: Record<string, StockData[]>
   // Default filter override (e.g., for custom watchlists)
   defaultSectionFilter?: SectionFilter | null
+  // Ticker names map (symbol → display name), merged from vn/crypto/global
+  tickerNamesMap?: Record<string, string>
 }
 
 export interface SortableTickerListRef {
@@ -62,7 +64,8 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
   allCryptoTickersLastData = {},
   globalTickers = [],
   allGlobalTickersLastData = {},
-  defaultSectionFilter = 'stocks'
+  defaultSectionFilter = 'stocks',
+  tickerNamesMap = {}
 }, ref) => {
   // Initialize from localStorage, fall back to prop default
   const [sortBy, setSortBy] = React.useState<SortBy>(() => {
@@ -98,6 +101,12 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     const dataSource = mode === 'crypto' ? allCryptoTickersLastData : mode === 'global' ? allGlobalTickersLastData : allTickersLastData
     const data = dataSource[symbol]
     return data?.[data.length - 1]
+  }
+
+  const getTickerName = (symbol: string): string | null => {
+    const name = tickerNamesMap[symbol]
+    if (!name || name === symbol) return null
+    return name.length > 10 ? name.slice(0, 10) + '…' : name
   }
 
   const { filteredMarketIndices, filteredTickers, filteredMajorCrypto, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers } = React.useMemo(() => {
@@ -684,7 +693,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}</span>
+                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
@@ -732,7 +741,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}</span>
+                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
@@ -780,7 +789,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}</span>
+                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
@@ -828,7 +837,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}</span>
+                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
@@ -876,7 +885,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}</span>
+                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (

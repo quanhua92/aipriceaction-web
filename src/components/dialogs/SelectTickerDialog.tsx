@@ -53,6 +53,9 @@ export function SelectTickerDialog({
 		globalLoading,
 		globalError,
 		getTickers,
+		tickerNames,
+		cryptoTickerNames,
+		globalTickerNames,
 	} = useAPI();
 	const { t } = useTranslation();
 
@@ -146,6 +149,7 @@ export function SelectTickerDialog({
 						globalTickers={globalTickers}
 						allGlobalTickersLastData={allGlobalTickersLastData}
 						defaultSectionFilter={defaultSectionFilter}
+						tickerNamesMap={{ ...tickerNames, ...cryptoTickerNames, ...globalTickerNames }}
 					/>
 				</div>
 			</DialogContent>

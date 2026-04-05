@@ -51,7 +51,10 @@ export function BasicWatchList({
     globalTickers,
     globalLoading,
     globalError,
-    allGlobalTickersLastData
+    allGlobalTickersLastData,
+    tickerNames,
+    cryptoTickerNames,
+    globalTickerNames
   } = useAPI()
   const { prefetchTickers } = usePrefetchTicker()
   const { t } = useTranslation()
@@ -579,6 +582,7 @@ export function BasicWatchList({
             ? allGlobalTickersLastData
             : {}
         }
+        tickerNamesMap={{ ...tickerNames, ...cryptoTickerNames, ...globalTickerNames }}
       />
       </div>
 
