@@ -1266,12 +1266,13 @@ export function BaseTradingViewChart({
 								<div
 									className={cn(
 										"absolute top-7 left-3 text-zinc-100 z-10 pointer-events-none",
-										"text-[9px]",
+										displayData.symbol && displayData.symbol.length >= 4
+											? "text-[11px]"
+											: "text-[12px]",
 									)}
 									style={{
 										WebkitFontSmoothing: "antialiased",
 										MozOsxFontSmoothing: "grayscale",
-										opacity: 0.8,
 									}}
 								>
 									{maValues.map((ma, index) => (
@@ -1291,9 +1292,14 @@ export function BaseTradingViewChart({
 							{/* Third line - Ticker name */}
 							{tickerName && tickerName !== displayData.symbol && (
 								<div
-									className="absolute top-11 left-3 z-10 pointer-events-none text-[9px]"
+									className={cn(
+									"absolute top-11 left-3 z-10 pointer-events-none",
+									displayData.symbol && displayData.symbol.length >= 4
+										? "text-[11px]"
+										: "text-[12px]",
+								)}
 									style={{
-										color: "#a1a1aa",
+										color: "#71717a",
 										WebkitFontSmoothing: "antialiased",
 										MozOsxFontSmoothing: "grayscale",
 									}}
