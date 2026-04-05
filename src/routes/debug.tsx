@@ -46,7 +46,7 @@ function DebugPageContent() {
           <div>
             <h2 className="text-lg font-semibold mb-2">Top Market Performers</h2>
             <BasicTopPerformers
-              maxItems={10}
+              defaultTopCount={10}
               showControls={true}
             />
           </div>

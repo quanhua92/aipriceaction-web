@@ -148,6 +148,7 @@ function CryptoPage() {
 					<div>
 						<BasicTopPerformers
 							defaultGroup={CRYPTO_WATCHLIST_NAME}
+							defaultSectionFilter="crypto"
 							defaultTopCount={10}
 							showControls={true}
 						/>

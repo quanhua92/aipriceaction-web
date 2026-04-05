@@ -148,6 +148,7 @@ function GlobalPage() {
 					<div>
 						<BasicTopPerformers
 							defaultGroup={GLOBAL_WATCHLIST_NAME}
+							defaultSectionFilter="global"
 							defaultTopCount={10}
 							showControls={true}
 						/>
