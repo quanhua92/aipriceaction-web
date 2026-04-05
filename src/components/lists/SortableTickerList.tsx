@@ -113,7 +113,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
   const getTickerName = (symbol: string): string | null => {
     const name = tickerNamesMap[symbol]
     if (!name || name === symbol) return null
-    return name.length > 10 ? name.slice(0, 10) + '…' : name
+    return name.length > 30 ? name.slice(0, 30) + '…' : name
   }
 
   const { filteredMarketIndices, filteredTickers, filteredMajorCrypto, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers } = React.useMemo(() => {
@@ -700,7 +700,8 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
+                          <span className="font-extrabold">{ticker.symbol}</span>
+                          {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
@@ -748,7 +749,8 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
+                          <span className="font-extrabold">{ticker.symbol}</span>
+                          {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
@@ -796,7 +798,8 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
+                          <span className="font-extrabold">{ticker.symbol}</span>
+                          {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
@@ -844,7 +847,8 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
+                          <span className="font-extrabold">{ticker.symbol}</span>
+                          {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
@@ -892,7 +896,8 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                         className="w-full flex items-center justify-between gap-4 py-1.5 text-sm rounded-md hover:bg-accent transition-colors text-left cursor-pointer"
                       >
                         <div className="flex flex-col min-w-0 flex-shrink">
-                          <span className="font-extrabold">{ticker.symbol}{(() => { const n = getTickerName(ticker.symbol); return n ? ` · ${n}` : '' })()}</span>
+                          <span className="font-extrabold">{ticker.symbol}</span>
+                          {(() => { const n = getTickerName(ticker.symbol); return n ? <span className="text-xs text-muted-foreground/80 truncate">{n}</span> : null })()}
                           <span className="text-xs text-muted-foreground/70 truncate">{getSectorDisplayName(ticker.sector, language)}</span>
                         </div>
                         {latestData && (
