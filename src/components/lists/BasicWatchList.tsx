@@ -528,10 +528,11 @@ export function BasicWatchList({
         maxHeight={maxHeight}
         className="h-full"
         defaultSectionFilter={
-          // Custom watchlists, CRYPTO, and GLOBAL watchlist default to no override (show all)
-          customWatchlists.includes(selectedGroup) || selectedGroup === CRYPTO_WATCHLIST_NAME || selectedGroup === GLOBAL_WATCHLIST_NAME
-            ? null
-            : 'stocks'
+          selectedGroup === CRYPTO_WATCHLIST_NAME
+            ? 'crypto'
+            : selectedGroup === GLOBAL_WATCHLIST_NAME
+              ? 'global'
+              : 'stocks'
         }
         cryptoTickers={
           // ALL: show all crypto
