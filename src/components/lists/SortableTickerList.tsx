@@ -554,16 +554,36 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
       return items.slice(0, take)
     }
 
-    const totalItems = filteredMarketIndices.length + filteredMajorGlobal.length + filteredMajorCrypto.length +
-                      filteredTickers.length + filteredCryptoTickers.length + filteredGlobalTickers.length
+    // Only count and allocate items for the currently visible section
+    let totalItems = 0
+    let visibleMarketIndices: typeof filteredMarketIndices = []
+    let visibleMajorGlobal: typeof filteredMajorGlobal = []
+    let visibleMajorCrypto: typeof filteredMajorCrypto = []
+    let visibleTickers: typeof filteredTickers = []
+    let visibleCrypto: typeof filteredCryptoTickers = []
+    let visibleGlobal: typeof filteredGlobalTickers = []
+
+    if (sectionFilter === 'stocks') {
+      visibleMarketIndices = takeVisible(filteredMarketIndices)
+      visibleTickers = takeVisible(filteredTickers)
+      totalItems = filteredMarketIndices.length + filteredTickers.length
+    } else if (sectionFilter === 'crypto') {
+      visibleMajorCrypto = takeVisible(filteredMajorCrypto)
+      visibleCrypto = takeVisible(filteredCryptoTickers)
+      totalItems = filteredMajorCrypto.length + filteredCryptoTickers.length
+    } else if (sectionFilter === 'global') {
+      visibleMajorGlobal = takeVisible(filteredMajorGlobal)
+      visibleGlobal = takeVisible(filteredGlobalTickers)
+      totalItems = filteredMajorGlobal.length + filteredGlobalTickers.length
+    }
 
     return {
-      visibleMarketIndices: takeVisible(filteredMarketIndices),
-      visibleMajorGlobal: takeVisible(filteredMajorGlobal),
-      visibleMajorCrypto: takeVisible(filteredMajorCrypto),
-      visibleTickers: takeVisible(filteredTickers),
-      visibleCrypto: takeVisible(filteredCryptoTickers),
-      visibleGlobal: takeVisible(filteredGlobalTickers),
+      visibleMarketIndices,
+      visibleMajorCrypto,
+      visibleTickers,
+      visibleCrypto,
+      visibleMajorGlobal,
+      visibleGlobal,
       hasMore: totalItems > MAX_VISIBLE
     }
   }, [showAll, filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers, sectionFilter])
