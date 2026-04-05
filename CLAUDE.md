@@ -24,16 +24,21 @@ The app uses React Context for state management with a **specific dependency ord
 
 ```
 GoogleAnalyticsProvider
-├── LogsProvider (no dependencies - base layer)
-├── SiteSettingsProvider
-├── RefreshProvider (depends on LogsContext)
-├── APIProvider (depends on LogsContext + RefreshContext)
-│   └── ChartSettingsProvider
-│       └── <Router>
+└── LogsProvider (no dependencies - base layer)
+    └── SiteSettingsProvider
+        └── ThemeProvider
+            └── RefreshProvider (depends on LogsContext)
+                └── DialogProvider
+                    └── ChartSettingsProvider
+                        └── APIProvider (depends on LogsContext + RefreshContext)
+                            └── AlertProvider
+                                └── NoteProvider
+                                    └── PWAInstallProvider
+                                        └── <Router>
 ```
 
 **Critical: This order matters!**
-- `LogsProvider` must be innermost because all other contexts use it
+- `LogsProvider` must be outermost (wraps everything) because all other contexts use it
 - `RefreshProvider` uses `LogsContext` to log refresh state changes
 - `APIProvider` depends on both:
   - Watches `RefreshContext.lastRefresh` to trigger re-fetching
@@ -151,15 +156,18 @@ const date = stockData.timestamp.split('T')[0]  // undefined!
 ### Market Indices
 - `VNINDEX` (VNX) - main index
 - `VN30` - large caps
+- `VN30F1M` - VN30 futures
 
 ### Sectors (from API)
-Common sectors with abbreviations (used in MarketMatrix):
+Priority sectors with abbreviations (used in MarketMatrix):
 - `NGAN_HANG` (NH) - Banking
 - `CHUNG_KHOAN` (CK) - Securities
 - `BAT_DONG_SAN` (BDS) - Real Estate
 - `XAY_DUNG` (XD) - Construction
 - `TAI_NGUYEN_CO_BAN` (TN-CB) - Basic Resources
-- `BAN_LE` - Retail
+- `BAN_LE` (BL) - Retail
+
+Additional sectors: `BAO_HIEM` (BH), `CONG_NGHE` (CN), `DAU_KHI` (DK), `DICH_VU_CONG_NGHIEP` (DV-CN), `DIEN`, `DU_LICH` (DL), `HANG_CA_NHAN_GIA_DUNG` (HCN-GD), `HOA_CHAT` (HC), `OTO_PHU_TUNG` (OTO-PT), `THUC_PHAM` (TP), `TRUYEN_THONG` (TT), `VIEN_THONG` (VTH), `Y_TE` (YT), `OTHERS` (KHAC)
 
 See `PRIORITY_GROUPS` and `SECTOR_ABBREVIATIONS` in `src/lib/constants.ts`
 
@@ -172,11 +180,13 @@ See `PRIORITY_GROUPS` and `SECTOR_ABBREVIATIONS` in `src/lib/constants.ts`
 
 ```typescript
 // src/lib/constants.ts
-MARKET_INDICES = ['VNINDEX', 'VN30']
-DEFAULT_CHART_LIMIT = 128
+MARKET_INDICES = ['VNINDEX', 'VN30', 'VN30F1M']
+DEFAULT_CHART_LIMIT = 256
+LOAD_MORE_LIMIT = 256
 API_RETRY_ATTEMPTS = 3
 API_CALL_DELAY_MS = {min: 0, max: 50}
 API_CACHE_WINDOW_MS = 15000  // 15 seconds
+API_RECENT_CALLS_LIMIT = 10
 BASIC_WATCHLIST_PREFETCH_COUNT = 3
 MATRIX_DAYS_PER_PAGE = 40
 MAX_LOGS = 500
@@ -187,7 +197,7 @@ MAX_LOGS = 500
 - File-based routing in `src/routes/`
 - Route tree auto-generated to `src/routeTree.gen.ts`
 - `__root.tsx` contains all provider wrappers
-- Routes: `/` (home), `/ai` (AI context builder), `/matrix`, `/chart`, `/demo/*`
+- Routes: `/` (home), `/ai` (AI context builder), `/matrix`, `/chart`, `/watch`, `/crypto`, `/global`, `/signals`, `/alert`, `/backtesting`, `/debug`, `/notes`, `/notes/new`, `/note/$id`
 
 ## UI Components (Shadcn)
 
@@ -204,7 +214,21 @@ Defined in `src/lib/constants.ts`:
 - `CUSTOM_WATCHLISTS_STORAGE_KEY` - user watchlists
 - `AI_SELECTED_TICKERS_STORAGE_KEY` - AI page ticker selection
 - `MATRIX_OPEN_SECTORS_STORAGE_KEY` - MarketMatrix collapsed/expanded state
-- Chart settings persisted by ChartSettingsContext
+- `CHART_SETTINGS_STORAGE_KEY` - chart settings (interval, MA visibility, MACD, limit)
+- `ALERTS_STORAGE_KEY` - price alerts
+- `NOTES_STORAGE_KEY` - markdown notes
+- `BACKTEST_STORAGE_KEY` - basic backtest data
+- `HOME_CHART_TICKERS_STORAGE_KEY` - home page chart tickers
+- `CRYPTO_CHART_TICKERS_STORAGE_KEY` - crypto page chart tickers
+- `GLOBAL_CHART_TICKERS_STORAGE_KEY` - global page chart tickers
+- `CHART_LAYOUT_STORAGE_KEY` - chart page layout settings
+- `WATCH_LAYOUT_STORAGE_KEY` - watch page layout settings
+- `CHART_COMPARE_STORAGE_KEY` - chart compare tab state
+- `WATCH_LEFT_SIDEBAR_OPEN_KEY` - watch page left sidebar
+- `WATCH_RIGHT_SIDEBAR_OPEN_KEY` - watch page right sidebar
+- `THEME_STORAGE_KEY` - theme preference
+- `TICKER_LIST_SECTION_FILTER_STORAGE_KEY` - ticker list section filter
+- `TICKER_LIST_SORT_BY_STORAGE_KEY` - ticker list sort preference
 
 ## Environment Variables
 
