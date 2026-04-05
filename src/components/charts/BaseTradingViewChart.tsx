@@ -59,6 +59,7 @@ interface BaseTradingViewChartProps {
 	height?: number;
 	showControls?: boolean;
 	noDataMessage?: string;
+	tickerName?: string | null;
 	maVisibility?: {
 		ma10: boolean;
 		ma20: boolean;
@@ -77,6 +78,7 @@ export function BaseTradingViewChart({
 	height: heightProp,
 	showControls = true,
 	noDataMessage = "No data available",
+	tickerName,
 	maVisibility: maVisibilityProp,
 	overlay,
 }: BaseTradingViewChartProps) {
@@ -1283,6 +1285,20 @@ export function BaseTradingViewChart({
 											)}
 										</span>
 									))}
+								</div>
+							)}
+
+							{/* Third line - Ticker name */}
+							{tickerName && (
+								<div
+									className="absolute top-11 left-3 z-10 pointer-events-none text-[9px]"
+									style={{
+										color: "#a1a1aa",
+										WebkitFontSmoothing: "antialiased",
+										MozOsxFontSmoothing: "grayscale",
+									}}
+								>
+									{tickerName}
 								</div>
 							)}
 						</div>

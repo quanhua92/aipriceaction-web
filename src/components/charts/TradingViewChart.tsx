@@ -91,7 +91,19 @@ function TradingViewChartContent({
 		tickers: stockTickers,
 		cryptoTickers,
 		globalTickers,
+		tickerNames,
+		cryptoTickerNames,
+		globalTickerNames,
 	} = useAPI();
+
+	// Resolve ticker name for overlay display
+	const resolvedTickerName = React.useMemo(() => {
+		if (!selectedTicker) return null;
+		const names = { ...tickerNames, ...cryptoTickerNames, ...globalTickerNames };
+		const name = names[selectedTicker];
+		if (!name) return null;
+		return name;
+	}, [selectedTicker, tickerNames, cryptoTickerNames, globalTickerNames]);
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(
@@ -213,6 +225,7 @@ function TradingViewChartContent({
 					height={currentHeight}
 					maVisibility={currentMaVisibility}
 					noDataMessage={t("common.noDataAvailable")}
+					tickerName={resolvedTickerName}
 				/>
 			</div>
 
