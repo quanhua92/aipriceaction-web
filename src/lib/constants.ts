@@ -80,6 +80,8 @@ export const NOTES_STORAGE_KEY = 'aipriceaction-notes'
  * LocalStorage key for home page chart tickers
  */
 export const HOME_CHART_TICKERS_STORAGE_KEY = 'home-chart-tickers'
+export const CRYPTO_CHART_TICKERS_STORAGE_KEY = 'crypto-chart-tickers'
+export const GLOBAL_CHART_TICKERS_STORAGE_KEY = 'global-chart-tickers'
 export const TICKER_LIST_SECTION_FILTER_STORAGE_KEY = 'ticker-list-section-filter'
 export const TICKER_LIST_SORT_BY_STORAGE_KEY = 'ticker-list-sort-by'
 

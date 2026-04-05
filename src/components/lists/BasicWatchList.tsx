@@ -106,8 +106,9 @@ export function BasicWatchList({
       return []
     }
 
-    // Check if this is the ALL watchlist
-    if (selectedGroup === ALL_WATCHLIST_NAME) {
+    // For ALL, CRYPTO, and GLOBAL watchlists, return all stock tickers
+    // so section filter buttons in SortableTickerList work
+    if (selectedGroup === ALL_WATCHLIST_NAME || selectedGroup === CRYPTO_WATCHLIST_NAME || selectedGroup === GLOBAL_WATCHLIST_NAME) {
       if (!tickerGroups) return []
 
       // Get all tickers from all sector groups with deduplication
@@ -132,18 +133,6 @@ export function BasicWatchList({
       })
 
       return allSectorTickers
-    }
-
-    // Check if this is the CRYPTO watchlist - return empty array for tickers
-    // Crypto will be passed separately via cryptoTickers prop to SortableTickerList
-    if (selectedGroup === CRYPTO_WATCHLIST_NAME) {
-      return []
-    }
-
-    // Check if this is the GLOBAL watchlist - return empty array for tickers
-    // Global will be passed separately via globalTickers prop to SortableTickerList
-    if (selectedGroup === GLOBAL_WATCHLIST_NAME) {
-      return []
     }
 
     // Check if this is a predefined watchlist
@@ -184,18 +173,8 @@ export function BasicWatchList({
     // Combine stock, crypto, and global data
     const allData = { ...allTickersLastData, ...allCryptoTickersLastData, ...allGlobalTickersLastData }
 
-    // Get tickers to check - regular tickers, plus crypto if CRYPTO watchlist is selected
-    let tickersToCheck = [...tickers]
-
-    // Add crypto tickers when CRYPTO watchlist is selected (since tickers array is empty for crypto)
-    if (selectedGroup === CRYPTO_WATCHLIST_NAME) {
-      tickersToCheck = [...cryptoTickers]
-    }
-
-    // Add global tickers when GLOBAL watchlist is selected (since tickers array is empty for global)
-    if (selectedGroup === GLOBAL_WATCHLIST_NAME) {
-      tickersToCheck = [...globalTickers]
-    }
+    // Combine all tickers (stocks, crypto, global) for distribution calculation
+    const tickersToCheck = [...tickers, ...cryptoTickers, ...globalTickers]
 
     // Get only tickers with price data
     const tickersWithData = tickersToCheck.filter(t => {
