@@ -102,7 +102,11 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		}
 	)
 	const [limit, setLimit] = React.useState<number>(
-		() => persisted.current.limit ?? DEFAULT_CHART_LIMIT
+		() => {
+			const saved = persisted.current.limit
+			if (saved === undefined || saved === null) return DEFAULT_CHART_LIMIT
+			return saved > DEFAULT_CHART_LIMIT * 3 ? DEFAULT_CHART_LIMIT : saved
+		}
 	)
 	const [height, setHeight] = React.useState<number>(
 		typeof window !== 'undefined' && window.innerWidth >= 768 ? 400 : 300
