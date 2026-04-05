@@ -143,6 +143,7 @@ export function SelectTickerDialog({
 						loading={loading || cryptoLoading || globalLoading || historicalLoading}
 						error={error || cryptoError || globalError}
 						maxHeight="none"
+						persistToLocalStorage
 						className="h-full"
 						cryptoTickers={cryptoTickers}
 						allCryptoTickersLastData={effectiveCryptoData}

@@ -1289,7 +1289,7 @@ export function BaseTradingViewChart({
 							)}
 
 							{/* Third line - Ticker name */}
-							{tickerName && (
+							{tickerName && tickerName !== displayData.symbol && (
 								<div
 									className="absolute top-11 left-3 z-10 pointer-events-none text-[9px]"
 									style={{

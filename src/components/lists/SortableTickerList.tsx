@@ -39,6 +39,8 @@ export interface SortableTickerListProps {
   allGlobalTickersLastData?: Record<string, StockData[]>
   // Default filter override (e.g., for custom watchlists)
   defaultSectionFilter?: SectionFilter | null
+  // Persist sort/filter choices to localStorage
+  persistToLocalStorage?: boolean
   // Ticker names map (symbol → display name), merged from vn/crypto/global
   tickerNamesMap?: Record<string, string>
 }
@@ -65,17 +67,21 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
   globalTickers = [],
   allGlobalTickersLastData = {},
   defaultSectionFilter = 'stocks',
+  persistToLocalStorage = false,
   tickerNamesMap = {}
 }, ref) => {
-  // Initialize from localStorage, fall back to prop default
   const [sortBy, setSortBy] = React.useState<SortBy>(() => {
-    const saved = SafeLocalStorage.getItem(TICKER_LIST_SORT_BY_STORAGE_KEY)
-    if (saved) return saved as SortBy
+    if (persistToLocalStorage) {
+      const saved = SafeLocalStorage.getItem(TICKER_LIST_SORT_BY_STORAGE_KEY)
+      if (saved) return saved as SortBy
+    }
     return 'value'
   })
   const [sectionFilter, setSectionFilter] = React.useState<SectionFilter>(() => {
-    const saved = SafeLocalStorage.getItem(TICKER_LIST_SECTION_FILTER_STORAGE_KEY)
-    if (saved && saved !== 'all') return saved as SectionFilter
+    if (persistToLocalStorage) {
+      const saved = SafeLocalStorage.getItem(TICKER_LIST_SECTION_FILTER_STORAGE_KEY)
+      if (saved && saved !== 'all') return saved as SectionFilter
+    }
     return defaultSectionFilter ?? 'stocks'
   })
   const [showAll, setShowAll] = React.useState(false)
@@ -84,15 +90,16 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
 
   // Persist sort and section filter to localStorage
   React.useEffect(() => {
-    SafeLocalStorage.setItem(TICKER_LIST_SORT_BY_STORAGE_KEY, sortBy)
-  }, [sortBy])
+    if (persistToLocalStorage) {
+      SafeLocalStorage.setItem(TICKER_LIST_SORT_BY_STORAGE_KEY, sortBy)
+    }
+  }, [sortBy, persistToLocalStorage])
   React.useEffect(() => {
-    SafeLocalStorage.setItem(TICKER_LIST_SECTION_FILTER_STORAGE_KEY, sectionFilter)
-  }, [sectionFilter])
+    if (persistToLocalStorage) {
+      SafeLocalStorage.setItem(TICKER_LIST_SECTION_FILTER_STORAGE_KEY, sectionFilter)
+    }
+  }, [sectionFilter, persistToLocalStorage])
 
-  // No effect for defaultSectionFilter — localStorage is the source of truth.
-  // Consumers that need to force a section (e.g. BasicWatchList switching watchlists)
-  // should pass a `key` prop to force remount.
   React.useEffect(() => {
     setShowAll(false)
   }, [searchQuery, sortBy, sectionFilter])

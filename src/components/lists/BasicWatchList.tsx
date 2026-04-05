@@ -518,7 +518,6 @@ export function BasicWatchList({
       {/* Ticker List */}
       <div className="flex-1 px-3">
         <SortableTickerList
-          key={selectedGroup}
         tickers={tickers}
         allTickersLastData={allTickersLastData}
         searchQuery="" // No search in watchlist
