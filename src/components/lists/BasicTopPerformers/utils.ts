@@ -8,7 +8,7 @@ import type {
 import { getTickerMode } from '@/lib/ticker-utils'
 import { getWatchlistTickers } from '@/lib/watchlist-storage'
 import { isPredefinedWatchlist, getPredefinedWatchlistTickers } from '@/lib/predefined-watchlists'
-import { ALL_WATCHLIST_NAME } from '@/lib/constants'
+import { ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, GLOBAL_WATCHLIST_NAME } from '@/lib/constants'
 
 /**
  * Enrich tickers with latest price data from API responses
@@ -67,8 +67,9 @@ export function filterByGroup(
 ): Array<{ symbol: string; sector: string }> {
   if (!group || !tickerGroups) return tickers
 
-  // If ALL watchlist is selected, return all tickers
-  if (group === ALL_WATCHLIST_NAME) {
+  // If ALL, CRYPTO, or GLOBAL watchlist is selected, return all tickers
+  // Section filtering already handles separating stocks/crypto/global
+  if (group === ALL_WATCHLIST_NAME || group === CRYPTO_WATCHLIST_NAME || group === GLOBAL_WATCHLIST_NAME) {
     return tickers
   }
 
