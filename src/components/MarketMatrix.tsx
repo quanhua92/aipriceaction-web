@@ -231,19 +231,23 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
     return tickerGroups[selectedWatchlist] || []
   }, [tickerGroups, selectedWatchlist, customWatchlists, cryptoTickers, globalTickers])
 
-  // Split selected tickers into stocks and crypto
-  const { stockSymbols, cryptoSymbols, watchlistType } = React.useMemo(() => {
+  // Split selected tickers into stocks, crypto, and global
+  const { stockSymbols, cryptoSymbols, globalSymbols, watchlistType } = React.useMemo(() => {
     if (selectedTickers.length === 0) {
-      return { stockSymbols: [], cryptoSymbols: [], watchlistType: 'stock' as const }
+      return { stockSymbols: [], cryptoSymbols: [], globalSymbols: [], watchlistType: 'stock' as const }
     }
 
     const cryptoSymbolSet = new Set(cryptoTickers.map(t => t.symbol))
+    const globalSymbolSet = new Set(globalTickers.map(t => t.symbol))
     const stocks: string[] = []
     const crypto: string[] = []
+    const global: string[] = []
 
     selectedTickers.forEach(symbol => {
       if (cryptoSymbolSet.has(symbol)) {
         crypto.push(symbol)
+      } else if (globalSymbolSet.has(symbol)) {
+        global.push(symbol)
       } else {
         stocks.push(symbol)
       }
@@ -260,8 +264,8 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       // For other watchlists (custom/predefined/sectors), detect based on actual symbols
       detectWatchlistType(selectedTickers, cryptoTickers, globalTickers)
 
-    return { stockSymbols: stocks, cryptoSymbols: crypto, watchlistType: type }
-  }, [selectedTickers, cryptoTickers, detectWatchlistType, selectedWatchlist])
+    return { stockSymbols: stocks, cryptoSymbols: crypto, globalSymbols: global, watchlistType: type }
+  }, [selectedTickers, cryptoTickers, globalTickers, detectWatchlistType, selectedWatchlist])
 
   // Fetch matrix data
   React.useEffect(() => {
@@ -297,6 +301,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
           const mixedSymbols = [
             ...(stockSymbols.length > 0 ? ['VNINDEX', ...stockSymbols] : []),
             ...(cryptoSymbols.length > 0 ? ['BTCUSDT', ...cryptoSymbols] : []),
+            ...(globalSymbols.length > 0 ? globalSymbols : []),
           ]
           const mixedResponse = await getTickers('MarketMatrix.data.mixed', {
             symbol: mixedSymbols,
@@ -307,6 +312,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
           })
           stockResponse = mixedResponse
           cryptoResponse = mixedResponse
+          globalResponse = mixedResponse
         } else if (isCryptoOnly) {
           // Single crypto call
           cryptoResponse = await getTickers('MarketMatrix.data.crypto', {

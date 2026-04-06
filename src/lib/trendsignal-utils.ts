@@ -380,11 +380,12 @@ export function getWatchlistTickersByType(
   })
 
   // Determine watchlist type
+  const typeCount = [stocks.length > 0, crypto.length > 0, global.length > 0].filter(Boolean).length
   const type =
     selectedWatchlist === ALL_WATCHLIST_NAME ? 'stock' as const :
     selectedWatchlist === CRYPTO_WATCHLIST_NAME ? 'crypto' as const :
     selectedWatchlist === GLOBAL_WATCHLIST_NAME ? 'global' as const :
-    (crypto.length > 0 || global.length > 0) && stocks.length > 0 ? 'mixed' as const :
+    typeCount >= 2 ? 'mixed' as const :
     global.length > 0 ? 'global' as const :
     crypto.length > 0 ? 'crypto' as const :
     'stock' as const
