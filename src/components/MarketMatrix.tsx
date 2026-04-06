@@ -10,7 +10,6 @@ import {
   CRYPTO_WATCHLIST_NAME,
   GLOBAL_WATCHLIST_NAME,
   MAJOR_CRYPTO,
-  MAJOR_GLOBAL,
   MARKET_INDICES,
   MATRIX_DAYS_PER_PAGE,
   MATRIX_OPEN_SECTORS_STORAGE_KEY,
@@ -403,10 +402,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
               }
             }
           } else if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
-            // Check if this is a major global index first (^GSPC, ^DJI, ^NDX, GC=F, CL=F)
-            if (MAJOR_GLOBAL.includes(ticker as any)) {
-              sector = 'MAJOR_GLOBAL'
-            } else if (globalTickerGroups) {
+            if (globalTickerGroups) {
               // Use globalTickerGroups for other global tickers
               for (const [sectorName, symbols] of Object.entries(globalTickerGroups)) {
                 if (symbols.includes(ticker)) {
@@ -612,12 +608,6 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
         if (a === 'MAJOR_CRYPTO') return -1
         if (b === 'MAJOR_CRYPTO') return 1
-      }
-
-      // MAJOR_GLOBAL goes first for GLOBAL watchlist
-      if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
-        if (a === 'MAJOR_GLOBAL') return -1
-        if (b === 'MAJOR_GLOBAL') return 1
       }
 
       const priorityA = PRIORITY_GROUPS.indexOf(a as any)
@@ -859,12 +849,6 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                       if (b === 'MAJOR_CRYPTO') return 1
                     }
 
-                    // MAJOR_GLOBAL goes first for GLOBAL watchlist
-                    if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
-                      if (a === 'MAJOR_GLOBAL') return -1
-                      if (b === 'MAJOR_GLOBAL') return 1
-                    }
-
                     const priorityA = PRIORITY_GROUPS.indexOf(a as any)
                     const priorityB = PRIORITY_GROUPS.indexOf(b as any)
 
@@ -954,12 +938,6 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                     if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
                       if (a === 'MAJOR_CRYPTO') return -1
                       if (b === 'MAJOR_CRYPTO') return 1
-                    }
-
-                    // MAJOR_GLOBAL goes first for GLOBAL watchlist
-                    if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
-                      if (a === 'MAJOR_GLOBAL') return -1
-                      if (b === 'MAJOR_GLOBAL') return 1
                     }
 
                     const priorityA = PRIORITY_GROUPS.indexOf(a as any)
