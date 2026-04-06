@@ -7,7 +7,6 @@ import { type CandlestickData, type HistogramData, type LineData } from "lightwe
 import { type StockData } from "@/lib/api-client";
 import { parseUTCISOString, toVietnamUnixTime } from "@/lib/format";
 import { MA_CONFIG } from "@/components/charts/utils/chartConfig";
-import { getVolumeCandlestickColor } from "@/lib/chartColors";
 import { MACD } from "lightweight-charts-indicators";
 import type { Bar } from "oakscriptjs";
 
@@ -201,6 +200,7 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 	const volume: HistogramData[] = [];
 	const maDataArrays = createMADataArrays();
 	const timestamps: number[] = [];
+	const deduplicatedData: StockData[] = [];
 
 	// Track seen timestamps to prevent duplicates
 	const seenTimestamps = new Set<number>();
@@ -222,14 +222,12 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 
 		// Skip duplicate timestamps to prevent lightweight-charts error
 		if (seenTimestamps.has(time)) {
-			if (process.env.NODE_ENV === "development") {
-				console.warn("Skipping duplicate timestamp in chart data:", time, "for point:", point);
-			}
 			return;
 		}
 		seenTimestamps.add(time);
 
 		timestamps.push(time);
+		deduplicatedData.push(point);
 
 		// Transform candlestick data
 		candlestick.push({
@@ -260,8 +258,8 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 		processMAData(point, time, maDataArrays);
 	});
 
-	// Calculate MACD using the library
-	const { macdHistogram, macdLine, macdSignal } = calculateMACDFromStockData(data, timestamps);
+	// Calculate MACD using the library (pass deduplicated data to match timestamps)
+	const { macdHistogram, macdLine, macdSignal } = calculateMACDFromStockData(deduplicatedData, timestamps);
 
 	return {
 		candlestick,
