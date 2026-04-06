@@ -356,12 +356,16 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
         let dates: string[] = []
 
         if (isMixed || isCryptoOnly || isGlobalOnly) {
-          // Pick reference symbol from what's actually in the response
-          // Prefer BTC (24/7 calendar) → ^GSPC → VNINDEX → any ticker with most data
-          const refSymbol = response['BTCUSDT'] ? 'BTCUSDT'
-            : response['^GSPC'] ? '^GSPC'
-            : response['VNINDEX'] ? 'VNINDEX'
-            : Object.entries(response).sort(([, a], [, b]) => b.length - a.length)[0]?.[0]
+          // Pick reference symbol with the most recent last date
+          // This ensures the matrix shows the widest possible date range
+          // e.g. VNINDEX (Apr 6) wins over ^GSPC (Apr 2) when US markets are closed
+          const refSymbol = Object.entries(response)
+            .filter(([, data]) => data.length > 0)
+            .sort(([, a], [, b]) => {
+              const aTime = a[a.length - 1]?.time || ''
+              const bTime = b[b.length - 1]?.time || ''
+              return bTime.localeCompare(aTime)
+            })[0]?.[0]
           const refData = response[refSymbol] || []
           dates = refData
             .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
