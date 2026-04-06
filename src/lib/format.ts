@@ -177,13 +177,14 @@ export function formatToVietnamDateTimeShort(utcDate: Date): string {
  * Provides appropriate precision for different price ranges
  */
 export function getOptimalDecimalPlaces(price: number): number {
-  if (price >= 100) return 2          // 1,250.45
-  if (price >= 10) return 2          // 50.25
-  if (price >= 1) return 2           // 5.12
-  if (price >= 0.5) return 3         // 0.625
-  if (price >= 0.01) return 4        // 0.1234
-  if (price >= 0.0001) return 6      // 0.001234
-  if (price >= 0.000001) return 8    // 0.00000123
+  const abs = Math.abs(price)
+  if (abs >= 100) return 2          // 1,250.45
+  if (abs >= 10) return 2           // 50.25
+  if (abs >= 1) return 2            // 5.12
+  if (abs >= 0.5) return 3          // 0.625
+  if (abs >= 0.01) return 4         // 0.1234
+  if (abs >= 0.0001) return 6       // 0.001234
+  if (abs >= 0.000001) return 8     // 0.00000123
   return 10                          // 0.0000000123 (DeFi tokens, fractional shares)
 }
 
