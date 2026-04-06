@@ -1197,7 +1197,7 @@ export function BaseTradingViewChart({
 
 					return (
 						<div>
-							{/* First line - Symbol, Price, Volume, Timestamp */}
+							{/* First line - Symbol, Price, Change, %Change, Volume, Volume% */}
 							<div
 								className={cn(
 									"absolute top-3 left-3 text-zinc-100 z-10 pointer-events-none",
@@ -1221,6 +1221,20 @@ export function BaseTradingViewChart({
 											<span className={cn(colors.price)}>
 												{formatPrice(displayData.close, displayData)}
 											</span>{" "}
+											{(() => {
+												const absChange =
+													displayData.close != null && change !== 0
+														? displayData.close -
+															(displayData.close / (1 + change / 100))
+														: 0;
+												const prefix = absChange >= 0 ? "+" : "";
+												return (
+													<span className={cn(colors.price)}>
+														{prefix}
+														{formatPrice(absChange, displayData)}
+													</span>
+												);
+											})()}{" "}
 											<span className={cn(colors.percent)}>
 												{formatPercent(change)}
 											</span>
@@ -1241,23 +1255,6 @@ export function BaseTradingViewChart({
 									)}
 								>
 									{formatPercent(displayData.volume_changed ?? 0)}
-								</span>
-								<span className="text-zinc-400 ml-2">
-									{(() => {
-										try {
-											if (
-												!displayData.time ||
-												typeof displayData.time !== "string"
-											)
-												return "--";
-											const date = parseUTCISOString(displayData.time);
-											return isIntradayInterval
-												? formatToVietnamDateTimeShort(date)
-												: formatToVietnamDateShort(date);
-										} catch {
-											return "--";
-										}
-									})()}
 								</span>
 							</div>
 
@@ -1307,6 +1304,35 @@ export function BaseTradingViewChart({
 									{tickerName}
 								</div>
 							)}
+
+							{/* Fourth line - Timestamp */}
+							<div
+								className={cn(
+									"absolute left-3 text-zinc-400 z-10 pointer-events-none",
+									tickerName && tickerName !== displayData.symbol
+										? "top-[60px]"
+										: "top-11",
+									displayData.symbol && displayData.symbol.length >= 4
+										? "text-[11px]"
+										: "text-[12px]",
+								)}
+							>
+								{(() => {
+									try {
+										if (
+											!displayData.time ||
+											typeof displayData.time !== "string"
+										)
+											return "--";
+										const date = parseUTCISOString(displayData.time);
+										return isIntradayInterval
+											? formatToVietnamDateTimeShort(date)
+											: formatToVietnamDateShort(date);
+									} catch {
+										return "--";
+									}
+								})()}
+							</div>
 						</div>
 					);
 				})()}
