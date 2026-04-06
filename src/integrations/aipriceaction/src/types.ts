@@ -63,7 +63,7 @@ export interface StockData {
   /** Time in YYYY-MM-DD (daily) or YYYY-MM-DD HH:MM:SS (hourly/minute) */
   time: string;
   /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (injected by client) */
-  mode?: 'vn' | 'crypto' | 'yahoo';
+  mode?: 'vn' | 'crypto' | 'yahoo' | 'all';
   /** Opening price */
   open: number;
   /** Highest price */

@@ -138,27 +138,6 @@ function AIContextPage() {
 		setSelectedTickers(['VNINDEX']);
 	}
 
-	// Split selected tickers into stocks and crypto
-	const { stockSymbols, cryptoSymbols } = React.useMemo(() => {
-		if (selectedTickers.length === 0 || !cryptoTickers) {
-			return { stockSymbols: selectedTickers, cryptoSymbols: [] };
-		}
-
-		const cryptoSet = new Set(cryptoTickers.map(t => t.symbol));
-		const stocks: string[] = [];
-		const crypto: string[] = [];
-
-		selectedTickers.forEach(symbol => {
-			if (cryptoSet.has(symbol)) {
-				crypto.push(symbol);
-			} else {
-				stocks.push(symbol);
-			}
-		});
-
-		return { stockSymbols: stocks, cryptoSymbols: crypto };
-	}, [selectedTickers, cryptoTickers]);
-
 	// Auto-fetch data when tickers, limit, or interval change
 	React.useEffect(() => {
 		const fetchData = async () => {
@@ -171,53 +150,13 @@ function AIContextPage() {
 			setFetchError(null);
 
 			try {
-				// Determine if this is a mixed, crypto-only, or stock-only selection
-				const isMixed = stockSymbols.length > 0 && cryptoSymbols.length > 0;
-				const isCryptoOnly = cryptoSymbols.length > 0 && stockSymbols.length === 0;
-
-				let stockData: Record<string, any[]> = {};
-				let cryptoData: Record<string, any[]> = {};
-
-				if (isMixed) {
-					// Two parallel API calls for mixed selection
-					[stockData, cryptoData] = await Promise.all([
-						getTickers('AIRoute.marketData.stocks', {
-							symbol: stockSymbols,
-							limit: limit,
-							interval: interval,
-							end_date: endDate,
-							mode: 'vn'
-						}),
-						getTickers('AIRoute.marketData.crypto', {
-							symbol: cryptoSymbols,
-							limit: limit,
-							interval: interval,
-							end_date: endDate,
-							mode: 'crypto'
-						})
-					]);
-				} else if (isCryptoOnly) {
-					// Single crypto call
-					cryptoData = await getTickers('AIRoute.marketData.crypto', {
-						symbol: cryptoSymbols,
-						limit: limit,
-						interval: interval,
-						end_date: endDate,
-						mode: 'crypto'
-					});
-				} else {
-					// Single stock call
-					stockData = await getTickers('AIRoute.marketData.stocks', {
-						symbol: stockSymbols,
-						limit: limit,
-						interval: interval,
-						end_date: endDate,
-						mode: 'vn'
-					});
-				}
-
-				// Merge responses
-				const data = { ...stockData, ...cryptoData };
+				const data = await getTickers('AIRoute.marketData', {
+					symbol: selectedTickers,
+					limit: limit,
+					interval: interval,
+					end_date: endDate,
+					mode: 'all'
+				});
 				setMarketData(data);
 			} catch (error) {
 				console.error("Failed to fetch market data:", error);
@@ -228,7 +167,7 @@ function AIContextPage() {
 		}
 
 		fetchData();
-	}, [selectedTickers, stockSymbols, cryptoSymbols, limit, interval, getTickers, lastRefresh, endDate]);
+	}, [selectedTickers, limit, interval, getTickers, lastRefresh, endDate]);
 
 	const canAddMoreTickers = selectedTickers.length < MAX_TICKERS;
 

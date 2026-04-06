@@ -65,21 +65,30 @@ export function TrendSignalTable({
   const { lastRefresh } = useRefresh()
   const { t, language } = useTranslation()
 
-  // Separate tickers by type (crypto vs stocks)
+  // Separate tickers by type (stocks, crypto, global)
   const separateTickersByType = React.useMemo(() => {
     const cryptoTickersList: string[] = []
     const stockTickersList: string[] = []
+    const globalTickersList: string[] = []
 
     internalTickers.forEach(ticker => {
       const mode = getTickerMode(ticker, stockTickers, globalTickers, cryptoTickers)
       if (mode === 'crypto') {
         cryptoTickersList.push(ticker)
+      } else if (mode === 'yahoo') {
+        globalTickersList.push(ticker)
       } else {
         stockTickersList.push(ticker)
       }
     })
 
-    return { cryptoTickersList, stockTickersList }
+    const typeCount = [
+      stockTickersList.length > 0,
+      cryptoTickersList.length > 0,
+      globalTickersList.length > 0,
+    ].filter(Boolean).length
+
+    return { cryptoTickersList, stockTickersList, globalTickersList, isMixed: typeCount >= 2 }
   }, [internalTickers, cryptoTickers, stockTickers, globalTickers])
 
   // State management
@@ -110,29 +119,50 @@ export function TrendSignalTable({
       setError(null)
 
       try {
-        const { cryptoTickersList, stockTickersList } = separateTickersByType
+        const { cryptoTickersList, stockTickersList, globalTickersList, isMixed } = separateTickersByType
 
         // Prepare API calls based on ticker types
         const apiCalls: Promise<any>[] = []
 
-        if (stockTickersList.length > 0) {
-          apiCalls.push(getTickers('TrendSignalTable.fetch.stocks', {
+        if (isMixed) {
+          // Single call with mode='all' for mixed watchlist
+          apiCalls.push(getTickers('TrendSignalTable.fetch.mixed', {
             symbol: undefined, // Fetch all for cache efficiency
             interval: selectedInterval === '1h' ? '1h' : '1D',
             end_date: endDate,
             limit: maxDays,
-            mode: 'vn'
+            mode: 'all'
           }))
-        }
+        } else {
+          if (stockTickersList.length > 0) {
+            apiCalls.push(getTickers('TrendSignalTable.fetch.stocks', {
+              symbol: undefined, // Fetch all for cache efficiency
+              interval: selectedInterval === '1h' ? '1h' : '1D',
+              end_date: endDate,
+              limit: maxDays,
+              mode: 'vn'
+            }))
+          }
 
-        if (cryptoTickersList.length > 0) {
-          apiCalls.push(getTickers('TrendSignalTable.fetch.crypto', {
-            symbol: undefined, // Fetch all for cache efficiency
-            interval: selectedInterval === '1h' ? '1h' : '1D',
-            end_date: endDate,
-            limit: maxDays,
-            mode: 'crypto'
-          }))
+          if (cryptoTickersList.length > 0) {
+            apiCalls.push(getTickers('TrendSignalTable.fetch.crypto', {
+              symbol: undefined, // Fetch all for cache efficiency
+              interval: selectedInterval === '1h' ? '1h' : '1D',
+              end_date: endDate,
+              limit: maxDays,
+              mode: 'crypto'
+            }))
+          }
+
+          if (globalTickersList.length > 0) {
+            apiCalls.push(getTickers('TrendSignalTable.fetch.global', {
+              symbol: undefined, // Fetch all for cache efficiency
+              interval: selectedInterval === '1h' ? '1h' : '1D',
+              end_date: endDate,
+              limit: maxDays,
+              mode: 'yahoo'
+            }))
+          }
         }
 
         // If no tickers to fetch, return empty result

@@ -184,39 +184,22 @@ export function TrendSignal({
         let globalResponse: Record<string, StockData[]> = {}
 
         if (isMixed) {
-          // Parallel API calls for mixed watchlist
-          const [stocks, crypto, global] = await Promise.all([
-            stockSymbols.length > 0
-              ? getTickers('TrendSignal.data.stocks', {
-                  symbol: ['VNINDEX', ...stockSymbols],
-                  interval: interval === '1h' ? '1h' : '1D',
-                  end_date: endDate,
-                  limit: MATRIX_DAYS_PER_PAGE,
-                  mode: 'vn',
-                })
-              : Promise.resolve({}),
-            cryptoSymbols.length > 0
-              ? getTickers('TrendSignal.data.crypto', {
-                  symbol: ['BTCUSDT', ...cryptoSymbols],
-                  interval: interval === '1h' ? '1h' : '1D',
-                  end_date: endDate,
-                  limit: MATRIX_DAYS_PER_PAGE,
-                  mode: 'crypto',
-                })
-              : Promise.resolve({}),
-            globalSymbols.length > 0
-              ? getTickers('TrendSignal.data.global', {
-                  symbol: globalSymbols,
-                  interval: interval === '1h' ? '1h' : '1D',
-                  end_date: endDate,
-                  limit: MATRIX_DAYS_PER_PAGE,
-                  mode: 'yahoo',
-                })
-              : Promise.resolve({}),
-          ])
-          stockResponse = stocks
-          cryptoResponse = crypto
-          globalResponse = global
+          // Single API call with mode='all' for mixed watchlist
+          const mixedSymbols = [
+            ...(stockSymbols.length > 0 ? ['VNINDEX', ...stockSymbols] : []),
+            ...(cryptoSymbols.length > 0 ? ['BTCUSDT', ...cryptoSymbols] : []),
+            ...(globalSymbols.length > 0 ? globalSymbols : []),
+          ]
+          const mixedResponse = await getTickers('TrendSignal.data.mixed', {
+            symbol: mixedSymbols,
+            interval: interval === '1h' ? '1h' : '1D',
+            end_date: endDate,
+            limit: MATRIX_DAYS_PER_PAGE,
+            mode: 'all',
+          })
+          stockResponse = mixedResponse
+          cryptoResponse = mixedResponse
+          globalResponse = mixedResponse
         } else if (isCryptoOnly) {
           // Single crypto call
           cryptoResponse = await getTickers('TrendSignal.data.crypto', {

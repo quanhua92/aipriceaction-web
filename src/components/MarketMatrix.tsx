@@ -107,16 +107,21 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   const { endDate: globalEndDate } = useChartSettings()
   const { t, language } = useTranslation()
 
-  // Helper to detect if watchlist contains both stocks and crypto
-  const detectWatchlistType = React.useCallback((tickers: string[], cryptoTickersList: { symbol: string; sector: string }[]): 'stock' | 'crypto' | 'mixed' => {
+  // Helper to detect if watchlist contains multiple asset types
+  const detectWatchlistType = React.useCallback((tickers: string[], cryptoTickersList: { symbol: string; sector: string }[], globalTickersList: { symbol: string; sector: string }[]): 'stock' | 'crypto' | 'global' | 'mixed' => {
     if (tickers.length === 0) return 'stock'
 
     const cryptoSymbolSet = new Set(cryptoTickersList.map(t => t.symbol))
+    const globalSymbolSet = new Set(globalTickersList.map(t => t.symbol))
     const hasCrypto = tickers.some(symbol => cryptoSymbolSet.has(symbol))
-    const hasStock = tickers.some(symbol => !cryptoSymbolSet.has(symbol))
+    const hasGlobal = tickers.some(symbol => globalSymbolSet.has(symbol))
+    const hasStock = tickers.some(symbol => !cryptoSymbolSet.has(symbol) && !globalSymbolSet.has(symbol))
 
-    if (hasCrypto && hasStock) return 'mixed'
+    // Any combination of 2+ asset types is mixed
+    const typeCount = [hasCrypto, hasGlobal, hasStock].filter(Boolean).length
+    if (typeCount >= 2) return 'mixed'
     if (hasCrypto) return 'crypto'
+    if (hasGlobal) return 'global'
     return 'stock'
   }, [])
 
@@ -253,7 +258,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       // Special case: GLOBAL watchlist is always global-only
       selectedWatchlist === GLOBAL_WATCHLIST_NAME ? 'global' as const :
       // For other watchlists (custom/predefined/sectors), detect based on actual symbols
-      detectWatchlistType(selectedTickers, cryptoTickers)
+      detectWatchlistType(selectedTickers, cryptoTickers, globalTickers)
 
     return { stockSymbols: stocks, cryptoSymbols: crypto, watchlistType: type }
   }, [selectedTickers, cryptoTickers, detectWatchlistType, selectedWatchlist])
@@ -288,29 +293,20 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
         let globalResponse: Record<string, StockData[]> = {}
 
         if (isMixed) {
-          // Two parallel API calls for mixed watchlist
-          const [stocks, crypto] = await Promise.all([
-            stockSymbols.length > 0
-              ? getTickers('MarketMatrix.data.stocks', {
-                  symbol: ['VNINDEX', ...stockSymbols],
-                  interval: '1D',
-                  end_date: endDateForAPI,
-                  limit: MATRIX_DAYS_PER_PAGE,
-                  mode: 'vn',
-                })
-              : Promise.resolve({}),
-            cryptoSymbols.length > 0
-              ? getTickers('MarketMatrix.data.crypto', {
-                  symbol: ['BTCUSDT', ...cryptoSymbols],
-                  interval: '1D',
-                  end_date: endDateForAPI,
-                  limit: MATRIX_DAYS_PER_PAGE,
-                  mode: 'crypto',
-                })
-              : Promise.resolve({}),
-          ])
-          stockResponse = stocks
-          cryptoResponse = crypto
+          // Single API call with mode='all' for mixed watchlist
+          const mixedSymbols = [
+            ...(stockSymbols.length > 0 ? ['VNINDEX', ...stockSymbols] : []),
+            ...(cryptoSymbols.length > 0 ? ['BTCUSDT', ...cryptoSymbols] : []),
+          ]
+          const mixedResponse = await getTickers('MarketMatrix.data.mixed', {
+            symbol: mixedSymbols,
+            interval: '1D',
+            end_date: endDateForAPI,
+            limit: MATRIX_DAYS_PER_PAGE,
+            mode: 'all',
+          })
+          stockResponse = mixedResponse
+          cryptoResponse = mixedResponse
         } else if (isCryptoOnly) {
           // Single crypto call
           cryptoResponse = await getTickers('MarketMatrix.data.crypto', {
@@ -354,8 +350,12 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
         let dates: string[] = []
 
         if (isMixed || isCryptoOnly || isGlobalOnly) {
-          // Use BTC or ^GSPC as calendar reference for non-stock watchlists
-          const refSymbol = isGlobalOnly ? '^GSPC' : 'BTCUSDT'
+          // Pick reference symbol from what's actually in the response
+          // Prefer BTC (24/7 calendar) → ^GSPC → VNINDEX → any ticker with most data
+          const refSymbol = response['BTCUSDT'] ? 'BTCUSDT'
+            : response['^GSPC'] ? '^GSPC'
+            : response['VNINDEX'] ? 'VNINDEX'
+            : Object.entries(response).sort(([, a], [, b]) => b.length - a.length)[0]?.[0]
           const refData = response[refSymbol] || []
           dates = refData
             .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))

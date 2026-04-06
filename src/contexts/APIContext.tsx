@@ -334,6 +334,20 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
 
       // Create new request and store in cache
       const promise = getTickersWithLogging(source, params ?? {}, { info, warn: info, error: logError })
+        .then(result => {
+          // When mode='all', inject per-ticker mode using authoritative ticker maps
+          if (params?.mode === 'all') {
+            const cryptoSet = new Set(cryptoTickers.map(t => t.symbol))
+            const globalSet = new Set(globalTickers.map(t => t.symbol))
+            const injected: Record<string, StockData[]> = {}
+            for (const [ticker, data] of Object.entries(result)) {
+              const mode = cryptoSet.has(ticker) ? 'crypto' : globalSet.has(ticker) ? 'yahoo' : 'vn'
+              injected[ticker] = data.map(item => ({ ...item, mode }))
+            }
+            return injected
+          }
+          return result
+        })
       const cacheEntry: CacheEntry = { promise, timestamp: now }
 
       // Cache the promise and store result when complete
@@ -349,7 +363,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
 
       return promise
     },
-    [info, logError]
+    [info, logError, cryptoTickers, globalTickers]
   )
 
   const getHealth = React.useCallback(async (source: string) => {

@@ -53,11 +53,11 @@ function normalizeAPITimestamp(apiTimeString: string): string {
  * @param mode - Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies
  * @returns Array of stock data with UTC ISO timestamps and mode field
  */
-function normalizeStockDataTimestamps(data: StockData[], mode: 'vn' | 'crypto' | 'yahoo' = 'vn'): StockData[] {
+function normalizeStockDataTimestamps(data: StockData[], mode: 'vn' | 'crypto' | 'yahoo' | 'all' = 'vn'): StockData[] {
   return data.map(item => ({
     ...item,
     time: normalizeAPITimestamp(item.time),
-    mode
+    ...(mode !== 'all' ? { mode } : {})
   }))
 }
 
@@ -115,13 +115,20 @@ export async function getYahooTickerGroups() {
 }
 
 /**
+ * Get all ticker groups across all asset types (vn, crypto, yahoo)
+ */
+export async function getAllTickerGroups() {
+  return apiClient.getTickerGroups('all')
+}
+
+/**
  * Get ticker data for specific symbols
  * Normalizes API timestamps to UTC ISO format (e.g., "2025-11-09T14:00:00Z")
  * Display components will convert to Vietnam time when rendering
  */
 export async function getTickers(params: Parameters<typeof apiClient.getTickers>[0]) {
   const response = await apiClient.getTickers(params)
-  const mode = (params?.mode || 'vn') as 'vn' | 'crypto' | 'yahoo'
+  const mode = (params?.mode || 'vn') as 'vn' | 'crypto' | 'yahoo' | 'all'
 
   // Normalize all ticker data timestamps to UTC ISO format and inject mode
   const normalizedResponse: TickersResponse = {}
@@ -149,7 +156,7 @@ export async function getTickersWithLogging(
 ) {
   try {
     // Ensure mode is set (default to 'vn' if not specified)
-    const mode = (params?.mode || 'vn') as 'vn' | 'crypto' | 'yahoo'
+    const mode = (params?.mode || 'vn') as 'vn' | 'crypto' | 'yahoo' | 'all'
     const paramsWithMode = { ...params, mode }
     const response = await apiClientWithMetadata.getTickers(paramsWithMode) as unknown as RequestResult<TickersResponse>
 
@@ -257,6 +264,22 @@ export async function getYahooTickersWithLogging(
   }
 ) {
   return getTickersWithLogging(source, { ...params, mode: 'yahoo' }, logger)
+}
+
+/**
+ * Get all ticker data with logging support
+ * Convenience wrapper that sets mode='all' automatically
+ */
+export async function getAllTickersWithLogging(
+  source: string,
+  params: Parameters<typeof apiClient.getTickers>[0],
+  logger?: {
+    info: (message: string) => void
+    warn: (message: string) => void
+    error: (message: string) => void
+  }
+) {
+  return getTickersWithLogging(source, { ...params, mode: 'all' }, logger)
 }
 
 /**
