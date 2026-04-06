@@ -1223,7 +1223,7 @@ export function BaseTradingViewChart({
 											</span>{" "}
 											{(() => {
 												const absChange =
-													displayData.close != null && change !== 0
+													displayData.close != null && change !== 0 && change !== -100
 														? displayData.close -
 															(displayData.close / (1 + change / 100))
 														: 0;

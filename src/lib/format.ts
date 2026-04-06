@@ -177,7 +177,10 @@ export function formatToVietnamDateTimeShort(utcDate: Date): string {
  * Provides appropriate precision for different price ranges
  */
 export function getOptimalDecimalPlaces(price: number): number {
-  if (price >= 1) return 2           // 1,250.45
+  if (price >= 100) return 2          // 1,250.45
+  if (price >= 10) return 2          // 50.25
+  if (price >= 1) return 2           // 5.12
+  if (price >= 0.5) return 3         // 0.625
   if (price >= 0.01) return 4        // 0.1234
   if (price >= 0.0001) return 6      // 0.001234
   if (price >= 0.000001) return 8    // 0.00000123
@@ -221,52 +224,52 @@ export function getMarketDecimalPlaces(mode?: string): number | undefined {
  */
 export function formatPrice(
   price: number | null | undefined,
-  useDecimalsOrData?: boolean | { symbol?: string; mode?: 'vn' | 'crypto' | 'yahoo' | 'forex' | 'commodity' | 'stock' }
+  useDecimalsOrData?: boolean | { symbol?: string; mode?: 'vn' | 'crypto' | 'yahoo' | 'forex' | 'commodity' | 'stock' | 'all' }
 ): string {
   const safePrice = price ?? 0
 
-  // Determine decimal strategy
-  let useDecimals = true // default
-  let decimalPlaces: number | undefined
-
+  // Boolean override
   if (typeof useDecimalsOrData === 'boolean') {
-    useDecimals = useDecimalsOrData
-  } else if (useDecimalsOrData && typeof useDecimalsOrData === 'object') {
-    // Check if symbol is a market index (VNINDEX, VN30) - these always show 2 decimals
-    if ('symbol' in useDecimalsOrData && useDecimalsOrData.symbol) {
-      const isMarketIndex = MARKET_INDICES.includes(useDecimalsOrData.symbol as typeof MARKET_INDICES[number])
-      if (isMarketIndex) {
-        useDecimals = true
-        decimalPlaces = 2
-      } else if ('mode' in useDecimalsOrData) {
-        // Get market-specific decimal places or use dynamic precision
-        const marketDecimals = getMarketDecimalPlaces(useDecimalsOrData.mode)
-        decimalPlaces = marketDecimals
-        useDecimals = useDecimalsOrData.mode !== 'vn' // VN stocks = no decimals
-      }
-    } else if ('mode' in useDecimalsOrData) {
-      // Get market-specific decimal places or use dynamic precision
-      const marketDecimals = getMarketDecimalPlaces(useDecimalsOrData.mode)
-      decimalPlaces = marketDecimals
-      useDecimals = useDecimalsOrData.mode !== 'vn' // VN stocks = no decimals
+    if (!useDecimalsOrData) {
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(Math.round(safePrice))
     }
-  }
-
-  if (useDecimals) {
-    // Use market-specific decimals or determine dynamically based on price
-    const finalDecimalPlaces = decimalPlaces ?? getOptimalDecimalPlaces(safePrice)
-
+    const finalDecimalPlaces = getOptimalDecimalPlaces(safePrice)
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: finalDecimalPlaces,
     }).format(safePrice)
   }
 
-  // VND format - no decimals
+  // VN stocks (including market indices) - no decimals
+  const mode = useDecimalsOrData?.mode
+  const symbol = useDecimalsOrData?.symbol
+  const isMarketIndex = symbol ? MARKET_INDICES.includes(symbol as typeof MARKET_INDICES[number]) : false
+
+  if (mode === 'vn' && !isMarketIndex) {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(Math.round(safePrice))
+  }
+
+  // Market indices (VNINDEX, VN30) - always 2 decimals
+  if (isMarketIndex) {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(safePrice)
+  }
+
+  // All other modes (crypto, yahoo, all, etc.) - dynamic decimals
+  const marketDecimals = getMarketDecimalPlaces(mode)
+  const finalDecimalPlaces = marketDecimals ?? getOptimalDecimalPlaces(safePrice)
   return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(Math.round(safePrice))
+    minimumFractionDigits: 2,
+    maximumFractionDigits: finalDecimalPlaces,
+  }).format(safePrice)
 }
 
 /**

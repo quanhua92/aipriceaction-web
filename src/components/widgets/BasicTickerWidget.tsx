@@ -172,7 +172,13 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                 <TrendingDown className="h-4 w-4" />
               )}
               <span>
-                {formatPercent(priceChange)}
+                {priceChange !== 0 && data.close != null && priceChange !== -100 && (
+                  <>
+                    <span>{`${priceChange >= 0 ? "+" : ""}${formatPrice(data.close - (data.close / (1 + priceChange / 100)), data)}`}</span>
+                    <span className="mx-1 opacity-40">|</span>
+                  </>
+                )}
+                <span>{formatPercent(priceChange)}</span>
               </span>
             </div>
           )}

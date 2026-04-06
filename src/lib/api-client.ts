@@ -57,7 +57,7 @@ function normalizeStockDataTimestamps(data: StockData[], mode: 'vn' | 'crypto' |
   return data.map(item => ({
     ...item,
     time: normalizeAPITimestamp(item.time),
-    ...(mode !== 'all' ? { mode } : {})
+    mode,
   }))
 }
 
