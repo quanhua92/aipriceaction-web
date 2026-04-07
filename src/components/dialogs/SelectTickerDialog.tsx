@@ -38,6 +38,8 @@ export function SelectTickerDialog({
 		useState<TickersResponse | null>(null);
 	const [historicalCryptoData, setHistoricalCryptoData] =
 		useState<TickersResponse | null>(null);
+	const [historicalGlobalData, setHistoricalGlobalData] =
+		useState<TickersResponse | null>(null);
 	const [historicalLoading, setHistoricalLoading] = useState(false);
 	const {
 		tickers,
@@ -74,11 +76,17 @@ export function SelectTickerDialog({
 				end_date: endDate,
 				mode: "crypto",
 			}),
+			getTickers("SelectTickerDialog.historical.global", {
+				limit: 1,
+				end_date: endDate,
+				mode: "yahoo",
+			}),
 		])
-			.then(([stockData, cryptoData]) => {
+			.then(([stockData, cryptoData, globalData]) => {
 				if (!cancelled) {
 					setHistoricalStockData(stockData);
 					setHistoricalCryptoData(cryptoData);
+					setHistoricalGlobalData(globalData);
 					setHistoricalLoading(false);
 				}
 			})
@@ -95,6 +103,7 @@ export function SelectTickerDialog({
 	// Use historical data when available, otherwise fall back to live context data
 	const effectiveStockData = historicalStockData ?? allTickersLastData;
 	const effectiveCryptoData = historicalCryptoData ?? allCryptoTickersLastData;
+	const effectiveGlobalData = historicalGlobalData ?? allGlobalTickersLastData;
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
@@ -148,7 +157,7 @@ export function SelectTickerDialog({
 						cryptoTickers={cryptoTickers}
 						allCryptoTickersLastData={effectiveCryptoData}
 						globalTickers={globalTickers}
-						allGlobalTickersLastData={allGlobalTickersLastData}
+						allGlobalTickersLastData={effectiveGlobalData}
 						defaultSectionFilter={defaultSectionFilter}
 						tickerNamesMap={{ ...tickerNames, ...cryptoTickerNames, ...globalTickerNames }}
 					/>
