@@ -31,7 +31,7 @@ interface AlertContextValue {
 const AlertContext = React.createContext<AlertContextValue | undefined>(undefined)
 
 export function AlertProvider({ children }: { children: React.ReactNode }) {
-  const { allTickersLastData, allCryptoTickersLastData, getTickers } = useAPI()
+  const { allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, getTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const { info } = useLogs()
   const { endDate: globalEndDate } = useChartSettings()
@@ -131,9 +131,10 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
 
         // If no creation price, try to estimate from earliest data
         if (!creationPrice) {
-          // Detect mode based on whether ticker is in VN stocks or crypto
+          // Detect mode based on whether ticker is in VN stocks, crypto, or global
           const isInCrypto = allCryptoTickersLastData[alert.ticker] !== undefined
-          const mode = isInCrypto ? 'crypto' : 'vn'
+          const isGlobal = allGlobalTickersLastData[alert.ticker] !== undefined
+          const mode = isInCrypto ? 'crypto' : isGlobal ? 'yahoo' : 'vn'
 
           const createdDate = alert.created_at.split('T')[0]
 
@@ -225,9 +226,10 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
         // Ensure not earlier than created_at
         const startDate = (checkDate >= createdDate ? checkDate : createdDate).toISOString().split('T')[0]
 
-        // Detect mode based on whether ticker is in VN stocks or crypto
+        // Detect mode based on whether ticker is in VN stocks, crypto, or global
         const isInCrypto = allCryptoTickersLastData[alert.ticker] !== undefined
-        const mode = isInCrypto ? 'crypto' : 'vn'
+        const isGlobal = allGlobalTickersLastData[alert.ticker] !== undefined
+        const mode = isInCrypto ? 'crypto' : isGlobal ? 'yahoo' : 'vn'
 
         info('Alerts', `  📊 Fetching historical 1D bars from ${startDate} onwards (mode=${mode}, -2d buffer)...`)
 
