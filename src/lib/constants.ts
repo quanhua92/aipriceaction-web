@@ -17,6 +17,14 @@ export type MajorCrypto = typeof MAJOR_CRYPTO[number]
  */
 export const MAJOR_GLOBAL = ['^GSPC', '^DJI', '^NDX', 'GC=F', 'CL=F', 'SJC-GOLD'] as const
 
+/**
+ * Symbols that should always be formatted as integers (no decimals)
+ * SJC-GOLD: Vietnamese SJC gold prices are quoted in whole VND (e.g. 85,000,000)
+ */
+export const INTEGER_FORMAT_SYMBOLS = ['SJC-GOLD'] as const
+
+export type IntegerFormatSymbol = typeof INTEGER_FORMAT_SYMBOLS[number]
+
 export type MajorGlobal = typeof MAJOR_GLOBAL[number]
 
 /**
