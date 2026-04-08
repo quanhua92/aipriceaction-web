@@ -41,7 +41,6 @@ export function ChartFullscreenDialog({
   const { info } = useLogs()
   const { viewportHeight } = useDialog()
   const isOpen = ticker !== null
-  const dialogContentRef = React.useRef<HTMLDivElement>(null)
   const { prefetchTickers } = usePrefetchTicker()
 
   // New state for dynamic title
@@ -257,7 +256,7 @@ export function ChartFullscreenDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent ref={dialogContentRef} className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[90vh] h-[90dvh] p-2 gap-2 flex flex-col">
+      <DialogContent className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] h-[90vh] h-[90dvh] p-2 gap-2 flex flex-col">
         <DialogHeader data-slot="header" className="flex-shrink-0">
           <DialogTitle className="text-base text-center">
             {dynamicTitle || title || internalTicker}
@@ -279,56 +278,62 @@ export function ChartFullscreenDialog({
 
             {/* Chart Tab - preserve existing height calculation */}
             <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden pb-2">
-              <div className="flex-1 min-h-0 w-full overflow-y-auto">
-                <TradingViewChart
-                  ticker={internalTicker}
-                  onTickerChange={handleTickerChange}
-                  height={chartHeight}
-                  showControls={true}
-                  endDateOverride={endDate}
-                />
-              </div>
-            </TabsContent>
-
-            {/* Compare Tab - two charts with layout controls */}
-            <TabsContent value="compare" className="flex-1 min-h-0 overflow-hidden pb-2">
-              <div className="h-full flex flex-col gap-2">
-                {/* Two charts container - always vertical */}
-                <div className="flex-1 min-h-0 gap-2 grid grid-cols-1">
-                  {/* VNINDEX chart (top) */}
-                  <TradingViewChart
-                    ticker={compareState.secondaryTicker}
-                    onTickerChange={(newTicker) => setCompareState(prev => ({ ...prev, secondaryTicker: newTicker }))}
-                    height={chartHeight * 0.95 / 2}
-                    showControls={true}
-                    endDateOverride={endDate}
-                  />
-
-                  {/* Primary ticker chart (bottom) */}
+              {activeTab === 'chart' && (
+                <div className="flex-1 min-h-0 w-full overflow-y-auto">
                   <TradingViewChart
                     ticker={internalTicker}
                     onTickerChange={handleTickerChange}
-                    height={chartHeight * 0.95 / 2}
+                    height={chartHeight}
                     showControls={true}
                     endDateOverride={endDate}
                   />
                 </div>
-              </div>
+              )}
+            </TabsContent>
+
+            {/* Compare Tab - two charts with layout controls */}
+            <TabsContent value="compare" className="flex-1 min-h-0 overflow-hidden pb-2">
+              {activeTab === 'compare' && (
+                <div className="h-full flex flex-col gap-2">
+                  {/* Two charts container - always vertical */}
+                  <div className="flex-1 min-h-0 gap-2 grid grid-cols-1">
+                    {/* VNINDEX chart (top) */}
+                    <TradingViewChart
+                      ticker={compareState.secondaryTicker}
+                      onTickerChange={(newTicker) => setCompareState(prev => ({ ...prev, secondaryTicker: newTicker }))}
+                      height={chartHeight * 0.95 / 2}
+                      showControls={true}
+                      endDateOverride={endDate}
+                    />
+
+                    {/* Primary ticker chart (bottom) */}
+                    <TradingViewChart
+                      ticker={internalTicker}
+                      onTickerChange={handleTickerChange}
+                      height={chartHeight * 0.95 / 2}
+                      showControls={true}
+                      endDateOverride={endDate}
+                    />
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             {/* TrendSignal Tab - natural scrolling */}
             <TabsContent value="trendSignal" className="flex-1 min-h-0 overflow-y-auto pb-2">
-              <div className="h-full">
-                <TrendSignalTable
-                  ticker={internalTicker}
-                  maxDays={40}
-                  buyPeriod={20}
-                  sellPeriod={10}
-                  interval="1D"
-                  endDate={endDate ?? undefined}
-                  shouldOpenFullscreen={false}
-                />
-              </div>
+              {activeTab === 'trendSignal' && (
+                <div className="h-full">
+                  <TrendSignalTable
+                    ticker={internalTicker}
+                    maxDays={40}
+                    buyPeriod={20}
+                    sellPeriod={10}
+                    interval="1D"
+                    endDate={endDate ?? undefined}
+                    shouldOpenFullscreen={false}
+                  />
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         )}

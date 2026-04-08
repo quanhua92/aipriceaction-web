@@ -3,7 +3,7 @@ import { type StockData, Interval } from '@/lib/api-client'
 import { useChartSettings } from './ChartSettingsContext'
 import { useRefresh } from './RefreshContext'
 import { useAPI } from './APIContext'
-import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT, DEFAULT_CHART_LIMIT, LOAD_MORE_LIMIT } from '@/lib/constants'
+import { API_RETRY_ATTEMPTS, API_CALL_DELAY_MS, API_CACHE_WINDOW_MS, API_RECENT_CALLS_LIMIT, LOAD_MORE_LIMIT } from '@/lib/constants'
 import { getTickerMode } from '@/lib/ticker-utils'
 
 interface TickerContextValue {
@@ -95,7 +95,7 @@ function isCacheValid(
   cacheMetadata: TickerProviderProps['initialCacheMetadata'] | null,
   ticker: string,
   interval: string,
-  endDate: string | null,
+  endDate: string | null | undefined,
   tickers: any[],
   globalTickers: any[],
   cryptoTickers: any[]
@@ -125,9 +125,9 @@ export function TickerProvider({
   cachedData,
   initialCacheMetadata
 }: TickerProviderProps) {
-    // Get global settings for API calls (only if fetching is enabled)
-  const settings = enableFetching ? useChartSettings() : null
-  const { setLimit } = settings || {}
+    // Get global settings for API calls
+  const settings = useChartSettings()
+  const { setLimit } = settings
   const { lastRefresh } = useRefresh()
   const { getTickers, tickers, globalTickers, cryptoTickers } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
@@ -147,14 +147,14 @@ export function TickerProvider({
 
   // Initialize chart data from cache if cache is valid
   React.useEffect(() => {
-    if (cacheData && cacheMetadata && settings &&
+    if (cacheData && cacheMetadata &&
         cacheMetadata.symbol === (ticker ?? initialTicker) &&
         cacheMetadata.interval === settings.interval) {
       setChartData(cacheData)
       setLoading(false)
       setError(null)
     }
-  }, [cacheData, cacheMetadata, ticker, initialTicker, settings?.interval])
+  }, [cacheData, cacheMetadata, ticker, initialTicker, settings.interval])
 
 
   // Refs for stable access
@@ -172,7 +172,7 @@ export function TickerProvider({
 
   // Load more historical data (for Load More button)
   const loadMoreHistoricalData = React.useCallback(async () => {
-    if (!settings || loadingMoreRef.current) {
+    if (!enableFetching || loadingMoreRef.current) {
       return
     }
 
@@ -186,7 +186,7 @@ export function TickerProvider({
     // Reset flag after state update
     await new Promise(resolve => setTimeout(resolve, 100))
     loadingMoreRef.current = false
-  }, [settings, limit, setLimit])
+  }, [enableFetching, settings, limit, setLimit])
 
   // Sync loadingMore with main loading state
   React.useEffect(() => {
@@ -199,7 +199,7 @@ export function TickerProvider({
     if (endDate === undefined || endDate === null) {
       setLocalEndDate(null)
     }
-  }, [selectedTicker, settings?.interval, endDate])
+  }, [selectedTicker, settings.interval, endDate])
 
   // Sync ticker prop changes (only if ticker prop is controlled externally)
   React.useEffect(() => {
@@ -233,7 +233,7 @@ export function TickerProvider({
   // Data fetching effect (only if fetching is enabled)
   React.useEffect(() => {
 
-    if (!enableFetching || !settings) {
+    if (!enableFetching) {
             return
     }
 
@@ -241,10 +241,10 @@ export function TickerProvider({
     const currentDeps = {
       selectedTicker,
       enableFetching,
-      interval: settings?.interval,
-      startDate: settings?.startDate,
-      endDate: settings?.endDate,
-      limit: settings?.limit,
+      interval: settings.interval,
+      startDate: settings.startDate,
+      endDate: settings.endDate,
+      limit: settings.limit,
       lastRefresh,
       localEndDate,
       tickersLen: tickers?.length,
@@ -264,7 +264,7 @@ export function TickerProvider({
     prevDepsRef.current = currentDeps
 
     // 1. Perfect cache match (symbol, interval, date, mode)
-    if (isCacheValid(cacheData, cacheMetadata, selectedTicker, settings?.interval, localEndDate ?? settings?.endDate, tickersRef.current, globalTickersRef.current, cryptoTickersRef.current)) {
+    if (isCacheValid(cacheData, cacheMetadata, selectedTicker, settings.interval, localEndDate ?? settings.endDate, tickersRef.current, globalTickersRef.current, cryptoTickersRef.current)) {
       setChartData(cacheData)
       setLoading(false)
       setError(null)
@@ -272,7 +272,7 @@ export function TickerProvider({
     }
 
     // 2. Same symbol but different interval - fetch new interval using cache's date range
-    if (cacheData && cacheMetadata && settings &&
+    if (cacheData && cacheMetadata &&
         cacheMetadata.symbol === selectedTicker &&
         cacheMetadata.interval !== settings.interval) {
 
@@ -410,10 +410,10 @@ export function TickerProvider({
   }, [
     selectedTicker,
     enableFetching,
-    settings?.interval,
-    settings?.startDate,
-    settings?.endDate,
-    settings?.limit,
+    settings.interval,
+    settings.startDate,
+    settings.endDate,
+    settings.limit,
     lastRefresh,
     localEndDate,
     getTickers,
