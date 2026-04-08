@@ -114,25 +114,6 @@ export function BaseTradingViewChart({
 		return Math.pow(10, -decimalPlaces);
 	};
 
-	// Show loading state when using context
-	if (loading) {
-		return (
-			<div
-				className="flex items-center justify-center"
-				style={{ height: `${height}px` }}
-			>
-				<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-				<span className="ml-2 text-muted-foreground">
-					Loading chart data...
-				</span>
-			</div>
-		);
-	}
-
-	// Show error state when using context
-	if (error) {
-		return <div className="text-center py-8 text-destructive">{error}</div>;
-	}
 	const chartContainerRef = useRef<HTMLDivElement>(null);
 	const chartRef = useRef<IChartApi | null>(null);
 	const tooltipRef = useRef<HTMLElement | null>(null);
@@ -182,6 +163,7 @@ export function BaseTradingViewChart({
 		horizontalPosition: Time;
 	} | null>(null);
 	const [containerWidth, setContainerWidth] = useState(0);
+	const hasEverHadData = useRef(data.length > 0);
 
 	// Helper function to create chart (called from data useEffect)
 	const createChartWithContext = () => {
@@ -1133,11 +1115,20 @@ export function BaseTradingViewChart({
 			<div>
 				{title && <h3 className="font-semibold mb-4">{title}</h3>}
 				<div className="flex items-center justify-center h-[400px] text-muted-foreground">
-					{noDataMessage}
+					{error ? (
+						<>
+							<span className="text-destructive">{error}</span>
+							<span>{noDataMessage}</span>
+						</>
+					) : (
+						noDataMessage
+					)}
 				</div>
 			</div>
 		);
 	}
+
+	if (data.length > 0) hasEverHadData.current = true;
 
 	return (
 		<div>
@@ -1164,6 +1155,21 @@ export function BaseTradingViewChart({
 				style={{ height: `${height}px` }}
 			>
 				<div ref={chartContainerRef} className="absolute inset-0" />
+
+				{/* Loading overlay - only on initial load when no data yet */}
+				{loading && !hasEverHadData.current && (
+					<div className="absolute inset-0 flex items-center justify-center z-20 bg-background/80">
+						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+						<span className="ml-2 text-muted-foreground">Loading chart data...</span>
+					</div>
+				)}
+
+				{/* Error banner - non-intrusive when previous data exists */}
+				{error && hasEverHadData.current && (
+					<div className="absolute top-0 left-0 right-0 z-20 bg-destructive/10 border-b border-destructive/20 px-3 py-1.5 text-destructive text-xs text-center">
+						{error}
+					</div>
+				)}
 
 				{/* Overlay for current/crosshair data */}
 				{(() => {
