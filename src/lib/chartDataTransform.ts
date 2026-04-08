@@ -5,6 +5,7 @@
 
 import { type CandlestickData, type HistogramData, type LineData } from "lightweight-charts";
 import { type StockData } from "@/lib/api-client";
+import { NO_VOLUME_SYMBOLS } from "@/lib/constants";
 import { parseUTCISOString, toVietnamUnixTime } from "@/lib/format";
 import { MA_CONFIG } from "@/components/charts/utils/chartConfig";
 import { MACD } from "lightweight-charts-indicators";
@@ -98,7 +99,7 @@ export const transformVolumePoint = (point: StockData, index: number, data: Stoc
 
 	return {
 		time,
-		value: point.volume,
+		value: NO_VOLUME_SYMBOLS.includes(point.symbol as any) ? 0 : point.volume,
 		color: volumeColor + "80", // Add transparency
 	};
 };
@@ -250,7 +251,7 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 
 		volume.push({
 			time,
-			value: point.volume,
+			value: NO_VOLUME_SYMBOLS.includes(point.symbol as any) ? 0 : point.volume,
 			color: volumeColor + "80", // Add transparency
 		});
 

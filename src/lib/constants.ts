@@ -25,6 +25,8 @@ export const INTEGER_FORMAT_SYMBOLS = ['SJC-GOLD'] as const
 
 export type IntegerFormatSymbol = typeof INTEGER_FORMAT_SYMBOLS[number]
 
+export const NO_VOLUME_SYMBOLS = ['SJC-GOLD'] as const
+
 export type MajorGlobal = typeof MAJOR_GLOBAL[number]
 
 /**
