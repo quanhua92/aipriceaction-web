@@ -1223,25 +1223,7 @@ export function BaseTradingViewChart({
 		}
 	}, [data, getOptimalMinMove]);
 
-	if (!data || data.length === 0) {
-		return (
-			<div>
-				{title && <h3 className="font-semibold mb-4">{title}</h3>}
-				<div className="flex items-center justify-center h-[400px] text-muted-foreground">
-					{error ? (
-						<>
-							<span className="text-destructive">{error}</span>
-							<span>{noDataMessage}</span>
-						</>
-					) : (
-						noDataMessage
-					)}
-				</div>
-			</div>
-		);
-	}
-
-	if (data.length > 0) hasEverHadData.current = true;
+	if (data && data.length > 0) hasEverHadData.current = true;
 
 	return (
 		<div>
@@ -1252,7 +1234,7 @@ export function BaseTradingViewChart({
 			)}
 
 			{/* Ruler Section - Above Chart */}
-			{rulerVisible && (
+			{rulerVisible && data && data.length > 0 && (
 				<div className="bg-muted/50 border-b px-2">
 					<RulerSection
 						data={data}
@@ -1268,6 +1250,20 @@ export function BaseTradingViewChart({
 				style={{ height: `${height}px` }}
 			>
 				<div ref={chartContainerRef} className="absolute inset-0" />
+
+				{/* No data overlay */}
+				{(!data || data.length === 0) && (
+					<div className="absolute inset-0 flex items-center justify-center z-20 bg-background">
+						{error ? (
+							<>
+								<span className="text-destructive">{error}</span>
+								<span className="ml-2">{noDataMessage}</span>
+							</>
+						) : (
+							noDataMessage
+						)}
+					</div>
+				)}
 
 				{/* Infinite history loading indicator */}
 				{isInfiniteScrollLoading && (
