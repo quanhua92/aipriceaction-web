@@ -20,6 +20,7 @@ import {
 	MATRIX_OPEN_SECTORS_STORAGE_KEY,
 	API_BASE_URL_OVERRIDE_STORAGE_KEY,
 } from '@/lib/constants'
+import { SafeLocalStorage } from '@/lib/localStorage'
 
 const DEBUG_FOOTER_STORAGE_KEY = 'debug-footer-open'
 
@@ -34,8 +35,6 @@ function formatTimestamp(timestamp: number): string {
  * Get localStorage data for debugging
  */
 function getLocalStorageData() {
-	if (typeof window === 'undefined') return {}
-
 	const keys = [
 		CUSTOM_WATCHLISTS_STORAGE_KEY,
 		AI_SELECTED_TICKERS_STORAGE_KEY,
@@ -46,7 +45,7 @@ function getLocalStorageData() {
 
 	const data: Record<string, any> = {}
 	keys.forEach((key) => {
-		const value = localStorage.getItem(key)
+		const value = SafeLocalStorage.getItem(key)
 		if (value !== null) {
 			try {
 				data[key] = JSON.parse(value)
@@ -122,15 +121,13 @@ function DebugFooterContent() {
 	// Load collapsed state from localStorage
 	const [isOpen, setIsOpen] = React.useState(() => {
 		if (typeof window === 'undefined') return false
-		const saved = localStorage.getItem(DEBUG_FOOTER_STORAGE_KEY)
+		const saved = SafeLocalStorage.getItem(DEBUG_FOOTER_STORAGE_KEY)
 		return saved === 'true'
 	})
 
 	// Persist collapsed state to localStorage
 	React.useEffect(() => {
-		if (typeof window !== 'undefined') {
-			localStorage.setItem(DEBUG_FOOTER_STORAGE_KEY, String(isOpen))
-		}
+		SafeLocalStorage.setItem(DEBUG_FOOTER_STORAGE_KEY, String(isOpen))
 	}, [isOpen])
 
 	// Get current date for footer display
@@ -191,9 +188,7 @@ function DebugFooterContent() {
 	}
 
 	// Get current API URL override from localStorage
-	const apiUrlOverride = typeof window !== 'undefined'
-		? localStorage.getItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
-		: null
+	const apiUrlOverride = SafeLocalStorage.getItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
 
 	const environmentData = {
 		mode: import.meta.env.MODE,
@@ -266,7 +261,7 @@ function DebugFooterContent() {
 	// Handle save URL
 	const handleSaveUrl = React.useCallback(() => {
 		if (customUrl.trim()) {
-			localStorage.setItem(API_BASE_URL_OVERRIDE_STORAGE_KEY, customUrl.trim())
+			SafeLocalStorage.setItem(API_BASE_URL_OVERRIDE_STORAGE_KEY, customUrl.trim())
 			setUrlSaved(true)
 			setTimeout(() => setUrlSaved(false), 3000) // Hide message after 3 seconds
 		}
@@ -281,7 +276,7 @@ function DebugFooterContent() {
 
 	// Handle clear URL override
 	const handleClearUrl = React.useCallback(() => {
-		localStorage.removeItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
+		SafeLocalStorage.removeItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
 		setIsEditingUrl(false)
 		setCustomUrl('')
 		setUrlSaved(true)

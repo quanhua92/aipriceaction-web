@@ -3,6 +3,7 @@ import { Download, X } from 'lucide-react'
 import { Button } from './ui/button'
 import { useLogs } from '../contexts/LogsContext'
 import { useTranslation } from '@/hooks/useTranslation'
+import { SafeLocalStorage } from '@/lib/localStorage'
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]
@@ -63,7 +64,7 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
 
     // Check if install prompt should be shown (based on dismiss timestamp)
     const shouldShowInstallPrompt = () => {
-      const dismissTimestamp = localStorage.getItem('pwa-install-dismissed')
+      const dismissTimestamp = SafeLocalStorage.getItem('pwa-install-dismissed')
       debug('PWA dismiss timestamp', { dismissTimestamp })
 
       if (!dismissTimestamp) return true
@@ -75,7 +76,7 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
       // Handle potential parsing errors or very old timestamps
       if (isNaN(dismissTime) || dismissTime <= 0) {
         warn('Invalid PWA dismiss timestamp, removing', { dismissTimestamp, dismissTime })
-        localStorage.removeItem('pwa-install-dismissed')
+        SafeLocalStorage.removeItem('pwa-install-dismissed')
         return true
       }
 
@@ -122,7 +123,7 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
       setIsInstalled(true)
       setShowInstallPrompt(false)
       setDeferredPrompt(null)
-      localStorage.removeItem('pwa-install-dismissed')
+      SafeLocalStorage.removeItem('pwa-install-dismissed')
     }
 
     // Initial check
@@ -161,12 +162,12 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
   const handleDismiss = () => {
     info('User dismissed PWA install prompt')
     setShowInstallPrompt(false)
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString())
+    SafeLocalStorage.setItem('pwa-install-dismissed', Date.now().toString())
   }
 
   const triggerInstall = async () => {
     // Clear any previous dismiss when user manually clicks install
-    localStorage.removeItem('pwa-install-dismissed')
+    SafeLocalStorage.removeItem('pwa-install-dismissed')
     info('Cleared PWA dismiss timestamp - user manually clicked install')
 
     if (!deferredPrompt) {

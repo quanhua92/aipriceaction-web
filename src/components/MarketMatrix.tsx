@@ -16,6 +16,7 @@ import {
   PRIORITY_GROUPS,
   SECTOR_ABBREVIATIONS,
 } from '@/lib/constants'
+import { SafeLocalStorage } from '@/lib/localStorage'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -133,15 +134,13 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
   const [sortBy, setSortBy] = React.useState<SortBy>('gainers')
   const [openSectors, setOpenSectors] = React.useState<Set<string>>(() => {
     // Try to load from localStorage (only on client)
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(MATRIX_OPEN_SECTORS_STORAGE_KEY)
-        if (saved) {
-          return new Set(JSON.parse(saved))
-        }
-      } catch (error) {
-        console.error('Failed to load open sectors from localStorage:', error)
+    try {
+      const saved = SafeLocalStorage.getItem(MATRIX_OPEN_SECTORS_STORAGE_KEY)
+      if (saved) {
+        return new Set(JSON.parse(saved))
       }
+    } catch (error) {
+      console.error('Failed to load open sectors from localStorage:', error)
     }
     // Initialize with only default sectors open (all others collapsed)
     return new Set(DEFAULT_OPEN_SECTORS)
@@ -180,13 +179,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
       }
     }
 
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(MATRIX_OPEN_SECTORS_STORAGE_KEY, JSON.stringify(Array.from(openSectors)))
-      } catch (error) {
-        console.error('Failed to save open sectors to localStorage:', error)
-      }
-    }
+      SafeLocalStorage.setItem(MATRIX_OPEN_SECTORS_STORAGE_KEY, JSON.stringify(Array.from(openSectors)))
   }, [openSectors, selectedWatchlist, matrixData])
 
   // Get tickers for selected watchlist

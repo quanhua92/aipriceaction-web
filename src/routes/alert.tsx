@@ -11,6 +11,7 @@ import { BasicTickerWidget } from '@/components/widgets/BasicTickerWidget'
 import { TradingViewChart } from '@/components/charts/TradingViewChart'
 import { Button } from '@/components/ui/button'
 import { ALERT_DISTANCE_THRESHOLDS, ALERTS_STORAGE_KEY } from '@/lib/constants'
+import { SafeLocalStorage } from '@/lib/localStorage'
 import { getAlerts, type Alert } from '@/lib/alert-storage'
 
 export const Route = createFileRoute('/alert')({
@@ -145,7 +146,7 @@ function AlertPage() {
 
       // Merge with all imported alerts (includes both new and overwrites)
       const merged = [...nonDuplicateExisting, ...importedAlerts]
-      localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(merged))
+      SafeLocalStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(merged))
 
       // Refresh UI
       refreshAlerts()

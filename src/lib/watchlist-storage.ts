@@ -1,4 +1,5 @@
 import { CUSTOM_WATCHLISTS_STORAGE_KEY } from './constants'
+import { SafeLocalStorage } from './localStorage'
 
 /**
  * Custom watchlists storage format:
@@ -14,7 +15,7 @@ export type CustomWatchlists = Record<string, string>
  */
 export function getCustomWatchlists(): CustomWatchlists {
   try {
-    const stored = localStorage.getItem(CUSTOM_WATCHLISTS_STORAGE_KEY)
+    const stored = SafeLocalStorage.getItem(CUSTOM_WATCHLISTS_STORAGE_KEY)
     if (!stored) return {}
     return JSON.parse(stored) as CustomWatchlists
   } catch (error) {
@@ -48,7 +49,7 @@ export function saveWatchlist(name: string, tickers: string[]): void {
   try {
     const watchlists = getCustomWatchlists()
     watchlists[name] = tickers.join(',')
-    localStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(watchlists))
+    SafeLocalStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(watchlists))
   } catch (error) {
     console.error('Failed to save watchlist:', error)
     throw error
@@ -62,7 +63,7 @@ export function deleteWatchlist(name: string): void {
   try {
     const watchlists = getCustomWatchlists()
     delete watchlists[name]
-    localStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(watchlists))
+    SafeLocalStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(watchlists))
   } catch (error) {
     console.error('Failed to delete watchlist:', error)
     throw error

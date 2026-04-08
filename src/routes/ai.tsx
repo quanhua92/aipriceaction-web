@@ -12,6 +12,7 @@ import { useRefresh } from "@/contexts/RefreshContext";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { loadTranslations } from "@/translations";
 import { AI_SELECTED_TICKERS_STORAGE_KEY } from "@/lib/constants";
+import { SafeLocalStorage } from "@/lib/localStorage";
 import { TickerGroupSelector } from "@/components/TickerGroupSelector";
 import { getTickersForGroup } from "@/lib/ticker-group-utils";
 import { getWatchlistNames } from "@/lib/watchlist-storage";
@@ -34,7 +35,7 @@ function AIContextPage() {
 	const [selectedTickers, setSelectedTickers] = React.useState<string[]>(() => {
 		// Load from localStorage on initialization
 		try {
-			const stored = localStorage.getItem(AI_SELECTED_TICKERS_STORAGE_KEY);
+			const stored = SafeLocalStorage.getItem(AI_SELECTED_TICKERS_STORAGE_KEY);
 			if (stored) {
 				const parsed = JSON.parse(stored);
 				if (Array.isArray(parsed) && parsed.length > 0) {
@@ -57,7 +58,7 @@ function AIContextPage() {
 	// Save selected tickers to localStorage whenever they change
 	React.useEffect(() => {
 		try {
-			localStorage.setItem(AI_SELECTED_TICKERS_STORAGE_KEY, JSON.stringify(selectedTickers));
+			SafeLocalStorage.setItem(AI_SELECTED_TICKERS_STORAGE_KEY, JSON.stringify(selectedTickers));
 		} catch (error) {
 			console.error("Failed to save tickers to localStorage:", error);
 		}

@@ -1,6 +1,7 @@
 import { AIPriceActionClient, type RequestResult } from '@/integrations/aipriceaction/src'
 import type { StockData, TickersResponse } from '@/integrations/aipriceaction/src'
 import { API_BASE_URL_OVERRIDE_STORAGE_KEY } from '@/lib/constants'
+import { SafeLocalStorage } from '@/lib/localStorage'
 
 /**
  * Get API base URL based on environment and localStorage override
@@ -10,11 +11,9 @@ import { API_BASE_URL_OVERRIDE_STORAGE_KEY } from '@/lib/constants'
  */
 function getApiBaseURL(): string {
   // Check localStorage for override first
-  if (typeof window !== 'undefined') {
-    const override = localStorage.getItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
-    if (override) {
-      return override
-    }
+  const override = SafeLocalStorage.getItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
+  if (override) {
+    return override
   }
 
   // Fall back to environment-based logic

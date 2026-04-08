@@ -35,6 +35,7 @@ import {
 	getWatchlistNames,
 	getWatchlistTickers,
 } from "@/lib/watchlist-storage";
+import { SafeLocalStorage } from "@/lib/localStorage";
 import { SortableTickerList, type Ticker } from "./SortableTickerList";
 
 export interface BasicWatchListProps {
@@ -432,7 +433,7 @@ export function BasicWatchList({
 
 			// Merge: existing + imported (imported takes precedence)
 			const merged = { ...existingWatchlists, ...importedWatchlists };
-			localStorage.setItem(
+			SafeLocalStorage.setItem(
 				CUSTOM_WATCHLISTS_STORAGE_KEY,
 				JSON.stringify(merged),
 			);

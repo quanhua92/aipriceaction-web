@@ -38,6 +38,7 @@ import {
 } from '@/lib/predefined-watchlists'
 import { getSectorDisplayName } from '@/lib/sector-names'
 import { format } from 'date-fns'
+import { SafeLocalStorage } from '@/lib/localStorage'
 import { Link } from '@tanstack/react-router'
 import type { SortBy } from '@/components/lists/SortableTickerList'
 import { SortButtons } from '@/components/SortButtons'
@@ -95,15 +96,13 @@ export function TrendSignal({
   // Sector collapse state
   const [openSectors, setOpenSectors] = React.useState<Set<string>>(() => {
     // Try to load from localStorage (only on client)
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(TRENDSIGNAL_OPEN_SECTORS_STORAGE_KEY)
-        if (saved) {
-          return new Set(JSON.parse(saved))
-        }
-      } catch (error) {
-        console.error('Failed to load open sectors from localStorage:', error)
+    try {
+      const saved = SafeLocalStorage.getItem(TRENDSIGNAL_OPEN_SECTORS_STORAGE_KEY)
+      if (saved) {
+        return new Set(JSON.parse(saved))
       }
+    } catch (error) {
+      console.error('Failed to load open sectors from localStorage:', error)
     }
     // Initialize with only default sectors open (all others collapsed)
     return new Set(DEFAULT_OPEN_SECTORS)
@@ -133,13 +132,7 @@ export function TrendSignal({
       }
     }
 
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(TRENDSIGNAL_OPEN_SECTORS_STORAGE_KEY, JSON.stringify(Array.from(openSectors)))
-      } catch (error) {
-        console.error('Failed to save open sectors to localStorage:', error)
-      }
-    }
+      SafeLocalStorage.setItem(TRENDSIGNAL_OPEN_SECTORS_STORAGE_KEY, JSON.stringify(Array.from(openSectors)))
   }, [openSectors, selectedWatchlist, signals])
 
   // Get tickers for selected watchlist and determine type

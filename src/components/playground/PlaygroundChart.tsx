@@ -22,6 +22,7 @@ import type {
 	Time,
 } from "lightweight-charts";
 import { calculateSignedR } from "@/lib/order-book-storage";
+import { SafeLocalStorage } from "@/lib/localStorage";
 
 const getMode = (
 	symbol: string,
@@ -49,13 +50,13 @@ export function PlaygroundChart() {
 		"vertical" | "horizontal"
 	>(() => {
 		return (
-			(localStorage.getItem("playground-chart-layout") as
+			(SafeLocalStorage.getItem("playground-chart-layout") as
 				| "vertical"
 				| "horizontal") || "vertical"
 		);
 	});
 	const [chartHeight, setChartHeight] = React.useState<number>(() => {
-		const saved = localStorage.getItem("playground-chart-height");
+		const saved = SafeLocalStorage.getItem("playground-chart-height");
 		return saved
 			? Number(saved)
 			: typeof window !== "undefined" && window.innerWidth >= 768
@@ -66,7 +67,7 @@ export function PlaygroundChart() {
 	// Handle height change with re-render trigger
 	const handleHeightChange = (newHeight: number) => {
 		setChartHeight(newHeight);
-		localStorage.setItem("playground-chart-height", newHeight.toString());
+		SafeLocalStorage.setItem("playground-chart-height", newHeight.toString());
 		// Trigger re-render by briefly changing index
 		const currentIndex = playgroundData.currentIndex;
 		if (currentIndex > 0) {
@@ -81,7 +82,7 @@ export function PlaygroundChart() {
 	// Handle layout change
 	const handleLayoutChange = (newLayout: "vertical" | "horizontal") => {
 		setChartLayout(newLayout);
-		localStorage.setItem("playground-chart-layout", newLayout);
+		SafeLocalStorage.setItem("playground-chart-layout", newLayout);
 	};
 
 	// Get current visible date (last day in visible range)

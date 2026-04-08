@@ -19,6 +19,7 @@ import { TopCountToggle } from './TopCountToggle'
 import { SectionFilter } from './SectionFilter'
 import { IntervalButtons } from './IntervalButtons'
 import { BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY } from '@/lib/constants'
+import { SafeLocalStorage } from '@/lib/localStorage'
 import type {
   BasicTopPerformersProps,
   SectionFilter as SectionFilterType,
@@ -82,11 +83,8 @@ export function BasicTopPerformers({
   // State for view mode (cards vs table)
   const [viewMode, setViewMode] = React.useState<ViewMode>(() => {
     // Load from localStorage or default to 'table'
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY)
-      return saved === 'cards' ? 'cards' : 'table'
-    }
-    return 'table'
+    const saved = SafeLocalStorage.getItem(BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY)
+    return saved === 'cards' ? 'cards' : 'table'
   })
 
   // State for top count (10, 20, 30)
@@ -133,9 +131,7 @@ export function BasicTopPerformers({
 
   // Save view mode to localStorage when it changes
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY, viewMode)
-    }
+    SafeLocalStorage.setItem(BASIC_TOP_PERFORMERS_VIEW_MODE_STORAGE_KEY, viewMode)
   }, [viewMode])
 
   // Load custom watchlists

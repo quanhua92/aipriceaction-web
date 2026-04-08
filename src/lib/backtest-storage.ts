@@ -1,4 +1,5 @@
 import { BACKTEST_STORAGE_KEY } from '@/lib/constants'
+import { SafeLocalStorage } from '@/lib/localStorage'
 
 export interface BacktestSettings {
   currency: 'VND' | 'USD'
@@ -144,17 +145,8 @@ export function calculatePositionsFromTransactions(transactions: Transaction[]):
 }
 
 export function getBacktestData(): BacktestData {
-  // Check if localStorage is available (SSR safe)
-  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    return {
-      settings: DEFAULT_SETTINGS,
-      transactions: [],
-      positions: []
-    }
-  }
-
   try {
-    const stored = localStorage.getItem(BACKTEST_STORAGE_KEY)
+    const stored = SafeLocalStorage.getItem(BACKTEST_STORAGE_KEY)
     if (!stored) {
       return {
         settings: DEFAULT_SETTINGS,
@@ -183,17 +175,13 @@ export function getBacktestData(): BacktestData {
 }
 
 export function saveBacktestData(data: BacktestData): void {
-  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    return // Skip saving on server-side
-  }
-
   try {
     // Don't save positions - they are calculated from transactions
     const dataToSave = {
       settings: data.settings,
       transactions: data.transactions
     }
-    localStorage.setItem(BACKTEST_STORAGE_KEY, JSON.stringify(dataToSave))
+    SafeLocalStorage.setItem(BACKTEST_STORAGE_KEY, JSON.stringify(dataToSave))
   } catch (error) {
     console.error('Failed to save backtest data:', error)
   }
@@ -235,10 +223,6 @@ export function updateSettings(settings: Partial<BacktestSettings>): void {
 }
 
 export function resetBacktestData(): void {
-  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    return // Skip on server-side
-  }
-
   saveBacktestData({
     settings: DEFAULT_SETTINGS,
     transactions: [],

@@ -6,6 +6,7 @@ import { useLogs } from '@/contexts/LogsContext'
 import { useTranslation } from '@/hooks/useTranslation'
 import { Button } from '@/components/ui/button'
 import { NOTES_STORAGE_KEY } from '@/lib/constants'
+import { SafeLocalStorage } from '@/lib/localStorage'
 import { getNotes, deleteNoteById, type Note } from '@/lib/note-storage'
 import { parseUTCISOString, formatToVietnamTime } from '@/lib/format'
 import { deleteSession } from '@/lib/api-client'
@@ -82,7 +83,7 @@ function NotesPage() {
 
 			// Merge with all imported notes (includes both new and overwrites)
 			const merged = [...nonDuplicateExisting, ...importedNotes]
-			localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(merged))
+			SafeLocalStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(merged))
 
 			// Refresh UI
 			refreshNotes()

@@ -71,7 +71,7 @@ function HomePage() {
 		setChartTickers(prev => {
 			const updated = [...prev];
 			updated[index] = symbol;
-			localStorage.setItem(HOME_CHART_TICKERS_STORAGE_KEY, JSON.stringify(updated));
+			SafeLocalStorage.setItem(HOME_CHART_TICKERS_STORAGE_KEY, JSON.stringify(updated));
 			return updated;
 		});
 	};

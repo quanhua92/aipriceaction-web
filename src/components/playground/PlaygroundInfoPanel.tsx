@@ -5,6 +5,7 @@ import { useLogs } from '@/contexts/LogsContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Dices, Calendar, Edit, Share2, X } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
+import { SafeLocalStorage } from '@/lib/localStorage'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { DateInput } from '@/components/DateInput'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -37,31 +38,31 @@ export function PlaygroundInfoPanel() {
 
   // Smart random toggle state, persisted to localStorage
   const [smartRandom, setSmartRandom] = useState<boolean>(() => {
-    const stored = localStorage.getItem(SMART_RANDOM_KEY)
+    const stored = SafeLocalStorage.getItem(SMART_RANDOM_KEY)
     return stored === null ? true : stored === 'true'
   })
 
   // Persist smart random toggle to localStorage
   const handleSmartRandomChange = (checked: boolean) => {
     setSmartRandom(checked)
-    localStorage.setItem(SMART_RANDOM_KEY, String(checked))
+    SafeLocalStorage.setItem(SMART_RANDOM_KEY, String(checked))
   }
 
   // Random ticker toggle state, persisted to localStorage
   const [randomTicker, setRandomTicker] = useState<boolean>(() => {
-    const stored = localStorage.getItem(RANDOM_TICKER_KEY)
+    const stored = SafeLocalStorage.getItem(RANDOM_TICKER_KEY)
     return stored === null ? true : stored === 'true'
   })
 
   // Persist random ticker toggle to localStorage
   const handleRandomTickerChange = (checked: boolean) => {
     setRandomTicker(checked)
-    localStorage.setItem(RANDOM_TICKER_KEY, String(checked))
+    SafeLocalStorage.setItem(RANDOM_TICKER_KEY, String(checked))
   }
 
   // Initialize secondary chart visibility from localStorage on mount - run only once
   useEffect(() => {
-    const stored = localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY)
+    const stored = SafeLocalStorage.getItem(SECONDARY_CHART_VISIBLE_KEY)
     if (stored !== null) {
       const isVisible = stored === 'true'
       setShowSecondaryChart(isVisible)
@@ -72,7 +73,7 @@ export function PlaygroundInfoPanel() {
   // Save secondary chart visibility to localStorage whenever it changes
   useEffect(() => {
     const { showSecondaryChart } = playgroundData
-    localStorage.setItem(SECONDARY_CHART_VISIBLE_KEY, showSecondaryChart.toString())
+    SafeLocalStorage.setItem(SECONDARY_CHART_VISIBLE_KEY, showSecondaryChart.toString())
     info(`[Playground] 💾 Saved secondary chart visibility to localStorage: ${showSecondaryChart}`)
   }, [playgroundData.showSecondaryChart])
 

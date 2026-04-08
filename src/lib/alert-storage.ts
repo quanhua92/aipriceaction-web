@@ -1,4 +1,5 @@
 import { ALERTS_STORAGE_KEY } from './constants'
+import { SafeLocalStorage } from './localStorage'
 
 export interface Alert {
   id: string
@@ -18,7 +19,7 @@ export interface Alert {
  */
 export function getAlerts(): Alert[] {
   try {
-    const stored = localStorage.getItem(ALERTS_STORAGE_KEY)
+    const stored = SafeLocalStorage.getItem(ALERTS_STORAGE_KEY)
     if (!stored) return []
     return JSON.parse(stored) as Alert[]
   } catch (error) {
@@ -55,7 +56,7 @@ export function addAlert(
   alerts.push(newAlert)
 
   try {
-    localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts))
+    SafeLocalStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts))
     return newAlert
   } catch (error) {
     console.error('Failed to add alert to localStorage:', error)
@@ -77,7 +78,7 @@ export function updateAlert(id: string, updates: Partial<Alert>): void {
   alerts[index] = { ...alerts[index], ...updates }
 
   try {
-    localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts))
+    SafeLocalStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts))
   } catch (error) {
     console.error('Failed to update alert in localStorage:', error)
     throw error
@@ -92,7 +93,7 @@ export function deleteAlert(id: string): void {
   const filtered = alerts.filter((a) => a.id !== id)
 
   try {
-    localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(filtered))
+    SafeLocalStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(filtered))
   } catch (error) {
     console.error('Failed to delete alert from localStorage:', error)
     throw error

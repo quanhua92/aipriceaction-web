@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useAPI } from '@/contexts/APIContext'
 import { type StockData } from '@/lib/api-client'
 import { getTickerMode } from '@/lib/ticker-utils'
+import { SafeLocalStorage } from '@/lib/localStorage'
 
 // Intervals offered in the playground selector
 export const PLAYGROUND_INTERVALS = ['1m', '5m', '15m', '1h', '4h', '1D', '1W', '2W', '1M'] as const
@@ -219,9 +220,7 @@ export function usePlaygroundData(
   const skipNextUrlSync = useRef(false)
 
   // Get initial value from localStorage
-  const initialShowSecondaryChart = typeof window !== 'undefined'
-    ? localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
-    : false
+  const initialShowSecondaryChart = SafeLocalStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
 
   // Resolve initial interval
   const resolvedInterval: PlaygroundInterval = isValidInterval(initialInterval || '')
@@ -351,9 +350,7 @@ export function usePlaygroundData(
           secondaryAllData: secondaryData,
           secondaryIsLoading: false,
           secondaryError,
-          showSecondaryChart: typeof window !== 'undefined'
-            ? localStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
-            : false,
+          showSecondaryChart: SafeLocalStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true',
         })
 
         // Mark that we wrote state so URL→State sync should skip
@@ -438,7 +435,7 @@ export function usePlaygroundData(
       if (onIntervalInit) {
         onIntervalInit(resolvedInterval)
       }
-      const stored = localStorage.getItem(SMART_RANDOM_KEY)
+      const stored = SafeLocalStorage.getItem(SMART_RANDOM_KEY)
       const useSmartRandom = stored === null ? true : stored === 'true'
 
       const doInit = async () => {

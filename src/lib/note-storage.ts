@@ -1,4 +1,5 @@
 import { NOTES_STORAGE_KEY } from './constants'
+import { SafeLocalStorage } from './localStorage'
 
 export interface Note {
 	id: string // Session UUID
@@ -11,7 +12,7 @@ export interface Note {
  */
 export function getNotes(): Note[] {
 	try {
-		const stored = localStorage.getItem(NOTES_STORAGE_KEY)
+		const stored = SafeLocalStorage.getItem(NOTES_STORAGE_KEY)
 		if (!stored) return []
 		return JSON.parse(stored) as Note[]
 	} catch (error) {
@@ -28,7 +29,7 @@ export function saveNote(note: Note): void {
 	notes.push(note)
 
 	try {
-		localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes))
+		SafeLocalStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes))
 	} catch (error) {
 		console.error('Failed to save note to localStorage:', error)
 		throw error
@@ -43,7 +44,7 @@ export function deleteNoteById(id: string): void {
 	const filtered = notes.filter((n) => n.id !== id)
 
 	try {
-		localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(filtered))
+		SafeLocalStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(filtered))
 	} catch (error) {
 		console.error('Failed to delete note from localStorage:', error)
 		throw error
