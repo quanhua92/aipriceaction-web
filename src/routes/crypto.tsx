@@ -11,6 +11,7 @@ import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { CRYPTO_WATCHLIST_NAME, CRYPTO_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
+import { SafeLocalStorage } from "@/lib/localStorage";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 
@@ -21,25 +22,21 @@ const DEFAULT_CRYPTO_TICKERS = ['BTCUSDT', 'ETHUSDT', 'XRPUSDT', 'TONUSDT'] as c
 function CryptoPage() {
 	const { t } = useTranslation();
 
-	// Chart tickers state with localStorage persistence - SSR-safe initialization
-	const [chartTickers, setChartTickers] = React.useState<string[]>([...DEFAULT_CRYPTO_TICKERS]);
-
-	// Load stored chart tickers on client-side mount
-	React.useEffect(() => {
-		if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-			const stored = localStorage.getItem(CRYPTO_CHART_TICKERS_STORAGE_KEY);
+	// Chart tickers state with localStorage persistence
+	const [chartTickers, setChartTickers] = React.useState<string[]>(() => {
+		try {
+			const stored = SafeLocalStorage.getItem(CRYPTO_CHART_TICKERS_STORAGE_KEY);
 			if (stored) {
-				try {
-					const parsed = JSON.parse(stored);
-					if (Array.isArray(parsed) && parsed.length === 4) {
-						setChartTickers(parsed);
-					}
-				} catch (error) {
-					console.error("Failed to parse stored chart tickers:", error);
+				const parsed = JSON.parse(stored);
+				if (Array.isArray(parsed) && parsed.length === 4) {
+					return parsed;
 				}
 			}
+		} catch {
+			// Ignore parse errors
 		}
-	}, []);
+		return [...DEFAULT_CRYPTO_TICKERS];
+	});
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
