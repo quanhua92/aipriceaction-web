@@ -203,6 +203,7 @@ export function PlaygroundChart() {
 		endDateOverride: currentEndDate,
 		showControls: true,
 		height: chartHeight, // Pass the selected height
+		preserveViewport: true,
 		cacheData: visibleData,
 		cacheMetadata: {
 			symbol: playgroundData.ticker,
@@ -221,6 +222,7 @@ export function PlaygroundChart() {
 		// No endDateOverride - let secondary chart use its own cache dates
 		showControls: true, // Show controls on secondary chart
 		height: chartHeight, // Pass the selected height
+		preserveViewport: true,
 		cacheData: secondaryVisibleData,
 		cacheMetadata: {
 			symbol: playgroundData.secondaryTicker!,

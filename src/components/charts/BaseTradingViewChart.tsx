@@ -71,6 +71,7 @@ interface BaseTradingViewChartProps {
 		markers?: SeriesMarker<Time>[];
 		priceLines?: CreatePriceLineOptions[];
 	};
+	preserveViewport?: boolean;
 }
 
 export function BaseTradingViewChart({
@@ -81,6 +82,7 @@ export function BaseTradingViewChart({
 	tickerName,
 	maVisibility: maVisibilityProp,
 	overlay,
+	preserveViewport = false,
 }: BaseTradingViewChartProps) {
 	// Get global settings
 	const { interval, rulerVisible, macdVisible, macdHeight, ...globalSettings } =
@@ -967,7 +969,7 @@ export function BaseTradingViewChart({
 		const newDataLength = chartData.candlestick.length;
 
 		const savedLogicalRange =
-			isDataInitialized && chartRef.current
+			preserveViewport && isDataInitialized && chartRef.current
 				? chartRef.current.timeScale().getVisibleLogicalRange()
 				: null;
 
@@ -1005,7 +1007,7 @@ export function BaseTradingViewChart({
 
 		// Restore viewport after all setData calls (prevents zoom/scroll reset on subsequent updates)
 		// Use requestAnimationFrame to ensure setData has been processed by the chart
-		if (savedLogicalRange && chartRef.current && prevDataLength > 0) {
+		if (preserveViewport && savedLogicalRange && chartRef.current && prevDataLength > 0) {
 			const barDelta = newDataLength - prevDataLength;
 			const wasAtRightEdge = savedLogicalRange.to >= prevDataLength - 1;
 

@@ -60,6 +60,9 @@ interface TradingViewChartProps {
 		markers?: SeriesMarker<Time>[];
 		priceLines?: CreatePriceLineOptions[];
 	};
+
+	// Viewport preservation for Playground
+	preserveViewport?: boolean;
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -80,6 +83,7 @@ function TradingViewChartContent({
 	endDate,
 	setEndDate,
 	showControls = true,
+	preserveViewport = false,
 	...visualProps
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
@@ -253,6 +257,7 @@ function TradingViewChartContent({
 					maVisibility={currentMaVisibility}
 					noDataMessage={t("common.noDataAvailable")}
 					tickerName={resolvedTickerName}
+					preserveViewport={preserveViewport}
 				/>
 			</div>
 
