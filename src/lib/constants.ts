@@ -137,6 +137,16 @@ export const DEFAULT_CHART_LIMIT = 256
 export const LOAD_MORE_LIMIT = 256
 
 /**
+ * Bars from left edge to trigger infinite history load
+ */
+export const INFINITE_SCROLL_THRESHOLD = 20
+
+/**
+ * Debounce time between infinite history load triggers (in milliseconds)
+ */
+export const INFINITE_SCROLL_DEBOUNCE_MS = 1000
+
+/**
  * Maximum number of retry attempts for failed API calls
  */
 export const API_RETRY_ATTEMPTS = 3

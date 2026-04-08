@@ -15,6 +15,7 @@ import {
 	LineSeries,
 	type Time,
 	type CreatePriceLineOptions,
+	type LogicalRange,
 	type SeriesMarker,
 } from "lightweight-charts";
 import { Loader2 } from "lucide-react";
@@ -22,8 +23,14 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MA_CONFIG, MA_SERIES_OPTIONS } from "./utils/chartConfig";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useTicker } from "@/contexts/TickerContext";
+import { useAPI } from "@/contexts/APIContext";
 import { type StockData } from "@/lib/api-client";
-import { INTRADAY_INTERVALS } from "@/lib/constants";
+import {
+	INTRADAY_INTERVALS,
+	INFINITE_SCROLL_THRESHOLD,
+	INFINITE_SCROLL_DEBOUNCE_MS,
+	LOAD_MORE_LIMIT,
+} from "@/lib/constants";
 import {
 	formatPercent,
 	formatPrice,
@@ -53,6 +60,7 @@ import {
 	transformStockDataToChartData,
 	type ChartData,
 } from "@/lib/chartDataTransform";
+import { getTickerMode } from "@/lib/ticker-utils";
 
 interface BaseTradingViewChartProps {
 	title?: string;
@@ -72,6 +80,7 @@ interface BaseTradingViewChartProps {
 		priceLines?: CreatePriceLineOptions[];
 	};
 	preserveViewport?: boolean;
+	infiniteHistory?: boolean;
 }
 
 export function BaseTradingViewChart({
@@ -83,6 +92,7 @@ export function BaseTradingViewChart({
 	maVisibility: maVisibilityProp,
 	overlay,
 	preserveViewport = false,
+	infiniteHistory = true,
 }: BaseTradingViewChartProps) {
 	// Get global settings
 	const { interval, rulerVisible, macdVisible, macdHeight, ...globalSettings } =
@@ -91,11 +101,21 @@ export function BaseTradingViewChart({
 	// Initialize logging
 	const { info } = useLogs();
 
+	// Infinite history: pull getTickers from API context and ticker info
+	const { getTickers, tickers, globalTickers, cryptoTickers } = useAPI();
+
 	// Helper function to check if current interval is intraday
 	const isIntradayInterval = INTRADAY_INTERVALS.includes(interval);
 
 	// Always use context for data
-	const { loading, error, chartData: data } = useTicker();
+	const { loading, error, chartData: data, selectedTicker, localEndDate } = useTicker();
+
+	// Infinite history state and refs
+	const [expandedData, setExpandedData] = useState<StockData[] | null>(null);
+	const expandedLimitRef = useRef(0);
+	const isLoadingMoreHistoryRef = useRef(false);
+	const lastHistoryLoadTimeRef = useRef(0);
+	const [isInfiniteScrollLoading, setIsInfiniteScrollLoading] = useState(false);
 	const height = heightProp ?? globalSettings.height;
 	const maVisibility = maVisibilityProp ?? globalSettings.maVisibility;
 
@@ -166,6 +186,41 @@ export function BaseTradingViewChart({
 	} | null>(null);
 	const [containerWidth, setContainerWidth] = useState(0);
 	const hasEverHadData = useRef(data.length > 0);
+
+	// Reset expanded data on ticker/interval change
+	useEffect(() => {
+		expandedLimitRef.current = 0;
+		setExpandedData(null);
+		isLoadingMoreHistoryRef.current = false;
+	}, [selectedTicker, interval]);
+
+	// Re-fetch at expanded limit on data refresh (coexist with 30s auto-refresh)
+	useEffect(() => {
+		if (!infiniteHistory || expandedLimitRef.current === 0 || !data.length || !selectedTicker) return;
+
+		const doExpand = async () => {
+			const mode = getTickerMode(selectedTicker, tickers, globalTickers, cryptoTickers);
+			const response = await getTickers('BaseChart.infiniteHistory.refresh', {
+				symbol: selectedTicker,
+				interval,
+				end_date: localEndDate ?? undefined,
+				limit: expandedLimitRef.current,
+				mode,
+			});
+			const fetched = response[selectedTicker] || [];
+			if (fetched.length > 0) {
+				setExpandedData(fetched);
+			}
+		};
+		doExpand();
+	}, [data.length, selectedTicker, interval, infiniteHistory]);
+	// Note: intentionally NOT including expandedLimitRef in deps — it's a trigger, not a dep
+
+	// Merge expanded data with context data for chart rendering
+	const mergedData = useMemo((): StockData[] => {
+		if (expandedData && expandedData.length > 0) return expandedData;
+		return data;
+	}, [expandedData, data]);
 
 	// Helper function to create chart (called from data useEffect)
 	const createChartWithContext = () => {
@@ -785,6 +840,54 @@ export function BaseTradingViewChart({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [macdVisible, macdHeight]);
 
+	// Infinite history: listen for scroll-to-left-edge
+	useEffect(() => {
+		const chart = chartRef.current;
+		if (!chart || !isDataInitialized || !infiniteHistory) return;
+
+		const handler = (logicalRange: LogicalRange | null) => {
+			if (!logicalRange || isLoadingMoreHistoryRef.current) return;
+
+			const now = Date.now();
+			if (now - lastHistoryLoadTimeRef.current < INFINITE_SCROLL_DEBOUNCE_MS) return;
+			if (logicalRange.from > INFINITE_SCROLL_THRESHOLD) return;
+
+			const currentDataLen = expandedData?.length ?? data.length;
+
+			// No more data if we got fewer bars than we asked for last time
+			if (expandedData && expandedData.length < expandedLimitRef.current) return;
+
+			const newLimit = currentDataLen + LOAD_MORE_LIMIT;
+			isLoadingMoreHistoryRef.current = true;
+			lastHistoryLoadTimeRef.current = now;
+			setIsInfiniteScrollLoading(true);
+
+			const mode = getTickerMode(selectedTicker, tickers, globalTickers, cryptoTickers);
+
+			getTickers('BaseChart.infiniteHistory', {
+				symbol: selectedTicker,
+				interval,
+				end_date: localEndDate ?? undefined,
+				limit: newLimit,
+				mode,
+			}).then(response => {
+				const fetched = response[selectedTicker] || [];
+				if (fetched.length > currentDataLen) {
+					expandedLimitRef.current = newLimit;
+					setExpandedData(fetched);
+				}
+			}).finally(() => {
+				isLoadingMoreHistoryRef.current = false;
+				setIsInfiniteScrollLoading(false);
+			});
+		};
+
+		chart.timeScale().subscribeVisibleLogicalRangeChange(handler);
+		return () => {
+			chart.timeScale().unsubscribeVisibleLogicalRangeChange(handler);
+		};
+	}, [isDataInitialized, infiniteHistory, expandedData, data, selectedTicker, interval, mergedData, localEndDate, getTickers, tickers, globalTickers, cryptoTickers]);
+
 	// Overlay effect: markers and price lines
 	useEffect(() => {
 		const series = candlestickSeriesRef.current;
@@ -878,11 +981,11 @@ export function BaseTradingViewChart({
 
 	// Transform data to TradingView format
 	const chartData = useMemo((): ChartData => {
-		const cd = transformStockDataToChartData(data);
-		dataRef.current = data;
+		const cd = transformStockDataToChartData(mergedData);
+		dataRef.current = mergedData;
 		chartDataRef.current = cd;
 		return cd;
-	}, [data]);
+	}, [mergedData]);
 
 	// Cleanup effect - only runs on unmount
 	useEffect(() => {
@@ -1157,6 +1260,13 @@ export function BaseTradingViewChart({
 				style={{ height: `${height}px` }}
 			>
 				<div ref={chartContainerRef} className="absolute inset-0" />
+
+				{/* Infinite history loading indicator */}
+				{isInfiniteScrollLoading && (
+					<div className="absolute top-1/2 left-2 -translate-y-1/2 z-10">
+						<Loader2 className="h-4 w-4 animate-spin text-muted-foreground/60" />
+					</div>
+				)}
 
 				{/* Loading overlay - only on initial load when no data yet */}
 				{loading && !hasEverHadData.current && (

@@ -204,6 +204,7 @@ export function PlaygroundChart() {
 		showControls: true,
 		height: chartHeight, // Pass the selected height
 		preserveViewport: true,
+		infiniteHistory: false,
 		cacheData: visibleData,
 		cacheMetadata: {
 			symbol: playgroundData.ticker,
@@ -223,6 +224,7 @@ export function PlaygroundChart() {
 		showControls: true, // Show controls on secondary chart
 		height: chartHeight, // Pass the selected height
 		preserveViewport: true,
+		infiniteHistory: false,
 		cacheData: secondaryVisibleData,
 		cacheMetadata: {
 			symbol: playgroundData.secondaryTicker!,

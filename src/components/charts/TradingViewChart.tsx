@@ -63,6 +63,9 @@ interface TradingViewChartProps {
 
 	// Viewport preservation for Playground
 	preserveViewport?: boolean;
+
+	// Infinite history scroll
+	infiniteHistory?: boolean;
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -84,6 +87,7 @@ function TradingViewChartContent({
 	setEndDate,
 	showControls = true,
 	preserveViewport = false,
+	infiniteHistory = true,
 	...visualProps
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
@@ -258,6 +262,7 @@ function TradingViewChartContent({
 					noDataMessage={t("common.noDataAvailable")}
 					tickerName={resolvedTickerName}
 					preserveViewport={preserveViewport}
+					infiniteHistory={infiniteHistory}
 				/>
 			</div>
 
