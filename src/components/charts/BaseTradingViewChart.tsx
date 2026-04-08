@@ -150,6 +150,7 @@ export function BaseTradingViewChart({
 	const macdLineSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const macdSignalSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const prevDataLengthRef = useRef<number>(0);
+	const prevTickerRef = useRef<string | null>(null);
 	const markersApiRef = useRef<any>(null);
 	const priceLinesRef = useRef<Map<string, IPriceLine>>(new Map());
 
@@ -1067,6 +1068,12 @@ export function BaseTradingViewChart({
 			return;
 		}
 
+		// Re-enable auto-scale when ticker changes (user may have manually zoomed the price axis)
+		const tickerChanged = selectedTicker !== prevTickerRef.current;
+		if (tickerChanged && chartRef.current) {
+			chartRef.current.priceScale('right').setAutoScale(true);
+		}
+
 		// Save current viewport before setData resets it (only after initial load)
 		const prevDataLength = prevDataLengthRef.current;
 		const newDataLength = chartData.candlestick.length;
@@ -1130,6 +1137,7 @@ export function BaseTradingViewChart({
 		}
 		// Update ref for next render
 		prevDataLengthRef.current = chartData.candlestick.length;
+		prevTickerRef.current = selectedTicker;
 
 		// Set initial viewport only on first data load
 		// IMPORTANT: Wait for containerWidth to be set by ResizeObserver before initializing viewport
