@@ -116,6 +116,16 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     return name.length > 30 ? name.slice(0, 30) + '…' : name
   }
 
+  const searching = searchQuery.trim().length > 0
+
+  const matchesSearch = (symbol: string): boolean => {
+    const searchLower = searchQuery.toLowerCase()
+    if (!searchLower) return true
+    const name = tickerNamesMap[symbol]
+    return symbol.toLowerCase().includes(searchLower) ||
+      (name?.toLowerCase().includes(searchLower))
+  }
+
   const { filteredMarketIndices, filteredTickers, filteredMajorCrypto, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers } = React.useMemo(() => {
     const searchLower = searchQuery.toLowerCase()
 
@@ -130,14 +140,14 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     const majorCrypto = cryptoTickers.filter(
       (ticker) =>
         MAJOR_CRYPTO.includes(ticker.symbol as any) &&
-        ticker.symbol.toLowerCase().includes(searchLower)
+        matchesSearch(ticker.symbol)
     )
 
     // Filter major global tickers
     const majorGlobal = globalTickers.filter(
       (ticker) =>
         MAJOR_GLOBAL.includes(ticker.symbol as any) &&
-        ticker.symbol.toLowerCase().includes(searchLower)
+        matchesSearch(ticker.symbol)
     )
 
     // Filter regular tickers (excluding market indices)
@@ -220,7 +230,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     const filteredCrypto = cryptoTickers.filter(
       (ticker) =>
         !MAJOR_CRYPTO.includes(ticker.symbol as any) &&
-        ticker.symbol.toLowerCase().includes(searchLower)
+        matchesSearch(ticker.symbol)
     )
 
     const sortedCrypto = [...filteredCrypto].sort((a, b) => {
@@ -338,7 +348,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     const filteredGlobal = globalTickers.filter(
       (ticker) =>
         !MAJOR_GLOBAL.includes(ticker.symbol as any) &&
-        ticker.symbol.toLowerCase().includes(searchLower)
+        matchesSearch(ticker.symbol)
     )
 
     const sortedGlobal = [...filteredGlobal].sort((a, b) => {
@@ -460,7 +470,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
       filteredMajorGlobal: sortedMajorGlobal,
       filteredGlobalTickers: sortedGlobal
     }
-  }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersLastData, cryptoTickers, allCryptoTickersLastData, allGlobalTickersLastData, globalTickers])
+  }, [searchQuery, tickers, marketIndices, showMarketIndices, sortBy, allTickersLastData, cryptoTickers, allCryptoTickersLastData, allGlobalTickersLastData, globalTickers, tickerNamesMap])
 
   // Build array matching the exact visual rendering order
   // This ensures navigation order matches what user sees on screen
@@ -476,51 +486,51 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
       }
     }
 
-    // 1. Market Indices (shown in stocks filter)
-    if (filteredMarketIndices.length > 0 && (sectionFilter === 'stocks')) {
+    // 1. Market Indices (shown in stocks filter, or when searching)
+    if (filteredMarketIndices.length > 0 && (searching || sectionFilter === 'stocks')) {
       // Convert market indices strings to Ticker objects
       filteredMarketIndices.forEach(symbol => {
         addUnique({ symbol, sector: 'Market Indices' })
       })
     }
 
-    // 2. Major Global (shown in global filter)
-    if (filteredMajorGlobal.length > 0 && sectionFilter === 'global') {
+    // 2. Major Global (shown in global filter, or when searching)
+    if (filteredMajorGlobal.length > 0 && (searching || sectionFilter === 'global')) {
       filteredMajorGlobal.forEach(ticker => {
         addUnique(ticker)
       })
     }
 
-    // 3. Major Crypto (shown in crypto filter)
-    if (filteredMajorCrypto.length > 0 && sectionFilter === 'crypto') {
+    // 3. Major Crypto (shown in crypto filter, or when searching)
+    if (filteredMajorCrypto.length > 0 && (searching || sectionFilter === 'crypto')) {
       filteredMajorCrypto.forEach(ticker => {
         addUnique(ticker)
       })
     }
 
-    // 4. Regular Stocks (shown in stocks filter)
-    if (filteredTickers.length > 0 && sectionFilter === 'stocks') {
+    // 4. Regular Stocks (shown in stocks filter, or when searching)
+    if (filteredTickers.length > 0 && (searching || sectionFilter === 'stocks')) {
       filteredTickers.forEach(ticker => {
         addUnique(ticker)
       })
     }
 
-    // 5. Minor Crypto (shown in crypto filter)
-    if (filteredCryptoTickers.length > 0 && sectionFilter === 'crypto') {
+    // 5. Minor Crypto (shown in crypto filter, or when searching)
+    if (filteredCryptoTickers.length > 0 && (searching || sectionFilter === 'crypto')) {
       filteredCryptoTickers.forEach(ticker => {
         addUnique(ticker)
       })
     }
 
-    // 6. Global Tickers (shown in global filter)
-    if (filteredGlobalTickers.length > 0 && sectionFilter === 'global') {
+    // 6. Global Tickers (shown in global filter, or when searching)
+    if (filteredGlobalTickers.length > 0 && (searching || sectionFilter === 'global')) {
       filteredGlobalTickers.forEach(ticker => {
         addUnique(ticker)
       })
     }
 
     return ordered
-  }, [filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers, sectionFilter])
+  }, [filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers, sectionFilter, searching])
 
   // Expose selectFirstVisible method via ref
   React.useImperativeHandle(ref, () => ({
@@ -555,6 +565,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     }
 
     // Only count and allocate items for the currently visible section
+    // When searching, allocate across all sections
     let totalItems = 0
     let visibleMarketIndices: typeof filteredMarketIndices = []
     let visibleMajorGlobal: typeof filteredMajorGlobal = []
@@ -563,7 +574,15 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     let visibleCrypto: typeof filteredCryptoTickers = []
     let visibleGlobal: typeof filteredGlobalTickers = []
 
-    if (sectionFilter === 'stocks') {
+    if (searching) {
+      visibleMarketIndices = takeVisible(filteredMarketIndices)
+      visibleMajorGlobal = takeVisible(filteredMajorGlobal)
+      visibleMajorCrypto = takeVisible(filteredMajorCrypto)
+      visibleTickers = takeVisible(filteredTickers)
+      visibleCrypto = takeVisible(filteredCryptoTickers)
+      visibleGlobal = takeVisible(filteredGlobalTickers)
+      totalItems = filteredMarketIndices.length + filteredMajorGlobal.length + filteredMajorCrypto.length + filteredTickers.length + filteredCryptoTickers.length + filteredGlobalTickers.length
+    } else if (sectionFilter === 'stocks') {
       visibleMarketIndices = takeVisible(filteredMarketIndices)
       visibleTickers = takeVisible(filteredTickers)
       totalItems = filteredMarketIndices.length + filteredTickers.length
@@ -586,7 +605,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
       visibleGlobal,
       hasMore: totalItems > MAX_VISIBLE
     }
-  }, [showAll, filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers, sectionFilter])
+  }, [showAll, filteredMarketIndices, filteredMajorCrypto, filteredTickers, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers, sectionFilter, searching])
 
   // Notify parent component when sorted tickers change
   // Pass the visually ordered list so navigation matches what user sees
@@ -656,7 +675,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
           {!loading && !error && (
             <>
               {/* Market Indices */}
-              {visibleMarketIndices.length > 0 && sectionFilter === 'stocks' && (
+              {visibleMarketIndices.length > 0 && (searching || sectionFilter === 'stocks') && (
                 <div className="mb-2">
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -704,7 +723,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
               )}
 
               {/* Major Global */}
-              {visibleMajorGlobal.length > 0 && sectionFilter === 'global' && (
+              {visibleMajorGlobal.length > 0 && (searching || sectionFilter === 'global') && (
                 <div className="mb-2">
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -753,7 +772,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
               )}
 
               {/* Major Crypto */}
-              {visibleMajorCrypto.length > 0 && sectionFilter === 'crypto' && (
+              {visibleMajorCrypto.length > 0 && (searching || sectionFilter === 'crypto') && (
                 <div className="mb-2">
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -802,7 +821,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
               )}
 
               {/* Regular Tickers */}
-              {visibleTickers.length > 0 && sectionFilter === 'stocks' && (
+              {visibleTickers.length > 0 && (searching || sectionFilter === 'stocks') && (
                 <div>
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -851,7 +870,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
               )}
 
               {/* Crypto Tickers */}
-              {visibleCrypto.length > 0 && sectionFilter === 'crypto' && (
+              {visibleCrypto.length > 0 && (searching || sectionFilter === 'crypto') && (
                 <div>
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -900,7 +919,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
               )}
 
               {/* Global Tickers */}
-              {visibleGlobal.length > 0 && sectionFilter === 'global' && (
+              {visibleGlobal.length > 0 && (searching || sectionFilter === 'global') && (
                 <div>
                   {showSections && (
                     <div className="py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -976,11 +995,15 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
                 </div>
               )}
 
-              {/* No results message - check visible sections only */}
+              {/* No results message - check visible sections only (or all when searching) */}
               {(
-                (sectionFilter === 'stocks' && filteredMarketIndices.length === 0 && filteredTickers.length === 0) ||
-                (sectionFilter === 'crypto' && filteredMajorCrypto.length === 0 && filteredCryptoTickers.length === 0) ||
-                (sectionFilter === 'global' && filteredMajorGlobal.length === 0 && filteredGlobalTickers.length === 0)
+                searching
+                  ? (filteredMarketIndices.length === 0 && filteredMajorCrypto.length === 0 && filteredCryptoTickers.length === 0 && filteredMajorGlobal.length === 0 && filteredGlobalTickers.length === 0 && filteredTickers.length === 0)
+                  : (
+                    (sectionFilter === 'stocks' && filteredMarketIndices.length === 0 && filteredTickers.length === 0) ||
+                    (sectionFilter === 'crypto' && filteredMajorCrypto.length === 0 && filteredCryptoTickers.length === 0) ||
+                    (sectionFilter === 'global' && filteredMajorGlobal.length === 0 && filteredGlobalTickers.length === 0)
+                  )
               ) && (
                 <div className="text-center py-8 text-muted-foreground">
                   {t('dialogs.selectTicker.states.noTickersFound')}
