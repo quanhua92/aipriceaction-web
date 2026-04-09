@@ -12,6 +12,7 @@ import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { ALL_WATCHLIST_NAME, HOME_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
+
 import { SafeLocalStorage } from "@/lib/localStorage";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Ticker } from "@/components/lists/SortableTickerList";
@@ -142,7 +143,7 @@ function HomePage() {
 
 			{/* Section 2.5: Relative Rotation Graph */}
 			<div className="p-3 md:p-4 border-t">
-				<RRGWidget mode="vn" />
+				<RRGWidget defaultGroup={ALL_WATCHLIST_NAME} />
 			</div>
 
 			{/* Section 3: Top Performers + Market Matrix */}

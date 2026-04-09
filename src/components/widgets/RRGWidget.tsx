@@ -1,4 +1,5 @@
 import * as React from "react";
+import { TickerGroupSelector } from "@/components/TickerGroupSelector";
 import { Badge } from "@/components/ui/badge";
 import {
 	Collapsible,
@@ -20,15 +21,26 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAPI } from "@/contexts/APIContext";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getRRG, type RRGResponse, type RRGTicker } from "@/lib/api-client";
+import {
+	ALL_WATCHLIST_NAME,
+	CRYPTO_WATCHLIST_NAME,
+	GLOBAL_WATCHLIST_NAME,
+} from "@/lib/constants";
+import {
+	getPredefinedWatchlistTickers,
+	isPredefinedWatchlist,
+} from "@/lib/predefined-watchlists";
+import { getWatchlistTickers } from "@/lib/watchlist-storage";
 import { RRGCanvas } from "./RRGCanvas";
 import { RRGDetailPanel } from "./RRGDetailPanel";
 import { RRGTable } from "./RRGTable";
 
 interface RRGWidgetProps {
-	mode: "vn" | "crypto" | "yahoo";
+	defaultGroup?: string;
 }
 
 const BENCHMARKS: Record<string, string[]> = {
@@ -45,9 +57,74 @@ function formatVolumeSlider(val: number): string {
 	return `${(vol / 1_000).toFixed(0)}K`;
 }
 
-export function RRGWidget({ mode }: RRGWidgetProps) {
+/**
+ * Determine API mode based on selected watchlist group.
+ * Returns the narrowest mode possible; uses "all" only for mixed groups.
+ */
+function resolveApiMode(group: string): "vn" | "crypto" | "yahoo" | "all" {
+	if (group === ALL_WATCHLIST_NAME) return "vn";
+	if (group === CRYPTO_WATCHLIST_NAME) return "crypto";
+	if (group === GLOBAL_WATCHLIST_NAME) return "yahoo";
+
+	// Predefined watchlists (VN30, VINGROUP, etc.) are always VN stocks
+	if (isPredefinedWatchlist(group)) return "vn";
+
+	// Sectors are VN stocks (API tickerGroups only has VN sectors)
+	// Custom watchlists could be mixed → use "all"
+	return "all";
+}
+
+/**
+ * Get benchmark options based on the resolved API mode.
+ */
+function getBenchmarksForMode(
+	mode: "vn" | "crypto" | "yahoo" | "all",
+): string[] {
+	if (mode === "all") {
+		// Combine all benchmarks when mode is all
+		return [...BENCHMARKS.vn, ...BENCHMARKS.crypto, ...BENCHMARKS.yahoo];
+	}
+	return BENCHMARKS[mode] ?? BENCHMARKS.vn;
+}
+
+/**
+ * Get the ticker symbols that belong to a selected group.
+ * Returns null when no filtering is needed (ALL shows everything from API).
+ */
+function getGroupTickers(
+	group: string,
+	tickerGroups: Record<string, string[]> | null,
+): string[] | null {
+	if (group === ALL_WATCHLIST_NAME) return null; // Show all
+
+	if (group === CRYPTO_WATCHLIST_NAME || group === GLOBAL_WATCHLIST_NAME)
+		return null; // API mode already filters
+
+	if (isPredefinedWatchlist(group)) {
+		return getPredefinedWatchlistTickers(group);
+	}
+
+	// Custom watchlist
+	const customTickers = getWatchlistTickers(group);
+	if (customTickers.length > 0) return customTickers;
+
+	// Sector group from API
+	if (tickerGroups?.[group]) {
+		return tickerGroups[group];
+	}
+
+	return null;
+}
+
+export function RRGWidget({
+	defaultGroup = ALL_WATCHLIST_NAME,
+}: RRGWidgetProps) {
 	const { t } = useTranslation();
 	const { lastRefresh } = useRefresh();
+	const { tickerGroups } = useAPI();
+
+	// Watchlist group state
+	const [selectedGroup, setSelectedGroup] = React.useState(defaultGroup);
 
 	// Tab state
 	const [activeTab, setActiveTab] = React.useState<"mascore" | "jdk">(
@@ -61,9 +138,6 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 	// JdK controls
 	const [jdkTrails, setJdkTrails] = React.useState(2);
 	const [jdkMinVol, setJdkMinVol] = React.useState(67); // ~10M default
-	const [jdkBenchmark, setJdkBenchmark] = React.useState(
-		BENCHMARKS[mode]?.[0] || "VNINDEX",
-	);
 	const [jdkPeriod, setJdkPeriod] = React.useState(10);
 
 	// Data state
@@ -82,6 +156,36 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 	// Table state
 	const [tableOpen, setTableOpen] = React.useState(false);
 
+	// Resolve API mode from selected group
+	const apiMode = React.useMemo(
+		() => resolveApiMode(selectedGroup),
+		[selectedGroup],
+	);
+
+	// Benchmark options based on mode
+	const benchmarkOptions = React.useMemo(
+		() => getBenchmarksForMode(apiMode),
+		[apiMode],
+	);
+
+	// Default benchmark: pick the first one matching the mode, or VNINDEX
+	const defaultBenchmark = React.useMemo(() => {
+		if (apiMode === "vn") return "VNINDEX";
+		if (apiMode === "crypto") return "BTCUSDT";
+		if (apiMode === "yahoo") return "^GSPC";
+		return "VNINDEX";
+	}, [apiMode]);
+
+	const [jdkBenchmark, setJdkBenchmark] = React.useState(defaultBenchmark);
+
+	// Reset benchmark when mode changes and current benchmark is not in new options
+	// biome-ignore lint/correctness/useExhaustiveDependencies: apiMode triggers re-evaluation when group changes
+	React.useEffect(() => {
+		if (!benchmarkOptions.includes(jdkBenchmark)) {
+			setJdkBenchmark(defaultBenchmark);
+		}
+	}, [apiMode, benchmarkOptions, jdkBenchmark, defaultBenchmark]);
+
 	const minVolume = React.useMemo(() => {
 		return Math.round(10 ** (5 + (mascoreMinVol / 100) * 3));
 	}, [mascoreMinVol]);
@@ -91,6 +195,7 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 	}, [jdkMinVol]);
 
 	// Data fetching - re-fetches when lastRefresh changes (auto-refresh pattern)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: lastRefresh intentionally triggers re-fetch
 	React.useEffect(() => {
 		let cancelled = false;
 
@@ -101,7 +206,7 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 			try {
 				const params = {
 					algorithm: activeTab,
-					mode,
+					mode: apiMode,
 					trails: activeTab === "mascore" ? mascoreTrails : jdkTrails,
 					min_volume: activeTab === "mascore" ? minVolume : jdkMinVolume,
 					...(activeTab === "jdk"
@@ -134,7 +239,7 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 		};
 	}, [
 		activeTab,
-		mode,
+		apiMode,
 		mascoreTrails,
 		minVolume,
 		jdkTrails,
@@ -146,25 +251,50 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 
 	const maxTrails = activeTab === "mascore" ? mascoreTrails : jdkTrails;
 
-	// Filter trails to match user slider — API may return more points than requested
+	// Get the ticker symbols for the selected group (for client-side filtering)
+	const groupTickerSet = React.useMemo(() => {
+		const symbols = getGroupTickers(selectedGroup, tickerGroups);
+		if (!symbols) return null;
+		return new Set(symbols.map((s) => s.toUpperCase()));
+	}, [selectedGroup, tickerGroups]);
+
+	// Filter trails to match user slider, then filter by selected group
 	const displayData = React.useMemo(() => {
 		if (!rrgData?.data) return null;
+
+		let filtered = rrgData.data.tickers;
+
+		// Client-side filter by selected watchlist
+		if (groupTickerSet) {
+			filtered = filtered.filter((t) =>
+				groupTickerSet.has(t.symbol.toUpperCase()),
+			);
+		}
+
+		// Filter trails to match user slider
 		if (maxTrails === 0) {
 			return {
 				...rrgData.data,
-				tickers: rrgData.data.tickers.map((t) => ({ ...t, trails: undefined })),
+				tickers: filtered.map((t) => ({ ...t, trails: undefined })),
 			};
 		}
 		return {
 			...rrgData.data,
-			tickers: rrgData.data.tickers.map((t) => ({
+			tickers: filtered.map((t) => ({
 				...t,
 				trails: t.trails?.slice(-maxTrails),
 			})),
 		};
-	}, [rrgData, maxTrails]);
+	}, [rrgData, maxTrails, groupTickerSet]);
 
 	const tickers = displayData?.tickers ?? [];
+
+	// Handle group change
+	const handleGroupChange = React.useCallback((group: string) => {
+		setSelectedGroup(group);
+		setSelectedTicker(null);
+		setHoveredTicker(null);
+	}, []);
 
 	return (
 		<div className="border rounded-lg bg-card p-3 md:p-4">
@@ -196,8 +326,12 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 						side="bottom"
 						align="end"
 					>
-						<h3 className="font-semibold text-sm">{t("common.rrg.help.title")}</h3>
-						<p className="text-muted-foreground">{t("common.rrg.help.description")}</p>
+						<h3 className="font-semibold text-sm">
+							{t("common.rrg.help.title")}
+						</h3>
+						<p className="text-muted-foreground">
+							{t("common.rrg.help.description")}
+						</p>
 						<div className="space-y-1">
 							<p className="font-medium text-green-500">
 								{t("common.rrg.help.leading")}
@@ -216,11 +350,27 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 							<p className="text-muted-foreground">
 								{t("common.rrg.help.mascoreMode")}
 							</p>
-							<p className="text-muted-foreground">{t("common.rrg.help.jdkMode")}</p>
+							<p className="text-muted-foreground">
+								{t("common.rrg.help.jdkMode")}
+							</p>
 						</div>
 					</PopoverContent>
 				</Popover>
 			</div>
+
+			{/* Watchlist selector row */}
+			<TickerGroupSelector
+				value={selectedGroup}
+				onValueChange={handleGroupChange}
+				showAll={true}
+				showCrypto={true}
+				showGlobal={true}
+				showPredefined={true}
+				showCustom={true}
+				showSectors={true}
+				refreshKey={0}
+				className="h-8 text-xs mb-3"
+			/>
 
 			{/* Tabs */}
 			<Tabs
@@ -245,7 +395,9 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 									{t("common.rrg.trails")}
 								</span>
 								<span className="text-xs font-mono">
-									{mascoreTrails === 0 ? t("common.rrg.noTrails") : mascoreTrails}
+									{mascoreTrails === 0
+										? t("common.rrg.noTrails")
+										: mascoreTrails}
 								</span>
 							</div>
 							<Slider
@@ -290,7 +442,7 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{BENCHMARKS[mode]?.map((bm) => (
+									{benchmarkOptions.map((bm) => (
 										<SelectItem key={bm} value={bm} className="text-xs">
 											{bm}
 										</SelectItem>
@@ -397,7 +549,9 @@ export function RRGWidget({ mode }: RRGWidgetProps) {
 						<span className="text-[10px]">
 							{tableOpen ? "\u25BC" : "\u25B6"}
 						</span>
-						{tableOpen ? t("common.rrg.table.collapse") : t("common.rrg.table.expand")}
+						{tableOpen
+							? t("common.rrg.table.collapse")
+							: t("common.rrg.table.expand")}
 					</CollapsibleTrigger>
 					<CollapsibleContent>
 						<RRGTable

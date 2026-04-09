@@ -142,7 +142,7 @@ function CryptoPage() {
 
 			{/* Section 2.5: Relative Rotation Graph */}
 			<div className="p-3 md:p-4 border-t">
-				<RRGWidget mode="crypto" />
+				<RRGWidget defaultGroup={CRYPTO_WATCHLIST_NAME} />
 			</div>
 
 			{/* Section 3: Top Performers + Market Matrix */}
