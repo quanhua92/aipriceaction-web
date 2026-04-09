@@ -58,50 +58,38 @@ function formatVolume(vol: number): string {
 	return `${vol.toFixed(0)}`;
 }
 
+const DEFAULT_VISIBLE = 20;
+
 /**
- * Map slider value (0-100) to a volume using log scale between min and max.
- * slider=0 → 0 (show all), slider=100 → volMax
+ * Exponential volume slider: slider=50 always shows ~DEFAULT_VISIBLE tickers.
+ * slider=0 → all, slider=100 → ~1 ticker.
+ * sortedVolumes must be ascending.
  */
-function sliderToVolume(val: number, volMin: number, volMax: number): number {
-	if (volMin <= 0) {
-		// 0 maps to 0, rest maps log from 1..volMax
-		if (val === 0) return 0;
-		const logMax = Math.log10(volMax);
-		return Math.round(10 ** ((val / 100) * logMax));
-	}
-	const logMin = Math.log10(volMin);
-	const logMax = Math.log10(volMax);
-	return Math.round(10 ** (logMin + (val / 100) * (logMax - logMin)));
+function sliderToVolume(val: number, sortedVolumes: number[]): number {
+	const N = sortedVolumes.length;
+	if (val === 0 || N === 0) return 0;
+	const target = Math.min(DEFAULT_VISIBLE, N);
+	const k = 2 * Math.log(N / target);
+	const fraction = Math.exp((-k * val) / 100);
+	const visibleCount = Math.max(1, Math.round(N * fraction));
+	const idx = Math.max(0, N - visibleCount);
+	return sortedVolumes[idx];
 }
 
 /**
- * Map a volume back to a slider value (inverse of sliderToVolume).
- */
-function volumeToSlider(vol: number, volMin: number, volMax: number): number {
-	if (vol <= 0 || volMin <= 0) {
-		if (vol <= 0) return 0;
-		const logMax = Math.log10(volMax);
-		return Math.round((Math.log10(vol) / logMax) * 100);
-	}
-	const logMin = Math.log10(volMin);
-	const logMax = Math.log10(volMax);
-	return Math.round(((Math.log10(vol) - logMin) / (logMax - logMin)) * 100);
-}
-
-/**
- * Compute default slider value so that approximately `targetCount` tickers
- * are visible (i.e. have volume >= the threshold).
+ * Compute default slider value to show approximately `targetCount` tickers.
+ * Always returns ~50 for targetCount=20 (the DEFAULT_VISIBLE midpoint).
  */
 function computeDefaultSlider(
-	tickers: { volume: number }[],
-	volMin: number,
-	volMax: number,
+	sortedVolumes: number[],
 	targetCount: number,
 ): number {
-	if (tickers.length <= targetCount) return 0; // Show all
-	const sorted = [...tickers].sort((a, b) => a.volume - b.volume);
-	const threshold = sorted[tickers.length - targetCount].volume;
-	return Math.max(0, Math.min(100, volumeToSlider(threshold, volMin, volMax)));
+	const N = sortedVolumes.length;
+	if (N <= targetCount) return 0;
+	const target = Math.min(DEFAULT_VISIBLE, N);
+	const k = 2 * Math.log(N / target);
+	const val = (-100 * Math.log(targetCount / N)) / k;
+	return Math.round(Math.max(0, Math.min(100, val)));
 }
 
 /**
@@ -252,22 +240,19 @@ export function RRGWidget({
 		}
 	}, [apiMode, benchmarkOptions, jdkBenchmark, defaultBenchmark]);
 
-	// Compute volume range for dynamic slider. min=0 means "show all".
-	const volumeRange = React.useMemo(() => {
-		if (!rrgData?.data?.tickers?.length) {
-			return { min: 0, max: 100_000_000 };
-		}
-		const vMax = Math.max(...rrgData.data.tickers.map((t) => t.volume));
-		return { min: 0, max: 10 ** Math.ceil(Math.log10(vMax)) };
+	// Sorted volumes for percentile-based slider mapping
+	const sortedVolumes = React.useMemo(() => {
+		if (!rrgData?.data?.tickers?.length) return [];
+		return [...rrgData.data.tickers].map((t) => t.volume).sort((a, b) => a - b);
 	}, [rrgData]);
 
 	const minVolume = React.useMemo(() => {
-		return sliderToVolume(mascoreMinVol, volumeRange.min, volumeRange.max);
-	}, [mascoreMinVol, volumeRange]);
+		return sliderToVolume(mascoreMinVol, sortedVolumes);
+	}, [mascoreMinVol, sortedVolumes]);
 
 	const jdkMinVolume = React.useMemo(() => {
-		return sliderToVolume(jdkMinVol, volumeRange.min, volumeRange.max);
-	}, [jdkMinVol, volumeRange]);
+		return sliderToVolume(jdkMinVol, sortedVolumes);
+	}, [jdkMinVol, sortedVolumes]);
 
 	// Get the ticker symbols for the selected group (for client-side filtering)
 	const groupTickerSet = React.useMemo(() => {
@@ -287,8 +272,9 @@ export function RRGWidget({
 			);
 		}
 		if (!tickers.length) return 0;
-		return computeDefaultSlider(tickers, volumeRange.min, volumeRange.max, 20);
-	}, [rrgData, volumeRange, groupTickerSet]);
+		const groupSorted = tickers.map((t) => t.volume).sort((a, b) => a - b);
+		return computeDefaultSlider(groupSorted, 20);
+	}, [rrgData, groupTickerSet]);
 
 	// Auto-set volume slider when group changes
 	// biome-ignore lint/correctness/useExhaustiveDependencies: selectedGroup triggers update even if defaultSliderVal is same
