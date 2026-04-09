@@ -49,12 +49,56 @@ const BENCHMARKS: Record<string, string[]> = {
 	yahoo: ["^GSPC", "^DJI", "^NDX", "GC=F"],
 };
 
-// Slider value 0-100 maps to volume 100K-100M via 10**(5 + value/100 * 3)
-// slider=0 → 100K, slider=67 → ~10M, slider=100 → 100M
-function formatVolumeSlider(val: number): string {
-	const vol = 10 ** (5 + (val / 100) * 3);
+function formatVolume(vol: number): string {
 	if (vol >= 1_000_000) return `${(vol / 1_000_000).toFixed(1)}M`;
-	return `${(vol / 1_000).toFixed(0)}K`;
+	if (vol >= 1_000) return `${(vol / 1_000).toFixed(0)}K`;
+	return `${vol.toFixed(0)}`;
+}
+
+/**
+ * Map slider value (0-100) to a volume using log scale between min and max.
+ * slider=0 → 0 (show all), slider=100 → volMax
+ */
+function sliderToVolume(val: number, volMin: number, volMax: number): number {
+	if (volMin <= 0) {
+		// 0 maps to 0, rest maps log from 1..volMax
+		if (val === 0) return 0;
+		const logMax = Math.log10(volMax);
+		return Math.round(10 ** ((val / 100) * logMax));
+	}
+	const logMin = Math.log10(volMin);
+	const logMax = Math.log10(volMax);
+	return Math.round(10 ** (logMin + (val / 100) * (logMax - logMin)));
+}
+
+/**
+ * Map a volume back to a slider value (inverse of sliderToVolume).
+ */
+function volumeToSlider(vol: number, volMin: number, volMax: number): number {
+	if (vol <= 0 || volMin <= 0) {
+		if (vol <= 0) return 0;
+		const logMax = Math.log10(volMax);
+		return Math.round((Math.log10(vol) / logMax) * 100);
+	}
+	const logMin = Math.log10(volMin);
+	const logMax = Math.log10(volMax);
+	return Math.round(((Math.log10(vol) - logMin) / (logMax - logMin)) * 100);
+}
+
+/**
+ * Compute default slider value so that approximately `targetCount` tickers
+ * are visible (i.e. have volume >= the threshold).
+ */
+function computeDefaultSlider(
+	tickers: { volume: number }[],
+	volMin: number,
+	volMax: number,
+	targetCount: number,
+): number {
+	if (tickers.length <= targetCount) return 0; // Show all
+	const sorted = [...tickers].sort((a, b) => a.volume - b.volume);
+	const threshold = sorted[tickers.length - targetCount].volume;
+	return Math.max(0, Math.min(100, volumeToSlider(threshold, volMin, volMax)));
 }
 
 /**
@@ -186,13 +230,50 @@ export function RRGWidget({
 		}
 	}, [apiMode, benchmarkOptions, jdkBenchmark, defaultBenchmark]);
 
+	// Compute volume range for dynamic slider. min=0 means "show all".
+	const volumeRange = React.useMemo(() => {
+		if (!rrgData?.data?.tickers?.length) {
+			return { min: 0, max: 100_000_000 };
+		}
+		const vMax = Math.max(...rrgData.data.tickers.map((t) => t.volume));
+		return { min: 0, max: 10 ** Math.ceil(Math.log10(vMax)) };
+	}, [rrgData]);
+
 	const minVolume = React.useMemo(() => {
-		return Math.round(10 ** (5 + (mascoreMinVol / 100) * 3));
-	}, [mascoreMinVol]);
+		return sliderToVolume(mascoreMinVol, volumeRange.min, volumeRange.max);
+	}, [mascoreMinVol, volumeRange]);
 
 	const jdkMinVolume = React.useMemo(() => {
-		return Math.round(10 ** (5 + (jdkMinVol / 100) * 3));
-	}, [jdkMinVol]);
+		return sliderToVolume(jdkMinVol, volumeRange.min, volumeRange.max);
+	}, [jdkMinVol, volumeRange]);
+
+	// Get the ticker symbols for the selected group (for client-side filtering)
+	const groupTickerSet = React.useMemo(() => {
+		const symbols = getGroupTickers(selectedGroup, tickerGroups);
+		if (!symbols) return null;
+		return new Set(symbols.map((s) => s.toUpperCase()));
+	}, [selectedGroup, tickerGroups]);
+
+	// Compute default slider value to show ~20 dots within the selected group
+	const defaultSliderVal = React.useMemo(() => {
+		if (!rrgData?.data?.tickers?.length) return 0;
+		// Filter to selected group's tickers first
+		let tickers = rrgData.data.tickers;
+		if (groupTickerSet) {
+			tickers = tickers.filter((t) =>
+				groupTickerSet.has(t.symbol.toUpperCase()),
+			);
+		}
+		if (!tickers.length) return 0;
+		return computeDefaultSlider(tickers, volumeRange.min, volumeRange.max, 20);
+	}, [rrgData, volumeRange, groupTickerSet]);
+
+	// Auto-set volume slider when group changes
+	// biome-ignore lint/correctness/useExhaustiveDependencies: selectedGroup triggers update even if defaultSliderVal is same
+	React.useEffect(() => {
+		setMascoreMinVol(defaultSliderVal);
+		setJdkMinVol(defaultSliderVal);
+	}, [selectedGroup, defaultSliderVal]);
 
 	// Data fetching - re-fetches when lastRefresh changes (auto-refresh pattern)
 	// biome-ignore lint/correctness/useExhaustiveDependencies: lastRefresh intentionally triggers re-fetch
@@ -208,7 +289,6 @@ export function RRGWidget({
 					algorithm: activeTab,
 					mode: apiMode,
 					trails: activeTab === "mascore" ? mascoreTrails : jdkTrails,
-					min_volume: activeTab === "mascore" ? minVolume : jdkMinVolume,
 					...(activeTab === "jdk"
 						? { benchmark: jdkBenchmark, period: jdkPeriod }
 						: {}),
@@ -240,10 +320,9 @@ export function RRGWidget({
 	}, [
 		activeTab,
 		apiMode,
+		selectedGroup,
 		mascoreTrails,
-		minVolume,
 		jdkTrails,
-		jdkMinVolume,
 		jdkBenchmark,
 		jdkPeriod,
 		lastRefresh,
@@ -251,14 +330,9 @@ export function RRGWidget({
 
 	const maxTrails = activeTab === "mascore" ? mascoreTrails : jdkTrails;
 
-	// Get the ticker symbols for the selected group (for client-side filtering)
-	const groupTickerSet = React.useMemo(() => {
-		const symbols = getGroupTickers(selectedGroup, tickerGroups);
-		if (!symbols) return null;
-		return new Set(symbols.map((s) => s.toUpperCase()));
-	}, [selectedGroup, tickerGroups]);
-
-	// Filter trails to match user slider, then filter by selected group
+	// Filter trails to match user slider, then filter by selected group and volume
+	const activeVolumeThreshold =
+		activeTab === "mascore" ? minVolume : jdkMinVolume;
 	const displayData = React.useMemo(() => {
 		if (!rrgData?.data) return null;
 
@@ -269,6 +343,11 @@ export function RRGWidget({
 			filtered = filtered.filter((t) =>
 				groupTickerSet.has(t.symbol.toUpperCase()),
 			);
+		}
+
+		// Client-side filter by volume threshold
+		if (activeVolumeThreshold > 0) {
+			filtered = filtered.filter((t) => t.volume >= activeVolumeThreshold);
 		}
 
 		// Filter trails to match user slider
@@ -285,7 +364,7 @@ export function RRGWidget({
 				trails: t.trails?.slice(-maxTrails),
 			})),
 		};
-	}, [rrgData, maxTrails, groupTickerSet]);
+	}, [rrgData, maxTrails, groupTickerSet, activeVolumeThreshold]);
 
 	const tickers = displayData?.tickers ?? [];
 
@@ -369,7 +448,7 @@ export function RRGWidget({
 				showCustom={true}
 				showSectors={true}
 				refreshKey={0}
-				className="h-8 text-xs mb-3"
+				className="h-8 text-xs w-full mb-3"
 			/>
 
 			{/* Tabs */}
@@ -415,7 +494,7 @@ export function RRGWidget({
 									{t("common.rrg.minVolume")}
 								</span>
 								<span className="text-xs font-mono">
-									{formatVolumeSlider(mascoreMinVol)}
+									{formatVolume(minVolume)}
 								</span>
 							</div>
 							<Slider
@@ -423,7 +502,7 @@ export function RRGWidget({
 								onValueChange={([v]) => setMascoreMinVol(v)}
 								min={0}
 								max={100}
-								step={5}
+								step={1}
 								className="w-full"
 							/>
 						</div>
@@ -490,7 +569,7 @@ export function RRGWidget({
 									{t("common.rrg.minVolume")}
 								</span>
 								<span className="text-xs font-mono">
-									{formatVolumeSlider(jdkMinVol)}
+									{formatVolume(jdkMinVolume)}
 								</span>
 							</div>
 							<Slider
@@ -498,7 +577,7 @@ export function RRGWidget({
 								onValueChange={([v]) => setJdkMinVol(v)}
 								min={0}
 								max={100}
-								step={5}
+								step={1}
 								className="w-full"
 							/>
 						</div>
