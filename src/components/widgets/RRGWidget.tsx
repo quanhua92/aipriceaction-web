@@ -4,6 +4,7 @@ import { DateInput } from "@/components/DateInput";
 import { TickerGroupSelector } from "@/components/TickerGroupSelector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -38,7 +39,8 @@ import {
 	isPredefinedWatchlist,
 } from "@/lib/predefined-watchlists";
 import { getWatchlistTickers } from "@/lib/watchlist-storage";
-import { RRGCanvas } from "./RRGCanvas";
+import type { Quadrant } from "./RRGCanvas";
+import { getQuadrant, RRGCanvas } from "./RRGCanvas";
 import { RRGDetailPanel } from "./RRGDetailPanel";
 import { RRGTable } from "./RRGTable";
 
@@ -210,6 +212,20 @@ export function RRGWidget({
 		setSelectedDate(d.toISOString().split("T")[0]);
 	}, [selectedDate]);
 
+	// Quadrant visibility filter
+	const [hiddenQuadrants, setHiddenQuadrants] = React.useState<Set<Quadrant>>(
+		new Set(),
+	);
+
+	const toggleQuadrant = React.useCallback((q: Quadrant) => {
+		setHiddenQuadrants((prev) => {
+			const next = new Set(prev);
+			if (next.has(q)) next.delete(q);
+			else next.add(q);
+			return next;
+		});
+	}, []);
+
 	// Resolve API mode from selected group
 	const apiMode = React.useMemo(
 		() => resolveApiMode(selectedGroup),
@@ -360,6 +376,14 @@ export function RRGWidget({
 			filtered = filtered.filter((t) => t.volume >= activeVolumeThreshold);
 		}
 
+		// Client-side filter by hidden quadrants
+		if (hiddenQuadrants.size > 0) {
+			filtered = filtered.filter((t) => {
+				const q = getQuadrant(t.rs_ratio, t.rs_momentum, activeTab);
+				return !hiddenQuadrants.has(q);
+			});
+		}
+
 		// Filter trails to match user slider
 		if (maxTrails === 0) {
 			return {
@@ -374,7 +398,14 @@ export function RRGWidget({
 				trails: t.trails?.slice(-maxTrails),
 			})),
 		};
-	}, [rrgData, maxTrails, groupTickerSet, activeVolumeThreshold]);
+	}, [
+		rrgData,
+		maxTrails,
+		groupTickerSet,
+		activeVolumeThreshold,
+		hiddenQuadrants,
+		activeTab,
+	]);
 
 	const tickers = displayData?.tickers ?? [];
 
@@ -632,6 +663,43 @@ export function RRGWidget({
 					</div>
 				</TabsContent>
 			</Tabs>
+
+			{/* Quadrant filter checkboxes */}
+			{!loading && rrgData && (
+				<div className="flex items-center gap-3 flex-wrap mt-4 mb-2">
+					{(
+						[
+							{ key: "leading", color: "text-green-500" },
+							{ key: "improving", color: "text-blue-500" },
+							{ key: "weakening", color: "text-red-500" },
+							{ key: "lagging", color: "text-orange-500" },
+						] as const
+					).map(({ key, color }) => (
+						// biome-ignore lint/a11y/useSemanticElements: checkbox wraps label text
+						<div
+							key={key}
+							className="flex items-center gap-1.5 cursor-pointer select-none"
+							onClick={() => toggleQuadrant(key)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" || e.key === " ") toggleQuadrant(key);
+							}}
+							role="checkbox"
+							aria-checked={!hiddenQuadrants.has(key)}
+							tabIndex={0}
+						>
+							<Checkbox
+								checked={!hiddenQuadrants.has(key)}
+								onCheckedChange={() => toggleQuadrant(key)}
+								onClick={(e) => e.stopPropagation()}
+								className={`${color} border-current data-[state=checked]:${color}`}
+							/>
+							<span className={`text-xs ${color}`}>
+								{t(`common.rrg.quadrants.${key}`)}
+							</span>
+						</div>
+					))}
+				</div>
+			)}
 
 			{/* Canvas area */}
 			<div className="relative mt-3">

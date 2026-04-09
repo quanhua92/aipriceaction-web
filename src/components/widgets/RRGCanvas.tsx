@@ -2,19 +2,9 @@ import * as React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { RRGResponse, RRGTicker } from "@/lib/api-client";
 
-type Quadrant = "leading" | "improving" | "weakening" | "lagging";
+export type Quadrant = "leading" | "improving" | "weakening" | "lagging";
 
-interface RRGCanvasProps {
-	data: RRGResponse["data"];
-	algorithm: "mascore" | "jdk";
-	hoveredTicker: RRGTicker | null;
-	selectedTicker: RRGTicker | null;
-	onHover: (ticker: RRGTicker | null) => void;
-	onSelect: (ticker: RRGTicker) => void;
-	showLabels: boolean;
-}
-
-function getQuadrant(
+export function getQuadrant(
 	rsRatio: number,
 	rsMomentum: number,
 	algorithm: "mascore" | "jdk",
@@ -26,6 +16,16 @@ function getQuadrant(
 	if (!xAbove && yAbove) return "improving";
 	if (xAbove && !yAbove) return "weakening";
 	return "lagging";
+}
+
+interface RRGCanvasProps {
+	data: RRGResponse["data"];
+	algorithm: "mascore" | "jdk";
+	hoveredTicker: RRGTicker | null;
+	selectedTicker: RRGTicker | null;
+	onHover: (ticker: RRGTicker | null) => void;
+	onSelect: (ticker: RRGTicker) => void;
+	showLabels: boolean;
 }
 
 function getQuadrantColor(q: Quadrant, isDark: boolean): string {
@@ -325,7 +325,9 @@ export function RRGCanvas({
 		ctx.textAlign = "center";
 		ctx.textBaseline = "top";
 		const xLabel =
-			algorithm === "mascore" ? t("common.rrg.mascoreXAxis") : t("common.rrg.xAxis");
+			algorithm === "mascore"
+				? t("common.rrg.mascoreXAxis")
+				: t("common.rrg.xAxis");
 		ctx.fillText(
 			xLabel,
 			(padding.left + size.width - padding.right) / 2,
@@ -338,7 +340,9 @@ export function RRGCanvas({
 		ctx.textAlign = "center";
 		ctx.textBaseline = "bottom";
 		const yLabel =
-			algorithm === "mascore" ? t("common.rrg.mascoreYAxis") : t("common.rrg.yAxis");
+			algorithm === "mascore"
+				? t("common.rrg.mascoreYAxis")
+				: t("common.rrg.yAxis");
 		ctx.fillText(yLabel, 0, 0);
 		ctx.restore();
 
