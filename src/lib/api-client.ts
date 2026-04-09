@@ -370,7 +370,7 @@ export async function getRRGWithLogging(
     if (logger) {
       const tickerCount = response.data.data?.tickers?.length ?? 0
       logger.info(
-        `[API] ${source} getRRG: algorithm=${params.algorithm || 'mascore'} mode=${params.mode || 'vn'} ${params.benchmark ? `benchmark=${params.benchmark}` : ''} ${params.period ? `period=${params.period}` : ''} ${params.trails !== undefined ? `trails=${params.trails}` : ''} | ${tickerCount} tickers | ${response.metadata.duration}ms | ${response.metadata.status}`
+        `[API] ${source} getRRG: algorithm=${params.algorithm || 'mascore'} mode=${params.mode || 'vn'} ${params.benchmark ? `benchmark=${params.benchmark}` : ''} ${params.period ? `period=${params.period}` : ''} ${params.trails !== undefined ? `trails=${params.trails}` : ''} ${params.date ? `date=${params.date}` : ''} | ${tickerCount} tickers | ${response.metadata.duration}ms | ${response.metadata.status}`
       )
     }
 

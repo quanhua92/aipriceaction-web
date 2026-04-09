@@ -1,6 +1,9 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
+import { DateInput } from "@/components/DateInput";
 import { TickerGroupSelector } from "@/components/TickerGroupSelector";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -200,6 +203,25 @@ export function RRGWidget({
 	// Table state
 	const [tableOpen, setTableOpen] = React.useState(false);
 
+	// Date state — default to today
+	const [selectedDate, setSelectedDate] = React.useState<string | null>(() => {
+		return new Date().toISOString().split("T")[0];
+	});
+
+	const handlePrevDate = React.useCallback(() => {
+		if (!selectedDate) return;
+		const d = new Date(selectedDate);
+		d.setDate(d.getDate() - 1);
+		setSelectedDate(d.toISOString().split("T")[0]);
+	}, [selectedDate]);
+
+	const handleNextDate = React.useCallback(() => {
+		if (!selectedDate) return;
+		const d = new Date(selectedDate);
+		d.setDate(d.getDate() + 1);
+		setSelectedDate(d.toISOString().split("T")[0]);
+	}, [selectedDate]);
+
 	// Resolve API mode from selected group
 	const apiMode = React.useMemo(
 		() => resolveApiMode(selectedGroup),
@@ -292,6 +314,7 @@ export function RRGWidget({
 					...(activeTab === "jdk"
 						? { benchmark: jdkBenchmark, period: jdkPeriod }
 						: {}),
+					...(selectedDate ? { date: selectedDate } : {}),
 				};
 
 				const response = await getRRG(params);
@@ -325,6 +348,7 @@ export function RRGWidget({
 		jdkTrails,
 		jdkBenchmark,
 		jdkPeriod,
+		selectedDate,
 		lastRefresh,
 	]);
 
@@ -437,19 +461,57 @@ export function RRGWidget({
 				</Popover>
 			</div>
 
-			{/* Watchlist selector row */}
-			<TickerGroupSelector
-				value={selectedGroup}
-				onValueChange={handleGroupChange}
-				showAll={true}
-				showCrypto={true}
-				showGlobal={true}
-				showPredefined={true}
-				showCustom={true}
-				showSectors={true}
-				refreshKey={0}
-				className="h-8 text-xs w-full mb-3"
-			/>
+			{/* Watchlist + Date row */}
+			<div className="flex items-center gap-2 mb-3">
+				<TickerGroupSelector
+					value={selectedGroup}
+					onValueChange={handleGroupChange}
+					showAll={true}
+					showCrypto={true}
+					showGlobal={true}
+					showPredefined={true}
+					showCustom={true}
+					showSectors={true}
+					refreshKey={0}
+					className="h-8 text-xs flex-1 min-w-0"
+				/>
+				<div className="flex items-center gap-1 flex-shrink-0">
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-8 w-8 p-0"
+						onClick={handlePrevDate}
+					>
+						<ChevronLeft className="h-4 w-4" />
+					</Button>
+					<Popover>
+						<PopoverTrigger asChild>
+							<Button
+								variant="outline"
+								size="sm"
+								className="h-8 font-mono text-xs"
+							>
+								{selectedDate ?? "—"}
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent className="w-auto p-2" align="center">
+							<DateInput
+								value={selectedDate || undefined}
+								onChange={(val) => setSelectedDate(val ?? null)}
+								clearable={true}
+							/>
+						</PopoverContent>
+					</Popover>
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-8 w-8 p-0"
+						onClick={handleNextDate}
+					>
+						<ChevronRight className="h-4 w-4" />
+					</Button>
+				</div>
+			</div>
 
 			{/* Tabs */}
 			<Tabs

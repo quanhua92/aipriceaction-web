@@ -433,6 +433,8 @@ export interface RRGQueryParams {
   trails?: number;
   /** Minimum volume filter */
   min_volume?: number;
+  /** Cutoff date YYYY-MM-DD — compute RRG using data up to this date */
+  date?: string;
   /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies, 'yahoo' for global */
   mode?: 'vn' | 'crypto' | 'yahoo' | string;
 }
