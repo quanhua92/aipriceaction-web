@@ -66,6 +66,9 @@ interface TradingViewChartProps {
 
 	// Infinite history scroll
 	infiniteHistory?: boolean;
+
+	// Hide fullscreen button (e.g. when inside ChartFullscreenDialog)
+	hideFullscreenButton?: boolean;
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -88,6 +91,7 @@ function TradingViewChartContent({
 	showControls = true,
 	preserveViewport = false,
 	infiniteHistory = true,
+	hideFullscreenButton = false,
 	...visualProps
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
@@ -252,7 +256,7 @@ function TradingViewChartContent({
 							onTickerChange?.(newTicker);
 						}}
 						showTickerSelect={true}
-						onFullscreenClick={handleFullscreenClick}
+						onFullscreenClick={hideFullscreenButton ? undefined : handleFullscreenClick}
 					/>
 				)}
 				<BaseTradingViewChart

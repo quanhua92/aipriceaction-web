@@ -286,6 +286,7 @@ export function ChartFullscreenDialog({
                     height={chartHeight}
                     showControls={true}
                     endDateOverride={endDate}
+                    hideFullscreenButton={true}
                   />
                 </div>
               )}
@@ -304,6 +305,7 @@ export function ChartFullscreenDialog({
                       height={chartHeight * 0.95 / 2}
                       showControls={true}
                       endDateOverride={endDate}
+                      hideFullscreenButton={true}
                     />
 
                     {/* Primary ticker chart (bottom) */}
@@ -313,6 +315,7 @@ export function ChartFullscreenDialog({
                       height={chartHeight * 0.95 / 2}
                       showControls={true}
                       endDateOverride={endDate}
+                      hideFullscreenButton={true}
                     />
                   </div>
                 </div>
