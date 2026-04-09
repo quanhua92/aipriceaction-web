@@ -7,6 +7,7 @@ import { TrendSignal } from "@/components/TrendSignal";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
+import { RRGWidget } from "@/components/widgets/RRGWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
@@ -137,6 +138,11 @@ function GlobalPage() {
 						<TrendSignal defaultWatchlist={GLOBAL_WATCHLIST_NAME} />
 					</div>
 				</div>
+			</div>
+
+			{/* Section 2.5: Relative Rotation Graph */}
+			<div className="p-3 md:p-4 border-t">
+				<RRGWidget mode="yahoo" />
 			</div>
 
 			{/* Section 3: Top Performers + Market Matrix */}

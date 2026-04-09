@@ -416,3 +416,62 @@ export interface VolumeProfileResponse {
 export interface APIErrorResponse {
   error: string;
 }
+
+// ===== RRG (Relative Rotation Graph) Types =====
+
+/**
+ * Query parameters for /analysis/rrg endpoint
+ */
+export interface RRGQueryParams {
+  /** Algorithm: 'mascore' (MA distance %) or 'jdk' (JdK RS-Ratio) */
+  algorithm?: 'mascore' | 'jdk';
+  /** Benchmark symbol for JdK algorithm (e.g., VNINDEX, BTCUSDT, ^GSPC) */
+  benchmark?: string;
+  /** Lookback period in days for JdK algorithm (4-50) */
+  period?: number;
+  /** Number of trail points (0 = no trails, 10-120) */
+  trails?: number;
+  /** Minimum volume filter */
+  min_volume?: number;
+  /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies, 'yahoo' for global */
+  mode?: 'vn' | 'crypto' | 'yahoo' | string;
+}
+
+/**
+ * Single trail point in RRG
+ */
+export interface RRGTrail {
+  date: string;
+  rs_ratio: number;
+  rs_momentum: number;
+}
+
+/**
+ * Single ticker data in RRG response
+ */
+export interface RRGTicker {
+  symbol: string;
+  rs_ratio: number;
+  rs_momentum: number;
+  raw_rs: number;
+  close: number;
+  volume: number;
+  sector?: string;
+  source?: string;
+  trails?: RRGTrail[];
+}
+
+/**
+ * Response from /analysis/rrg endpoint
+ */
+export interface RRGResponse {
+  analysis_date: string;
+  analysis_type: 'rrg';
+  total_analyzed: number;
+  data: {
+    benchmark?: string;
+    algorithm: 'mascore' | 'jdk';
+    period?: number;
+    tickers: RRGTicker[];
+  };
+}

@@ -13,6 +13,8 @@ import type {
   HealthResponse,
   MAScoresBySectorQueryParams,
   MAScoresBySectorResponse,
+  RRGQueryParams,
+  RRGResponse,
   TickerGroups,
   TickerNames,
   TickersQueryParams,
@@ -539,6 +541,59 @@ export class AIPriceActionClient {
     return this.request<VolumeProfileResponse>(
       `/analysis/volume-profile${queryString}`
     ) as Promise<VolumeProfileResponse>;
+  }
+
+  /**
+   * GET /analysis/rrg - Get Relative Rotation Graph data
+   *
+   * @example
+   * ```ts
+   * // MA Score mode (default)
+   * const rrg = await client.getRRG({ mode: 'vn', algorithm: 'mascore', trails: 20 });
+   *
+   * // JdK RS-Ratio mode with benchmark
+   * const jdk = await client.getRRG({
+   *   mode: 'vn',
+   *   algorithm: 'jdk',
+   *   benchmark: 'VNINDEX',
+   *   period: 10,
+   *   trails: 60
+   * });
+   * ```
+   */
+  async getRRG(params: RRGQueryParams = {}): Promise<RRGResponse> {
+    // Validate algorithm
+    if (params.algorithm && !['mascore', 'jdk'].includes(params.algorithm)) {
+      throw new ValidationError(
+        `Invalid algorithm: ${params.algorithm}. Must be 'mascore' or 'jdk'`,
+        "algorithm"
+      );
+    }
+
+    // Validate period (JdK only)
+    if (params.period !== undefined) {
+      if (params.period < 4 || params.period > 50) {
+        throw new ValidationError(
+          `Invalid period: ${params.period}. Must be between 4 and 50`,
+          "period"
+        );
+      }
+    }
+
+    // Validate trails
+    if (params.trails !== undefined) {
+      if (params.trails !== 0 && (params.trails < 1 || params.trails > 120)) {
+        throw new ValidationError(
+          `Invalid trails: ${params.trails}. Must be 0 or between 1 and 120`,
+          "trails"
+        );
+      }
+    }
+
+    const queryString = buildQueryString(params as Record<string, unknown>);
+    return this.request<RRGResponse>(
+      `/analysis/rrg${queryString}`
+    ) as Promise<RRGResponse>;
   }
 
   /**

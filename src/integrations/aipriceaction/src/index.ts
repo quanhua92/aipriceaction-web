@@ -49,6 +49,10 @@ export type {
   PriceLevelVolume,
   VolumeStatistics,
   APIErrorResponse,
+  RRGQueryParams,
+  RRGResponse,
+  RRGTicker,
+  RRGTrail,
 } from "./types.js";
 
 // Export enums

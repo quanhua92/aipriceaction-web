@@ -1,5 +1,5 @@
 import { AIPriceActionClient, type RequestResult } from '@/integrations/aipriceaction/src'
-import type { StockData, TickersResponse } from '@/integrations/aipriceaction/src'
+import type { StockData, TickersResponse, RRGQueryParams, RRGResponse } from '@/integrations/aipriceaction/src'
 import { API_BASE_URL_OVERRIDE_STORAGE_KEY } from '@/lib/constants'
 import { SafeLocalStorage } from '@/lib/localStorage'
 
@@ -342,6 +342,48 @@ export async function getVolumeProfile(params: Parameters<typeof apiClient.getVo
   return apiClient.getVolumeProfile(params)
 }
 
+/**
+ * Get RRG (Relative Rotation Graph) data
+ */
+export async function getRRG(params: RRGQueryParams = {}): Promise<RRGResponse> {
+  return apiClient.getRRG(params)
+}
+
+/**
+ * Get RRG data with logging support
+ * @param source - Source component/context calling this function
+ * @param params - Query parameters for RRG API
+ * @param logger - Logger functions (info, warn, error)
+ */
+export async function getRRGWithLogging(
+  source: string,
+  params: RRGQueryParams,
+  logger?: {
+    info: (message: string) => void
+    warn: (message: string) => void
+    error: (message: string) => void
+  }
+): Promise<RRGResponse> {
+  try {
+    const response = await apiClientWithMetadata.getRRG(params) as unknown as RequestResult<RRGResponse>
+
+    if (logger) {
+      const tickerCount = response.data.data?.tickers?.length ?? 0
+      logger.info(
+        `[API] ${source} getRRG: algorithm=${params.algorithm || 'mascore'} mode=${params.mode || 'vn'} ${params.benchmark ? `benchmark=${params.benchmark}` : ''} ${params.period ? `period=${params.period}` : ''} ${params.trails !== undefined ? `trails=${params.trails}` : ''} | ${tickerCount} tickers | ${response.metadata.duration}ms | ${response.metadata.status}`
+      )
+    }
+
+    return response.data
+  } catch (error) {
+    if (logger) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      logger.error(`[API] ${source} getRRG FAILED: ${errorMessage} | algorithm=${params.algorithm || 'mascore'} mode=${params.mode || 'vn'}`)
+    }
+    throw error
+  }
+}
+
 // Re-export types and enums from the SDK
 export type {
   TickerGroups,
@@ -364,6 +406,10 @@ export type {
   ValueArea,
   PriceRange,
   VolumeStatistics,
+  RRGQueryParams,
+  RRGResponse,
+  RRGTicker,
+  RRGTrail,
 } from '@/integrations/aipriceaction/src'
 
 export { Interval } from '@/integrations/aipriceaction/src'
