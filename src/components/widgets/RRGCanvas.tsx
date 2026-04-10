@@ -384,15 +384,40 @@ export function RRGCanvas({
 		for (const ticker of tickers) {
 			if (!ticker.trails || ticker.trails.length < 2) continue;
 			const q = getQuadrant(ticker.rs_ratio, ticker.rs_momentum, algorithm);
+			const isHighlighted =
+				hoveredTicker?.symbol === ticker.symbol ||
+				selectedTicker?.symbol === ticker.symbol;
+
+			// Highlight ring behind trail (same style as dots)
+			if (isHighlighted) {
+				ctx.strokeStyle = "#ffffff";
+				ctx.lineWidth = 5;
+				ctx.beginPath();
+				for (let i = 0; i < ticker.trails.length; i++) {
+					const trail = ticker.trails[i];
+					const px = toPixelX(trail.rs_ratio);
+					const py = toPixelY(trail.rs_momentum);
+					if (i === 0) ctx.moveTo(px, py);
+					else ctx.lineTo(px, py);
+				}
+				ctx.globalAlpha = 0.6 + (1 / ticker.trails.length) * 0.4;
+				ctx.stroke();
+			}
+
 			ctx.strokeStyle = getQuadrantTrailColor(q, isDark);
-			ctx.lineWidth = 1.5;
+			ctx.lineWidth = isHighlighted ? 2.5 : 1.5;
 			ctx.beginPath();
 			for (let i = 0; i < ticker.trails.length; i++) {
 				const trail = ticker.trails[i];
 				const px = toPixelX(trail.rs_ratio);
 				const py = toPixelY(trail.rs_momentum);
 				// Fade older trail points
-				ctx.globalAlpha = 0.1 + (i / ticker.trails.length) * 0.4;
+				const baseFade = isHighlighted
+					? 0.5
+					: 0.1 + (i / ticker.trails.length) * 0.4;
+				ctx.globalAlpha = isHighlighted
+					? 0.4 + (i / ticker.trails.length) * 0.6
+					: baseFade;
 				if (i === 0) ctx.moveTo(px, py);
 				else ctx.lineTo(px, py);
 			}
