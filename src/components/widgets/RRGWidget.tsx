@@ -319,6 +319,8 @@ export function RRGWidget({
 					algorithm: activeTab,
 					mode: apiMode,
 					trails: activeTab === "mascore" ? mascoreTrails : jdkTrails,
+					// Yahoo tickers (e.g. ^GSPC) often have low volume; let client-side slider handle filtering
+					...(apiMode === "yahoo" ? { min_volume: 0 } : {}),
 					...(activeTab === "jdk"
 						? { benchmark: jdkBenchmark, period: jdkPeriod }
 						: {}),
