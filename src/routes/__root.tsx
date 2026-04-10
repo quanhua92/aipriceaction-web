@@ -4,6 +4,7 @@ import {
 } from '@tanstack/react-router'
 
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 import { DebugFooter } from '../components/DebugFooter'
 import { StatusBar } from '../components/StatusBar'
 import { ThemeProvider } from '../components/ThemeProvider'
@@ -87,6 +88,7 @@ function RootComponent() {
                       <PWAInstallProvider>
                         <Header />
                         <Outlet />
+                        <Footer />
                         <StatusBar />
                         <DebugFooter />
                       </PWAInstallProvider>

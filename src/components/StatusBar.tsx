@@ -55,7 +55,7 @@ export function StatusBar() {
   }
 
   return (
-    <div className="border-t border-border bg-background">
+    <div className="border-t border-gray-700 bg-gray-800 text-white">
       <div className="container mx-auto px-4 py-1">
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
           <DialogTrigger asChild>

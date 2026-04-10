@@ -94,8 +94,8 @@ export function DebugFooter() {
 
 	if (!isMounted) {
 		return (
-			<div className="border-t bg-muted/30 py-1.5 px-4 text-center">
-				<div className="text-xs text-muted-foreground">
+			<div className="border-t border-gray-700 bg-gray-900 py-1.5 px-4 text-center">
+				<div className="text-xs text-gray-400">
 					© {new Date().getFullYear()} AIPriceAction
 				</div>
 			</div>
@@ -287,7 +287,7 @@ function DebugFooterContent() {
 		<Collapsible
 			open={isOpen}
 			onOpenChange={setIsOpen}
-			className="border-t bg-muted/30"
+			className="border-t border-gray-700 bg-gray-900"
 		>
 			<CollapsibleTrigger className="w-full py-1.5 px-4 hover:bg-muted/50 transition-colors">
 				<div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
