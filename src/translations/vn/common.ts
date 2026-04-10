@@ -543,6 +543,7 @@ export default {
 		period: "Kỳ",
 		trails: "Số Ngày",
 		minVolume: "KL Tối Thiểu",
+		minValue: "Giá Trị Tối Thiểu",
 		noTrails: "0",
 		loading: "Đang tải RRG...",
 		noData: "Không có dữ liệu RRG",

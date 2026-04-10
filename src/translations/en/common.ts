@@ -540,6 +540,7 @@ export default {
 		period: "Period",
 		trails: "Trails",
 		minVolume: "Min Volume",
+		minValue: "Min Value",
 		noTrails: "No trails",
 		loading: "Loading RRG...",
 		noData: "No RRG data available",

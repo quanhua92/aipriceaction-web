@@ -72,7 +72,8 @@ function sliderToVolume(val: number, sortedVolumes: number[]): number {
 	const N = sortedVolumes.length;
 	if (val === 0 || N === 0) return 0;
 	// When N is small, target half of N so slider=50 shows ~half the group
-	const target = N <= DEFAULT_VISIBLE ? Math.max(1, Math.ceil(N / 2)) : DEFAULT_VISIBLE;
+	const target =
+		N <= DEFAULT_VISIBLE ? Math.max(1, Math.ceil(N / 2)) : DEFAULT_VISIBLE;
 	const k = 2 * Math.log(N / target);
 	const fraction = Math.exp((-k * val) / 100);
 	const visibleCount = Math.max(1, Math.round(N * fraction));
@@ -91,7 +92,10 @@ function computeDefaultSlider(
 	const N = sortedVolumes.length;
 	if (N === 0) return 0;
 	// For small groups, default to showing ~half
-	const effectiveTarget = N <= DEFAULT_VISIBLE ? Math.max(1, Math.ceil(N / 2)) : Math.min(DEFAULT_VISIBLE, N);
+	const effectiveTarget =
+		N <= DEFAULT_VISIBLE
+			? Math.max(1, Math.ceil(N / 2))
+			: Math.min(DEFAULT_VISIBLE, N);
 	const adjustedCount = N <= DEFAULT_VISIBLE ? effectiveTarget : targetCount;
 	const k = 2 * Math.log(N / effectiveTarget);
 	const val = (-100 * Math.log(adjustedCount / N)) / k;
@@ -162,7 +166,8 @@ export function RRGWidget({
 }: RRGWidgetProps) {
 	const { t } = useTranslation();
 	const { lastRefresh } = useRefresh();
-	const { tickerGroups, tickerNames, cryptoTickerNames, globalTickerNames } = useAPI();
+	const { tickerGroups, tickerNames, cryptoTickerNames, globalTickerNames } =
+		useAPI();
 
 	// Watchlist group state
 	const [selectedGroup, setSelectedGroup] = React.useState(defaultGroup);
@@ -180,6 +185,10 @@ export function RRGWidget({
 	const [jdkTrails, setJdkTrails] = React.useState(5);
 	const [jdkMinVol, setJdkMinVol] = React.useState(67); // ~10M default
 	const [jdkPeriod, setJdkPeriod] = React.useState(10);
+
+	// Min value controls (traded value = close × volume)
+	const [mascoreMinVal, setMascoreMinVal] = React.useState(0);
+	const [jdkMinVal, setJdkMinVal] = React.useState(0);
 
 	// Data state
 	const [rrgData, setRrgData] = React.useState<RRGResponse | null>(null);
@@ -285,6 +294,19 @@ export function RRGWidget({
 		return tickers.map((t) => t.volume).sort((a, b) => a - b);
 	}, [rrgData, groupTickerSet]);
 
+	// Sorted traded values (close × volume) for percentile-based slider mapping
+	const sortedValues = React.useMemo(() => {
+		if (!rrgData?.data?.tickers?.length) return [];
+		let tickers = rrgData.data.tickers;
+		if (groupTickerSet) {
+			tickers = tickers.filter((t) =>
+				groupTickerSet.has(t.symbol.toUpperCase()),
+			);
+		}
+		if (!tickers.length) return [];
+		return tickers.map((t) => t.close * t.volume).sort((a, b) => a - b);
+	}, [rrgData, groupTickerSet]);
+
 	const minVolume = React.useMemo(() => {
 		const vol = sliderToVolume(mascoreMinVol, sortedVolumes);
 		return vol;
@@ -293,6 +315,14 @@ export function RRGWidget({
 	const jdkMinVolume = React.useMemo(() => {
 		return sliderToVolume(jdkMinVol, sortedVolumes);
 	}, [jdkMinVol, sortedVolumes]);
+
+	const minValue = React.useMemo(() => {
+		return sliderToVolume(mascoreMinVal, sortedValues);
+	}, [mascoreMinVal, sortedValues]);
+
+	const jdkMinValue = React.useMemo(() => {
+		return sliderToVolume(jdkMinVal, sortedValues);
+	}, [jdkMinVal, sortedValues]);
 
 	// Compute default slider value to show ~20 dots within the selected group
 	const defaultSliderVal = React.useMemo(() => {
@@ -369,6 +399,7 @@ export function RRGWidget({
 	// Filter trails to match user slider, then filter by selected group and volume
 	const activeVolumeThreshold =
 		activeTab === "mascore" ? minVolume : jdkMinVolume;
+	const activeValueThreshold = activeTab === "mascore" ? minValue : jdkMinValue;
 	const displayData = React.useMemo(() => {
 		if (!rrgData?.data) return null;
 
@@ -384,6 +415,13 @@ export function RRGWidget({
 		// Client-side filter by volume threshold
 		if (activeVolumeThreshold > 0) {
 			filtered = filtered.filter((t) => t.volume >= activeVolumeThreshold);
+		}
+
+		// Client-side filter by traded value threshold (close × volume)
+		if (activeValueThreshold > 0) {
+			filtered = filtered.filter(
+				(t) => t.close * t.volume >= activeValueThreshold,
+			);
 		}
 
 		// Client-side filter by hidden quadrants
@@ -413,6 +451,7 @@ export function RRGWidget({
 		maxTrails,
 		groupTickerSet,
 		activeVolumeThreshold,
+		activeValueThreshold,
 		hiddenQuadrants,
 		activeTab,
 	]);
@@ -640,6 +679,24 @@ export function RRGWidget({
 								className="w-full"
 							/>
 						</div>
+						<div className="flex-1">
+							<div className="flex items-center justify-between mb-1">
+								<span className="text-xs text-muted-foreground">
+									{t("common.rrg.minValue")}
+								</span>
+								<span className="text-xs font-mono">
+									{formatVolume(minValue)}
+								</span>
+							</div>
+							<Slider
+								value={[mascoreMinVal]}
+								onValueChange={([v]) => setMascoreMinVal(v)}
+								min={0}
+								max={100}
+								step={1}
+								className="w-full"
+							/>
+						</div>
 					</div>
 				</TabsContent>
 
@@ -709,6 +766,24 @@ export function RRGWidget({
 							<Slider
 								value={[jdkMinVol]}
 								onValueChange={([v]) => setJdkMinVol(v)}
+								min={0}
+								max={100}
+								step={1}
+								className="w-full"
+							/>
+						</div>
+						<div className="flex-1">
+							<div className="flex items-center justify-between mb-1">
+								<span className="text-xs text-muted-foreground">
+									{t("common.rrg.minValue")}
+								</span>
+								<span className="text-xs font-mono">
+									{formatVolume(jdkMinValue)}
+								</span>
+							</div>
+							<Slider
+								value={[jdkMinVal]}
+								onValueChange={([v]) => setJdkMinVal(v)}
 								min={0}
 								max={100}
 								step={1}
@@ -802,7 +877,11 @@ export function RRGWidget({
 							selectedTicker={selectedTicker}
 							algorithm={activeTab}
 							onSelectTicker={setSelectedTicker}
-							tickerNamesMap={{ ...tickerNames, ...cryptoTickerNames, ...globalTickerNames }}
+							tickerNamesMap={{
+								...tickerNames,
+								...cryptoTickerNames,
+								...globalTickerNames,
+							}}
 						/>
 					</CollapsibleContent>
 				</Collapsible>
