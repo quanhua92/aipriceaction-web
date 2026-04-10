@@ -262,11 +262,25 @@ export function RRGWidget({
 		}
 	}, [apiMode, benchmarkOptions, jdkBenchmark, defaultBenchmark]);
 
-	// Sorted volumes for percentile-based slider mapping
+	// Get the ticker symbols for the selected group (for client-side filtering)
+	const groupTickerSet = React.useMemo(() => {
+		const symbols = getGroupTickers(selectedGroup, tickerGroups);
+		if (!symbols) return null;
+		return new Set(symbols.map((s) => s.toUpperCase()));
+	}, [selectedGroup, tickerGroups]);
+
+	// Sorted volumes for percentile-based slider mapping (group-filtered)
 	const sortedVolumes = React.useMemo(() => {
 		if (!rrgData?.data?.tickers?.length) return [];
-		return [...rrgData.data.tickers].map((t) => t.volume).sort((a, b) => a - b);
-	}, [rrgData]);
+		let tickers = rrgData.data.tickers;
+		if (groupTickerSet) {
+			tickers = tickers.filter((t) =>
+				groupTickerSet.has(t.symbol.toUpperCase()),
+			);
+		}
+		if (!tickers.length) return [];
+		return tickers.map((t) => t.volume).sort((a, b) => a - b);
+	}, [rrgData, groupTickerSet]);
 
 	const minVolume = React.useMemo(() => {
 		return sliderToVolume(mascoreMinVol, sortedVolumes);
@@ -276,27 +290,11 @@ export function RRGWidget({
 		return sliderToVolume(jdkMinVol, sortedVolumes);
 	}, [jdkMinVol, sortedVolumes]);
 
-	// Get the ticker symbols for the selected group (for client-side filtering)
-	const groupTickerSet = React.useMemo(() => {
-		const symbols = getGroupTickers(selectedGroup, tickerGroups);
-		if (!symbols) return null;
-		return new Set(symbols.map((s) => s.toUpperCase()));
-	}, [selectedGroup, tickerGroups]);
-
 	// Compute default slider value to show ~20 dots within the selected group
 	const defaultSliderVal = React.useMemo(() => {
-		if (!rrgData?.data?.tickers?.length) return 0;
-		// Filter to selected group's tickers first
-		let tickers = rrgData.data.tickers;
-		if (groupTickerSet) {
-			tickers = tickers.filter((t) =>
-				groupTickerSet.has(t.symbol.toUpperCase()),
-			);
-		}
-		if (!tickers.length) return 0;
-		const groupSorted = tickers.map((t) => t.volume).sort((a, b) => a - b);
-		return computeDefaultSlider(groupSorted, 20);
-	}, [rrgData, groupTickerSet]);
+		if (!sortedVolumes.length) return 0;
+		return computeDefaultSlider(sortedVolumes, 20);
+	}, [sortedVolumes]);
 
 	// Auto-set volume slider when group changes
 	// biome-ignore lint/correctness/useExhaustiveDependencies: selectedGroup triggers update even if defaultSliderVal is same
@@ -320,7 +318,7 @@ export function RRGWidget({
 					mode: apiMode,
 					trails: activeTab === "mascore" ? mascoreTrails : jdkTrails,
 					// Yahoo tickers (e.g. ^GSPC) often have low volume; let client-side slider handle filtering
-					...(apiMode === "yahoo" ? { min_volume: 0 } : {}),
+					min_volume: apiMode === "yahoo" ? 0 : 1000,
 					...(activeTab === "jdk"
 						? { benchmark: jdkBenchmark, period: jdkPeriod }
 						: {}),
