@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { RRGTicker } from "@/lib/api-client";
+import { getSectorDisplayName } from "@/lib/sector-names";
 
 type Quadrant = "leading" | "improving" | "weakening" | "lagging";
 
@@ -56,7 +57,7 @@ export function RRGDetailPanel({
 	onClose,
 	onFullscreen,
 }: RRGDetailPanelProps) {
-	const { t } = useTranslation();
+	const { t, language } = useTranslation();
 	const quadrant = getQuadrant(ticker.rs_ratio, ticker.rs_momentum, algorithm);
 	const ref = React.useRef<HTMLDivElement>(null);
 
@@ -160,15 +161,16 @@ export function RRGDetailPanel({
 			{/* Header */}
 			<div className="flex items-center justify-between mb-2">
 				<div className="flex items-center gap-2">
-					<span
-						className="font-bold text-sm cursor-pointer hover:underline"
+					<button
+						type="button"
+						className="font-bold text-sm hover:underline bg-transparent p-0 border-0 cursor-pointer text-inherit"
 						onClick={() => onFullscreen?.()}
 					>
 						{ticker.symbol}
-					</span>
+					</button>
 					{ticker.sector && (
 						<span className="text-xs text-muted-foreground">
-							{ticker.sector}
+							{getSectorDisplayName(ticker.sector, language)}
 						</span>
 					)}
 				</div>
