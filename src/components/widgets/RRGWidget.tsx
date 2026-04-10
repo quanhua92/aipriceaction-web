@@ -159,7 +159,7 @@ export function RRGWidget({
 }: RRGWidgetProps) {
 	const { t } = useTranslation();
 	const { lastRefresh } = useRefresh();
-	const { tickerGroups } = useAPI();
+	const { tickerGroups, tickerNames } = useAPI();
 
 	// Watchlist group state
 	const [selectedGroup, setSelectedGroup] = React.useState(defaultGroup);
@@ -760,9 +760,11 @@ export function RRGWidget({
 					<CollapsibleContent>
 						<RRGTable
 							tickers={tickers}
+							allTickers={rrgData?.data?.tickers ?? []}
 							selectedTicker={selectedTicker}
 							algorithm={activeTab}
 							onSelectTicker={setSelectedTicker}
+							tickerNamesMap={tickerNames ?? undefined}
 						/>
 					</CollapsibleContent>
 				</Collapsible>
