@@ -1,15 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import {
   Home,
-  LineChart,
   Menu,
-  Table,
   Brain,
   Eye,
-  Bell,
   Coins,
   Globe,
-  TrendingUp,
   Dices,
 } from 'lucide-react'
 import {
@@ -58,32 +54,6 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             </Link>
 
             <Link
-              to="/ai"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Brain size={20} />
-              <span className="font-medium">AI Context</span>
-            </Link>
-
-            <Link
-              to="/backtesting"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Dices size={20} />
-              <span className="font-medium">Backtesting</span>
-            </Link>
-
-            <Link
               to="/crypto"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -106,11 +76,11 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
               }}
             >
               <Globe size={20} />
-              <span className="font-medium">Global</span>
+              <span className="font-medium">Global Market</span>
             </Link>
 
             <Link
-              to="/chart"
+              to="/ai"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
               activeProps={{
@@ -118,8 +88,22 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
                   'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
               }}
             >
-              <LineChart size={20} />
-              <span className="font-medium">Chart</span>
+              <Brain size={20} />
+              <span className="font-medium">AI Context</span>
+            </Link>
+
+            <Link
+              to="/backtesting"
+              search={{ ticker: undefined, endDate: undefined, interval: undefined, limit: undefined }}
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+              }}
+            >
+              <Dices size={20} />
+              <span className="font-medium">Backtesting</span>
             </Link>
 
             <Link
@@ -132,46 +116,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
               }}
             >
               <Eye size={20} />
-              <span className="font-medium">Watch</span>
-            </Link>
-
-            <Link
-              to="/matrix"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Table size={20} />
-              <span className="font-medium">Market Matrix</span>
-            </Link>
-
-            <Link
-              to="/signals"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <TrendingUp size={20} />
-              <span className="font-medium">Signals</span>
-            </Link>
-
-            <Link
-              to="/alert"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Bell size={20} />
-              <span className="font-medium">Alerts</span>
+              <span className="font-medium">Watchlist</span>
             </Link>
 
             {/* Mobile PWA Install Button */}

@@ -22,7 +22,7 @@ export default function Footer() {
               Crypto
             </Link>
             <Link to="/global" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
-              Global
+              Global Market
             </Link>
             <Link to="/chart" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               Chart
@@ -31,7 +31,7 @@ export default function Footer() {
 
           <div className="space-y-2">
             <Link to="/watch" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
-              Watch
+              Watchlist
             </Link>
             <Link to="/matrix" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               Market Matrix

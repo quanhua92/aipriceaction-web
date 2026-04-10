@@ -51,28 +51,6 @@ export default function Header() {
             </Link>
 
             <Link
-              to="/ai"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
-              activeProps={{
-                className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
-              }}
-            >
-              <span className="font-medium">AI Context</span>
-            </Link>
-
-            <Link
-              to="/backtesting"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
-              activeProps={{
-                className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
-              }}
-            >
-              <span className="font-medium">Backtesting</span>
-            </Link>
-
-            <Link
               to="/crypto"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
@@ -91,18 +69,30 @@ export default function Header() {
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
-              <span className="font-medium">Global</span>
+              <span className="font-medium">Global Market</span>
             </Link>
 
             <Link
-              to="/chart"
+              to="/ai"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
               activeProps={{
                 className:
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
-              <span className="font-medium">Chart</span>
+              <span className="font-medium">AI Context</span>
+            </Link>
+
+            <Link
+              to="/backtesting"
+              search={{ ticker: undefined, endDate: undefined, interval: undefined, limit: undefined }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
+              }}
+            >
+              <span className="font-medium">Backtesting</span>
             </Link>
 
             <Link
@@ -113,40 +103,7 @@ export default function Header() {
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
-              <span className="font-medium">Watch</span>
-            </Link>
-
-            <Link
-              to="/matrix"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
-              activeProps={{
-                className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
-              }}
-            >
-              <span className="font-medium">Market Matrix</span>
-            </Link>
-
-            <Link
-              to="/signals"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
-              activeProps={{
-                className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
-              }}
-            >
-              <span className="font-medium">Signals</span>
-            </Link>
-
-            <Link
-              to="/alert"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
-              activeProps={{
-                className:
-                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
-              }}
-            >
-              <span className="font-medium">Alerts</span>
+              <span className="font-medium">Watchlist</span>
             </Link>
           </nav>
         </div>
