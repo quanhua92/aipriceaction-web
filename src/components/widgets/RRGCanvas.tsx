@@ -468,7 +468,7 @@ export function RRGCanvas({
 
 		// Symbol labels
 		if (showLabels) {
-			ctx.font = "10px sans-serif";
+			ctx.font = "15px sans-serif";
 			ctx.textAlign = "left";
 			ctx.textBaseline = "bottom";
 
@@ -481,9 +481,11 @@ export function RRGCanvas({
 
 				ctx.fillStyle = isHighlighted
 					? isDark
+						? "#ffffff"
+						: "#0f172a"
+					: isDark
 						? "#e2e8f0"
-						: "#1e293b"
-					: textColor;
+						: "#1e293b";
 				ctx.globalAlpha = isHighlighted ? 1 : 0.7;
 				ctx.fillText(ticker.symbol, px + dotRadius + 3, py - 2);
 				ctx.globalAlpha = 1;
