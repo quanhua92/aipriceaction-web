@@ -71,7 +71,8 @@ const DEFAULT_VISIBLE = 20;
 function sliderToVolume(val: number, sortedVolumes: number[]): number {
 	const N = sortedVolumes.length;
 	if (val === 0 || N === 0) return 0;
-	const target = Math.min(DEFAULT_VISIBLE, N);
+	// When N is small, target half of N so slider=50 shows ~half the group
+	const target = N <= DEFAULT_VISIBLE ? Math.max(1, Math.ceil(N / 2)) : DEFAULT_VISIBLE;
 	const k = 2 * Math.log(N / target);
 	const fraction = Math.exp((-k * val) / 100);
 	const visibleCount = Math.max(1, Math.round(N * fraction));
@@ -88,10 +89,12 @@ function computeDefaultSlider(
 	targetCount: number,
 ): number {
 	const N = sortedVolumes.length;
-	if (N <= targetCount) return 0;
-	const target = Math.min(DEFAULT_VISIBLE, N);
-	const k = 2 * Math.log(N / target);
-	const val = (-100 * Math.log(targetCount / N)) / k;
+	if (N === 0) return 0;
+	// For small groups, default to showing ~half
+	const effectiveTarget = N <= DEFAULT_VISIBLE ? Math.max(1, Math.ceil(N / 2)) : Math.min(DEFAULT_VISIBLE, N);
+	const adjustedCount = N <= DEFAULT_VISIBLE ? effectiveTarget : targetCount;
+	const k = 2 * Math.log(N / effectiveTarget);
+	const val = (-100 * Math.log(adjustedCount / N)) / k;
 	return Math.round(Math.max(0, Math.min(100, val)));
 }
 
@@ -283,7 +286,8 @@ export function RRGWidget({
 	}, [rrgData, groupTickerSet]);
 
 	const minVolume = React.useMemo(() => {
-		return sliderToVolume(mascoreMinVol, sortedVolumes);
+		const vol = sliderToVolume(mascoreMinVol, sortedVolumes);
+		return vol;
 	}, [mascoreMinVol, sortedVolumes]);
 
 	const jdkMinVolume = React.useMemo(() => {
