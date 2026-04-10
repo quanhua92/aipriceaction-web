@@ -61,19 +61,21 @@ function formatVolume(vol: number): string {
 	return `${vol.toFixed(0)}`;
 }
 
-const DEFAULT_VISIBLE = 20;
-
 /**
- * Exponential volume slider: slider=50 always shows ~DEFAULT_VISIBLE tickers.
+ * Exponential volume slider: slider=50 always shows ~defaultVisible tickers.
  * slider=0 → all, slider=100 → ~1 ticker.
  * sortedVolumes must be ascending.
  */
-function sliderToVolume(val: number, sortedVolumes: number[]): number {
+function sliderToVolume(
+	val: number,
+	sortedVolumes: number[],
+	defaultVisible: number,
+): number {
 	const N = sortedVolumes.length;
 	if (val === 0 || N === 0) return 0;
 	// When N is small, target half of N so slider=50 shows ~half the group
 	const target =
-		N <= DEFAULT_VISIBLE ? Math.max(1, Math.ceil(N / 2)) : DEFAULT_VISIBLE;
+		N <= defaultVisible ? Math.max(1, Math.ceil(N / 2)) : defaultVisible;
 	const k = 2 * Math.log(N / target);
 	const fraction = Math.exp((-k * val) / 100);
 	const visibleCount = Math.max(1, Math.round(N * fraction));
@@ -83,20 +85,22 @@ function sliderToVolume(val: number, sortedVolumes: number[]): number {
 
 /**
  * Compute default slider value to show approximately `targetCount` tickers.
- * Always returns ~50 for targetCount=20 (the DEFAULT_VISIBLE midpoint).
+ * Always returns ~50 for targetCount=defaultVisible (the midpoint).
  */
 function computeDefaultSlider(
 	sortedVolumes: number[],
 	targetCount: number,
+	defaultVisible: number,
 ): number {
 	const N = sortedVolumes.length;
 	if (N === 0) return 0;
 	// For small groups, default to showing ~half
 	const effectiveTarget =
-		N <= DEFAULT_VISIBLE
+		N <= defaultVisible
 			? Math.max(1, Math.ceil(N / 2))
-			: Math.min(DEFAULT_VISIBLE, N);
-	const adjustedCount = N <= DEFAULT_VISIBLE ? effectiveTarget : targetCount;
+			: Math.min(defaultVisible, N);
+	const adjustedCount =
+		N <= defaultVisible ? effectiveTarget : targetCount;
 	const k = 2 * Math.log(N / effectiveTarget);
 	const val = (-100 * Math.log(adjustedCount / N)) / k;
 	return Math.round(Math.max(0, Math.min(100, val)));
@@ -168,6 +172,15 @@ export function RRGWidget({
 	const { lastRefresh } = useRefresh();
 	const { tickerGroups, tickerNames, cryptoTickerNames, globalTickerNames } =
 		useAPI();
+
+	const defaultVisible = React.useSyncExternalStore(
+		(cb) => {
+			window.addEventListener("resize", cb);
+			return () => window.removeEventListener("resize", cb);
+		},
+		() => (window.innerWidth < 640 ? 30 : 60),
+		() => (typeof window === "undefined" ? 60 : 60),
+	);
 
 	// Watchlist group state
 	const [selectedGroup, setSelectedGroup] = React.useState(defaultGroup);
@@ -308,27 +321,27 @@ export function RRGWidget({
 	}, [rrgData, groupTickerSet]);
 
 	const minVolume = React.useMemo(() => {
-		const vol = sliderToVolume(mascoreMinVol, sortedVolumes);
+		const vol = sliderToVolume(mascoreMinVol, sortedVolumes, defaultVisible);
 		return vol;
 	}, [mascoreMinVol, sortedVolumes]);
 
 	const jdkMinVolume = React.useMemo(() => {
-		return sliderToVolume(jdkMinVol, sortedVolumes);
+		return sliderToVolume(jdkMinVol, sortedVolumes, defaultVisible);
 	}, [jdkMinVol, sortedVolumes]);
 
 	const minValue = React.useMemo(() => {
-		return sliderToVolume(mascoreMinVal, sortedValues);
+		return sliderToVolume(mascoreMinVal, sortedValues, defaultVisible);
 	}, [mascoreMinVal, sortedValues]);
 
 	const jdkMinValue = React.useMemo(() => {
-		return sliderToVolume(jdkMinVal, sortedValues);
+		return sliderToVolume(jdkMinVal, sortedValues, defaultVisible);
 	}, [jdkMinVal, sortedValues]);
 
-	// Compute default slider value to show ~20 dots within the selected group
+	// Compute default slider value to show ~defaultVisible tickers within the selected group
 	const defaultSliderVal = React.useMemo(() => {
 		if (!sortedVolumes.length) return 0;
-		return computeDefaultSlider(sortedVolumes, 20);
-	}, [sortedVolumes]);
+		return computeDefaultSlider(sortedVolumes, defaultVisible, defaultVisible);
+	}, [sortedVolumes, defaultVisible]);
 
 	// Auto-set volume slider when group changes
 	// biome-ignore lint/correctness/useExhaustiveDependencies: selectedGroup triggers update even if defaultSliderVal is same
