@@ -90,7 +90,7 @@ export function RRGDetailPanel({
 
 	return (
 		<Dialog open onOpenChange={handleOpenChange}>
-			<DialogContent className="sm:max-w-5xl max-h-[75vh] p-2 gap-2 flex flex-col">
+			<DialogContent className="sm:max-w-[98vw] max-w-[98vw] w-[98vw] max-h-[75vh] p-2 gap-2 flex flex-col">
 				<DialogHeader>
 					<div className="flex items-center gap-2">
 							<button
