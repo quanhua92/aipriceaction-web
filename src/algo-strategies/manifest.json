@@ -1,0 +1,10 @@
+{
+  "strategies": [
+    {
+      "id": "ma-crossover",
+      "file": "ma-crossover.js",
+      "name": "MA Crossover",
+      "description": "Buy when price rises, sell when price drops (simple momentum for Phase 1)"
+    }
+  ]
+}

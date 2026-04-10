@@ -30,10 +30,13 @@ The page lives at `/algo` with a query parameter `?mode=edit|report|live` contro
 
 ```
 src/
+├── algo-strategies/                    # ✅ Phase 1: Built-in strategy folder (plain JS, no build step)
+│   ├── manifest.json                   # ✅ Phase 1: Registry of built-in strategies
+│   └── ma-crossover.js                 # ✅ Phase 1: Sample momentum strategy
 ├── routes/
 │   ├── algo.tsx                        # Dashboard route
 │   ├── algo.$id.tsx                    # Redirect to /algo/:id/report
-│   ├── algo.$id.edit.tsx               # Edit mode route
+│   ├── algo.$id.edit.tsx               # ✅ Phase 1: Edit mode route (textarea, Run, console, results)
 │   ├── algo.$id.report.tsx             # Report mode route
 │   └── algo.$id.live.tsx               # Live mode route
 ├── components/
@@ -61,10 +64,10 @@ src/
 │           └── AlgoLiveSignalList.tsx  # Dashboard of current signals
 │
 ├── lib/
-│   ├── algo-sdk.ts                    # SDK injected into user scripts
-│   ├── algo-runner.ts                 # new Function() execution engine
+│   ├── algo-sdk.ts                    # ✅ Phase 1: SDK injected into user scripts
+│   ├── algo-runner.ts                 # ✅ Phase 1: new Function() execution engine
 │   ├── algo-storage.ts                # localStorage CRUD + import/export
-│   ├── algo-types.ts                  # TypeScript types
+│   ├── algo-types.ts                  # ✅ Phase 1: TypeScript types
 │   ├── algo-indicators.ts             # Pure indicator functions (sma, ema, rsi, ...)
 │   └── algo-predefined.ts             # Built-in strategy definitions
 └── hooks/
@@ -275,6 +278,8 @@ export function executeAlgo(
 ### 3.3 Sandbox Security
 
 The `new Function()` approach blocks direct access to `window`, `document`, `fetch`, etc. by passing `undefined` for those parameters. The user's code can only access what is explicitly destructured from `sdk`.
+
+> **Implementation note (Phase 1):** The design doc originally specified `"use strict"` inside the function body. This was changed because `eval` and `Function` are reserved identifiers in strict mode and cannot be used as parameter names. Since the sandboxing comes from parameter shadowing (passing `undefined`), not from strict mode itself, dropping `"use strict"` has no security impact. The 10 blocked globals (`window`, `document`, `fetch`, `XMLHttpRequest`, `importScripts`, `eval`, `Function`, `setTimeout`, `setInterval`) are still properly shadowed.
 
 **Limitations (acceptable for this use case):**
 - `new Function()` runs in the main thread — long-running scripts will freeze the UI
@@ -1137,7 +1142,7 @@ The UI fetches data and then calls the execution engine. There is no "paper trad
 ## 16. Constants (to add to `constants.ts`)
 
 ```typescript
-export const ALGO_STRATEGIES_STORAGE_KEY = 'algo-strategies'
+export const ALGO_STRATEGIES_STORAGE_KEY = 'algo-strategies'  // ✅ Phase 1: added
 export const ALGO_EXECUTION_TIMEOUT_MS = 10000  // V2: Web Worker timeout
 export const ALGO_MAX_LOG_ENTRIES = 500
 ```

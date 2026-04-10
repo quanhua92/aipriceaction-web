@@ -6,19 +6,27 @@
 
 ---
 
-## Phase 1: The Core Engine
+## Phase 1: The Core Engine ✅
 
 **Goal:** Execute a basic JavaScript strategy and get back an array of buy/sell orders.
 
 **Tasks:**
-- [ ] Create `lib/algo-sdk.ts` — SDK bridge with `getTicker()`, `buy()`, `sell()`, `log()`
-- [ ] Create `lib/algo-runner.ts` — `new Function()` sandbox execution with blocked globals
-- [ ] Create `lib/algo-types.ts` — `AlgoTrade`, `AlgoResult`, `AlgoStrategy`, `AlgoDataSplit`
-- [ ] Implement trade matching in `algo-runner.ts` — FIFO buy/sell pairing, P&L calculation
-- [ ] Create route `src/routes/algo.$id.edit.tsx` with a basic `textarea` for code input and a "Run" button
-- [ ] Wire up a hardcoded `StockData[]` (no API yet) so the engine can run end-to-end
+- [x] Create `lib/algo-sdk.ts` — SDK bridge with `getTicker()`, `buy()`, `sell()`, `log()`
+- [x] Create `lib/algo-runner.ts` — `new Function()` sandbox execution with blocked globals
+- [x] Create `lib/algo-types.ts` — `AlgoTrade`, `AlgoResult`, `AlgoStrategy`, `AlgoDataSplit`
+- [x] Implement trade matching in `algo-runner.ts` — FIFO buy/sell pairing, P&L calculation
+- [x] Create route `src/routes/algo.$id.edit.tsx` with a basic `textarea` for code input and a "Run" button
+- [x] Wire up a hardcoded `StockData[]` (no API yet) so the engine can run end-to-end
 
-**Deliverable:** Type `function main() { buy('VCB', '2025-01-15'); sell('VCB', '2025-02-01'); }`, click Run, see 1 trade with P&L in a log panel.
+**Notes:**
+- Created `src/algo-strategies/` folder with `manifest.json` and `ma-crossover.js` for contributor-built-in strategies. Excluded from Biome linting (plain JS where `main()` is the entry point).
+- Added `ALGO_STRATEGIES_STORAGE_KEY` to `constants.ts`.
+- **Sandbox fix:** Removed `"use strict"` from the `new Function()` body. In strict mode, `eval` and `Function` cannot be used as parameter names, which broke the global-shadowing approach. The sandboxing still works because passing `undefined` as arguments to `new Function()` parameters shadows the globals — strict mode is not needed for this.
+- **Trade matching:** Implemented simple FIFO (first order = entry, second = exit, repeat). Unmatched final buy becomes an open trade. This works for long-only Phase 1; will need refinement for short selling in later phases.
+- **Edit route:** Uses a `<textarea>` (not CodeMirror yet — that's Phase 2). Includes console panel, result summary (trades, win rate, P&L, max DD, best/worst trade), and a trade table. Mock data generates 30 random-walk bars for VCB.
+- **Unused types:** `AlgoLogEntry`, `AlgoOrder` in algo-types.ts and some imports in algo-runner.ts are used but Biome flagged them during intermediate steps — all resolved.
+
+**Deliverable:** Type `function main() { buy('VCB', '2025-01-15'); sell('VCB', '2025-02-01'); }`, click Run, see 1 trade with P&L in a log panel. ✅ Verified working at `/algo/test/edit`.
 
 ---
 

@@ -308,3 +308,8 @@ export const CHART_COMPARE_STORAGE_KEY = 'chart-compare-state'
  * LocalStorage key for chart settings (interval, MA visibility, MACD, etc.)
  */
 export const CHART_SETTINGS_STORAGE_KEY = 'chart-settings'
+
+/**
+ * LocalStorage key for algo trading strategies
+ */
+export const ALGO_STRATEGIES_STORAGE_KEY = 'algo-strategies'

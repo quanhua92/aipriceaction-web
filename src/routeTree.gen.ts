@@ -23,6 +23,7 @@ import { Route as NotesIndexRouteImport } from './routes/notes/index'
 import { Route as ChartIndexRouteImport } from './routes/chart/index'
 import { Route as NotesNewRouteImport } from './routes/notes/new'
 import { Route as NoteIdRouteImport } from './routes/note.$id'
+import { Route as AlgoIdEditRouteImport } from './routes/algo.$id.edit'
 
 const WatchRoute = WatchRouteImport.update({
   id: '/watch',
@@ -94,6 +95,11 @@ const NoteIdRoute = NoteIdRouteImport.update({
   path: '/note/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlgoIdEditRoute = AlgoIdEditRouteImport.update({
+  id: '/algo/$id/edit',
+  path: '/algo/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/notes/new': typeof NotesNewRoute
   '/chart': typeof ChartIndexRoute
   '/notes': typeof NotesIndexRoute
+  '/algo/$id/edit': typeof AlgoIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/notes/new': typeof NotesNewRoute
   '/chart': typeof ChartIndexRoute
   '/notes': typeof NotesIndexRoute
+  '/algo/$id/edit': typeof AlgoIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/notes/new': typeof NotesNewRoute
   '/chart/': typeof ChartIndexRoute
   '/notes/': typeof NotesIndexRoute
+  '/algo/$id/edit': typeof AlgoIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/notes/new'
     | '/chart'
     | '/notes'
+    | '/algo/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/notes/new'
     | '/chart'
     | '/notes'
+    | '/algo/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/notes/new'
     | '/chart/'
     | '/notes/'
+    | '/algo/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -210,6 +222,7 @@ export interface RootRouteChildren {
   NotesNewRoute: typeof NotesNewRoute
   ChartIndexRoute: typeof ChartIndexRoute
   NotesIndexRoute: typeof NotesIndexRoute
+  AlgoIdEditRoute: typeof AlgoIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NoteIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/algo/$id/edit': {
+      id: '/algo/$id/edit'
+      path: '/algo/$id/edit'
+      fullPath: '/algo/$id/edit'
+      preLoaderRoute: typeof AlgoIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotesNewRoute: NotesNewRoute,
   ChartIndexRoute: ChartIndexRoute,
   NotesIndexRoute: NotesIndexRoute,
+  AlgoIdEditRoute: AlgoIdEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
