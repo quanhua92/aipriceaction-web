@@ -182,9 +182,9 @@ export function RRGCanvas({
 	// Responsive padding
 	const padding = React.useMemo(() => {
 		if (size.width < 640) {
-			return { top: 30, right: 15, bottom: 40, left: 30 };
+			return { top: 20, right: 25, bottom: 35, left: 25 };
 		}
-		return { top: 50, right: 30, bottom: 50, left: 45 };
+		return { top: 35, right: 35, bottom: 40, left: 35 };
 	}, [size.width]);
 
 	// Coordinate transform functions
@@ -349,7 +349,7 @@ export function RRGCanvas({
 		);
 
 		ctx.save();
-		ctx.translate(10, (padding.top + size.height - padding.bottom) / 2);
+		ctx.translate(size.width < 640 ? 16 : 20, (padding.top + size.height - padding.bottom) / 2);
 		ctx.rotate(-Math.PI / 2);
 		ctx.textAlign = "center";
 		ctx.textBaseline = "bottom";
