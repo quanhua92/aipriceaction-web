@@ -40,7 +40,7 @@ import {
 	isPredefinedWatchlist,
 } from "@/lib/predefined-watchlists";
 import { getWatchlistTickers } from "@/lib/watchlist-storage";
-import type { Quadrant } from "./RRGCanvas";
+import type { Quadrant, ViewBounds } from "./RRGCanvas";
 import { getQuadrant, RRGCanvas } from "./RRGCanvas";
 import { RRGDetailPanel } from "./RRGDetailPanel";
 import { RRGTable } from "./RRGTable";
@@ -417,6 +417,51 @@ export function RRGWidget({
 
 	const tickers = displayData?.tickers ?? [];
 
+	// Compute viewport bounds for consistent scaling between main canvas and detail panel
+	const viewBounds = React.useMemo((): ViewBounds | null => {
+		if (!displayData?.tickers?.length) return null;
+		const center = activeTab === "mascore" ? 0 : 100;
+
+		let dataXMin = Infinity;
+		let dataXMax = -Infinity;
+		let dataYMin = Infinity;
+		let dataYMax = -Infinity;
+
+		for (const ticker of displayData.tickers) {
+			dataXMin = Math.min(dataXMin, ticker.rs_ratio);
+			dataXMax = Math.max(dataXMax, ticker.rs_ratio);
+			dataYMin = Math.min(dataYMin, ticker.rs_momentum);
+			dataYMax = Math.max(dataYMax, ticker.rs_momentum);
+
+			if (ticker.trails) {
+				for (const trail of ticker.trails) {
+					dataXMin = Math.min(dataXMin, trail.rs_ratio);
+					dataXMax = Math.max(dataXMax, trail.rs_ratio);
+					dataYMin = Math.min(dataYMin, trail.rs_momentum);
+					dataYMax = Math.max(dataYMax, trail.rs_momentum);
+				}
+			}
+		}
+
+		const margin = activeTab === "mascore" ? 5 : 3;
+		dataXMin = Math.min(dataXMin, center - margin);
+		dataXMax = Math.max(dataXMax, center + margin);
+		dataYMin = Math.min(dataYMin, center - margin);
+		dataYMax = Math.max(dataYMax, center + margin);
+
+		const xRange = dataXMax - dataXMin;
+		const yRange = dataYMax - dataYMin;
+		const xPad = xRange * 0.1;
+		const yPad = yRange * 0.1;
+
+		return {
+			xMin: dataXMin - xPad,
+			xMax: dataXMax + xPad,
+			yMin: dataYMin - yPad,
+			yMax: dataYMax + yPad,
+		};
+	}, [displayData, activeTab]);
+
 	// Handle group change
 	const handleGroupChange = React.useCallback((group: string) => {
 		setSelectedGroup(group);
@@ -732,6 +777,7 @@ export function RRGWidget({
 								onHover={setHoveredTicker}
 								onSelect={setSelectedTicker}
 								showLabels={true}
+								viewBounds={viewBounds}
 							/>
 							{selectedTicker && (
 								<RRGDetailPanel
@@ -741,6 +787,7 @@ export function RRGWidget({
 									onFullscreen={() =>
 										setFullscreenTicker(selectedTicker.symbol)
 									}
+									viewBounds={viewBounds}
 								/>
 							)}
 						</>

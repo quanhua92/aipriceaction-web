@@ -18,6 +18,13 @@ export function getQuadrant(
 	return "lagging";
 }
 
+export interface ViewBounds {
+	xMin: number;
+	xMax: number;
+	yMin: number;
+	yMax: number;
+}
+
 interface RRGCanvasProps {
 	data: RRGResponse["data"];
 	algorithm: "mascore" | "jdk";
@@ -26,6 +33,8 @@ interface RRGCanvasProps {
 	onHover: (ticker: RRGTicker | null) => void;
 	onSelect: (ticker: RRGTicker) => void;
 	showLabels: boolean;
+	/** Optional external viewport bounds. When provided, overrides internal computation. */
+	viewBounds?: ViewBounds | null;
 }
 
 function getQuadrantColor(q: Quadrant, isDark: boolean): string {
@@ -67,6 +76,7 @@ export function RRGCanvas({
 	onHover,
 	onSelect,
 	showLabels,
+	viewBounds,
 }: RRGCanvasProps) {
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 	const containerRef = React.useRef<HTMLDivElement>(null);
@@ -89,8 +99,9 @@ export function RRGCanvas({
 		? "rgba(148, 163, 184, 0.2)"
 		: "rgba(100, 116, 139, 0.15)";
 
-	// Compute viewport bounds ensuring center is visible
+	// Compute viewport bounds ensuring center is visible (skip if external bounds provided)
 	const { xMin, xMax, yMin, yMax } = React.useMemo(() => {
+		if (viewBounds) return viewBounds;
 		if (tickers.length === 0) {
 			const spread = algorithm === "mascore" ? 30 : 15;
 			return {
@@ -141,7 +152,7 @@ export function RRGCanvas({
 			yMin: dataYMin - yPad,
 			yMax: dataYMax + yPad,
 		};
-	}, [tickers, center, algorithm]);
+	}, [tickers, center, algorithm, viewBounds]);
 
 	// Responsive sizing
 	const [size, setSize] = React.useState({ width: 0, height: 0 });
