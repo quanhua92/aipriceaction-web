@@ -170,11 +170,11 @@ export function RRGWidget({
 	);
 
 	// MA Score controls
-	const [mascoreTrails, setMascoreTrails] = React.useState(2);
+	const [mascoreTrails, setMascoreTrails] = React.useState(5);
 	const [mascoreMinVol, setMascoreMinVol] = React.useState(67); // ~10M default
 
 	// JdK controls
-	const [jdkTrails, setJdkTrails] = React.useState(2);
+	const [jdkTrails, setJdkTrails] = React.useState(5);
 	const [jdkMinVol, setJdkMinVol] = React.useState(67); // ~10M default
 	const [jdkPeriod, setJdkPeriod] = React.useState(10);
 
