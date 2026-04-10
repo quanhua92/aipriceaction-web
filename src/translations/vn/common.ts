@@ -565,6 +565,8 @@ export default {
 			rawRs: "Raw RS",
 			sector: "Ngành",
 			quadrant: "Góc phần tư",
+			rrgTab: "RRG",
+			chartTab: "Biểu Đồ",
 		},
 		table: {
 			title: "Bảng Mã CK",

@@ -8,6 +8,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDialog } from "@/contexts/DialogContext";
@@ -56,6 +57,7 @@ export function RRGDetailPanel({
 }: RRGDetailPanelProps) {
 	const { t, language } = useTranslation();
 	const { viewportHeight } = useDialog();
+	const [mobileTab, setMobileTab] = React.useState<"chart" | "rrg">("rrg");
 
 	const handleOpenChange = React.useCallback(
 		(open: boolean) => {
@@ -71,7 +73,7 @@ export function RRGDetailPanel({
 
 	// Calculate chart height to fill available space in the dialog
 	const chartHeight = React.useMemo(() => {
-		const dialogHeight = viewportHeight * 0.9;
+		const dialogHeight = viewportHeight * 0.75;
 		const headerHeight = 50;
 		const padding = 16; // p-2 top + bottom
 		const gap = 8; // gap-2
@@ -79,13 +81,16 @@ export function RRGDetailPanel({
 		return Math.max(dialogHeight - headerHeight - padding - gap - controlBarHeight, 200);
 	}, [viewportHeight]);
 
+	// RRG canvas height on mobile: subtract details grid (3 rows) from chart height
+	const rrgHeight = Math.max(chartHeight - 68, 200);
+
 	if (!ticker) return null;
 
 	const quadrant = getQuadrant(ticker.rs_ratio, ticker.rs_momentum, algorithm);
 
 	return (
 		<Dialog open onOpenChange={handleOpenChange}>
-			<DialogContent className="sm:max-w-5xl max-h-[90vh] p-2 gap-2 flex flex-col">
+			<DialogContent className="sm:max-w-5xl max-h-[75vh] p-2 gap-2 flex flex-col">
 				<DialogHeader>
 					<div className="flex items-center gap-2">
 							<button
@@ -121,10 +126,75 @@ export function RRGDetailPanel({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
+				{/* Mobile: tabs | Desktop: side-by-side grid */}
+			<div className="flex-1 min-h-0 flex flex-col md:hidden">
+				<Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as "chart" | "rrg")} className="flex-1 min-h-0 flex flex-col">
+					<TabsList className="grid grid-cols-2 w-full mb-2 flex-shrink-0">
+						<TabsTrigger value="rrg" className="text-xs">{t("common.rrg.detail.rrgTab")}</TabsTrigger>
+						<TabsTrigger value="chart" className="text-xs">{t("common.rrg.detail.chartTab")}</TabsTrigger>
+					</TabsList>
+					<TabsContent value="rrg" className="flex-1 min-h-0 overflow-y-auto">
+						{ticker.trails && ticker.trails.length >= 2 && singleTickerData && (
+							<div className="w-full overflow-hidden mb-2">
+								<RRGCanvas
+									data={singleTickerData}
+									algorithm={algorithm}
+									hoveredTicker={null}
+									selectedTicker={ticker}
+									onHover={() => {}}
+									onSelect={() => {}}
+									showLabels={true}
+									viewBounds={viewBounds}
+									height={rrgHeight}
+								/>
+							</div>
+						)}
+						{/* Details grid */}
+						<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+							<div className="flex justify-between">
+								<span className="text-muted-foreground">{t("common.rrg.detail.price")}</span>
+								<span className="font-mono">{ticker.close.toLocaleString()}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-muted-foreground">{t("common.rrg.detail.volume")}</span>
+								<span className="font-mono">{formatVolume(ticker.volume)}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-muted-foreground">
+									{algorithm === "mascore" ? t("common.rrg.mascoreXAxis") : t("common.rrg.detail.rsRatio")}
+								</span>
+								<span className="font-mono">{ticker.rs_ratio.toFixed(2)}%</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-muted-foreground">
+									{algorithm === "mascore" ? t("common.rrg.mascoreYAxis") : t("common.rrg.detail.rsMomentum")}
+								</span>
+								<span className="font-mono">{ticker.rs_momentum.toFixed(2)}%</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-muted-foreground">{t("common.rrg.detail.rawRs")}</span>
+								<span className="font-mono">{ticker.raw_rs.toFixed(4)}</span>
+							</div>
+							<div className="flex justify-between">
+								<span className="text-muted-foreground">{t("common.rrg.detail.quadrant")}</span>
+								<span className="font-mono">{t(`common.rrg.quadrants.${quadrant}`)}</span>
+							</div>
+						</div>
+					</TabsContent>
+					<TabsContent value="chart" className="flex-1 min-h-0">
+						<TradingViewChart
+							initialTicker={ticker.symbol}
+							height={chartHeight}
+							showControls={true}
+						/>
+					</TabsContent>
+				</Tabs>
+			</div>
+
+			{/* Desktop: side-by-side grid */}
+			<div className="hidden md:grid md:grid-cols-2 gap-4 flex-1 min-h-0">
 				{/* Left column: RRG canvas + details */}
 				<div className="flex flex-col min-h-0 overflow-y-auto">
-					{/* Quadrant canvas for single ticker */}
 					{ticker.trails && ticker.trails.length >= 2 && singleTickerData && (
 						<div className="w-full overflow-hidden mb-2 flex-shrink-0">
 							<RRGCanvas
@@ -136,53 +206,39 @@ export function RRGDetailPanel({
 								onSelect={() => {}}
 								showLabels={true}
 								viewBounds={viewBounds}
+								height={rrgHeight}
 							/>
 						</div>
 					)}
-
 					{/* Details grid */}
 					<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
 						<div className="flex justify-between">
-							<span className="text-muted-foreground">
-								{t("common.rrg.detail.price")}
-							</span>
+							<span className="text-muted-foreground">{t("common.rrg.detail.price")}</span>
 							<span className="font-mono">{ticker.close.toLocaleString()}</span>
 						</div>
 						<div className="flex justify-between">
-							<span className="text-muted-foreground">
-								{t("common.rrg.detail.volume")}
-							</span>
+							<span className="text-muted-foreground">{t("common.rrg.detail.volume")}</span>
 							<span className="font-mono">{formatVolume(ticker.volume)}</span>
 						</div>
 						<div className="flex justify-between">
 							<span className="text-muted-foreground">
-								{algorithm === "mascore"
-									? t("common.rrg.mascoreXAxis")
-									: t("common.rrg.detail.rsRatio")}
+								{algorithm === "mascore" ? t("common.rrg.mascoreXAxis") : t("common.rrg.detail.rsRatio")}
 							</span>
 							<span className="font-mono">{ticker.rs_ratio.toFixed(2)}%</span>
 						</div>
 						<div className="flex justify-between">
 							<span className="text-muted-foreground">
-								{algorithm === "mascore"
-									? t("common.rrg.mascoreYAxis")
-									: t("common.rrg.detail.rsMomentum")}
+								{algorithm === "mascore" ? t("common.rrg.mascoreYAxis") : t("common.rrg.detail.rsMomentum")}
 							</span>
 							<span className="font-mono">{ticker.rs_momentum.toFixed(2)}%</span>
 						</div>
 						<div className="flex justify-between">
-							<span className="text-muted-foreground">
-								{t("common.rrg.detail.rawRs")}
-							</span>
+							<span className="text-muted-foreground">{t("common.rrg.detail.rawRs")}</span>
 							<span className="font-mono">{ticker.raw_rs.toFixed(4)}</span>
 						</div>
 						<div className="flex justify-between">
-							<span className="text-muted-foreground">
-								{t("common.rrg.detail.quadrant")}
-							</span>
-							<span className="font-mono">
-								{t(`common.rrg.quadrants.${quadrant}`)}
-							</span>
+							<span className="text-muted-foreground">{t("common.rrg.detail.quadrant")}</span>
+							<span className="font-mono">{t(`common.rrg.quadrants.${quadrant}`)}</span>
 						</div>
 					</div>
 				</div>

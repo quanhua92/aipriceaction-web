@@ -562,6 +562,8 @@ export default {
 			rawRs: "Raw RS",
 			sector: "Sector",
 			quadrant: "Quadrant",
+			rrgTab: "RRG",
+			chartTab: "Chart",
 		},
 		table: {
 			title: "Ticker Table",

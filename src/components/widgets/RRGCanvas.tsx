@@ -35,6 +35,8 @@ interface RRGCanvasProps {
 	showLabels: boolean;
 	/** Optional external viewport bounds. When provided, overrides internal computation. */
 	viewBounds?: ViewBounds | null;
+	/** Optional explicit height. When provided, overrides auto-derived height. */
+	height?: number;
 }
 
 function getQuadrantColor(q: Quadrant, isDark: boolean): string {
@@ -77,6 +79,7 @@ export function RRGCanvas({
 	onSelect,
 	showLabels,
 	viewBounds,
+	height: explicitHeight,
 }: RRGCanvasProps) {
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 	const containerRef = React.useRef<HTMLDivElement>(null);
@@ -165,16 +168,16 @@ export function RRGCanvas({
 			for (const entry of entries) {
 				const w = entry.contentRect.width;
 				const isMobile = w < 640;
-				const h = isMobile
+				const h = explicitHeight ?? (isMobile
 					? w * 0.85
-					: Math.min(w * 0.75, window.innerHeight * 0.7);
+					: Math.min(w * 0.75, window.innerHeight * 0.7));
 				setSize({ width: Math.floor(w), height: Math.floor(h) });
 			}
 		});
 
 		observer.observe(container);
 		return () => observer.disconnect();
-	}, []);
+	}, [explicitHeight]);
 
 	// Responsive padding
 	const padding = React.useMemo(() => {
