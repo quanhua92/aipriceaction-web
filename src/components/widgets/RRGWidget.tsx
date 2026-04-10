@@ -588,7 +588,7 @@ export function RRGWidget({
 				value={activeTab}
 				onValueChange={(v) => setActiveTab(v as "mascore" | "jdk")}
 			>
-				<TabsList className="w-full mb-3">
+				<TabsList className="grid grid-cols-2 w-full mb-3">
 					<TabsTrigger value="mascore" className="flex-1 text-xs md:text-sm">
 						{t("common.rrg.mascoreTab")}
 					</TabsTrigger>
@@ -768,29 +768,16 @@ export function RRGWidget({
 					</div>
 				) : (
 					displayData && (
-						<>
-							<RRGCanvas
-								data={displayData}
-								algorithm={activeTab}
-								hoveredTicker={hoveredTicker}
-								selectedTicker={selectedTicker}
-								onHover={setHoveredTicker}
-								onSelect={setSelectedTicker}
-								showLabels={true}
-								viewBounds={viewBounds}
-							/>
-							{selectedTicker && (
-								<RRGDetailPanel
-									ticker={selectedTicker}
-									algorithm={activeTab}
-									onClose={() => setSelectedTicker(null)}
-									onFullscreen={() =>
-										setFullscreenTicker(selectedTicker.symbol)
-									}
-									viewBounds={viewBounds}
-								/>
-							)}
-						</>
+						<RRGCanvas
+							data={displayData}
+							algorithm={activeTab}
+							hoveredTicker={hoveredTicker}
+							selectedTicker={selectedTicker}
+							onHover={setHoveredTicker}
+							onSelect={setSelectedTicker}
+							showLabels={true}
+							viewBounds={viewBounds}
+						/>
 					)
 				)}
 			</div>
@@ -818,6 +805,17 @@ export function RRGWidget({
 					</CollapsibleContent>
 				</Collapsible>
 			)}
+
+			{/* Detail Dialog */}
+			<RRGDetailPanel
+				ticker={selectedTicker}
+				algorithm={activeTab}
+				onClose={() => setSelectedTicker(null)}
+				onFullscreen={() =>
+					selectedTicker && setFullscreenTicker(selectedTicker.symbol)
+				}
+				viewBounds={viewBounds}
+			/>
 
 			{/* Fullscreen Chart Dialog */}
 			<ChartFullscreenDialog

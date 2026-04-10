@@ -2,6 +2,13 @@ import { Maximize2 } from "lucide-react";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { RRGTicker } from "@/lib/api-client";
 import { getSectorDisplayName } from "@/lib/sector-names";
@@ -11,7 +18,7 @@ import { RRGCanvas } from "./RRGCanvas";
 type Quadrant = "leading" | "improving" | "weakening" | "lagging";
 
 interface RRGDetailPanelProps {
-	ticker: RRGTicker;
+	ticker: RRGTicker | null;
 	algorithm: "mascore" | "jdk";
 	onClose: () => void;
 	onFullscreen?: () => void;
@@ -62,144 +69,133 @@ export function RRGDetailPanel({
 	viewBounds,
 }: RRGDetailPanelProps) {
 	const { t, language } = useTranslation();
-	const quadrant = getQuadrant(ticker.rs_ratio, ticker.rs_momentum, algorithm);
-	const ref = React.useRef<HTMLDivElement>(null);
 
-	// Click-away listener
-	React.useEffect(() => {
-		const handler = (e: MouseEvent) => {
-			if (ref.current && !ref.current.contains(e.target as Node)) {
-				onClose();
-			}
-		};
-		// Use mousedown for faster response
-		document.addEventListener("mousedown", handler);
-		return () => document.removeEventListener("mousedown", handler);
-	}, [onClose]);
+	const handleOpenChange = React.useCallback(
+		(open: boolean) => {
+			if (!open) onClose();
+		},
+		[onClose],
+	);
 
 	const singleTickerData = React.useMemo(
-		() => ({
-			algorithm,
-			tickers: [ticker],
-		}),
+		() => (ticker ? { algorithm, tickers: [ticker] } : null),
 		[ticker, algorithm],
 	);
 
+	if (!ticker) return null;
+
+	const quadrant = getQuadrant(ticker.rs_ratio, ticker.rs_momentum, algorithm);
+
 	return (
-		<div
-			ref={ref}
-			className="absolute bottom-14 left-2 right-2 md:bottom-auto md:left-auto md:right-auto z-20
-        bg-card border rounded-lg shadow-lg p-3 md:p-4 animate-in fade-in-0 zoom-in-95 duration-200
-        max-h-[50vh] md:max-h-none overflow-y-auto"
-		>
-			{/* Header */}
-			<div className="flex items-center justify-between mb-2">
-				<div className="flex items-center gap-2">
-					<button
-						type="button"
-						className="font-bold text-sm hover:underline bg-transparent p-0 border-0 cursor-pointer text-inherit"
-						onClick={() => onFullscreen?.()}
-					>
-						{ticker.symbol}
-					</button>
-					{ticker.sector && (
-						<span className="text-xs text-muted-foreground">
-							{getSectorDisplayName(ticker.sector, language)}
+		<Dialog open onOpenChange={handleOpenChange}>
+			<DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+				<DialogHeader>
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<button
+								type="button"
+								className="font-bold text-sm hover:underline bg-transparent p-0 border-0 cursor-pointer text-inherit"
+								onClick={() => onFullscreen?.()}
+							>
+								{ticker.symbol}
+							</button>
+							{ticker.sector && (
+								<span className="text-xs text-muted-foreground">
+									{getSectorDisplayName(ticker.sector, language)}
+								</span>
+							)}
+							{onFullscreen && (
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-7 w-7 p-0"
+									onClick={() => onFullscreen()}
+									title="Open fullscreen chart"
+								>
+									<Maximize2 className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
+						<div className="flex items-center gap-2">
+							<Badge
+								variant={getQuadrantBadgeVariant(quadrant)}
+								className="text-xs"
+							>
+								{t(`common.rrg.quadrants.${quadrant}`)}
+							</Badge>
+						</div>
+					</div>
+					<DialogTitle className="sr-only">
+						{ticker.symbol} — {t(`common.rrg.quadrants.${quadrant}`)}
+					</DialogTitle>
+					<DialogDescription className="sr-only">
+						{t("common.rrg.detail.quadrant")}:{" "}
+						{t(`common.rrg.quadrants.${quadrant}`)}
+					</DialogDescription>
+				</DialogHeader>
+
+				{/* Quadrant canvas for single ticker */}
+				{ticker.trails && ticker.trails.length >= 2 && singleTickerData && (
+					<div className="w-full overflow-hidden mb-2">
+						<RRGCanvas
+							data={singleTickerData}
+							algorithm={algorithm}
+							hoveredTicker={null}
+							selectedTicker={ticker}
+							onHover={() => {}}
+							onSelect={() => {}}
+							showLabels={true}
+							viewBounds={viewBounds}
+						/>
+					</div>
+				)}
+
+				{/* Details grid */}
+				<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">
+							{t("common.rrg.detail.price")}
 						</span>
-					)}
+						<span className="font-mono">{ticker.close.toLocaleString()}</span>
+					</div>
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">
+							{t("common.rrg.detail.volume")}
+						</span>
+						<span className="font-mono">{formatVolume(ticker.volume)}</span>
+					</div>
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">
+							{algorithm === "mascore"
+								? t("common.rrg.mascoreXAxis")
+								: t("common.rrg.detail.rsRatio")}
+						</span>
+						<span className="font-mono">{ticker.rs_ratio.toFixed(2)}%</span>
+					</div>
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">
+							{algorithm === "mascore"
+								? t("common.rrg.mascoreYAxis")
+								: t("common.rrg.detail.rsMomentum")}
+						</span>
+						<span className="font-mono">{ticker.rs_momentum.toFixed(2)}%</span>
+					</div>
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">
+							{t("common.rrg.detail.rawRs")}
+						</span>
+						<span className="font-mono">{ticker.raw_rs.toFixed(4)}</span>
+					</div>
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">
+							{t("common.rrg.detail.quadrant")}
+						</span>
+						<span className="font-mono">
+							{t(`common.rrg.quadrants.${quadrant}`)}
+						</span>
+					</div>
 				</div>
-				<div className="flex items-center gap-2">
-					<Badge
-						variant={getQuadrantBadgeVariant(quadrant)}
-						className="text-xs"
-					>
-						{t(`common.rrg.quadrants.${quadrant}`)}
-					</Badge>
-					{onFullscreen && (
-						<Button
-							variant="ghost"
-							size="sm"
-							className="h-7 w-7 p-0"
-							onClick={(e) => {
-								e.stopPropagation();
-								onFullscreen();
-							}}
-							title="Open fullscreen chart"
-						>
-							<Maximize2 className="h-4 w-4" />
-						</Button>
-					)}
-					<button
-						type="button"
-						onClick={onClose}
-						className="text-muted-foreground hover:text-foreground text-sm leading-none p-1"
-					>
-						x
-					</button>
-				</div>
-			</div>
-
-			{/* Quadrant canvas for single ticker */}
-			{ticker.trails && ticker.trails.length >= 2 && (
-				<div className="mb-2" style={{ width: "280px", height: "250px" }}>
-					<RRGCanvas
-						data={singleTickerData}
-						algorithm={algorithm}
-						hoveredTicker={null}
-						selectedTicker={ticker}
-						onHover={() => {}}
-						onSelect={() => {}}
-						showLabels={true}
-						viewBounds={viewBounds}
-					/>
-				</div>
-			)}
-
-			{/* Details grid */}
-			<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-				<div className="flex justify-between">
-					<span className="text-muted-foreground">
-						{t("common.rrg.detail.price")}
-					</span>
-					<span className="font-mono">{ticker.close.toLocaleString()}</span>
-				</div>
-				<div className="flex justify-between">
-					<span className="text-muted-foreground">
-						{t("common.rrg.detail.volume")}
-					</span>
-					<span className="font-mono">{formatVolume(ticker.volume)}</span>
-				</div>
-				<div className="flex justify-between">
-					<span className="text-muted-foreground">
-						{algorithm === "mascore"
-							? t("common.rrg.mascoreXAxis")
-							: t("common.rrg.detail.rsRatio")}
-					</span>
-					<span className="font-mono">{ticker.rs_ratio.toFixed(2)}%</span>
-				</div>
-				<div className="flex justify-between">
-					<span className="text-muted-foreground">
-						{algorithm === "mascore"
-							? t("common.rrg.mascoreYAxis")
-							: t("common.rrg.detail.rsMomentum")}
-					</span>
-					<span className="font-mono">{ticker.rs_momentum.toFixed(2)}%</span>
-				</div>
-				<div className="flex justify-between">
-					<span className="text-muted-foreground">
-						{t("common.rrg.detail.rawRs")}
-					</span>
-					<span className="font-mono">{ticker.raw_rs.toFixed(4)}</span>
-				</div>
-				<div className="flex justify-between">
-					<span className="text-muted-foreground">
-						{t("common.rrg.detail.quadrant")}
-					</span>
-					<span className="font-mono">
-						{t(`common.rrg.quadrants.${quadrant}`)}
-					</span>
-				</div>
-			</div>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 }

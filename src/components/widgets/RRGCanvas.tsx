@@ -540,7 +540,6 @@ export function RRGCanvas({
 				const touch = e.touches[0];
 				const hit = hitTest(touch.clientX, touch.clientY);
 				if (hit) {
-					e.preventDefault();
 					onSelect(hit.ticker);
 				}
 			}
