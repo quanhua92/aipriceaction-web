@@ -1,5 +1,7 @@
+import { Maximize2 } from "lucide-react";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { RRGTicker } from "@/lib/api-client";
 
@@ -9,6 +11,7 @@ interface RRGDetailPanelProps {
 	ticker: RRGTicker;
 	algorithm: "mascore" | "jdk";
 	onClose: () => void;
+	onFullscreen?: () => void;
 }
 
 function getQuadrant(
@@ -51,6 +54,7 @@ export function RRGDetailPanel({
 	ticker,
 	algorithm,
 	onClose,
+	onFullscreen,
 }: RRGDetailPanelProps) {
 	const { t } = useTranslation();
 	const quadrant = getQuadrant(ticker.rs_ratio, ticker.rs_momentum, algorithm);
@@ -156,7 +160,12 @@ export function RRGDetailPanel({
 			{/* Header */}
 			<div className="flex items-center justify-between mb-2">
 				<div className="flex items-center gap-2">
-					<span className="font-bold text-sm">{ticker.symbol}</span>
+					<span
+						className="font-bold text-sm cursor-pointer hover:underline"
+						onClick={() => onFullscreen?.()}
+					>
+						{ticker.symbol}
+					</span>
 					{ticker.sector && (
 						<span className="text-xs text-muted-foreground">
 							{ticker.sector}
@@ -170,6 +179,20 @@ export function RRGDetailPanel({
 					>
 						{t(`common.rrg.quadrants.${quadrant}`)}
 					</Badge>
+					{onFullscreen && (
+						<Button
+							variant="ghost"
+							size="sm"
+							className="h-7 w-7 p-0"
+							onClick={(e) => {
+								e.stopPropagation();
+								onFullscreen();
+							}}
+							title="Open fullscreen chart"
+						>
+							<Maximize2 className="h-4 w-4" />
+						</Button>
+					)}
 					<button
 						type="button"
 						onClick={onClose}
@@ -194,7 +217,9 @@ export function RRGDetailPanel({
 			{/* Details grid */}
 			<div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
 				<div className="flex justify-between">
-					<span className="text-muted-foreground">{t("common.rrg.detail.price")}</span>
+					<span className="text-muted-foreground">
+						{t("common.rrg.detail.price")}
+					</span>
 					<span className="font-mono">{ticker.close.toLocaleString()}</span>
 				</div>
 				<div className="flex justify-between">
@@ -220,14 +245,18 @@ export function RRGDetailPanel({
 					<span className="font-mono">{ticker.rs_momentum.toFixed(2)}%</span>
 				</div>
 				<div className="flex justify-between">
-					<span className="text-muted-foreground">{t("common.rrg.detail.rawRs")}</span>
+					<span className="text-muted-foreground">
+						{t("common.rrg.detail.rawRs")}
+					</span>
 					<span className="font-mono">{ticker.raw_rs.toFixed(4)}</span>
 				</div>
 				<div className="flex justify-between">
 					<span className="text-muted-foreground">
 						{t("common.rrg.detail.quadrant")}
 					</span>
-					<span className="font-mono">{t(`common.rrg.quadrants.${quadrant}`)}</span>
+					<span className="font-mono">
+						{t(`common.rrg.quadrants.${quadrant}`)}
+					</span>
 				</div>
 			</div>
 		</div>

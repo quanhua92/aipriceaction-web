@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
+import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { DateInput } from "@/components/DateInput";
 import { TickerGroupSelector } from "@/components/TickerGroupSelector";
 import { Badge } from "@/components/ui/badge";
@@ -197,6 +198,11 @@ export function RRGWidget({
 	const [selectedDate, setSelectedDate] = React.useState<string | null>(() => {
 		return new Date().toISOString().split("T")[0];
 	});
+
+	// Fullscreen chart dialog state
+	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(
+		null,
+	);
 
 	const handlePrevDate = React.useCallback(() => {
 		if (!selectedDate) return;
@@ -730,6 +736,9 @@ export function RRGWidget({
 									ticker={selectedTicker}
 									algorithm={activeTab}
 									onClose={() => setSelectedTicker(null)}
+									onFullscreen={() =>
+										setFullscreenTicker(selectedTicker.symbol)
+									}
 								/>
 							)}
 						</>
@@ -758,6 +767,12 @@ export function RRGWidget({
 					</CollapsibleContent>
 				</Collapsible>
 			)}
+
+			{/* Fullscreen Chart Dialog */}
+			<ChartFullscreenDialog
+				ticker={fullscreenTicker}
+				onClose={() => setFullscreenTicker(null)}
+			/>
 		</div>
 	);
 }
