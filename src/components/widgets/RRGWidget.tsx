@@ -159,7 +159,7 @@ export function RRGWidget({
 }: RRGWidgetProps) {
 	const { t } = useTranslation();
 	const { lastRefresh } = useRefresh();
-	const { tickerGroups, tickerNames } = useAPI();
+	const { tickerGroups, tickerNames, cryptoTickerNames, globalTickerNames } = useAPI();
 
 	// Watchlist group state
 	const [selectedGroup, setSelectedGroup] = React.useState(defaultGroup);
@@ -764,7 +764,7 @@ export function RRGWidget({
 							selectedTicker={selectedTicker}
 							algorithm={activeTab}
 							onSelectTicker={setSelectedTicker}
-							tickerNamesMap={tickerNames ?? undefined}
+							tickerNamesMap={{ ...tickerNames, ...cryptoTickerNames, ...globalTickerNames }}
 						/>
 					</CollapsibleContent>
 				</Collapsible>
