@@ -1146,35 +1146,7 @@ export const ALGO_MAX_LOG_ENTRIES = 500
 
 ## 17. Implementation Phases
 
-### Phase 1: Core (this branch)
-- Routes: `/algo` (dashboard), `/algo/:id` (redirect), `/algo/:id/edit`, `/algo/:id/report`, `/algo/:id/live`
-- Sub-nav component (Edit / Report / Live tabs with back link)
-- Dashboard: gallery of strategy cards (predefined + custom)
-- Strategy storage (localStorage CRUD + import/export)
-- Predefined strategies (MA Crossover, Breakout, RSI)
-- SDK with basic indicators (sma, ema, rsi, highest, lowest, crossAbove, crossBelow)
-- Execution engine (`new Function()` with sandbox)
-- **Report mode**: chart with buy/sell markers, summary KPIs, trade log table
-- **Edit mode**: CodeMirror editor, quick test, console log
-- **Live mode**: signal scanner (basic — manual trigger, no auto-refresh yet)
-
-### Phase 2: Enhancements
-- More indicators (macd, atr, bbands)
-- Parameters UI (auto-generated from `getParams()`)
-- More predefined strategies
-- Live mode auto-refresh (RefreshContext integration)
-- Trade log table (sortable, filterable)
-- Equity curve overlay on chart
-- SDK autocomplete in CodeMirror
-- Walk-forward analysis using the 3-split framework
-
-### Phase 3: Advanced
-- Web Worker execution (true isolation, timeout)
-- Multi-symbol strategies
-- Portfolio-level backtesting (multiple tickers)
-- Monte Carlo simulation
-- Walk-forward analysis
-- Strategy comparison (run multiple strategies side by side)
+See [ALGO_TRADING_TODO.md](./ALGO_TRADING_TODO.md) for the detailed 10-phase implementation roadmap.
 
 ---
 
