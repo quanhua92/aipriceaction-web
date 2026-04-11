@@ -131,6 +131,8 @@ interface AlgoResult {
 
 ### 2.3 SDK Context (injected into user script)
 
+> **Phase 1 update:** The SDK was renamed from `buy()`/`sell()` to `long()`/`short()` because both create independent positions (matching the playground's Long/Short button behavior). `short()` opens a short position, it doesn't just close a long. The code examples below still use `buy`/`sell` — they will be updated in future phases.
+
 ```typescript
 interface AlgoSDK {
   // Data access

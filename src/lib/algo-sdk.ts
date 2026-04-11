@@ -13,7 +13,7 @@ export function createAlgoSDK(marketData: Record<string, StockData[]>) {
 			return marketData[symbol] || [];
 		},
 
-		buy(symbol: string, date: string, _qty?: number, stoploss?: number) {
+		long(symbol: string, date: string, _qty?: number, stoploss?: number) {
 			const data = marketData[symbol];
 			if (!data) {
 				logs.push({
@@ -33,13 +33,13 @@ export function createAlgoSDK(marketData: Record<string, StockData[]>) {
 			orders.push({
 				symbol,
 				date,
-				side: "long",
+				action: "long",
 				price: bar.close,
 				stoploss: stoploss ?? null,
 			});
 		},
 
-		sell(symbol: string, date: string, _qty?: number, _stoploss?: number) {
+		short(symbol: string, date: string, _qty?: number, stoploss?: number) {
 			const data = marketData[symbol];
 			if (!data) {
 				logs.push({
@@ -59,9 +59,9 @@ export function createAlgoSDK(marketData: Record<string, StockData[]>) {
 			orders.push({
 				symbol,
 				date,
-				side: "long",
+				action: "short",
 				price: bar.close,
-				stoploss: null,
+				stoploss: stoploss ?? null,
 			});
 		},
 

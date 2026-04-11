@@ -1,11 +1,11 @@
 export type DataSplitName = "training" | "validation" | "testing";
-export type AlgoOrderSide = "long";
+export type AlgoOrderAction = "long" | "short";
 
-/** Raw order emitted by buy() / sell() */
+/** Raw order emitted by long() / short() */
 export interface AlgoOrder {
 	symbol: string;
 	date: string;
-	side: AlgoOrderSide;
+	action: AlgoOrderAction;
 	price: number;
 	stoploss: number | null;
 }
@@ -13,6 +13,7 @@ export interface AlgoOrder {
 /** Matched round-trip trade */
 export interface AlgoTrade {
 	symbol: string;
+	side: "long" | "short";
 	entryDate: string;
 	entryPrice: number;
 	exitDate: string | null;

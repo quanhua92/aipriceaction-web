@@ -6,9 +6,9 @@ function main() {
   for (let i = 1; i < data.length; i++) {
     const date = data[i].time.split('T')[0];
     if (data[i].close > data[i - 1].close) {
-      buy(symbol, date);
+      long(symbol, date);
     } else {
-      sell(symbol, date);
+      short(symbol, date);
     }
   }
 }

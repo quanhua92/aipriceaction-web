@@ -38,7 +38,7 @@ export function executeAlgo(
 			"Function",
 			"setTimeout",
 			"setInterval",
-			`const { getTicker, buy, sell, log, params } = sdk; ${code}; if (typeof main === 'function') return main(); throw new Error('Script must define a main() function');`,
+			`const { getTicker, long, short, log, params } = sdk; ${code}; if (typeof main === 'function') return main(); throw new Error('Script must define a main() function');`,
 		);
 
 		fn(
@@ -91,6 +91,34 @@ export function executeAlgo(
 	}
 }
 
+function closeTrade(
+	trades: AlgoTrade[],
+	entry: AlgoOrder,
+	exit: AlgoOrder,
+	side: "long" | "short",
+) {
+	const entryPrice = entry.price;
+	const exitPrice = exit.price;
+	// long: profit when exit > entry; short: profit when entry > exit
+	const pnl = side === "long" ? exitPrice - entryPrice : entryPrice - exitPrice;
+	const pnlPercent = entryPrice !== 0 ? (pnl / entryPrice) * 100 : 0;
+
+	const match = trades.find(
+		(t) =>
+			t.status === "open" &&
+			t.side === side &&
+			t.entryDate === entry.date &&
+			t.entryPrice === entry.price,
+	);
+	if (match) {
+		match.exitDate = exit.date;
+		match.exitPrice = exitPrice;
+		match.pnl = pnl;
+		match.pnlPercent = pnlPercent;
+		match.status = "closed";
+	}
+}
+
 function postProcessOrders(
 	orders: AlgoOrder[],
 	executionTimeMs: number,
@@ -114,51 +142,56 @@ function postProcessOrders(
 		symbolOrders.sort((a, b) => a.date.localeCompare(b.date));
 	}
 
-	// FIFO matching: buy → sell = closed trade, unmatched buy = open
+	// Matches playground order book behavior:
+	// long()  → close earliest open short (if any), then create a new long position
+	// short() → close earliest open long (if any), then create a new short position
+	const openLongs: AlgoOrder[] = [];
+	const openShorts: AlgoOrder[] = [];
 	const trades: AlgoTrade[] = [];
+
 	for (const [, symbolOrders] of bySymbol) {
-		let pendingBuy: AlgoOrder | null = null;
-
 		for (const order of symbolOrders) {
-			// Heuristic: a "buy" intent has stoploss or is first in pair; "sell" is exit
-			// Simple approach: treat first order as entry, second as exit, repeat
-			if (!pendingBuy) {
-				pendingBuy = order;
-			} else {
-				// Close the trade
-				const entryPrice = pendingBuy.price;
-				const exitPrice = order.price;
-				const pnl = exitPrice - entryPrice;
-				const pnlPercent = entryPrice !== 0 ? (pnl / entryPrice) * 100 : 0;
-
+			if (order.action === "long") {
+				// Close earliest open short (if any)
+				if (openShorts.length > 0) {
+					const entry = openShorts.shift()!;
+					closeTrade(trades, entry, order, "short");
+				}
+				// Open new long position
+				openLongs.push(order);
 				trades.push({
-					symbol: pendingBuy.symbol,
-					entryDate: pendingBuy.date,
-					entryPrice,
-					exitDate: order.date,
-					exitPrice,
-					pnl,
-					pnlPercent,
-					stoploss: pendingBuy.stoploss,
-					status: "closed",
+					symbol: order.symbol,
+					side: "long",
+					entryDate: order.date,
+					entryPrice: order.price,
+					exitDate: null,
+					exitPrice: null,
+					pnl: 0,
+					pnlPercent: 0,
+					stoploss: order.stoploss,
+					status: "open",
 				});
-				pendingBuy = null;
+			} else {
+				// Close earliest open long (if any)
+				if (openLongs.length > 0) {
+					const entry = openLongs.shift()!;
+					closeTrade(trades, entry, order, "long");
+				}
+				// Open new short position
+				openShorts.push(order);
+				trades.push({
+					symbol: order.symbol,
+					side: "short",
+					entryDate: order.date,
+					entryPrice: order.price,
+					exitDate: null,
+					exitPrice: null,
+					pnl: 0,
+					pnlPercent: 0,
+					stoploss: order.stoploss,
+					status: "open",
+				});
 			}
-		}
-
-		// Unmatched buy → open trade
-		if (pendingBuy) {
-			trades.push({
-				symbol: pendingBuy.symbol,
-				entryDate: pendingBuy.date,
-				entryPrice: pendingBuy.price,
-				exitDate: null,
-				exitPrice: null,
-				pnl: 0,
-				pnlPercent: 0,
-				stoploss: pendingBuy.stoploss,
-				status: "open",
-			});
 		}
 	}
 

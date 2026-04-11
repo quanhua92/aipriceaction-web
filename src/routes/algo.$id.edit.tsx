@@ -19,9 +19,9 @@ const DEFAULT_CODE = `function main() {
   for (let i = 1; i < data.length; i++) {
     const date = data[i].time.split('T')[0];
     if (data[i].close > data[i - 1].close) {
-      buy(symbol, date);
+      long(symbol, date);
     } else {
-      sell(symbol, date);
+      short(symbol, date);
     }
   }
   log('Strategy completed. Orders: ' + (data.length - 1));
@@ -58,8 +58,13 @@ function formatPnL(value: number): string {
 
 function TradeRow({ trade }: { trade: AlgoTrade }) {
 	return (
-		<div className="grid grid-cols-8 gap-2 text-xs py-1 border-b border-border/50">
+		<div className="grid grid-cols-9 gap-2 text-xs py-1 border-b border-border/50">
 			<span className="font-mono">{trade.symbol}</span>
+			<span
+				className={`font-mono font-medium ${trade.side === "long" ? "text-green-500" : "text-red-500"}`}
+			>
+				{trade.side === "long" ? "L" : "S"}
+			</span>
 			<span className="font-mono">{trade.entryDate}</span>
 			<span className="font-mono text-right">
 				{trade.entryPrice.toLocaleString("en-US", { maximumFractionDigits: 0 })}
@@ -224,8 +229,9 @@ function AlgoEditPage() {
 						{/* Trade list */}
 						{output.result.trades.length > 0 && (
 							<div>
-								<div className="grid grid-cols-8 gap-2 text-xs font-medium text-muted-foreground mb-1">
+								<div className="grid grid-cols-9 gap-2 text-xs font-medium text-muted-foreground mb-1">
 									<span>Symbol</span>
+									<span>Side</span>
 									<span>Entry</span>
 									<span className="text-right">Entry Price</span>
 									<span>Exit</span>
