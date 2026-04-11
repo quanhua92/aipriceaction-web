@@ -126,7 +126,7 @@ export type PredefinedWatchlistName = typeof PREDEFINED_WATCHLIST_NAMES[number]
 /**
  * Number of days to display per page in Market Matrix
  */
-export const MATRIX_DAYS_PER_PAGE = 40
+export const MATRIX_DAYS_PER_PAGE = 20
 
 /**
  * Default number of records to load for charts
