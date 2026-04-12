@@ -57,7 +57,7 @@ export function VolumeProfileWidget({
   const { tickers: stockTickers, cryptoTickers, globalTickers, getTickers } = useAPI()
   const { startDate: globalStartDate, endDate: globalEndDate } = useChartSettings()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
-  const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? null)
+  const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? globalEndDate ?? null)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [profileData, setProfileData] = React.useState<VolumeProfileData | null>(null)
@@ -66,14 +66,24 @@ export function VolumeProfileWidget({
 
   // Date range mode state
   const [isRangeMode, setIsRangeMode] = React.useState(false)
-  const [selectedStartDate, setSelectedStartDate] = React.useState(startDate ?? initialStartDate ?? getTodayDate())
-  const [selectedEndDate, setSelectedEndDate] = React.useState(endDate ?? initialEndDate ?? getTodayDate())
+  const [selectedStartDate, setSelectedStartDate] = React.useState(startDate ?? initialStartDate ?? globalStartDate ?? getTodayDate())
+  const [selectedEndDate, setSelectedEndDate] = React.useState(endDate ?? initialEndDate ?? globalEndDate ?? getTodayDate())
 
   // Determine mode for price formatting
   const currentMode = React.useMemo(() => {
     return getTickerMode(selectedTicker, stockTickers, globalTickers, cryptoTickers)
   }, [selectedTicker, stockTickers, cryptoTickers, globalTickers])
   const priceFormatData = { mode: currentMode as 'vn' | 'crypto', symbol: selectedTicker }
+
+  // Refs for values only needed inside fetch (avoid re-fetching when they change)
+  const stockTickersRef = React.useRef(stockTickers)
+  stockTickersRef.current = stockTickers
+  const cryptoTickersRef = React.useRef(cryptoTickers)
+  cryptoTickersRef.current = cryptoTickers
+  const globalTickersRef = React.useRef(globalTickers)
+  globalTickersRef.current = globalTickers
+  const getTickersRef = React.useRef(getTickers)
+  getTickersRef.current = getTickers
 
   // Fetch last trading day for default date if not provided
   React.useEffect(() => {
@@ -83,8 +93,8 @@ export function VolumeProfileWidget({
 
     async function fetchLastTradingDay() {
       try {
-        const mode = getTickerMode(selectedTicker, stockTickers, globalTickers, cryptoTickers)
-        const response = await getTickers('VolumeProfileWidget.lastTradingDay', { symbol: selectedTicker, limit: 1, end_date: globalEndDate, mode })
+        const mode = getTickerMode(selectedTicker, stockTickersRef.current, globalTickersRef.current, cryptoTickersRef.current)
+        const response = await getTickersRef.current('VolumeProfileWidget.lastTradingDay', { symbol: selectedTicker, limit: 1, end_date: globalEndDate, mode })
 
         console.log(`[VolumeProfileWidget] Response:`, response)
         console.log(`[VolumeProfileWidget] Response[${selectedTicker}]:`, response[selectedTicker])
@@ -111,7 +121,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, stockTickers, cryptoTickers, globalTickers, getTickers, selectedDate, globalEndDate])
+  }, [selectedTicker, selectedDate, globalEndDate])
 
   // Sync with external ticker prop
   React.useEffect(() => {
@@ -173,7 +183,7 @@ export function VolumeProfileWidget({
 
       try {
         // Determine mode (crypto vs stock vs yahoo)
-        const mode = getTickerMode(selectedTicker, stockTickers, globalTickers, cryptoTickers)
+        const mode = getTickerMode(selectedTicker, stockTickersRef.current, globalTickersRef.current, cryptoTickersRef.current)
 
         // Use date range params if in range mode, otherwise single date
         const params = isRangeMode
@@ -191,7 +201,7 @@ export function VolumeProfileWidget({
           if (!response.data && !isRangeMode) {
             console.log(`[VolumeProfileWidget] No volume profile data, fetching daily data as fallback`)
             try {
-              const dailyResponse = await getTickers('VolumeProfileWidget.dailyFallback', {
+              const dailyResponse = await getTickersRef.current('VolumeProfileWidget.dailyFallback', {
                 symbol: selectedTicker,
                 end_date: selectedDate!,
                 limit: 1,
@@ -225,17 +235,11 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins, stockTickers, cryptoTickers, globalTickers, getTickers])
+  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)
     onTickerChange?.(newTicker)
-  }
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value
-    setSelectedDate(newDate)
-    onDateChange?.(newDate)
   }
 
   const handlePrevDate = () => {
@@ -254,19 +258,6 @@ export function VolumeProfileWidget({
     const newDate = current.toISOString().split('T')[0]
     setSelectedDate(newDate)
     onDateChange?.(newDate)
-  }
-
-  // Date range handlers
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value
-    setSelectedStartDate(newDate)
-    onStartDateChange?.(newDate)
-  }
-
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value
-    setSelectedEndDate(newDate)
-    onEndDateChange?.(newDate)
   }
 
   // Loading state
