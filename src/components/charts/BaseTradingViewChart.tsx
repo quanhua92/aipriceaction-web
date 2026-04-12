@@ -1467,8 +1467,8 @@ export function BaseTradingViewChart({
 				{/* MACD pane label overlay */}
 				{macdVisible && (
 					<div
-						className="absolute left-2 z-10 pointer-events-none text-[9px] tracking-wide"
-						style={{ bottom: 28, color: "#71717a", fontFamily: "monospace" }}
+						className="absolute left-2 z-10 pointer-events-none text-[11px] tracking-wide text-zinc-700 dark:text-zinc-300 antialiased"
+						style={{ bottom: 28, fontFamily: "monospace" }}
 					>
 						MACD(12,26,9) <span style={{ color: "#2563eb" }}>━</span>{" "}
 						<span style={{ color: "#ea580c" }}>━</span>
