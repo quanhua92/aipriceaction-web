@@ -73,7 +73,7 @@ export function TrendSignal({
   defaultBuyPeriod = 20,
   defaultSellPeriod = 10
 }: TrendSignalProps) {
-  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers, ema } = useAPI()
   const { lastRefresh } = useRefresh()
   const { endDate: globalEndDate } = useChartSettings()
   const { t, language } = useTranslation()
@@ -191,6 +191,7 @@ export function TrendSignal({
             end_date: endDate,
             limit,
             mode: 'all',
+            ema: ema || undefined,
           })
           stockResponse = mixedResponse
           cryptoResponse = mixedResponse
@@ -203,6 +204,7 @@ export function TrendSignal({
             end_date: endDate,
             limit,
             mode: 'crypto',
+            ema: ema || undefined,
           })
         } else if (isGlobalOnly) {
           // Single global (yahoo) call
@@ -212,6 +214,7 @@ export function TrendSignal({
             end_date: endDate,
             limit,
             mode: 'yahoo',
+            ema: ema || undefined,
           })
         } else {
           // Single stock call
@@ -223,6 +226,7 @@ export function TrendSignal({
             end_date: endDate,
             limit,
             mode: 'vn',
+            ema: ema || undefined,
           })
         }
 
@@ -276,7 +280,7 @@ export function TrendSignal({
     }
 
     fetchSignals()
-  }, [selectedTickers, interval, buyPeriod, sellPeriod, lastRefresh, globalEndDate, watchlistType, stockSymbols, cryptoSymbols, globalSymbols, tickerGroups, cryptoTickerGroups, globalTickerGroups])
+  }, [selectedTickers, interval, buyPeriod, sellPeriod, lastRefresh, globalEndDate, watchlistType, stockSymbols, cryptoSymbols, globalSymbols, tickerGroups, cryptoTickerGroups, globalTickerGroups, ema])
 
   // Filter signals based on showAll setting
   const filteredSignals = React.useMemo(() => {
