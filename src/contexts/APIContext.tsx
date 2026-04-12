@@ -409,6 +409,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
 	// Provide logged API methods with request deduplication
 	const getTickers = React.useCallback(
 		async (source: string, params?: TickersQueryParams) => {
+			console.log(`[getTickers] source="${source}" params=`, params)
 			const cacheKey = generateCacheKey(params);
 			const now = Date.now();
 
