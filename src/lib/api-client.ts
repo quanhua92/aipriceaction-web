@@ -330,9 +330,19 @@ export async function getMAScoresBySector(params?: Parameters<typeof apiClient.g
 
 /**
  * Get API health status
+ * Deduplicates concurrent calls within a 5-second window
  */
+let healthPromiseCache: { promise: Promise<any>; timestamp: number } | null = null
+const HEALTH_CACHE_MS = 5000
+
 export async function getHealth() {
-  return apiClient.getHealth()
+  const now = Date.now()
+  if (healthPromiseCache && now - healthPromiseCache.timestamp < HEALTH_CACHE_MS) {
+    return healthPromiseCache.promise
+  }
+  const promise = apiClient.getHealth()
+  healthPromiseCache = { promise, timestamp: now }
+  return promise
 }
 
 /**

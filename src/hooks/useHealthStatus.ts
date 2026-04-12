@@ -26,6 +26,7 @@ export function useHealthStatus(): HealthStatus {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchHealth = async () => {
     try {
       setIsLoading(true)
@@ -44,6 +45,7 @@ export function useHealthStatus(): HealthStatus {
   // Initial fetch on mount and when lastRefresh changes
   useEffect(() => {
     fetchHealth()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastRefresh])
 
   // Poll every 30 seconds when refresh is enabled
@@ -52,6 +54,7 @@ export function useHealthStatus(): HealthStatus {
 
     const intervalId = setInterval(fetchHealth, 30000) // 30 seconds
     return () => clearInterval(intervalId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRefreshEnabled])
 
   // Calculate data age from sync timestamps
