@@ -93,31 +93,47 @@ export const apiClientWithMetadata = new AIPriceActionClient({
 })
 
 /**
+ * Deduplicate concurrent API calls within a short window
+ */
+function dedupPromise<T>(key: string, fn: () => Promise<T>, cacheMs = 5000): Promise<T> {
+  const now = Date.now()
+  const cached = promiseCache.get(key)
+  if (cached && now - cached.timestamp < cacheMs) {
+    return cached.promise as Promise<T>
+  }
+  const promise = fn()
+  promiseCache.set(key, { promise, timestamp: now })
+  return promise
+}
+
+const promiseCache = new Map<string, { promise: Promise<any>; timestamp: number }>()
+
+/**
  * Get ticker groups organized by sector (Vietnamese stocks)
  */
 export async function getTickerGroups() {
-  return apiClient.getTickerGroups('vn')
+  return dedupPromise('tickerGroups:vn', () => apiClient.getTickerGroups('vn'))
 }
 
 /**
  * Get crypto ticker groups
  */
 export async function getCryptoTickerGroups() {
-  return apiClient.getTickerGroups('crypto')
+  return dedupPromise('tickerGroups:crypto', () => apiClient.getTickerGroups('crypto'))
 }
 
 /**
  * Get global (Yahoo) ticker groups
  */
 export async function getYahooTickerGroups() {
-  return apiClient.getTickerGroups('yahoo')
+  return dedupPromise('tickerGroups:yahoo', () => apiClient.getTickerGroups('yahoo'))
 }
 
 /**
  * Get all ticker groups across all asset types (vn, crypto, yahoo)
  */
 export async function getAllTickerGroups() {
-  return apiClient.getTickerGroups('all')
+  return dedupPromise('tickerGroups:all', () => apiClient.getTickerGroups('all'))
 }
 
 /**
@@ -295,7 +311,10 @@ export async function getTickerNamesWithLogging(
   }
 ) {
   try {
-    const response = await apiClientWithMetadata.getTickerNames(mode) as unknown as RequestResult<Record<string, string>>
+    const response = await dedupPromise<RequestResult<Record<string, string>>>(
+      `tickerNames:${mode}`,
+      () => apiClientWithMetadata.getTickerNames(mode) as any as Promise<RequestResult<Record<string, string>>>
+    )
 
     if (logger) {
       const nameCount = Object.keys(response.data).length
@@ -332,17 +351,8 @@ export async function getMAScoresBySector(params?: Parameters<typeof apiClient.g
  * Get API health status
  * Deduplicates concurrent calls within a 5-second window
  */
-let healthPromiseCache: { promise: Promise<any>; timestamp: number } | null = null
-const HEALTH_CACHE_MS = 5000
-
 export async function getHealth() {
-  const now = Date.now()
-  if (healthPromiseCache && now - healthPromiseCache.timestamp < HEALTH_CACHE_MS) {
-    return healthPromiseCache.promise
-  }
-  const promise = apiClient.getHealth()
-  healthPromiseCache = { promise, timestamp: now }
-  return promise
+  return dedupPromise('health', () => apiClient.getHealth())
 }
 
 /**
