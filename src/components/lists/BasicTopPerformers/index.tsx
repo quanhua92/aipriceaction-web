@@ -61,7 +61,8 @@ export function BasicTopPerformers({
     tickers: stockTickers,
     cryptoTickers,
     globalTickers,
-    getTickers
+    getTickers,
+    ema
   } = useAPI()
 
   const { lastRefresh } = useRefresh()
@@ -198,7 +199,8 @@ export function BasicTopPerformers({
               interval: selectedInterval, // Use selected interval (1H, 1D, 1W)
               limit: 1, // Only need latest bar for current performance
               end_date: globalEndDate,
-              mode: 'vn'
+              mode: 'vn',
+              ema: ema || undefined,
             }).catch(err => {
               console.warn('Stocks API call failed:', err)
               return {}
@@ -214,7 +216,8 @@ export function BasicTopPerformers({
               interval: selectedInterval, // Use selected interval (1H, 1D, 1W)
               limit: 1, // Only need latest bar for current performance
               end_date: globalEndDate,
-              mode: 'crypto'
+              mode: 'crypto',
+              ema: ema || undefined,
             }).catch(err => {
               console.warn('Crypto API call failed:', err)
               return {}
@@ -230,7 +233,8 @@ export function BasicTopPerformers({
               interval: selectedInterval, // Use selected interval (1H, 1D, 1W)
               limit: 1, // Only need latest bar for current performance
               end_date: globalEndDate,
-              mode: 'yahoo'
+              mode: 'yahoo',
+              ema: ema || undefined,
             }).catch(err => {
               console.warn('Global API call failed:', err)
               return {}
@@ -283,7 +287,7 @@ export function BasicTopPerformers({
     return () => {
       isMounted = false
     }
-  }, [selectedInterval, lastRefresh, sectionFilter, globalEndDate, getTickers, info, logError])
+  }, [selectedInterval, lastRefresh, sectionFilter, globalEndDate, getTickers, info, logError, ema])
 
   // Process data and calculate top performers
   React.useEffect(() => {

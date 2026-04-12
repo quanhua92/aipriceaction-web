@@ -54,7 +54,7 @@ export function VolumeProfileWidget({
   onEndDateChange,
 }: VolumeProfileWidgetProps) {
   const { t } = useTranslation()
-  const { tickers: stockTickers, cryptoTickers, globalTickers, getTickers } = useAPI()
+  const { tickers: stockTickers, cryptoTickers, globalTickers, getTickers, ema } = useAPI()
   const { startDate: globalStartDate, endDate: globalEndDate } = useChartSettings()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
   const [selectedDate, setSelectedDate] = React.useState(date ?? initialDate ?? globalEndDate ?? null)
@@ -94,7 +94,7 @@ export function VolumeProfileWidget({
     async function fetchLastTradingDay() {
       try {
         const mode = getTickerMode(selectedTicker, stockTickersRef.current, globalTickersRef.current, cryptoTickersRef.current)
-        const response = await getTickersRef.current('VolumeProfileWidget.lastTradingDay', { symbol: selectedTicker, limit: 1, end_date: globalEndDate, mode })
+        const response = await getTickersRef.current('VolumeProfileWidget.lastTradingDay', { symbol: selectedTicker, limit: 1, end_date: globalEndDate, mode, ema: ema || undefined })
 
         console.log(`[VolumeProfileWidget] Response:`, response)
         console.log(`[VolumeProfileWidget] Response[${selectedTicker}]:`, response[selectedTicker])
@@ -121,7 +121,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, selectedDate, globalEndDate])
+  }, [selectedTicker, selectedDate, globalEndDate, ema])
 
   // Sync with external ticker prop
   React.useEffect(() => {
@@ -205,7 +205,8 @@ export function VolumeProfileWidget({
                 symbol: selectedTicker,
                 end_date: selectedDate!,
                 limit: 1,
-                mode
+                mode,
+                ema: ema || undefined,
               })
 
               if (!cancelled && dailyResponse[selectedTicker] && dailyResponse[selectedTicker].length > 0) {
