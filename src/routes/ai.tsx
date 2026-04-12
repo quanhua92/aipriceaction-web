@@ -26,7 +26,7 @@ const MAX_TICKERS = 100;
 function AIContextPage() {
 	const { t, language } = useTranslation();
 	const translations = loadTranslations(language);
-	const { getTickers, getHealth, tickers, cryptoTickers, tickerGroups, globalTickers } = useAPI();
+	const { getTickers, getHealth, tickers, cryptoTickers, tickerGroups, globalTickers, ema } = useAPI();
 	const { lastRefresh } = useRefresh();
 	const { endDate } = useChartSettings();
 	const [copied, setCopied] = React.useState(false);
@@ -84,8 +84,8 @@ function AIContextPage() {
 	}, [getHealth]);
 
 	const aiContext = React.useMemo(() => {
-		return buildAIContext(language, marketData || undefined, interval, isTradingHours);
-	}, [language, marketData, interval, isTradingHours]);
+		return buildAIContext(language, marketData || undefined, interval, isTradingHours, ema);
+	}, [language, marketData, interval, isTradingHours, ema]);
 
 	const handleCopy = async () => {
 		try {
@@ -180,7 +180,8 @@ function AIContextPage() {
 						limit: limit,
 						interval: interval,
 						end_date: endDate,
-						mode: 'all'
+						mode: 'all',
+						ema: ema || undefined
 					})
 				} else {
 					// All tickers are the same type — use correct mode
@@ -193,7 +194,8 @@ function AIContextPage() {
 						limit: limit,
 						interval: interval,
 						end_date: endDate,
-						mode
+						mode,
+						ema: ema || undefined
 					})
 				}
 				setMarketData(data);
@@ -206,7 +208,7 @@ function AIContextPage() {
 		}
 
 		fetchData();
-	}, [selectedTickers, limit, interval, getTickers, lastRefresh, endDate, tickers.length, cryptoTickers.length, globalTickers.length]);
+	}, [selectedTickers, limit, interval, getTickers, lastRefresh, endDate, tickers.length, cryptoTickers.length, globalTickers.length, ema]);
 
 	const canAddMoreTickers = selectedTickers.length < MAX_TICKERS;
 

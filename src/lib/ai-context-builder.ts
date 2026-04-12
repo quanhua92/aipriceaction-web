@@ -30,7 +30,8 @@ export function buildAIContext(
 	language: "en" | "vn" = "en",
 	marketData?: Record<string, StockData[]>,
 	interval?: string,
-	isTradingHours?: boolean
+	isTradingHours?: boolean,
+	useEMA?: boolean
 ): string {
 	const sections: string[] = [];
 
@@ -126,8 +127,13 @@ Khi phân tích dữ liệu thị trường, ưu tiên các cách tiếp cận s
 	}
 
 	// 2. MA Score Explanation
+	const maType = useEMA ? "EMA (Exponential Moving Average)" : "SMA (Simple Moving Average)";
+	const maTypeVN = useEMA ? "EMA (Đường Trung Bình Lũy Thừa)" : "SMA (Đường Trung Bình Đơn Giản)";
+
 	if (language === "en") {
 		sections.push(`=== MA Score: What It Is and How to Calculate ===
+
+**Note**: The moving averages below use ${maType}.
 
 ## What is MA Score?
 
@@ -160,11 +166,11 @@ Example:
 
 ## Typical MA Periods
 
-- **MA10** (10-day): Very short-term momentum, highly reactive to recent price changes
-- **MA20** (20-day): Short-term trend, balanced between responsiveness and stability
-- **MA50** (50-day): Medium-term trend, commonly used for swing trading
-- **MA100** (100-day): Long-term trend, filters out medium-term noise
-- **MA200** (200-day): Major long-term trend indicator, used for identifying bull/bear markets
+- **${useEMA ? 'EMA' : 'MA'}10** (10-day): Very short-term momentum, highly reactive to recent price changes
+- **${useEMA ? 'EMA' : 'MA'}20** (20-day): Short-term trend, balanced between responsiveness and stability
+- **${useEMA ? 'EMA' : 'MA'}50** (50-day): Medium-term trend, commonly used for swing trading
+- **${useEMA ? 'EMA' : 'MA'}100** (100-day): Long-term trend, filters out medium-term noise
+- **${useEMA ? 'EMA' : 'MA'}200** (200-day): Major long-term trend indicator, used for identifying bull/bear markets
 
 ## Use Cases
 
@@ -174,6 +180,8 @@ Example:
 4. **Entry/Exit Signals**: Extreme positive or negative scores may signal overbought/oversold conditions`);
 	} else {
 		sections.push(`=== MA Score: Là Gì và Cách Tính ===
+
+**Lưu ý**: Các đường trung bình dưới đây sử dụng ${maTypeVN}.
 
 ## MA Score là gì?
 
@@ -206,11 +214,11 @@ Ví dụ:
 
 ## Các Chu Kỳ MA Phổ Biến
 
-- **MA10** (10 ngày): Động lực rất ngắn hạn, phản ứng rất nhanh với thay đổi giá gần đây
-- **MA20** (20 ngày): Xu hướng ngắn hạn, cân bằng giữa độ nhạy và ổn định
-- **MA50** (50 ngày): Xu hướng trung hạn, thường dùng cho giao dịch swing
-- **MA100** (100 ngày): Xu hướng dài hạn, lọc bỏ nhiễu trung hạn
-- **MA200** (200 ngày): Chỉ báo xu hướng dài hạn chính, dùng để xác định thị trường tăng/giảm
+- **${useEMA ? 'EMA' : 'MA'}10** (10 ngày): Động lực rất ngắn hạn, phản ứng rất nhanh với thay đổi giá gần đây
+- **${useEMA ? 'EMA' : 'MA'}20** (20 ngày): Xu hướng ngắn hạn, cân bằng giữa độ nhạy và ổn định
+- **${useEMA ? 'EMA' : 'MA'}50** (50 ngày): Xu hướng trung hạn, thường dùng cho giao dịch swing
+- **${useEMA ? 'EMA' : 'MA'}100** (100 ngày): Xu hướng dài hạn, lọc bỏ nhiễu trung hạn
+- **${useEMA ? 'EMA' : 'MA'}200** (200 ngày): Chỉ báo xu hướng dài hạn chính, dùng để xác định thị trường tăng/giảm
 
 ## Các Trường Hợp Sử Dụng
 
@@ -254,12 +262,12 @@ Các Điểm Chính:
 		if (language === "en") {
 			marketDataLines.push("=== Market Data ===");
 			marketDataLines.push("");
-			marketDataLines.push("Historical OHLCV data with moving averages and momentum indicators for selected tickers. Each line represents one trading day with explicit key-value pairs.");
+			marketDataLines.push(`Historical OHLCV data with ${maType} moving averages and momentum indicators for selected tickers. Each line represents one trading day with explicit key-value pairs.`);
 			marketDataLines.push("");
 		} else {
 			marketDataLines.push("=== Dữ Liệu Thị Trường ===");
 			marketDataLines.push("");
-			marketDataLines.push("Dữ liệu OHLCV lịch sử với đường trung bình động và chỉ báo động lực cho các mã được chọn. Mỗi dòng đại diện cho một phiên giao dịch với các cặp key-value rõ ràng.");
+			marketDataLines.push(`Dữ liệu OHLCV lịch sử với đường trung bình động ${maTypeVN} và chỉ báo động lực cho các mã được chọn. Mỗi dòng đại diện cho một phiên giao dịch với các cặp key-value rõ ràng.`);
 			marketDataLines.push("");
 		}
 
