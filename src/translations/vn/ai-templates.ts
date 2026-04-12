@@ -24,5 +24,15 @@ export default {
       snippet: 'Tìm tin tức và sự kiện gần đây giải thích cho biến động giá mạnh hoặc khối lượng bất thường',
       question: 'Kiểm tra xem có mã nào thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, tìm tin tức và sự kiện gần đây để hiểu nguyên nhân.',
     },
+    {
+      title: 'Phân Tích Hành Động Giá Theo Bob Volman',
+      snippet: 'Áp dụng phương pháp scalping hành động giá của Bob Volman để nhận diện điểm vào lệnh theo mô hình điều chỉnh vi mô, xác nhận phá vỡ và thiết lập giao dịch ngược xu hướng tại vùng cản',
+      question: 'Phân tích mỗi mã đã chọn theo phương pháp hành động giá của Bob Volman từ "Forex Price Action Scalping". Đối với mỗi mã: (1) Xác định xu hướng chủ đạo trên khung thời gian hiện tại thông qua các đỉnh và đáy dao động. (2) Tìm các thiết lập micro pullback — nhịp điều chỉnh 3+ nến liên tiếp ngược xu hướng, theo sau bởi nến đảo chiều hoặc nến breakout. (3) Nhận diện các thiết lập breakout khi giá phá vỡ một mức quan trọng với động lực mạnh. (4) Kiểm tra các thiết lập fading tại vùng hỗ trợ/kháng cự chính khi hành động giá cho thấy mô hình từ chối (pin bar, engulfing). (5) Đánh giá hành vi khối lượng tại các mức quan trọng để xác nhận hoặc phủ nhận từng thiết lập. Xếp hạng mỗi mã theo chất lượng thiết lập và đưa ra các mức vào lệnh, cắt lỗ, chốt lời cụ thể.',
+    },
+    {
+      title: 'Phân Tích Hành Động Giá Theo Phương Pháp Wyckoff',
+      snippet: 'Áp dụng Phương Pháp Wyckoff để nhận diện giai đoạn tích lũy/phân phối, mô hình spring/upthrust và tính toán mục tiêu giá',
+      question: 'Phân tích mỗi mã đã chọn theo Phương Pháp Wyckoff. Đối với mỗi mã: (1) Xác định giai đoạn Wyckoff hiện tại — Tích lũy (A–E), Tăng Giá, Phân Phối (A–E), hoặc Giảm Giá dựa trên hành vi giá và khối lượng. (2) Nhận diện các sự kiện Wyckoff quan trọng: Spring (phá vỡ giả dưới hỗ trợ), Upthrust (phá vỡ giả trên kháng cự), Sign of Strength (SOS), Sign of Weakness (SOW), Last Point of Support (LPS), và Last Point of Supply (LPSY). (3) Đo lường nguyên nhân (chiều rộng vùng tích lũy/phân phối) và ước tính mục tiêu giá theo phương pháp đếm ngang của Wyckoff. (4) Phân tích mô hình khối lượng — so sánh nỗ lực và kết quả — để xác nhận dòng tiền thông minh đang tích lũy hay phân phối. (5) So sánh cấu trúc Wyckoff giữa các mã và chỉ ra mã nào có thiết lập giao dịch rõ ràng nhất.',
+    },
   ],
 }

@@ -24,5 +24,15 @@ export default {
       snippet: 'Find recent news and events that explain extreme price movements or unusual volume activity',
       question: 'Check if any stocks moved more than ±6.7% in a single day or show unusual volume patterns. For each significant move, search recent news and events to understand what caused it.',
     },
+    {
+      title: 'Bob Volman Price Action Analysis',
+      snippet: 'Apply Bob Volman\'s scalping price action techniques to identify micro pullback entries, breakout confirmations, and fading setups',
+      question: 'Analyze each selected ticker using Bob Volman\'s price action methodology from "Forex Price Action Scalping". For each ticker: (1) Identify the dominant trend on the current timeframe using swing highs and lows. (2) Look for micro pullback setups — a pullback of 3+ consecutive bars against the trend followed by a reversal bar or breakout candle. (3) Identify any 50-pip (or equivalent) breakout setups where price breaks a significant level on strong momentum. (4) Check for fading setups at key support/resistance where price action shows rejection patterns (pin bars, engulfing). (5) Assess volume behavior at key levels to confirm or deny each setup. Rank each ticker by setup quality and provide specific entry, stop-loss, and take-profit levels.',
+    },
+    {
+      title: 'Wyckoff Method Price Action Analysis',
+      snippet: 'Apply the Wyckoff Method to identify accumulation/distribution phases, spring/upthrust patterns, and price targets',
+      question: 'Analyze each selected ticker using the Wyckoff Method. For each ticker: (1) Determine the current Wyckoff phase — Accumulation (A–E), Markup, Distribution (A–E), or Markdown based on price-volume behavior. (2) Identify key Wyckoff events: Springs (false breakdowns below support), Upthrusts (false breakouts above resistance), Sign of Strength (SOS), Sign of Weakness (SOW), Last Point of Support (LPS), and Last Point of Supply (LPSY). (3) Map out the cause (trading range width) and estimate a price target using Wyckoff\'s horizontal counting method. (4) Analyze volume patterns — effort vs result — to confirm whether smart money is accumulating or distributing. (5) Compare the Wyckoff structures across selected tickers and identify which ones offer the clearest actionable setups.',
+    },
   ],
 }
