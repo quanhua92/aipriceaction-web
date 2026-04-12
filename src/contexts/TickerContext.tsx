@@ -157,18 +157,16 @@ export function TickerProvider({
   }, [cacheData, cacheMetadata, ticker, initialTicker, settings.interval])
 
 
-  // Refs for stable access
+  // Refs for stable access (avoid re-fetching when these change reference)
   const loadingMoreRef = React.useRef(false)
   const tickersRef = React.useRef(tickers)
+  tickersRef.current = tickers
   const globalTickersRef = React.useRef(globalTickers)
+  globalTickersRef.current = globalTickers
   const cryptoTickersRef = React.useRef(cryptoTickers)
-
-  // Update refs when tickers change (but don't trigger re-fetch)
-  React.useEffect(() => {
-    tickersRef.current = tickers
-    globalTickersRef.current = globalTickers
-    cryptoTickersRef.current = cryptoTickers
-  }, [tickers, globalTickers, cryptoTickers])
+  cryptoTickersRef.current = cryptoTickers
+  const getTickersRef = React.useRef(getTickers)
+  getTickersRef.current = getTickers
 
   // Load more historical data (for Load More button)
   const loadMoreHistoricalData = React.useCallback(async () => {
@@ -302,7 +300,7 @@ export function TickerProvider({
             // Build source string for interval change
             const source = `TickerContext.intervalChange [${cacheMetadata.interval}→${settings.interval}]`
 
-            const response = await getTickers(source, {
+            const response = await getTickersRef.current(source, {
               symbol: selectedTicker,
               interval: settings.interval,  // New interval from global settings
               end_date: targetDate,         // Date from last cached item
@@ -369,7 +367,7 @@ export function TickerProvider({
             ? `TickerContext [${changedDeps.join(', ')}]`
             : 'TickerContext'
 
-          const response = await getTickers(source, {
+          const response = await getTickersRef.current(source, {
             symbol: selectedTicker,
             interval: settings.interval,
             start_date: settings.startDate,
@@ -416,9 +414,8 @@ export function TickerProvider({
     settings.limit,
     lastRefresh,
     localEndDate,
-    getTickers,
-    // NOTE: Don't include cacheData/cacheMetadata as dependencies to avoid infinite loops
-    // isCacheValid, tickersRef, globalTickersRef, cryptoTickersRef are stable and don't need to be listed
+    // NOTE: Don't include getTickers, cacheData/cacheMetadata as dependencies to avoid infinite loops
+    // getTickersRef, tickersRef, globalTickersRef, cryptoTickersRef are refs and don't need to be listed
   ])
 
   const contextValue = {
