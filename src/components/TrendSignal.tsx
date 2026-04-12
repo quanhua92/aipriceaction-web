@@ -162,8 +162,10 @@ export function TrendSignal({
       setError(null)
 
       try {
-        // Always fetch 40 records for browser cache efficiency
         const endDate = globalEndDate || format(new Date(), 'yyyy-MM-dd')
+        // Match detectSignal's minimum: Math.max(buyPeriod, sellPeriod) + 1,
+        // but at least MATRIX_DAYS_PER_PAGE for browser cache sharing with MarketMatrix
+        const limit = Math.max(MATRIX_DAYS_PER_PAGE, buyPeriod + 1, sellPeriod + 1)
 
         // Determine if this is a mixed, crypto-only, global-only, or stock-only watchlist
         const isMixed = watchlistType === 'mixed'
@@ -187,7 +189,7 @@ export function TrendSignal({
             symbol: mixedSymbols,
             interval: interval === '1h' ? '1h' : '1D',
             end_date: endDate,
-            limit: MATRIX_DAYS_PER_PAGE,
+            limit,
             mode: 'all',
           })
           stockResponse = mixedResponse
@@ -199,7 +201,7 @@ export function TrendSignal({
             symbol: selectedTickers,
             interval: interval === '1h' ? '1h' : '1D',
             end_date: endDate,
-            limit: MATRIX_DAYS_PER_PAGE,
+            limit,
             mode: 'crypto',
           })
         } else if (isGlobalOnly) {
@@ -208,7 +210,7 @@ export function TrendSignal({
             symbol: selectedTickers,
             interval: interval === '1h' ? '1h' : '1D',
             end_date: endDate,
-            limit: MATRIX_DAYS_PER_PAGE,
+            limit,
             mode: 'yahoo',
           })
         } else {
@@ -219,7 +221,7 @@ export function TrendSignal({
               : ['VNINDEX', ...selectedTickers],
             interval: interval === '1h' ? '1h' : '1D',
             end_date: endDate,
-            limit: MATRIX_DAYS_PER_PAGE,
+            limit,
             mode: 'vn',
           })
         }
