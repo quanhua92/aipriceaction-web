@@ -235,6 +235,11 @@ export function TickerProvider({
             return
     }
 
+    // Skip fetch if ticker lists haven't loaded yet (mode cannot be determined)
+    if (tickers.length === 0 && globalTickers.length === 0 && cryptoTickers.length === 0) {
+      return
+    }
+
     // Track which dependencies changed
     const currentDeps = {
       selectedTicker,

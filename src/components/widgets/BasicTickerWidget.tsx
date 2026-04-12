@@ -40,6 +40,10 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
 
   // Fetch latest 1D data
   useEffect(() => {
+    if (tickers.length === 0 && globalTickers.length === 0 && cryptoTickers.length === 0) {
+      return
+    }
+
     let cancelled = false
 
     async function fetch() {

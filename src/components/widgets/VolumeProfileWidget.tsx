@@ -87,6 +87,9 @@ export function VolumeProfileWidget({
 
   // Fetch last trading day for default date if not provided
   React.useEffect(() => {
+    if (stockTickers.length === 0 && globalTickers.length === 0 && cryptoTickers.length === 0) {
+      return
+    }
     if (selectedDate !== null) return // Already have a date
 
     let cancelled = false
@@ -121,7 +124,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, selectedDate, globalEndDate, ema])
+  }, [selectedTicker, selectedDate, globalEndDate, ema, stockTickers.length, globalTickers.length, cryptoTickers.length])
 
   // Sync with external ticker prop
   React.useEffect(() => {
@@ -172,6 +175,9 @@ export function VolumeProfileWidget({
 
   // Fetch volume profile data
   React.useEffect(() => {
+    if (stockTickers.length === 0 && globalTickers.length === 0 && cryptoTickers.length === 0) {
+      return
+    }
     if (!selectedDate) return // Wait for date to be set
 
     let cancelled = false
@@ -236,7 +242,7 @@ export function VolumeProfileWidget({
     return () => {
       cancelled = true
     }
-  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins])
+  }, [selectedTicker, selectedDate, selectedStartDate, selectedEndDate, isRangeMode, bins, stockTickers.length, globalTickers.length, cryptoTickers.length])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)
