@@ -108,6 +108,16 @@ export interface StockData {
  */
 export type BasicStockData = Omit<StockData, 'ma10' | 'ma20' | 'ma50' | 'ma100' | 'ma200' | 'ma10_score' | 'ma20_score' | 'ma50_score' | 'ma100_score' | 'ma200_score'>;
 
+const MA_DEFAULTS = {
+  ma10: 0, ma20: 0, ma50: 0, ma100: 0, ma200: 0,
+  ma10_score: 0, ma20_score: 0, ma50_score: 0, ma100_score: 0, ma200_score: 0,
+} as const;
+
+/** Convert BasicStockData to StockData by filling MA fields with 0 */
+export function toStockData(data: BasicStockData): StockData {
+  return { ...data, ...MA_DEFAULTS };
+}
+
 /**
  * Ticker performance data (used in top-performers endpoint)
  */

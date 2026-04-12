@@ -56,6 +56,8 @@ export type {
   RRGTrail,
 } from "./types.js";
 
+export { toStockData } from "./types.js";
+
 // Export enums
 export {
   Interval,

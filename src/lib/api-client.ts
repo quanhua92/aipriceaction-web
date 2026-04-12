@@ -413,7 +413,7 @@ export type {
   RRGTrail,
 } from '@/integrations/aipriceaction/src'
 
-export { Interval } from '@/integrations/aipriceaction/src'
+export { Interval, toStockData } from '@/integrations/aipriceaction/src'
 
 /**
  * Upload API helpers

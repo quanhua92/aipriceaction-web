@@ -3,6 +3,16 @@ import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import type { StockData } from '@/lib/api-client'
+import { toStockData, type BasicStockData } from '@/lib/api-client'
+
+/** Convert Record<string, BasicStockData[]> to Record<string, StockData[]> */
+function toStockDataMap(map: Record<string, BasicStockData[]>): Record<string, StockData[]> {
+  const result: Record<string, StockData[]> = {}
+  for (const [key, arr] of Object.entries(map)) {
+    result[key] = arr.map(toStockData)
+  }
+  return result
+}
 
 interface UseWatchListDataOptions {
   needsMA: boolean
@@ -20,18 +30,24 @@ interface UseWatchListDataResult {
 }
 
 export function useWatchListData({ needsMA, endDate: endDateOverride }: UseWatchListDataOptions): UseWatchListDataResult {
-  const { getTickers } = useAPI()
+  const { getTickers, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData } = useAPI()
   const { lastRefresh } = useRefresh()
   const { endDate: settingsEndDate } = useChartSettings()
   const effectiveEndDate = endDateOverride ?? settingsEndDate
 
+  // When MA is not needed and no custom endDate, APIContext already has the same data
+  // (fetched with limit:1, same endDate, ma:false). Avoid duplicate fetches.
+  const canUseAPIContext = !needsMA && endDateOverride === undefined
+
   const [stockData, setStockData] = React.useState<Record<string, StockData[]>>({})
   const [cryptoData, setCryptoData] = React.useState<Record<string, StockData[]>>({})
   const [globalData, setGlobalData] = React.useState<Record<string, StockData[]>>({})
-  const [loading, setLoading] = React.useState(true)
+  const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
+    if (canUseAPIContext) return
+
     let cancelled = false
     setLoading(true)
     setError(null)
@@ -61,12 +77,17 @@ export function useWatchListData({ needsMA, endDate: endDateOverride }: UseWatch
     return () => {
       cancelled = true
     }
-  }, [getTickers, lastRefresh, effectiveEndDate, needsMA])
+  }, [getTickers, lastRefresh, effectiveEndDate, needsMA, canUseAPIContext])
+
+  // When using APIContext data (BasicStockData), convert to StockData with default MA values
+  const effectiveStockData = canUseAPIContext ? toStockDataMap(allTickersLastData) : stockData
+  const effectiveCryptoData = canUseAPIContext ? toStockDataMap(allCryptoTickersLastData) : cryptoData
+  const effectiveGlobalData = canUseAPIContext ? toStockDataMap(allGlobalTickersLastData) : globalData
 
   const combinedData = React.useMemo(
-    () => ({ ...stockData, ...cryptoData, ...globalData }),
-    [stockData, cryptoData, globalData],
+    () => ({ ...effectiveStockData, ...effectiveCryptoData, ...effectiveGlobalData }),
+    [effectiveStockData, effectiveCryptoData, effectiveGlobalData],
   )
 
-  return { stockData, cryptoData, globalData, combinedData, loading, error }
+  return { stockData: effectiveStockData, cryptoData: effectiveCryptoData, globalData: effectiveGlobalData, combinedData, loading, error }
 }
