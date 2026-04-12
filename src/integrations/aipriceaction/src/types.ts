@@ -223,6 +223,8 @@ export interface TickersQueryParams {
   cache?: boolean;
   /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies (default: 'vn') */
   mode?: 'vn' | 'crypto' | 'yahoo' | string;
+  /** Include moving average scores in response */
+  ma?: boolean;
 }
 
 /**

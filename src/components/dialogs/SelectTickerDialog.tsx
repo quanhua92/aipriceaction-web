@@ -1,6 +1,6 @@
 import { Search } from "lucide-react";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
 	SortableTickerList,
 	type SortableTickerListRef,
@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAPI } from "@/contexts/APIContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { TickersResponse } from "@/lib/api-client";
+import { useWatchListData } from "@/hooks/useWatchListData";
 import { MARKET_INDICES } from "@/lib/constants";
 
 interface SelectTickerDialogProps {
@@ -34,76 +34,23 @@ export function SelectTickerDialog({
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState("");
 	const tickerListRef = React.useRef<SortableTickerListRef>(null);
-	const [historicalStockData, setHistoricalStockData] =
-		useState<TickersResponse | null>(null);
-	const [historicalCryptoData, setHistoricalCryptoData] =
-		useState<TickersResponse | null>(null);
-	const [historicalGlobalData, setHistoricalGlobalData] =
-		useState<TickersResponse | null>(null);
-	const [historicalLoading, setHistoricalLoading] = useState(false);
+	const [needsMA, setNeedsMA] = useState(false);
 	const {
 		tickers,
 		loading,
 		error,
-		allTickersLastData,
 		cryptoTickers,
 		cryptoLoading,
 		cryptoError,
-		allCryptoTickersLastData,
 		globalTickers,
-		allGlobalTickersLastData,
 		globalLoading,
 		globalError,
-		getTickers,
 		tickerNames,
 		cryptoTickerNames,
 		globalTickerNames,
 	} = useAPI();
+	const { stockData, cryptoData, globalData, loading: dataLoading, error: dataError } = useWatchListData({ needsMA, endDate });
 	const { t } = useTranslation();
-
-	// Fetch historical data when dialog opens with endDate
-	useEffect(() => {
-		if (!endDate || !open) return;
-		let cancelled = false;
-		setHistoricalLoading(true);
-		Promise.all([
-			getTickers("SelectTickerDialog.historical", {
-				limit: 1,
-				end_date: endDate,
-			}),
-			getTickers("SelectTickerDialog.historical.crypto", {
-				limit: 1,
-				end_date: endDate,
-				mode: "crypto",
-			}),
-			getTickers("SelectTickerDialog.historical.global", {
-				limit: 1,
-				end_date: endDate,
-				mode: "yahoo",
-			}),
-		])
-			.then(([stockData, cryptoData, globalData]) => {
-				if (!cancelled) {
-					setHistoricalStockData(stockData);
-					setHistoricalCryptoData(cryptoData);
-					setHistoricalGlobalData(globalData);
-					setHistoricalLoading(false);
-				}
-			})
-			.catch(() => {
-				if (!cancelled) {
-					setHistoricalLoading(false);
-				}
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [endDate, open, getTickers]);
-
-	// Use historical data when available, otherwise fall back to live context data
-	const effectiveStockData = historicalStockData ?? allTickersLastData;
-	const effectiveCryptoData = historicalCryptoData ?? allCryptoTickersLastData;
-	const effectiveGlobalData = historicalGlobalData ?? allGlobalTickersLastData;
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
@@ -145,19 +92,20 @@ export function SelectTickerDialog({
 					<SortableTickerList
 						ref={tickerListRef}
 						tickers={tickers}
-						allTickersLastData={effectiveStockData}
+						allTickersLastData={stockData}
 						searchQuery={search}
 						marketIndices={[...MARKET_INDICES]}
 						onSelectTicker={handleSelectTicker}
-						loading={loading || cryptoLoading || globalLoading || historicalLoading}
-						error={error || cryptoError || globalError}
+						onSortRequiresMA={setNeedsMA}
+						loading={loading || cryptoLoading || globalLoading || dataLoading}
+						error={error || cryptoError || globalError || dataError}
 						maxHeight="none"
 						persistToLocalStorage
 						className="h-full"
 						cryptoTickers={cryptoTickers}
-						allCryptoTickersLastData={effectiveCryptoData}
+						allCryptoTickersLastData={cryptoData}
 						globalTickers={globalTickers}
-						allGlobalTickersLastData={effectiveGlobalData}
+						allGlobalTickersLastData={globalData}
 						defaultSectionFilter={defaultSectionFilter}
 						tickerNamesMap={{ ...tickerNames, ...cryptoTickerNames, ...globalTickerNames }}
 					/>

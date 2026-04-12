@@ -16,7 +16,7 @@ const requestCache = new Map<string, CacheEntry>()
 
 // Generate deterministic cache key from request parameters
 function generateCacheKey(params?: TickersQueryParams): string {
-  const { symbol, interval, start_date, end_date, limit, mode, legacy } = params || {}
+  const { symbol, interval, start_date, end_date, limit, mode, legacy, ma } = params || {}
 
   return [
     // Normalize symbols: sort arrays, handle undefined as "ALL"
@@ -26,7 +26,8 @@ function generateCacheKey(params?: TickersQueryParams): string {
     end_date || '',
     limit?.toString() || '',
     mode || 'vn',
-    legacy ? '1' : '0'
+    legacy ? '1' : '0',
+    ma !== undefined ? `ma=${ma}` : ''
   ].filter(Boolean).join('|')
 }
 

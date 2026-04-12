@@ -18,6 +18,11 @@ export interface Ticker {
 export type SortBy = 'gainers' | 'losers' | 'volume' | 'ma10' | 'ma20' | 'ma50' | 'ma100' | 'ma200' | 'value' | 'az'
 export type SectionFilter = 'stocks' | 'crypto' | 'global'
 
+export const MA_SORT_OPTIONS: SortBy[] = ['ma10', 'ma20', 'ma50', 'ma100', 'ma200']
+export function isMASort(sortBy: SortBy): boolean {
+  return MA_SORT_OPTIONS.includes(sortBy)
+}
+
 export interface SortableTickerListProps {
   tickers: Ticker[]
   allTickersLastData: Record<string, StockData[]>
@@ -43,6 +48,8 @@ export interface SortableTickerListProps {
   persistToLocalStorage?: boolean
   // Ticker names map (symbol → display name), merged from vn/crypto/global
   tickerNamesMap?: Record<string, string>
+  /** Called when sort changes to/from an MA-based sort */
+  onSortRequiresMA?: (needsMA: boolean) => void
 }
 
 export interface SortableTickerListRef {
@@ -68,7 +75,8 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
   allGlobalTickersLastData = {},
   defaultSectionFilter = 'stocks',
   persistToLocalStorage = false,
-  tickerNamesMap = {}
+  tickerNamesMap = {},
+  onSortRequiresMA
 }, ref) => {
   const [sortBy, setSortBy] = React.useState<SortBy>(() => {
     if (persistToLocalStorage) {
@@ -99,6 +107,11 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
       SafeLocalStorage.setItem(TICKER_LIST_SECTION_FILTER_STORAGE_KEY, sectionFilter)
     }
   }, [sectionFilter, persistToLocalStorage])
+
+  // Notify parent when sort changes to/from an MA-based sort
+  React.useEffect(() => {
+    onSortRequiresMA?.(isMASort(sortBy))
+  }, [sortBy, onSortRequiresMA])
 
   React.useEffect(() => {
     setShowAll(false)

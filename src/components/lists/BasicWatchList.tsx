@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useAPI } from "@/contexts/APIContext";
 import { useLogs } from "@/contexts/LogsContext";
 import { usePrefetchTicker } from "@/hooks/usePrefetchTicker";
+import { useWatchListData } from "@/hooks/useWatchListData";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
 	ALL_WATCHLIST_NAME,
@@ -63,17 +64,14 @@ export function BasicWatchList({
 }: BasicWatchListProps) {
 	const {
 		tickerGroups,
-		allTickersLastData,
 		loading,
 		error,
 		cryptoTickers,
 		cryptoLoading,
 		cryptoError,
-		allCryptoTickersLastData,
 		globalTickers,
 		globalLoading,
 		globalError,
-		allGlobalTickersLastData,
 		tickerNames,
 		cryptoTickerNames,
 		globalTickerNames,
@@ -82,6 +80,10 @@ export function BasicWatchList({
 	const { t } = useTranslation();
 	const { info, error: logError } = useLogs();
 	const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+	// Self-fetched data with MA parameter support
+	const [needsMA, setNeedsMA] = React.useState(false);
+	const { stockData, cryptoData, globalData, combinedData, loading: dataLoading, error: dataError } = useWatchListData({ needsMA });
 
 	// State to track custom watchlists and trigger re-renders
 	const [customWatchlists, setCustomWatchlists] = React.useState<string[]>([]);
@@ -203,19 +205,12 @@ export function BasicWatchList({
 
 	// Calculate price change distribution
 	const priceDistribution = React.useMemo(() => {
-		// Combine stock, crypto, and global data
-		const allData = {
-			...allTickersLastData,
-			...allCryptoTickersLastData,
-			...allGlobalTickersLastData,
-		};
-
 		// Combine all tickers (stocks, crypto, global) for distribution calculation
 		const tickersToCheck = [...tickers, ...cryptoTickers, ...globalTickers];
 
 		// Get only tickers with price data
 		const tickersWithData = tickersToCheck.filter((t) => {
-			const data = allData[t.symbol];
+			const data = combinedData[t.symbol];
 			return (
 				data &&
 				data.length > 0 &&
@@ -235,7 +230,7 @@ export function BasicWatchList({
 
 		// Count tickers in each category
 		tickersWithData.forEach((ticker) => {
-			const data = allData[ticker.symbol][0];
+			const data = combinedData[ticker.symbol][0];
 			const change = data.close_changed || 0;
 			const epsilon = 0.01; // Small epsilon for floating point comparison
 
@@ -258,9 +253,7 @@ export function BasicWatchList({
 		cryptoTickers,
 		globalTickers,
 		selectedGroup,
-		allTickersLastData,
-		allCryptoTickersLastData,
-		allGlobalTickersLastData,
+		combinedData,
 	]);
 
 	// Navigation state - use sorted tickers from SortableTickerList
@@ -605,15 +598,16 @@ export function BasicWatchList({
 			<div className="flex-1 px-3">
 				<SortableTickerList
 					tickers={tickers}
-					allTickersLastData={allTickersLastData}
+					allTickersLastData={stockData}
 					searchQuery={searchQuery}
 					marketIndices={showMarketIndices ? [...MARKET_INDICES] : []}
 					showMarketIndices={showMarketIndices}
 					showSections={true} // Show section headers to distinguish stocks from crypto
 					onSelectTicker={handleSelectTicker}
 					onSortedTickersChange={handleSortedTickersChange}
-					loading={loading || cryptoLoading || globalLoading}
-					error={error || cryptoError || globalError}
+					onSortRequiresMA={setNeedsMA}
+					loading={loading || cryptoLoading || globalLoading || dataLoading}
+					error={error || cryptoError || globalError || dataError}
 					maxHeight={maxHeight}
 					className="h-full"
 					defaultSectionFilter={
@@ -648,7 +642,7 @@ export function BasicWatchList({
 						selectedGroup === ALL_WATCHLIST_NAME ||
 						selectedGroup === CRYPTO_WATCHLIST_NAME ||
 						customWatchlists.includes(selectedGroup)
-							? allCryptoTickersLastData
+							? cryptoData
 							: {}
 					}
 					globalTickers={
@@ -675,7 +669,7 @@ export function BasicWatchList({
 						selectedGroup === ALL_WATCHLIST_NAME ||
 						selectedGroup === GLOBAL_WATCHLIST_NAME ||
 						customWatchlists.includes(selectedGroup)
-							? allGlobalTickersLastData
+							? globalData
 							: {}
 					}
 					tickerNamesMap={{
