@@ -8,7 +8,7 @@ import { getTickerMode } from '@/lib/ticker-utils'
  * Uses fire-and-forget pattern - errors are silently ignored
  */
 export function usePrefetchTicker() {
-  const { getTickers, tickers, cryptoTickers, globalTickers } = useAPI()
+  const { getTickers, tickers, cryptoTickers, globalTickers, ema } = useAPI()
   const settings = useChartSettings()
 
   /**
@@ -34,10 +34,11 @@ export function usePrefetchTicker() {
           end_date: settings.endDate,
           limit: settings.limit,
           mode,
+          ema: ema || undefined,
         }).catch(() => {}) // Ignore errors
       }
     },
-    [settings, getTickers, tickers, cryptoTickers, globalTickers],
+    [settings, getTickers, tickers, cryptoTickers, globalTickers, ema],
   )
 
   return { prefetchTickers }

@@ -31,7 +31,7 @@ interface AlertContextValue {
 const AlertContext = React.createContext<AlertContextValue | undefined>(undefined)
 
 export function AlertProvider({ children }: { children: React.ReactNode }) {
-  const { allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, getTickers } = useAPI()
+  const { allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, getTickers, ema } = useAPI()
   const { lastRefresh } = useRefresh()
   const { info } = useLogs()
   const { endDate: globalEndDate } = useChartSettings()
@@ -146,6 +146,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
               end_date: createdDate, // Use end_date to look backwards from creation
               limit: 10, // Get 10 bars backwards to handle weekends/holidays
               mode,
+              ema: ema || undefined,
             })
 
             const bars = historicalData[alert.ticker]
@@ -242,6 +243,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
             start_date: startDate,
             // No end_date - get all available bars from start_date
             mode,
+            ema: ema || undefined,
           })
 
           const bars = historicalData[alert.ticker]
@@ -303,7 +305,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
     } else {
       info('Alerts', `✅ Check complete: No alerts triggered`)
     }
-  }, [allMarketsData, allTickersLastData, allCryptoTickersLastData, getTickers, info, refreshAlerts])
+  }, [allMarketsData, allTickersLastData, allCryptoTickersLastData, getTickers, info, refreshAlerts, ema])
 
   // Auto-check alerts when data refreshes OR on initial load
   React.useEffect(() => {

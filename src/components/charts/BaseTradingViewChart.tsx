@@ -207,6 +207,7 @@ export function BaseTradingViewChart({
 				end_date: localEndDate ?? undefined,
 				limit: expandedLimitRef.current,
 				mode,
+				ema: ema || undefined,
 			});
 			const fetched = response[selectedTicker] || [];
 			if (fetched.length > 0) {
@@ -214,7 +215,7 @@ export function BaseTradingViewChart({
 			}
 		};
 		doExpand();
-	}, [data.length, selectedTicker, interval, infiniteHistory]);
+	}, [data.length, selectedTicker, interval, infiniteHistory, ema]);
 	// Note: intentionally NOT including expandedLimitRef in deps — it's a trigger, not a dep
 
 	// Merge expanded data with context data for chart rendering
@@ -871,6 +872,7 @@ export function BaseTradingViewChart({
 				end_date: localEndDate ?? undefined,
 				limit: newLimit,
 				mode,
+				ema: ema || undefined,
 			}).then(response => {
 				const fetched = response[selectedTicker] || [];
 				if (fetched.length > currentDataLen) {
@@ -887,7 +889,7 @@ export function BaseTradingViewChart({
 		return () => {
 			chart.timeScale().unsubscribeVisibleLogicalRangeChange(handler);
 		};
-	}, [isDataInitialized, infiniteHistory, expandedData, data, selectedTicker, interval, mergedData, localEndDate, getTickers, tickers, globalTickers, cryptoTickers]);
+	}, [isDataInitialized, infiniteHistory, expandedData, data, selectedTicker, interval, mergedData, localEndDate, getTickers, tickers, globalTickers, cryptoTickers, ema]);
 
 	// Overlay effect: markers and price lines
 	useEffect(() => {

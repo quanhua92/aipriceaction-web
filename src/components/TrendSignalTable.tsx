@@ -61,7 +61,7 @@ export function TrendSignalTable({
     }
     return []
   }, [tickers, ticker])
-  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, tickers: stockTickers, globalTickers } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, tickers: stockTickers, globalTickers, ema } = useAPI()
   const { lastRefresh } = useRefresh()
   const { t, language } = useTranslation()
 
@@ -131,7 +131,8 @@ export function TrendSignalTable({
             interval: selectedInterval === '1h' ? '1h' : '1D',
             end_date: endDate,
             limit: maxDays,
-            mode: 'all'
+            mode: 'all',
+            ema: ema || undefined,
           }))
         } else {
           if (stockTickersList.length > 0) {
@@ -140,7 +141,8 @@ export function TrendSignalTable({
               interval: selectedInterval === '1h' ? '1h' : '1D',
               end_date: endDate,
               limit: maxDays,
-              mode: 'vn'
+              mode: 'vn',
+              ema: ema || undefined,
             }))
           }
 
@@ -150,7 +152,8 @@ export function TrendSignalTable({
               interval: selectedInterval === '1h' ? '1h' : '1D',
               end_date: endDate,
               limit: maxDays,
-              mode: 'crypto'
+              mode: 'crypto',
+              ema: ema || undefined,
             }))
           }
 
@@ -160,7 +163,8 @@ export function TrendSignalTable({
               interval: selectedInterval === '1h' ? '1h' : '1D',
               end_date: endDate,
               limit: maxDays,
-              mode: 'yahoo'
+              mode: 'yahoo',
+              ema: ema || undefined,
             }))
           }
         }
@@ -227,7 +231,7 @@ export function TrendSignalTable({
     return () => {
       isMounted = false
     }
-  }, [internalTickers, selectedInterval, selectedBuyPeriod, selectedSellPeriod, lastRefresh, maxDays, endDate, separateTickersByType])
+  }, [internalTickers, selectedInterval, selectedBuyPeriod, selectedSellPeriod, lastRefresh, maxDays, endDate, separateTickersByType, ema])
 
   // Flatten all signals for navigation
   const allSignals = React.useMemo(() => {

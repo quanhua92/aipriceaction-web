@@ -207,7 +207,7 @@ export function usePlaygroundData(
   onIntervalInit?: (interval: string) => void,
   initialLimit?: number,
 ) {
-  const { getTickers, tickerGroups, tickers, cryptoTickers, globalTickers } = useAPI()
+  const { getTickers, tickerGroups, tickers, cryptoTickers, globalTickers, ema } = useAPI()
 
   const getMode = (symbol: string) =>
     getTickerMode(symbol, tickers, globalTickers, cryptoTickers)
@@ -285,6 +285,7 @@ export function usePlaygroundData(
             limit,
             mode: getMode(ticker),
             interval,
+            ema: ema || undefined,
           })
         ]
 
@@ -296,6 +297,7 @@ export function usePlaygroundData(
               limit,
               mode: getMode(secondaryTicker),
               interval,
+              ema: ema || undefined,
             })
           )
         }
@@ -370,7 +372,7 @@ export function usePlaygroundData(
     fetchData()
 
     return () => controller.abort()
-  }, [fetchIntent, getTickers])
+  }, [fetchIntent, getTickers, ema])
 
   // === State → URL sync effect ===
   // Watches playgroundData URL-relevant fields, updates URL one-way
@@ -601,6 +603,7 @@ export function usePlaygroundData(
         limit: current.limit,
         mode: getMode(newSecondaryTicker),
         interval: current.interval,
+        ema: ema || undefined,
       })
 
       const data = response[newSecondaryTicker] || []
