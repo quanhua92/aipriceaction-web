@@ -113,7 +113,8 @@ export class AIPriceActionClient {
       ...options,
       signal: controller.signal,
       headers: {
-        "User-Agent": getUserAgent(),
+        // Skip User-Agent in browser where it's a forbidden header (silently ignored)
+        ...(("window" in globalThis ? false : true) && { "User-Agent": getUserAgent() }),
         ...options.headers,
       },
     };
