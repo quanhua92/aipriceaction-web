@@ -1318,6 +1318,14 @@ export function BaseTradingViewChart({
 							color: "#2563eb",
 						});
 					}
+					if (maVisibility.ma100 && displayData.ma100 != null) {
+						maValues.push({
+							label: ema ? "EMA100" : "MA100",
+							value: displayData.ma100,
+							color: "#a1a1aa",
+							desktopOnly: true,
+						});
+					}
 
 					return (
 						<div>
@@ -1397,7 +1405,7 @@ export function BaseTradingViewChart({
 									}}
 								>
 									{maValues.map((ma, index) => (
-										<span key={ma.label}>
+										<span key={ma.label} className={ma.desktopOnly ? "hidden md:inline" : undefined}>
 											<span style={{ color: ma.color }}>{ma.label}:</span>
 											<span style={{ color: ma.color, marginLeft: "2px" }}>
 												{formatPrice(ma.value, displayData)}
@@ -1414,16 +1422,11 @@ export function BaseTradingViewChart({
 							{tickerName && tickerName !== displayData.symbol && (
 								<div
 									className={cn(
-									"absolute top-11 left-3 z-10 pointer-events-none",
+									"absolute top-11 left-3 text-zinc-700 dark:text-zinc-300 z-10 pointer-events-none antialiased",
 									displayData.symbol && displayData.symbol.length >= 4
 										? "text-[11px]"
 										: "text-[12px]",
 								)}
-									style={{
-										color: "#71717a",
-										WebkitFontSmoothing: "antialiased",
-										MozOsxFontSmoothing: "grayscale",
-									}}
 								>
 									{tickerName}
 								</div>
@@ -1432,7 +1435,7 @@ export function BaseTradingViewChart({
 							{/* Fourth line - Timestamp */}
 							<div
 								className={cn(
-									"absolute left-3 text-zinc-400 z-10 pointer-events-none",
+									"absolute left-3 text-zinc-700 dark:text-zinc-300 z-10 pointer-events-none",
 									tickerName && tickerName !== displayData.symbol
 										? "top-[60px]"
 										: "top-11",
