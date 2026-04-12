@@ -18,6 +18,8 @@ interface UseWatchListDataOptions {
   needsMA: boolean
   /** Override endDate from ChartSettings */
   endDate?: string
+  /** Whether fetching is enabled (default true) */
+  enabled?: boolean
 }
 
 interface UseWatchListDataResult {
@@ -29,7 +31,7 @@ interface UseWatchListDataResult {
   error: string | null
 }
 
-export function useWatchListData({ needsMA, endDate: endDateOverride }: UseWatchListDataOptions): UseWatchListDataResult {
+export function useWatchListData({ needsMA, endDate: endDateOverride, enabled = true }: UseWatchListDataOptions): UseWatchListDataResult {
   const { getTickers, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData } = useAPI()
   const { lastRefresh } = useRefresh()
   const { endDate: settingsEndDate } = useChartSettings()
@@ -47,6 +49,7 @@ export function useWatchListData({ needsMA, endDate: endDateOverride }: UseWatch
 
   React.useEffect(() => {
     if (canUseAPIContext) return
+    if (!enabled) return
 
     let cancelled = false
     setLoading(true)
@@ -77,7 +80,7 @@ export function useWatchListData({ needsMA, endDate: endDateOverride }: UseWatch
     return () => {
       cancelled = true
     }
-  }, [getTickers, lastRefresh, effectiveEndDate, needsMA, canUseAPIContext])
+  }, [getTickers, lastRefresh, effectiveEndDate, needsMA, canUseAPIContext, enabled])
 
   // When using APIContext data (BasicStockData), convert to StockData with default MA values
   const effectiveStockData = canUseAPIContext ? toStockDataMap(allTickersLastData) : stockData

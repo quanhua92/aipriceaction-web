@@ -49,7 +49,7 @@ export function SelectTickerDialog({
 		cryptoTickerNames,
 		globalTickerNames,
 	} = useAPI();
-	const { stockData, cryptoData, globalData, loading: dataLoading, error: dataError } = useWatchListData({ needsMA, endDate });
+	const { stockData, cryptoData, globalData, loading: dataLoading, error: dataError } = useWatchListData({ needsMA, endDate, enabled: open });
 	const { t } = useTranslation();
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
