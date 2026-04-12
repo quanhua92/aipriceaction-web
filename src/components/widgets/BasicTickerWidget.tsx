@@ -7,6 +7,7 @@ import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListD
 import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
+import { getTickerMode } from '@/lib/ticker-utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { FreshnessIndicator } from './FreshnessIndicator'
@@ -21,7 +22,7 @@ interface BasicTickerWidgetProps {
 
 export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerChange }: BasicTickerWidgetProps) {
   const { t } = useTranslation()
-  const { getTickers, ema } = useAPI()
+  const { getTickers, ema, tickers, globalTickers, cryptoTickers } = useAPI()
   const { lastRefresh } = useRefresh()
   const maPrefix = ema ? 'EMA' : 'MA'
 
@@ -44,10 +45,11 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
     async function fetch() {
       setLoading(true)
       try {
+        const mode = getTickerMode(selectedTicker, tickers, globalTickers, cryptoTickers)
         const response = await getTickers('BasicTickerWidget', {
           symbol: selectedTicker,
           interval: '1D',
-          mode: 'all',
+          mode,
           limit: 1,
           ...(ema ? { ema: true } : {}),
         })
@@ -64,7 +66,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
 
     fetch()
     return () => { cancelled = true }
-  }, [selectedTicker, lastRefresh, getTickers, ema])
+  }, [selectedTicker, lastRefresh, getTickers, ema, tickers.length, globalTickers.length, cryptoTickers.length])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)

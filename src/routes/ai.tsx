@@ -26,7 +26,7 @@ const MAX_TICKERS = 100;
 function AIContextPage() {
 	const { t, language } = useTranslation();
 	const translations = loadTranslations(language);
-	const { getTickers, getHealth, cryptoTickers, tickerGroups, globalTickers } = useAPI();
+	const { getTickers, getHealth, tickers, cryptoTickers, tickerGroups, globalTickers } = useAPI();
 	const { lastRefresh } = useRefresh();
 	const { endDate } = useChartSettings();
 	const [copied, setCopied] = React.useState(false);
@@ -151,13 +151,51 @@ function AIContextPage() {
 			setFetchError(null);
 
 			try {
-				const data = await getTickers('AIRoute.marketData', {
-					symbol: selectedTickers,
-					limit: limit,
-					interval: interval,
-					end_date: endDate,
-					mode: 'all'
-				});
+				// Separate tickers by type to use correct mode
+				const stockSymbolSet = new Set(tickers.map(t => t.symbol))
+				const cryptoSymbolSet = new Set(cryptoTickers.map(t => t.symbol))
+				const globalSymbolSet = new Set(globalTickers.map(t => t.symbol))
+
+				const stockSymbols: string[] = []
+				const cryptoSymbols: string[] = []
+				const globalSymbols: string[] = []
+
+				for (const symbol of selectedTickers) {
+					if (cryptoSymbolSet.has(symbol)) {
+						cryptoSymbols.push(symbol)
+					} else if (globalSymbolSet.has(symbol)) {
+						globalSymbols.push(symbol)
+					} else {
+						stockSymbols.push(symbol)
+					}
+				}
+
+				const isMixed = stockSymbols.length > 0 && (cryptoSymbols.length > 0 || globalSymbols.length > 0)
+					|| (cryptoSymbols.length > 0 && globalSymbols.length > 0)
+
+				let data: Record<string, any>
+				if (isMixed) {
+					data = await getTickers('AIRoute.marketData.mixed', {
+						symbol: selectedTickers,
+						limit: limit,
+						interval: interval,
+						end_date: endDate,
+						mode: 'all'
+					})
+				} else {
+					// All tickers are the same type — use correct mode
+					let mode: 'vn' | 'crypto' | 'yahoo' = 'vn'
+					if (cryptoSymbols.length > 0) mode = 'crypto'
+					else if (globalSymbols.length > 0) mode = 'yahoo'
+
+					data = await getTickers('AIRoute.marketData', {
+						symbol: selectedTickers,
+						limit: limit,
+						interval: interval,
+						end_date: endDate,
+						mode
+					})
+				}
 				setMarketData(data);
 			} catch (error) {
 				console.error("Failed to fetch market data:", error);
@@ -168,7 +206,7 @@ function AIContextPage() {
 		}
 
 		fetchData();
-	}, [selectedTickers, limit, interval, getTickers, lastRefresh, endDate]);
+	}, [selectedTickers, limit, interval, getTickers, lastRefresh, endDate, tickers.length, cryptoTickers.length, globalTickers.length]);
 
 	const canAddMoreTickers = selectedTickers.length < MAX_TICKERS;
 
