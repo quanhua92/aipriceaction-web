@@ -21,8 +21,9 @@ interface BasicTickerWidgetProps {
 
 export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerChange }: BasicTickerWidgetProps) {
   const { t } = useTranslation()
-  const { getTickers } = useAPI()
+  const { getTickers, ema } = useAPI()
   const { lastRefresh } = useRefresh()
+  const maPrefix = ema ? 'EMA' : 'MA'
 
   const effectiveInitialTicker = ticker ?? initialTicker
   const [selectedTicker, setSelectedTicker] = useState(effectiveInitialTicker)
@@ -48,6 +49,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
           interval: '1D',
           mode: 'all',
           limit: 1,
+          ...(ema ? { ema: true } : {}),
         })
         if (!cancelled) {
           const arr = response[selectedTicker]
@@ -62,7 +64,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
 
     fetch()
     return () => { cancelled = true }
-  }, [selectedTicker, lastRefresh, getTickers])
+  }, [selectedTicker, lastRefresh, getTickers, ema])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)
@@ -226,7 +228,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
           <div className="grid grid-cols-2 gap-3">
             {/* MA10 */}
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma10')}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{maPrefix}10</p>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold">
                   {data.ma10 !== null && data.ma10 !== undefined ? formatPrice(data.ma10, data) : '-'}
@@ -242,7 +244,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
 
             {/* MA20 */}
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma20')}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{maPrefix}20</p>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold">
                   {data.ma20 !== null && data.ma20 !== undefined ? formatPrice(data.ma20, data) : '-'}
@@ -258,7 +260,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
 
             {/* MA50 */}
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma50')}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{maPrefix}50</p>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold">
                   {data.ma50 !== null && data.ma50 !== undefined ? formatPrice(data.ma50, data) : '-'}
@@ -274,7 +276,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
 
             {/* MA100 */}
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.ma100')}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{maPrefix}100</p>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold">
                   {data.ma100 !== null && data.ma100 !== undefined ? formatPrice(data.ma100, data) : '-'}

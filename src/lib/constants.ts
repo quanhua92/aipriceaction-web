@@ -308,3 +308,4 @@ export const CHART_COMPARE_STORAGE_KEY = 'chart-compare-state'
  * LocalStorage key for chart settings (interval, MA visibility, MACD, etc.)
  */
 export const CHART_SETTINGS_STORAGE_KEY = 'chart-settings'
+export const EMA_STORAGE_KEY = 'ema-enabled'

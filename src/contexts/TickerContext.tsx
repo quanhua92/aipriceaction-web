@@ -129,7 +129,7 @@ export function TickerProvider({
   const settings = useChartSettings()
   const { setLimit } = settings
   const { lastRefresh } = useRefresh()
-  const { getTickers, tickers, globalTickers, cryptoTickers } = useAPI()
+  const { getTickers, tickers, globalTickers, cryptoTickers, ema } = useAPI()
   const [selectedTicker, setSelectedTicker] = React.useState(ticker ?? initialTicker)
 
   // Cache - read-only from props
@@ -306,6 +306,7 @@ export function TickerProvider({
               end_date: targetDate,         // Date from last cached item
               limit: limit ?? settings.limit,
               mode,
+              ...(ema ? { ema: true } : {}),
             })
             const data = response[selectedTicker] || []
 
@@ -374,6 +375,7 @@ export function TickerProvider({
             end_date: localEndDate ?? settings.endDate,
             limit: limit ?? settings.limit,
             mode,
+            ...(ema ? { ema: true } : {}),
           })
           const data = response[selectedTicker] || []
 
@@ -414,6 +416,7 @@ export function TickerProvider({
     settings.limit,
     lastRefresh,
     localEndDate,
+    ema,
     // NOTE: Don't include getTickers, cacheData/cacheMetadata as dependencies to avoid infinite loops
     // getTickersRef, tickersRef, globalTickersRef, cryptoTickersRef are refs and don't need to be listed
   ])

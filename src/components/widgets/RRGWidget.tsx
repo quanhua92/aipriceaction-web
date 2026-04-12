@@ -170,7 +170,7 @@ export function RRGWidget({
 }: RRGWidgetProps) {
 	const { t } = useTranslation();
 	const { lastRefresh } = useRefresh();
-	const { tickerGroups, tickerNames, cryptoTickerNames, globalTickerNames } =
+	const { tickerGroups, tickerNames, cryptoTickerNames, globalTickerNames, ema } =
 		useAPI();
 
 	const defaultVisible = React.useSyncExternalStore(
@@ -370,6 +370,7 @@ export function RRGWidget({
 						? { benchmark: jdkBenchmark, period: jdkPeriod }
 						: {}),
 					...(selectedDate ? { date: selectedDate } : {}),
+					...(ema ? { ema: true } : {}),
 				};
 
 				const response = await getRRG(params);
@@ -405,6 +406,7 @@ export function RRGWidget({
 		jdkPeriod,
 		selectedDate,
 		lastRefresh,
+		ema,
 	]);
 
 	const maxTrails = activeTab === "mascore" ? mascoreTrails : jdkTrails;
@@ -644,7 +646,7 @@ export function RRGWidget({
 			>
 				<TabsList className="grid grid-cols-2 w-full mb-3">
 					<TabsTrigger value="mascore" className="flex-1 text-xs md:text-sm">
-						{t("common.rrg.mascoreTab")}
+						{ema ? t("common.rrg.mascoreTab").replace("MA", "EMA") : t("common.rrg.mascoreTab")}
 					</TabsTrigger>
 					<TabsTrigger value="jdk" className="flex-1 text-xs md:text-sm">
 						{t("common.rrg.jdkTab")}

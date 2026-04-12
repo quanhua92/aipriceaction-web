@@ -65,18 +65,18 @@ interface MatrixData {
 }
 
 // Helper function to get view mode label
-function getViewModeLabel(viewMode: ViewMode): string {
+function getViewModeLabel(viewMode: ViewMode, ema: boolean): string {
   switch (viewMode) {
     case 'close_changed':
       return 'Close Change'
     case 'ma10_score':
-      return 'MA10 Score'
+      return ema ? 'EMA10 Score' : 'MA10 Score'
     case 'ma20_score':
-      return 'MA20 Score'
+      return ema ? 'EMA20 Score' : 'MA20 Score'
     case 'ma50_score':
-      return 'MA50 Score'
+      return ema ? 'EMA50 Score' : 'MA50 Score'
     case 'ma100_score':
-      return 'MA100 Score'
+      return ema ? 'EMA100 Score' : 'MA100 Score'
     default:
       return 'Unknown'
   }
@@ -102,7 +102,7 @@ interface MarketMatrixProps {
 }
 
 export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
-  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers } = useAPI()
+  const { tickerGroups, loading: apiLoading, getTickers, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers, ema } = useAPI()
   const { lastRefresh } = useRefresh()
   const { endDate: globalEndDate } = useChartSettings()
   const { t, language } = useTranslation()
@@ -301,6 +301,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             end_date: endDateForAPI,
             limit: MATRIX_DAYS_PER_PAGE,
             mode: 'all',
+            ...(ema ? { ema: true } : {}),
           })
           stockResponse = mixedResponse
           cryptoResponse = mixedResponse
@@ -313,6 +314,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             end_date: endDateForAPI,
             limit: MATRIX_DAYS_PER_PAGE,
             mode: 'crypto',
+            ...(ema ? { ema: true } : {}),
           })
         } else if (isGlobalOnly) {
           // Single global call
@@ -322,6 +324,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             end_date: endDateForAPI,
             limit: MATRIX_DAYS_PER_PAGE,
             mode: 'yahoo',
+            ...(ema ? { ema: true } : {}),
           })
         } else {
           // Single stock call (existing behavior)
@@ -336,6 +339,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             end_date: endDateForAPI,
             limit: MATRIX_DAYS_PER_PAGE,
             mode: 'vn',
+            ...(ema ? { ema: true } : {}),
           })
         }
 
@@ -503,7 +507,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
 
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTickers, stockSymbols, cryptoSymbols, watchlistType, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers, lastRefresh, globalEndDate])
+  }, [selectedTickers, stockSymbols, cryptoSymbols, watchlistType, currentPage, viewMode, tickerGroups, cryptoTickerGroups, cryptoTickers, globalTickerGroups, globalTickers, lastRefresh, globalEndDate, ema])
 
   // Group rows by sector and sort within each sector
   const rowsBySector = React.useMemo(() => {
@@ -738,10 +742,10 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="close_changed">Close %</SelectItem>
-              <SelectItem value="ma10_score">MA10</SelectItem>
-              <SelectItem value="ma20_score">MA20</SelectItem>
-              <SelectItem value="ma50_score">MA50</SelectItem>
-              <SelectItem value="ma100_score">MA100</SelectItem>
+              <SelectItem value="ma10_score">{ema ? 'EMA10' : 'MA10'}</SelectItem>
+              <SelectItem value="ma20_score">{ema ? 'EMA20' : 'MA20'}</SelectItem>
+              <SelectItem value="ma50_score">{ema ? 'EMA50' : 'MA50'}</SelectItem>
+              <SelectItem value="ma100_score">{ema ? 'EMA100' : 'MA100'}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -976,7 +980,7 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
                                     key={cell.date}
                                     onClick={() => handleCellClick(row.ticker)}
                                     className={`w-[60px] min-w-[60px] flex-shrink-0 px-1 py-2 text-xs font-semibold flex items-center justify-center cursor-pointer border-r border-border hover:ring-2 hover:ring-blue-300 hover:ring-opacity-50 dark:hover:ring-blue-400 ${colors.bg} ${colors.text}`}
-                                    title={`${row.ticker} - ${cell.date}\n${getViewModeLabel(viewMode)}: ${(cell.value ?? 0).toFixed(2)}%`}
+                                    title={`${row.ticker} - ${cell.date}\n${getViewModeLabel(viewMode, ema)}: ${(cell.value ?? 0).toFixed(2)}%`}
                                   >
                                     {displayValue}
                                   </div>

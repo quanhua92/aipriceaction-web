@@ -32,7 +32,7 @@ interface UseWatchListDataResult {
 }
 
 export function useWatchListData({ needsMA, endDate: endDateOverride, enabled = true }: UseWatchListDataOptions): UseWatchListDataResult {
-  const { getTickers, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData } = useAPI()
+  const { getTickers, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, ema } = useAPI()
   const { lastRefresh } = useRefresh()
   const { endDate: settingsEndDate } = useChartSettings()
   const effectiveEndDate = endDateOverride ?? settingsEndDate
@@ -55,7 +55,7 @@ export function useWatchListData({ needsMA, endDate: endDateOverride, enabled = 
     setLoading(true)
     setError(null)
 
-    const params = { limit: 1, end_date: effectiveEndDate, ma: needsMA } as const
+    const params = { limit: 1, end_date: effectiveEndDate, ma: needsMA, ...(needsMA && ema ? { ema: true } : {}) } as const
 
     Promise.all([
       getTickers('WatchListData.stock', { ...params, mode: 'vn' }),
@@ -80,7 +80,7 @@ export function useWatchListData({ needsMA, endDate: endDateOverride, enabled = 
     return () => {
       cancelled = true
     }
-  }, [getTickers, lastRefresh, effectiveEndDate, needsMA, canUseAPIContext, enabled])
+  }, [getTickers, lastRefresh, effectiveEndDate, needsMA, canUseAPIContext, enabled, ema])
 
   // When using APIContext data (BasicStockData), convert to StockData with default MA values
   const effectiveStockData = canUseAPIContext ? toStockDataMap(allTickersLastData) : stockData

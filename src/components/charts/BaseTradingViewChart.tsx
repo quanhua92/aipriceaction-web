@@ -102,7 +102,7 @@ export function BaseTradingViewChart({
 	const { info } = useLogs();
 
 	// Infinite history: pull getTickers from API context and ticker info
-	const { getTickers, tickers, globalTickers, cryptoTickers } = useAPI();
+	const { getTickers, tickers, globalTickers, cryptoTickers, ema } = useAPI();
 
 	// Helper function to check if current interval is intraday
 	const isIntradayInterval = INTRADAY_INTERVALS.includes(interval);
@@ -471,7 +471,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma10_score !== undefined
 				) {
 					const ma10Color = getMAColor(currentDataPoint.ma10_score);
-					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">MA10</span> ${formatPrice(ma10Data.value, currentDataPoint)}</div>`;
+					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">${ema ? 'EMA10' : 'MA10'}</span> ${formatPrice(ma10Data.value, currentDataPoint)}</div>`;
 					html += `<div><span style="color: #dc2626; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma10Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma10_score)}</span></div>`;
 				}
 				if (
@@ -481,7 +481,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma20_score !== undefined
 				) {
 					const ma20Color = getMAColor(currentDataPoint.ma20_score);
-					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">MA20</span> ${formatPrice(ma20Data.value, currentDataPoint)}</div>`;
+					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">${ema ? 'EMA20' : 'MA20'}</span> ${formatPrice(ma20Data.value, currentDataPoint)}</div>`;
 					html += `<div><span style="color: #16a34a; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma20Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma20_score)}</span></div>`;
 				}
 				if (
@@ -491,7 +491,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma50_score !== undefined
 				) {
 					const ma50Color = getMAColor(currentDataPoint.ma50_score);
-					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">MA50</span> ${formatPrice(ma50Data.value, currentDataPoint)}</div>`;
+					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">${ema ? 'EMA50' : 'MA50'}</span> ${formatPrice(ma50Data.value, currentDataPoint)}</div>`;
 					html += `<div><span style="color: #2563eb; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma50Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma50_score)}</span></div>`;
 				}
 				if (
@@ -501,7 +501,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma100_score !== undefined
 				) {
 					const ma100Color = getMAColor(currentDataPoint.ma100_score);
-					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">MA100</span> ${formatPrice(ma100Data.value, currentDataPoint)}</div>`;
+					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">${ema ? 'EMA100' : 'MA100'}</span> ${formatPrice(ma100Data.value, currentDataPoint)}</div>`;
 					html += `<div><span style="color: #a1a1aa; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma100Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma100_score)}</span></div>`;
 				}
 				if (
@@ -511,7 +511,7 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma200_score !== undefined
 				) {
 					const ma200Color = getMAColor(currentDataPoint.ma200_score);
-					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a; display: inline-block; width: 40px;">MA200</span> ${formatPrice(ma200Data.value, currentDataPoint)} <span style="color: #71717a;">Score</span> <span style="color: ${ma200Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma200_score)}</span></div>`;
+					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a; display: inline-block; width: 40px;">${ema ? 'EMA200' : 'MA200'}</span> ${formatPrice(ma200Data.value, currentDataPoint)} <span style="color: #71717a;">Score</span> <span style="color: ${ma200Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma200_score)}</span></div>`;
 				}
 			}
 
@@ -1297,21 +1297,21 @@ export function BaseTradingViewChart({
 					const maValues = [];
 					if (maVisibility.ma10 && displayData.ma10 != null) {
 						maValues.push({
-							label: "MA10",
+							label: ema ? "EMA10" : "MA10",
 							value: displayData.ma10,
 							color: "#dc2626",
 						});
 					}
 					if (maVisibility.ma20 && displayData.ma20 != null) {
 						maValues.push({
-							label: "MA20",
+							label: ema ? "EMA20" : "MA20",
 							value: displayData.ma20,
 							color: "#16a34a",
 						});
 					}
 					if (maVisibility.ma50 && displayData.ma50 != null) {
 						maValues.push({
-							label: "MA50",
+							label: ema ? "EMA50" : "MA50",
 							value: displayData.ma50,
 							color: "#2563eb",
 						});

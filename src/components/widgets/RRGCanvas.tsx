@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAPI } from "@/contexts/APIContext";
 import type { RRGResponse, RRGTicker } from "@/lib/api-client";
 
 export type Quadrant = "leading" | "improving" | "weakening" | "lagging";
@@ -88,6 +89,8 @@ export function RRGCanvas({
 	>(new Map());
 	const rafRef = React.useRef<number>(0);
 	const { t } = useTranslation();
+	const { ema } = useAPI();
+	const maLabel = (label: string) => ema ? label.replace("MA", "EMA") : label;
 
 	const tickers = data.tickers ?? [];
 	const center = algorithm === "mascore" ? 0 : 100;
@@ -340,7 +343,7 @@ export function RRGCanvas({
 		ctx.textBaseline = "top";
 		const xLabel =
 			algorithm === "mascore"
-				? t("common.rrg.mascoreXAxis")
+				? maLabel(t("common.rrg.mascoreXAxis"))
 				: t("common.rrg.xAxis");
 		ctx.fillText(
 			xLabel,
@@ -355,7 +358,7 @@ export function RRGCanvas({
 		ctx.textBaseline = "bottom";
 		const yLabel =
 			algorithm === "mascore"
-				? t("common.rrg.mascoreYAxis")
+				? maLabel(t("common.rrg.mascoreYAxis"))
 				: t("common.rrg.yAxis");
 		ctx.fillText(yLabel, 0, 0);
 		ctx.restore();

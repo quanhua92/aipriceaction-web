@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useTranslation } from '@/hooks/useTranslation'
+import { useAPI } from '@/contexts/APIContext'
 import type { SortBy } from '@/components/lists/SortableTickerList'
 
 export interface SortButtonsProps {
@@ -26,6 +27,7 @@ export function SortButtons({
   className = ''
 }: SortButtonsProps) {
   const { t } = useTranslation()
+  const { ema } = useAPI()
 
   // Define the order and display of buttons
   const defaultOrder: SortBy[] = [
@@ -42,20 +44,29 @@ export function SortButtons({
     availableOptions.includes(option)
   )
 
+  const getLabel = (option: SortBy) => {
+    const label = t(`dialogs.selectTicker.sortBy.${option}`)
+    return ema ? label.replace('MA', 'EMA') : label
+  }
+
+  const isMAOption = (option: SortBy) => option.startsWith('ma')
+  const isLongMA = (option: SortBy) => option === 'ma100' || option === 'ma200'
+
   const renderButton = (option: SortBy) => {
     const isActive = value === option
+    const label = isMAOption(option) ? getLabel(option) : t(`dialogs.selectTicker.sortBy.${option}`)
 
     return (
       <button
         key={option}
         onClick={() => onChange(option)}
-        className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+        className={`${isLongMA(option) ? 'px-1.5 text-[11px]' : isMAOption(option) ? 'px-2' : 'px-3'} py-1 text-xs font-medium rounded-md transition-colors ${
           isActive
             ? 'bg-green-600 text-white hover:bg-green-700'
             : 'bg-muted/50 text-muted-foreground hover:bg-muted'
         }`}
       >
-        {t(`dialogs.selectTicker.sortBy.${option}`)}
+        {label}
       </button>
     )
   }

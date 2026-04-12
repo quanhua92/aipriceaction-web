@@ -241,6 +241,8 @@ export interface TickersQueryParams {
   mode?: 'vn' | 'crypto' | 'yahoo' | string;
   /** Include moving average scores in response */
   ma?: boolean;
+  /** Use EMA (Exponential Moving Average) instead of SMA */
+  ema?: boolean;
 }
 
 /**
@@ -259,6 +261,8 @@ export interface TopPerformersQueryParams {
   sector?: string;
   /** Minimum trading volume filter */
   min_volume?: number;
+  /** Use EMA (Exponential Moving Average) instead of SMA */
+  ema?: boolean;
 }
 
 /**
@@ -275,6 +279,8 @@ export interface MAScoresBySectorQueryParams {
   above_threshold_only?: boolean;
   /** Maximum stocks per sector (1-50) */
   top_per_sector?: number;
+  /** Use EMA (Exponential Moving Average) instead of SMA */
+  ema?: boolean;
 }
 
 /**
@@ -455,6 +461,8 @@ export interface RRGQueryParams {
   date?: string;
   /** Asset mode: 'vn' for Vietnamese stocks, 'crypto' for cryptocurrencies, 'yahoo' for global */
   mode?: 'vn' | 'crypto' | 'yahoo' | string;
+  /** Use EMA (Exponential Moving Average) instead of SMA */
+  ema?: boolean;
 }
 
 /**

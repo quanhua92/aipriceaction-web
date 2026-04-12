@@ -1,5 +1,6 @@
 import React from 'react'
 import { useChartSettings, MACD_HEIGHT_OPTIONS } from '@/contexts/ChartSettingsContext'
+import { useAPI } from '@/contexts/APIContext'
 import {
 	Dialog,
 	DialogContent,
@@ -10,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { DateInput } from '@/components/DateInput'
 import {
 	Select,
@@ -59,6 +61,7 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 		endDate,
 		setEndDate,
 	} = useChartSettings()
+	const { ema, setEma } = useAPI()
 
 	const [open, setOpen] = React.useState(false)
 
@@ -83,12 +86,16 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 					<DialogTitle>Chart Settings</DialogTitle>
 				</DialogHeader>
 
-				<div className="space-y-6 py-4">
+				<div className="space-y-6 py-4 max-h-[85vh] overflow-y-auto">
 					{/* Two-Column Layout */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						{/* Left Column: Moving Averages */}
 						<div className="space-y-4">
 							<h3 className="text-sm font-medium">Moving Averages</h3>
+							<div className="flex items-center justify-between pb-2">
+								<Label htmlFor="ema-toggle" className="text-sm cursor-pointer">Use EMA</Label>
+								<Switch id="ema-toggle" checked={ema} onCheckedChange={(checked) => setEma(checked === true)} />
+							</div>
 							<div className="space-y-3">
 								{/* MA10 */}
 								<div className="flex items-center space-x-2">
