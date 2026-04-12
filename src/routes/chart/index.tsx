@@ -13,7 +13,7 @@ import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
 import { ALL_WATCHLIST_NAME, MARKET_INDICES } from "@/lib/constants";
 import { useAPI } from "@/contexts/APIContext";
 import { getChartLayout, saveChartLayout, type ChartPageLayout } from "@/lib/layout-storage";
-import type { StockData } from "@/lib/api-client";
+import type { BasicStockData } from "@/lib/api-client";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -43,7 +43,7 @@ interface ChartPageState {
 // Function to generate initial ticker list from API data
 const generateInitialTickers = (
 	tickerGroups: Record<string, string[]> | null,
-	allTickersLastData: Record<string, StockData[]> | null
+	allTickersLastData: Record<string, BasicStockData[]> | null
 ): string[] => {
 	if (!tickerGroups || !allTickersLastData) {
 		// Fallback to specified default tickers if no data available

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { getTickerGroups, getCryptoTickerGroups, getYahooTickerGroups, getTickersWithLogging, getCryptoTickersWithLogging, getYahooTickersWithLogging, getTickerNamesWithLogging, getHealth as getHealthApi, type TickerGroups, type TickerNames, type StockData, type TickersQueryParams, type HealthResponse } from '@/lib/api-client'
+import { getTickerGroups, getCryptoTickerGroups, getYahooTickerGroups, getTickersWithLogging, getCryptoTickersWithLogging, getYahooTickersWithLogging, getTickerNamesWithLogging, getHealth as getHealthApi, type TickerGroups, type TickerNames, type StockData, type BasicStockData, type TickersQueryParams, type HealthResponse } from '@/lib/api-client'
 import { PRIORITY_GROUPS, API_CACHE_WINDOW_MS } from '@/lib/constants'
 import { useLogs } from './LogsContext'
 import { useRefresh } from './RefreshContext'
@@ -58,7 +58,7 @@ interface APIContextValue {
   // VN stocks
   tickerGroups: TickerGroups | null
   tickers: Ticker[]
-  allTickersLastData: Record<string, StockData[]>
+  allTickersLastData: Record<string, BasicStockData[]>
   loading: boolean  // For backward compatibility, mirrors stockLoading
   error: string | null  // For backward compatibility, mirrors stockError
   stockLoading: boolean
@@ -67,14 +67,14 @@ interface APIContextValue {
   // Crypto
   cryptoTickerGroups: TickerGroups | null
   cryptoTickers: Ticker[]
-  allCryptoTickersLastData: Record<string, StockData[]>
+  allCryptoTickersLastData: Record<string, BasicStockData[]>
   cryptoLoading: boolean
   cryptoError: string | null
 
   // Global (Yahoo)
   globalTickerGroups: TickerGroups | null
   globalTickers: Ticker[]
-  allGlobalTickersLastData: Record<string, StockData[]>
+  allGlobalTickersLastData: Record<string, BasicStockData[]>
   globalLoading: boolean
   globalError: string | null
 
@@ -102,21 +102,21 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
   // VN stocks state
   const [tickerGroups, setTickerGroups] = React.useState<TickerGroups | null>(null)
   const [tickers, setTickers] = React.useState<Ticker[]>([])
-  const [allTickersLastData, setAllTickersLastData] = React.useState<Record<string, StockData[]>>({})
+  const [allTickersLastData, setAllTickersLastData] = React.useState<Record<string, BasicStockData[]>>({})
   const [stockLoading, setStockLoading] = React.useState(true)
   const [stockError, setStockError] = React.useState<string | null>(null)
 
   // Crypto state
   const [cryptoTickerGroups, setCryptoTickerGroups] = React.useState<TickerGroups | null>(null)
   const [cryptoTickers, setCryptoTickers] = React.useState<Ticker[]>([])
-  const [allCryptoTickersLastData, setAllCryptoTickersLastData] = React.useState<Record<string, StockData[]>>({})
+  const [allCryptoTickersLastData, setAllCryptoTickersLastData] = React.useState<Record<string, BasicStockData[]>>({})
   const [cryptoLoading, setCryptoLoading] = React.useState(true)
   const [cryptoError, setCryptoError] = React.useState<string | null>(null)
 
   // Global (Yahoo) state
   const [globalTickerGroups, setGlobalTickerGroups] = React.useState<TickerGroups | null>(null)
   const [globalTickers, setGlobalTickers] = React.useState<Ticker[]>([])
-  const [allGlobalTickersLastData, setAllGlobalTickersLastData] = React.useState<Record<string, StockData[]>>({})
+  const [allGlobalTickersLastData, setAllGlobalTickersLastData] = React.useState<Record<string, BasicStockData[]>>({})
   const [globalLoading, setGlobalLoading] = React.useState(true)
   const [globalError, setGlobalError] = React.useState<string | null>(null)
 
@@ -134,7 +134,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       // Fetch both ticker groups and all tickers data in parallel
       const [groups, tickersData] = await Promise.all([
         getTickerGroups(),
-        getTickersWithLogging('APIContext.init.stock', { limit: 1, end_date: globalEndDate }, { info, warn: info, error: logError })
+        getTickersWithLogging('APIContext.init.stock', { limit: 1, end_date: globalEndDate, ma: false }, { info, warn: info, error: logError })
       ])
 
       const duration = Date.now() - startTime
@@ -179,7 +179,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       // Fetch both crypto ticker groups and all crypto tickers data in parallel
       const [groups, tickersData] = await Promise.all([
         getCryptoTickerGroups(),
-        getCryptoTickersWithLogging('APIContext.init.crypto', { limit: 1, end_date: globalEndDate }, { info, warn: info, error: logError })
+        getCryptoTickersWithLogging('APIContext.init.crypto', { limit: 1, end_date: globalEndDate, ma: false }, { info, warn: info, error: logError })
       ])
 
       const duration = Date.now() - startTime
@@ -224,7 +224,7 @@ export function APIProvider({ children }: { children: React.ReactNode }) {
       // Fetch both global ticker groups and all global tickers data in parallel
       const [groups, tickersData] = await Promise.all([
         getYahooTickerGroups(),
-        getYahooTickersWithLogging('APIContext.init.global', { limit: 1, end_date: globalEndDate }, { info, warn: info, error: logError })
+        getYahooTickersWithLogging('APIContext.init.global', { limit: 1, end_date: globalEndDate, ma: false }, { info, warn: info, error: logError })
       ])
 
       const duration = Date.now() - startTime

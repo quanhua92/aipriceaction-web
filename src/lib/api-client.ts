@@ -391,6 +391,7 @@ export type {
   TickersQueryParams,
   TickersResponse,
   StockData,
+  BasicStockData,
   TopPerformersQueryParams,
   TopPerformersResponse,
   PerformerData,

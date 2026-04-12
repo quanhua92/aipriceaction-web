@@ -28,6 +28,7 @@ export { AIPriceActionClient, type ClientConfig, type RequestResult } from "./cl
 // Export types
 export type {
   StockData,
+  BasicStockData,
   PerformerData,
   MAStockScore,
   SectorMAScore,

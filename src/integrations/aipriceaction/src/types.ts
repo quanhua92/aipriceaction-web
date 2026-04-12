@@ -103,6 +103,12 @@ export interface StockData {
 }
 
 /**
+ * Stock data without moving average fields.
+ * Used when MA data is not needed (fetched with ma=false).
+ */
+export type BasicStockData = Omit<StockData, 'ma10' | 'ma20' | 'ma50' | 'ma100' | 'ma200' | 'ma10_score' | 'ma20_score' | 'ma50_score' | 'ma100_score' | 'ma200_score'>;
+
+/**
  * Ticker performance data (used in top-performers endpoint)
  */
 export interface PerformerData {
