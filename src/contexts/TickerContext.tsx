@@ -417,6 +417,9 @@ export function TickerProvider({
     lastRefresh,
     localEndDate,
     ema,
+    tickers.length,
+    globalTickers.length,
+    cryptoTickers.length,
     // NOTE: Don't include getTickers, cacheData/cacheMetadata as dependencies to avoid infinite loops
     // getTickersRef, tickersRef, globalTickersRef, cryptoTickersRef are refs and don't need to be listed
   ])
