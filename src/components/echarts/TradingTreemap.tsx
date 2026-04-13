@@ -36,9 +36,21 @@ function getChangeColor(change: number): string {
 
 interface TreemapNode {
   name: string
-  value?: [number, number, number]
+  value?: number
   itemStyle?: { color: string }
   children?: TreemapNode[]
+  // Extra data for tooltip (not used by ECharts layout)
+  _data?: {
+    open: number
+    high: number
+    low: number
+    close: number
+    volume: number
+    change: number
+    volumeChanged?: number | null
+    absChange?: number
+    mode?: string
+  }
 }
 
 const MAX_TICKERS_PER_SECTOR = 15
@@ -64,17 +76,27 @@ function buildSectorNodes(
       const tradedValue = price * (latestData.volume || 0)
       const rawSize = tradedValue > 0 ? tradedValue : price
       if (rawSize === 0) continue
-      // Use square root scale to prevent large sectors from dwarfing small ones
       const size = Math.sqrt(rawSize)
       children.push({
         name: symbol,
-        value: [size, change, price],
+        value: size,
         itemStyle: { color: getChangeColor(change) },
+        _data: {
+          open: latestData.open || 0,
+          high: latestData.high || 0,
+          low: latestData.low || 0,
+          close: price,
+          volume: latestData.volume || 0,
+          change,
+          volumeChanged: latestData.volume_changed,
+          absChange: (change !== 0 && change !== -100) ? price - (price / (1 + change / 100)) : 0,
+          mode: latestData.mode,
+        },
       })
     }
     if (children.length === 0) continue
     // Sort by raw size descending, keep top N to prevent outliers from dominating
-    children.sort((a, b) => (b.value?.[0] ?? 0) - (a.value?.[0] ?? 0))
+    children.sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
     const sectorName = getSectorDisplayName(sector, language)
     const included = children.slice(0, MAX_TICKERS_PER_SECTOR)
     sectorNodes.push({
@@ -169,27 +191,24 @@ export function TradingTreemap({
       borderColor: colors.borderColor,
       textStyle: { color: colors.tooltipText, fontSize: 13 },
       formatter: (params: any) => {
-        const val = Array.isArray(params.value) ? params.value as [number, number, number] : null
-        if (!val || val.length < 3) return ''
-        const [tradedValue, change, price] = val
-        const changeColor = change < -6.8 ? '#06b6d4'
-          : change < 0 ? '#dc2626'
-            : change > 6.7 ? '#9333ea'
+        const d = params.data?._data
+        if (!d) return ''
+        const changeColor = d.change < -6.8 ? '#06b6d4'
+          : d.change < 0 ? '#dc2626'
+            : d.change > 6.7 ? '#9333ea'
               : '#16a34a'
+        const row = (label: string, value: string, extraStyle = '') =>
+          `<div style="display:flex;justify-content:space-between;width:200px;gap:12px;${extraStyle}"><span style="color:${colors.textSecondary}">${label}</span><span>${value}</span></div>`
+        const fmt = (price: number) => formatPrice(price, { symbol: params.name, mode: d.mode as any })
         return `
           <div style="font-weight:600;font-size:15px;margin-bottom:4px">${params.name}</div>
-          <div style="display:flex;justify-content:space-between;width:180px;gap:12px">
-            <span style="color:${colors.textSecondary}">Price</span>
-            <span style="font-weight:500">${formatPrice(price, { symbol: params.name })}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;width:180px;gap:12px">
-            <span style="color:${colors.textSecondary}">Change</span>
-            <span style="color:${changeColor};font-weight:600">${formatPercent(change)}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;width:180px;gap:12px;margin-top:4px;border-top:1px solid ${colors.borderColor};padding-top:4px">
-            <span style="color:${colors.textSecondary}">Value</span>
-            <span>${formatVolume(tradedValue)}</span>
-          </div>
+          ${row('Open', fmt(d.open))}
+          ${row('High', fmt(d.high))}
+          ${row('Low', fmt(d.low))}
+          ${row('Close', fmt(d.close), `font-weight:600`)}
+          ${row('Change', `<span style="color:${changeColor};font-weight:600">${d.absChange >= 0 ? '+' : ''}${fmt(d.absChange)} (${formatPercent(d.change)})</span>`)}
+          ${row('Volume', formatVolume(d.volume))}
+          ${d.volumeChanged != null ? row('Vol Chg', `<span style="color:${d.volumeChanged >= 0 ? '#16a34a' : '#dc2626'}">${formatPercent(d.volumeChanged)}</span>`) : ''}
         `
       },
     },
@@ -232,10 +251,9 @@ export function TradingTreemap({
         show: true,
         position: 'inside',
         formatter: (params: any) => {
-          const val = Array.isArray(params.value) ? params.value as [number, number, number] : null
-          if (!val || val.length < 3) return ''
-          const [, change] = val
-          return `${params.name}\n${formatPercent(change)}`
+          const d = params.data?._data
+          if (!d) return ''
+          return `${params.name}\n${formatPercent(d.change)}`
         },
         fontSize: isMobile ? 12 : 14,
         fontWeight: 'bold',
