@@ -64,11 +64,6 @@ function HomePage() {
 		setFullscreenTicker(symbol);
 	};
 
-	const handleTreemapSelectTicker = (symbol: string, sectorTickers: string[]) => {
-		setTreemapTickerSymbols(sectorTickers);
-		setFullscreenTicker(symbol);
-	};
-
 	const handleCloseFullscreen = () => {
 		setFullscreenTicker(null);
 	};
@@ -152,7 +147,7 @@ function HomePage() {
 
 			{/* Section 2.5: Market Treemap */}
 			<div className="p-3 md:p-4 border-t">
-				<TradingTreemap mode="vn" onSelectTicker={handleTreemapSelectTicker} />
+				<TradingTreemap mode="vn" />
 			</div>
 
 			{/* Section 2.6: Relative Rotation Graph */}

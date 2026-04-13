@@ -24,7 +24,6 @@ interface TradingTreemapProps {
   mode?: 'vn' | 'crypto' | 'global' | 'all'
   height?: string
   className?: string
-  onSelectTicker?: (symbol: string, sectorTickers: string[]) => void
 }
 
 function getChangeColor(change: number): string {
@@ -94,7 +93,6 @@ export function TradingTreemap({
   mode = 'vn',
   height = '60vh',
   className,
-  onSelectTicker,
 }: TradingTreemapProps) {
   const {
     tickerGroups, cryptoTickerGroups, globalTickerGroups,
@@ -208,12 +206,12 @@ export function TradingTreemap({
         bottom: 8,
         height: 22,
         itemStyle: {
-          color: 'transparent',
-          borderColor: colors.borderColor,
-          textStyle: { color: colors.textColor, fontSize: 11, fontWeight: 'bold', fontFamily: 'Inter, Segoe UI, Arial, sans-serif' },
+          color: '#ffffff',
+          borderColor: '#e2e8f0',
+          textStyle: { color: '#1e293b', fontSize: 11, fontWeight: 'bold', fontFamily: 'Inter, Segoe UI, Arial, sans-serif' },
         },
         emphasis: {
-          itemStyle: { color: 'transparent' },
+          itemStyle: { color: '#f1f5f9' },
         },
       },
       animationDurationUpdate: 500,
@@ -291,27 +289,7 @@ export function TradingTreemap({
 
       data: treemapData,
     }],
-  }), [treemapData, colors, isDark, isMobile, language])
-
-  // Click handler — find the sector this ticker belongs to and pass sector tickers
-  const onEvents = React.useMemo(() => ({
-    click: (params: any) => {
-      // Only trigger on leaf nodes (individual tickers), not sector headers
-      if (params.data?.children?.length > 0) return
-      if (!params.data?.value || params.data.value.length < 3 || !onSelectTicker) return
-      const symbol = params.name
-      const treePath = params.treePathInfo
-      if (treePath && treePath.length >= 2) {
-        // treePathInfo[0] = root, treePathInfo[1] = sector, treePathInfo[2] = leaf
-        const sectorName = treePath[1]?.name
-        const sectorNode = treemapData.find(s => s.name === sectorName)
-        const sectorTickers = sectorNode?.children?.map(c => c.name) ?? [symbol]
-        onSelectTicker(symbol, sectorTickers)
-      } else {
-        onSelectTicker(symbol, [symbol])
-      }
-    },
-  }), [onSelectTicker, treemapData])
+  }), [treemapData, colors, isDark, isMobile])
 
   if (loading) {
     return (
@@ -339,7 +317,6 @@ export function TradingTreemap({
       <ReactECharts
         echarts={echarts}
         option={option}
-        onEvents={onEvents}
         opts={{ renderer: 'canvas' }}
         style={{ height: chartHeight, width: '100%' }}
         notMerge={true}

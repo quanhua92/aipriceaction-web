@@ -63,11 +63,6 @@ function CryptoPage() {
 		setFullscreenTicker(symbol);
 	};
 
-	const handleTreemapSelectTicker = (symbol: string, sectorTickers: string[]) => {
-		setTreemapTickerSymbols(sectorTickers);
-		setFullscreenTicker(symbol);
-	};
-
 	const handleCloseFullscreen = () => {
 		setFullscreenTicker(null);
 	}
@@ -151,7 +146,7 @@ function CryptoPage() {
 
 			{/* Section 2.5: Market Treemap */}
 			<div className="p-3 md:p-4 border-t">
-				<TradingTreemap mode="crypto" onSelectTicker={handleTreemapSelectTicker} />
+				<TradingTreemap mode="crypto" />
 			</div>
 
 			{/* Section 2.6: Relative Rotation Graph */}

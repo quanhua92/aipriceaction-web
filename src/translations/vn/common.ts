@@ -188,6 +188,7 @@ export default {
 		new: "Tạo Mới",
 	},
 	heatmap: "Bản đồ nhiệt",
+	viewChart: "Xem biểu đồ",
 	volumeProfile: {
 		poc: "POC",
 		vaLow: "VA Low",

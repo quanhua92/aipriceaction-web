@@ -189,6 +189,7 @@ export default {
 		new: "New",
 	},
 	heatmap: "Heatmap",
+	viewChart: "View Chart",
 	volumeProfile: {
 		poc: "POC",
 		vaLow: "VA Low",
