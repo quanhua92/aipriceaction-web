@@ -145,7 +145,10 @@ export function TradingTreemap({
     const groups = mode === 'crypto' ? cryptoTickerGroups
       : mode === 'global' ? globalTickerGroups
       : tickerGroups
-    return buildSectorNodes(groups, dataMap, null, language)
+    const wrapperName = mode === 'crypto' ? 'Crypto'
+      : mode === 'global' ? 'Global'
+      : 'VN Stocks'
+    return buildSectorNodes(groups, dataMap, wrapperName, language)
   }, [mode, tickerGroups, cryptoTickerGroups, globalTickerGroups, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, language])
 
   // Theme-dependent colors
