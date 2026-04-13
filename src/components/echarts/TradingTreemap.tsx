@@ -25,7 +25,7 @@ interface TradingTreemapProps {
   mode?: 'vn' | 'crypto' | 'global' | 'all'
   height?: string
   className?: string
-  onSelectTicker?: (symbol: string) => void
+  onSelectTicker?: (symbol: string, sectorTickers: string[]) => void
 }
 
 function getChangeColor(change: number): string {
@@ -276,14 +276,23 @@ export function TradingTreemap({
     }],
   }), [treemapData, colors, isDark, isMobile, language])
 
-  // Click handler
+  // Click handler — find the sector this ticker belongs to and pass sector tickers
   const onEvents = React.useMemo(() => ({
     click: (params: any) => {
-      if (params.data?.value && params.data.value.length >= 3 && onSelectTicker) {
-        onSelectTicker(params.name)
+      if (!params.data?.value || params.data.value.length < 3 || !onSelectTicker) return
+      const symbol = params.name
+      const treePath = params.treePathInfo
+      if (treePath && treePath.length >= 2) {
+        // treePathInfo[0] = root, treePathInfo[1] = sector, treePathInfo[2] = leaf
+        const sectorName = treePath[1]?.name
+        const sectorNode = treemapData.find(s => s.name === sectorName)
+        const sectorTickers = sectorNode?.children?.map(c => c.name) ?? [symbol]
+        onSelectTicker(symbol, sectorTickers)
+      } else {
+        onSelectTicker(symbol, [symbol])
       }
     },
-  }), [onSelectTicker])
+  }), [onSelectTicker, treemapData])
 
   if (dataLoading) {
     return (

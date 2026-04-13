@@ -44,11 +44,13 @@ function HomePage() {
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
+	const [treemapTickerSymbols, setTreemapTickerSymbols] = React.useState<string[]>([]);
 
 	// Get ticker symbols array for navigation in fullscreen dialog
 	const tickerSymbols = React.useMemo(() => {
+		if (treemapTickerSymbols.length > 0) return treemapTickerSymbols;
 		return sortedTickers.map(t => t.symbol);
-	}, [sortedTickers]);
+	}, [treemapTickerSymbols, sortedTickers]);
 
 	// Get current index for fullscreen dialog
 	const fullscreenTickerIndex = React.useMemo(() => {
@@ -58,6 +60,12 @@ function HomePage() {
 	}, [fullscreenTicker, tickerSymbols]);
 
 	const handleSelectTicker = (symbol: string) => {
+		setTreemapTickerSymbols([]);
+		setFullscreenTicker(symbol);
+	};
+
+	const handleTreemapSelectTicker = (symbol: string, sectorTickers: string[]) => {
+		setTreemapTickerSymbols(sectorTickers);
 		setFullscreenTicker(symbol);
 	};
 
@@ -144,7 +152,7 @@ function HomePage() {
 
 			{/* Section 2.5: Market Treemap */}
 			<div className="p-3 md:p-4 border-t">
-				<TradingTreemap mode="vn" onSelectTicker={handleSelectTicker} />
+				<TradingTreemap mode="vn" onSelectTicker={handleTreemapSelectTicker} />
 			</div>
 
 			{/* Section 2.6: Relative Rotation Graph */}
