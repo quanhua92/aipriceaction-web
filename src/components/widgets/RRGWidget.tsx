@@ -56,6 +56,7 @@ const BENCHMARKS: Record<string, string[]> = {
 };
 
 function formatVolume(vol: number): string {
+	if (vol == null) return '0';
 	if (vol >= 1_000_000) return `${(vol / 1_000_000).toFixed(1)}M`;
 	if (vol >= 1_000) return `${(vol / 1_000).toFixed(0)}K`;
 	return `${vol.toFixed(0)}`;
