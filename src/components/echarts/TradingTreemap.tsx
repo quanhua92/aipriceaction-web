@@ -8,9 +8,18 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 import { useAPI } from '@/contexts/APIContext'
 import { useTranslation } from '@/hooks/useTranslation'
-import { MARKET_INDICES } from '@/lib/constants'
+import {
+  ALL_WATCHLIST_NAME,
+  CRYPTO_WATCHLIST_NAME,
+  GLOBAL_WATCHLIST_NAME,
+  MARKET_INDICES,
+} from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getSectorDisplayName } from '@/lib/sector-names'
+import { TickerGroupSelector } from '@/components/TickerGroupSelector'
+import { useWatchListData } from '@/hooks/useWatchListData'
+import { getPredefinedWatchlistTickers, isPredefinedWatchlist } from '@/lib/predefined-watchlists'
+import { getWatchlistTickers } from '@/lib/watchlist-storage'
 import type { BasicStockData } from '@/lib/api-client'
 import { Loader2 } from 'lucide-react'
 
@@ -21,7 +30,7 @@ echarts.use([
 ])
 
 interface TradingTreemapProps {
-  mode?: 'vn' | 'crypto' | 'global' | 'all'
+  defaultWatchlist?: string
   height?: string
   className?: string
 }
@@ -111,25 +120,52 @@ function buildSectorNodes(
   return sectorNodes
 }
 
+/** Group a list of ticker symbols by their sector, scanning VN → Crypto → Global groups */
+function groupBySector(
+  symbols: string[],
+  tickerGroups: Record<string, string[]> | null | undefined,
+  cryptoTickerGroups: Record<string, string[]> | null | undefined,
+  globalTickerGroups: Record<string, string[]> | null | undefined,
+): Record<string, string[]> {
+  const result: Record<string, string[]> = {}
+  for (const symbol of symbols) {
+    let found = false
+    for (const groups of [tickerGroups, cryptoTickerGroups, globalTickerGroups]) {
+      if (!groups) continue
+      for (const [sector, syms] of Object.entries(groups)) {
+        if (syms.includes(symbol)) {
+          if (!result[sector]) result[sector] = []
+          result[sector].push(symbol)
+          found = true
+          break
+        }
+      }
+      if (found) break
+    }
+  }
+  return result
+}
+
 export function TradingTreemap({
-  mode = 'vn',
+  defaultWatchlist = ALL_WATCHLIST_NAME,
   height = '60vh',
   className,
 }: TradingTreemapProps) {
   const {
     tickerGroups, cryptoTickerGroups, globalTickerGroups,
-    allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData,
     stockLoading, cryptoLoading, globalLoading,
     stockError, cryptoError, globalError,
   } = useAPI()
   const { t, language } = useTranslation()
 
-  const loading = mode === 'global' ? globalLoading
-    : mode === 'crypto' ? cryptoLoading
-    : stockLoading
-  const dataError = mode === 'global' ? globalError
-    : mode === 'crypto' ? cryptoError
-    : stockError
+  const [selectedWatchlist, setSelectedWatchlist] = React.useState(defaultWatchlist)
+
+  // Fetch watchlist data (stock/crypto/global combined)
+  const { combinedData, loading: dataLoading, error: dataError } = useWatchListData({ needsMA: false })
+
+  // Merge loading/error states
+  const loading = stockLoading || cryptoLoading || globalLoading || dataLoading
+  const error = stockError || cryptoError || globalError || dataError
 
   // Theme + viewport detection
   const [isDark, setIsDark] = React.useState(
@@ -152,26 +188,73 @@ export function TradingTreemap({
     }
   }, [])
 
-  // Build treemap data
+  // Build treemap data based on selected watchlist
   const treemapData = React.useMemo<TreemapNode[]>(() => {
-    if (mode === 'all') {
-      return [
-        ...buildSectorNodes(tickerGroups, allTickersLastData, 'VN Stocks', language),
-        ...buildSectorNodes(cryptoTickerGroups, allCryptoTickersLastData, 'Crypto', language),
-        ...buildSectorNodes(globalTickerGroups, allGlobalTickersLastData, 'Global', language),
-      ]
+    if (selectedWatchlist === ALL_WATCHLIST_NAME) {
+      return buildSectorNodes(tickerGroups, combinedData, null, language)
     }
-    const dataMap = mode === 'crypto' ? allCryptoTickersLastData
-      : mode === 'global' ? allGlobalTickersLastData
-      : allTickersLastData
-    const groups = mode === 'crypto' ? cryptoTickerGroups
-      : mode === 'global' ? globalTickerGroups
-      : tickerGroups
-    const wrapperName = mode === 'crypto' ? 'Crypto'
-      : mode === 'global' ? 'Global'
-      : 'VN Stocks'
-    return buildSectorNodes(groups, dataMap, wrapperName, language)
-  }, [mode, tickerGroups, cryptoTickerGroups, globalTickerGroups, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, language])
+
+    if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
+      return buildSectorNodes(cryptoTickerGroups, combinedData, 'Crypto', language)
+    }
+
+    if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
+      return buildSectorNodes(globalTickerGroups, combinedData, 'Global', language)
+    }
+
+    // Check if it's a VN sector group
+    if (tickerGroups && selectedWatchlist in tickerGroups) {
+      return buildSectorNodes(
+        { [selectedWatchlist]: tickerGroups[selectedWatchlist] },
+        combinedData,
+        null,
+        language,
+      )
+    }
+
+    // Check if it's a crypto sector group
+    if (cryptoTickerGroups && selectedWatchlist in cryptoTickerGroups) {
+      return buildSectorNodes(
+        { [selectedWatchlist]: cryptoTickerGroups[selectedWatchlist] },
+        combinedData,
+        null,
+        language,
+      )
+    }
+
+    // Check if it's a global sector group
+    if (globalTickerGroups && selectedWatchlist in globalTickerGroups) {
+      return buildSectorNodes(
+        { [selectedWatchlist]: globalTickerGroups[selectedWatchlist] },
+        combinedData,
+        null,
+        language,
+      )
+    }
+
+    // Check if it's a predefined watchlist
+    if (isPredefinedWatchlist(selectedWatchlist)) {
+      const tickers = getPredefinedWatchlistTickers(selectedWatchlist)
+      const sectors = groupBySector(tickers, tickerGroups, cryptoTickerGroups, globalTickerGroups)
+      return buildSectorNodes(sectors, combinedData, null, language)
+    }
+
+    // Otherwise it's a custom watchlist
+    const tickers = getWatchlistTickers(selectedWatchlist)
+    if (tickers.length > 0) {
+      const sectors = groupBySector(tickers, tickerGroups, cryptoTickerGroups, globalTickerGroups)
+      return buildSectorNodes(sectors, combinedData, null, language)
+    }
+
+    return []
+  }, [
+    selectedWatchlist,
+    tickerGroups,
+    cryptoTickerGroups,
+    globalTickerGroups,
+    combinedData,
+    language,
+  ])
 
   // Theme-dependent colors
   const colors = React.useMemo(() => ({
@@ -322,18 +405,23 @@ export function TradingTreemap({
     )
   }
 
-  if (dataError) {
+  if (error) {
     return (
       <div className={className} style={{ height }}>
-        <div className="text-destructive text-sm p-4">{dataError}</div>
+        <div className="text-destructive text-sm p-4">{error}</div>
       </div>
     )
   }
 
   return (
     <div className={className}>
-      <div className="flex items-center mb-2 shrink-0 px-3">
+      <div className="flex flex-col gap-2 mb-2 shrink-0 px-3">
         <h3 className="text-lg font-semibold">{t("common.heatmap")}</h3>
+        <TickerGroupSelector
+          value={selectedWatchlist}
+          onValueChange={setSelectedWatchlist}
+          className="w-36"
+        />
       </div>
       <ReactECharts
         echarts={echarts}

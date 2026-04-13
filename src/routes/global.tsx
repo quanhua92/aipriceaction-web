@@ -146,7 +146,7 @@ function GlobalPage() {
 
 			{/* Section 2.5: Market Treemap */}
 			<div className="p-3 md:p-4 border-t">
-				<TradingTreemap mode="global" />
+				<TradingTreemap defaultWatchlist={GLOBAL_WATCHLIST_NAME} />
 			</div>
 
 			{/* Section 2.6: Relative Rotation Graph */}
