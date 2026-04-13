@@ -72,13 +72,33 @@ export function ChartFullscreenDialog({
     }
   }, [compareState])
 
-  // Update internal state when ticker prop changes
+  // Track previous ticker prop to detect actual changes vs parent re-renders
+  const prevTickerPropRef = React.useRef<string | null>(null)
+
+  // Track internal ticker via ref for stable access in effects
+  const internalTickerRef = React.useRef<string | null>(internalTicker)
   React.useEffect(() => {
-    setInternalTicker(ticker)
-    if (ticker && tickerList) {
-      const index = tickerList.indexOf(ticker)
-      if (index !== -1) {
-        setInternalIndex(index)
+    internalTickerRef.current = internalTicker
+  }, [internalTicker])
+
+  // Only sync from props when ticker prop actually changes (dialog open/close)
+  React.useEffect(() => {
+    if (ticker !== prevTickerPropRef.current) {
+      // Ticker prop changed (dialog opened, closed, or externally switched)
+      setInternalTicker(ticker)
+      if (ticker && tickerList) {
+        const index = tickerList.indexOf(ticker)
+        if (index !== -1) {
+          setInternalIndex(index)
+        }
+      }
+      prevTickerPropRef.current = ticker
+    } else if (tickerList && internalTickerRef.current) {
+      // tickerList changed (e.g., refresh) but user is still navigating
+      // Re-find current internalTicker in the new list to update index
+      const newIndex = tickerList.indexOf(internalTickerRef.current)
+      if (newIndex !== -1) {
+        setInternalIndex(newIndex)
       }
     }
   }, [ticker, tickerList])
