@@ -438,13 +438,20 @@ export function BaseTradingViewChart({
 				volumeChangePercent = `<span style="color: ${volChangeColor}; font-size: 9px;">${formatPercent(volChange)}</span>`;
 			}
 
-			// Get ticker symbol from the current chart
-			const tickerSymbol = data.length > 0 ? data[0].symbol : "";
+			// Get ticker symbol from the current chart (use ref to always get latest data)
+			const tickerSymbol = dataRef.current.length > 0 ? dataRef.current[0].symbol : "";
+
+			// Calculate raw price change from close and close_changed
+			const rawChange = currentDataPoint.close_changed != null && currentDataPoint.close_changed !== 0 && currentDataPoint.close_changed !== -100
+				? candleData.close - (candleData.close / (1 + currentDataPoint.close_changed / 100))
+				: 0;
+			const rawChangeColor = getBasicChangeColor(rawChange);
+			const rawChangeStr = `${rawChange >= 0 ? '+' : ''}${formatPrice(rawChange, currentDataPoint)}`;
 
 			// Build tooltip HTML
 			let html = `
 				<div style="display: flex; justify-content: space-between; align-items: center; color: #a1a1aa; font-size: 10px; margin-bottom: 4px;">
-					<span style="font-weight: bold;">${tickerSymbol}</span>
+					<span><span style="font-weight: bold;">${tickerSymbol}</span> <span style="color: ${rawChangeColor};">${rawChangeStr}</span></span>
 					<span>${dateStr}</span>
 				</div>
 				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; font-size: 10px;">

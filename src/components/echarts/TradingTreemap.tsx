@@ -7,6 +7,7 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useAPI } from '@/contexts/APIContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTranslation } from '@/hooks/useTranslation'
 import {
   ALL_WATCHLIST_NAME,
@@ -15,12 +16,13 @@ import {
   MARKET_INDICES,
 } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
+import { getBasicChangeColor, getMAColor } from '@/lib/chartColors'
 import { getSectorDisplayName } from '@/lib/sector-names'
 import { TickerGroupSelector } from '@/components/TickerGroupSelector'
 import { useWatchListData } from '@/hooks/useWatchListData'
 import { getPredefinedWatchlistTickers, isPredefinedWatchlist } from '@/lib/predefined-watchlists'
 import { getWatchlistTickers } from '@/lib/watchlist-storage'
-import type { BasicStockData } from '@/lib/api-client'
+import type { StockData } from '@/lib/api-client'
 import { Loader2 } from 'lucide-react'
 
 echarts.use([
@@ -59,6 +61,18 @@ interface TreemapNode {
     volumeChanged?: number | null
     absChange?: number
     mode?: string
+    symbol: string
+    time: string
+    ma10?: number | null
+    ma20?: number | null
+    ma50?: number | null
+    ma100?: number | null
+    ma200?: number | null
+    ma10_score?: number | null
+    ma20_score?: number | null
+    ma50_score?: number | null
+    ma100_score?: number | null
+    ma200_score?: number | null
   }
 }
 
@@ -66,7 +80,7 @@ const MAX_TICKERS_PER_SECTOR = 15
 
 function buildSectorNodes(
   groups: Record<string, string[]> | null | undefined,
-  data: Record<string, BasicStockData[]>,
+  data: Record<string, StockData[]>,
   wrapperName: string | null,
   language: 'vn' | 'en',
 ): TreemapNode[] {
@@ -100,6 +114,18 @@ function buildSectorNodes(
           volumeChanged: latestData.volume_changed,
           absChange: (change !== 0 && change !== -100) ? price - (price / (1 + change / 100)) : 0,
           mode: latestData.mode,
+          symbol: latestData.symbol,
+          time: latestData.time,
+          ma10: latestData.ma10,
+          ma20: latestData.ma20,
+          ma50: latestData.ma50,
+          ma100: latestData.ma100,
+          ma200: latestData.ma200,
+          ma10_score: latestData.ma10_score,
+          ma20_score: latestData.ma20_score,
+          ma50_score: latestData.ma50_score,
+          ma100_score: latestData.ma100_score,
+          ma200_score: latestData.ma200_score,
         },
       })
     }
@@ -161,7 +187,9 @@ export function TradingTreemap({
   const [selectedWatchlist, setSelectedWatchlist] = React.useState(defaultWatchlist)
 
   // Fetch watchlist data (stock/crypto/global combined)
-  const { combinedData, loading: dataLoading, error: dataError } = useWatchListData({ needsMA: false })
+  const { combinedData, loading: dataLoading, error: dataError } = useWatchListData({ needsMA: true })
+  const { maVisibility } = useChartSettings()
+  const { ema } = useAPI()
 
   // Merge loading/error states
   const loading = stockLoading || cryptoLoading || globalLoading || dataLoading
@@ -270,29 +298,79 @@ export function TradingTreemap({
     backgroundColor: 'transparent',
 
     tooltip: {
-      backgroundColor: colors.tooltipBg,
-      borderColor: colors.borderColor,
-      textStyle: { color: colors.tooltipText, fontSize: 13 },
+      backgroundColor: 'rgba(24, 24, 27, 0.95)',
+      borderColor: '#27272a',
+      borderWidth: 1,
+      borderRadius: 4,
+      padding: [6, 8],
+      textStyle: {
+        color: '#fafafa',
+        fontSize: 11,
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif",
+      },
+      extraCssText: 'backdrop-filter:blur(8px);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;',
       formatter: (params: any) => {
         const d = params.data?._data
         if (!d) return ''
-        const changeColor = d.change < -6.8 ? '#06b6d4'
-          : d.change < 0 ? '#dc2626'
-            : d.change > 6.7 ? '#9333ea'
-              : '#16a34a'
-        const row = (label: string, value: string, extraStyle = '') =>
-          `<div style="display:flex;justify-content:space-between;width:200px;gap:12px;${extraStyle}"><span style="color:${colors.textSecondary}">${label}</span><span>${value}</span></div>`
-        const fmt = (price: number) => formatPrice(price, { symbol: params.name, mode: d.mode as any })
-        return `
-          <div style="font-weight:600;font-size:15px;margin-bottom:4px">${params.name}</div>
-          ${row('Open', fmt(d.open))}
-          ${row('High', fmt(d.high))}
-          ${row('Low', fmt(d.low))}
-          ${row('Close', fmt(d.close), `font-weight:600`)}
-          ${row('Change', `<span style="color:${changeColor};font-weight:600">${d.absChange >= 0 ? '+' : ''}${fmt(d.absChange)} (${formatPercent(d.change)})</span>`)}
-          ${row('Volume', formatVolume(d.volume))}
-          ${d.volumeChanged != null ? row('Vol Chg', `<span style="color:${d.volumeChanged >= 0 ? '#16a34a' : '#dc2626'}">${formatPercent(d.volumeChanged)}</span>`) : ''}
+        const dateStr = d.time ? d.time.split('T')[0] : ''
+        const fmt = (price: number) => formatPrice(price, { symbol: d.symbol, mode: d.mode as any })
+        const changeColor = getBasicChangeColor(d.change)
+        const absChange = (d.change !== 0 && d.change !== -100) ? d.close - (d.close / (1 + d.change / 100)) : 0
+        const absChangeStr = `${absChange >= 0 ? '+' : ''}${fmt(absChange)}`
+
+        let html = `
+          <div style="display:flex;justify-content:space-between;align-items:center;color:#a1a1aa;font-size:10px;margin-bottom:4px;">
+            <span><span style="font-weight:bold;">${d.symbol}</span> <span style="color:${changeColor};">${absChangeStr}</span></span>
+            <span>${dateStr}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;font-size:10px;">
+            <div><span style="color:#a1a1aa;">O</span> ${fmt(d.open)}</div>
+            <div><span style="color:#a1a1aa;">C</span> ${fmt(d.close)} <span style="color:${changeColor};font-size:9px;">${formatPercent(d.change)}</span></div>
+            <div><span style="color:#a1a1aa;">H</span> <span style="color:#16a34a;">${fmt(d.high)}</span></div>
+            <div><span style="color:#a1a1aa;">L</span> <span style="color:#dc2626;">${fmt(d.low)}</span></div>
         `
+
+        // Volume row (full width)
+        html += `<div style="grid-column:1/-1;"><span style="color:#a1a1aa;">Vol</span> ${formatVolume(d.volume)}`
+        if (d.volumeChanged != null) {
+          const volColor = getBasicChangeColor(d.volumeChanged)
+          html += ` <span style="color:${volColor};font-size:9px;">${formatPercent(d.volumeChanged)}</span>`
+        }
+        html += `</div>`
+
+        // MA section
+        const maPrefix = ema ? 'EMA' : 'MA'
+        const hasMA = d.ma10 || d.ma20 || d.ma50 || d.ma100 || d.ma200
+        if (hasMA) {
+          html += `<div style="grid-column:1/-1;margin-top:4px;padding-top:4px;border-top:1px solid #27272a;"></div>`
+
+          if (maVisibility.ma10 && d.ma10 != null && d.ma10_score != null) {
+            const scoreColor = getMAColor(d.ma10_score)
+            html += `<div><span style="color:#dc2626;display:inline-block;width:40px;">${maPrefix}10</span> ${fmt(d.ma10)}</div>`
+            html += `<div><span style="color:#dc2626;display:inline-block;width:40px;">Score</span> <span style="color:${scoreColor};font-size:9px;">${formatPercent(d.ma10_score)}</span></div>`
+          }
+          if (maVisibility.ma20 && d.ma20 != null && d.ma20_score != null) {
+            const scoreColor = getMAColor(d.ma20_score)
+            html += `<div><span style="color:#16a34a;display:inline-block;width:40px;">${maPrefix}20</span> ${fmt(d.ma20)}</div>`
+            html += `<div><span style="color:#16a34a;display:inline-block;width:40px;">Score</span> <span style="color:${scoreColor};font-size:9px;">${formatPercent(d.ma20_score)}</span></div>`
+          }
+          if (maVisibility.ma50 && d.ma50 != null && d.ma50_score != null) {
+            const scoreColor = getMAColor(d.ma50_score)
+            html += `<div><span style="color:#2563eb;display:inline-block;width:40px;">${maPrefix}50</span> ${fmt(d.ma50)}</div>`
+            html += `<div><span style="color:#2563eb;display:inline-block;width:40px;">Score</span> <span style="color:${scoreColor};font-size:9px;">${formatPercent(d.ma50_score)}</span></div>`
+          }
+          if (maVisibility.ma100 && d.ma100 != null && d.ma100_score != null) {
+            const scoreColor = getMAColor(d.ma100_score)
+            html += `<div><span style="color:#a1a1aa;display:inline-block;width:40px;">${maPrefix}100</span> ${fmt(d.ma100)}</div>`
+            html += `<div><span style="color:#a1a1aa;display:inline-block;width:40px;">Score</span> <span style="color:${scoreColor};font-size:9px;">${formatPercent(d.ma100_score)}</span></div>`
+          }
+          if (maVisibility.ma200 && d.ma200 != null && d.ma200_score != null) {
+            const scoreColor = getMAColor(d.ma200_score)
+            html += `<div style="grid-column:1/-1;"><span style="color:#71717a;display:inline-block;width:40px;">${maPrefix}200</span> ${fmt(d.ma200)} <span style="color:#71717a;">Score</span> <span style="color:${scoreColor};font-size:9px;">${formatPercent(d.ma200_score)}</span></div>`
+          }
+        }
+
+        return html + `</div>`
       },
     },
 
@@ -393,7 +471,7 @@ export function TradingTreemap({
 
       data: treemapData,
     }],
-  }), [treemapData, colors, isDark, isMobile])
+  }), [treemapData, colors, isDark, isMobile, ema, maVisibility])
 
   if (loading) {
     return (
