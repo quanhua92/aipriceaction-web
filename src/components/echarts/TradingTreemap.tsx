@@ -59,23 +59,28 @@ function buildSectorNodes(
     const children: TreemapNode[] = []
     for (const symbol of symbols) {
       const latestData = data[symbol]?.[0]
-      if (!latestData || !latestData.close) continue
+      if (!latestData) continue
+      const price = latestData.close || 0
       const change = latestData.close_changed ?? 0
-      const tradedValue = latestData.close * (latestData.volume || 0)
-      const size = tradedValue > 0 ? tradedValue : latestData.close
-      if (size === 0) continue
+      const tradedValue = price * (latestData.volume || 0)
+      const rawSize = tradedValue > 0 ? tradedValue : price
+      if (rawSize === 0) continue
+      // Use square root scale to prevent large sectors from dwarfing small ones
+      const size = Math.sqrt(rawSize)
       children.push({
         name: symbol,
-        value: [size, change, latestData.close],
+        value: [size, change, price],
         itemStyle: { color: getChangeColor(change) },
       })
     }
     if (children.length === 0) continue
-    // Sort by traded value descending, keep top N to prevent outliers from dominating
+    // Sort by raw size descending, keep top N to prevent outliers from dominating
     children.sort((a, b) => (b.value?.[0] ?? 0) - (a.value?.[0] ?? 0))
+    const sectorName = getSectorDisplayName(sector, language)
+    const included = children.slice(0, MAX_TICKERS_PER_SECTOR)
     sectorNodes.push({
-      name: getSectorDisplayName(sector, language),
-      children: children.slice(0, MAX_TICKERS_PER_SECTOR),
+      name: sectorName,
+      children: included,
     })
   }
 
