@@ -9,6 +9,7 @@ import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { RRGWidget } from "@/components/widgets/RRGWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
+import { TradingTreemap } from "@/components/echarts/TradingTreemap";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { CRYPTO_WATCHLIST_NAME, CRYPTO_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
@@ -42,11 +43,13 @@ function CryptoPage() {
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
+	const [treemapTickerSymbols, setTreemapTickerSymbols] = React.useState<string[]>([]);
 
 	// Get ticker symbols array for navigation in fullscreen dialog
 	const tickerSymbols = React.useMemo(() => {
+		if (treemapTickerSymbols.length > 0) return treemapTickerSymbols;
 		return sortedTickers.map(t => t.symbol);
-	}, [sortedTickers]);
+	}, [treemapTickerSymbols, sortedTickers]);
 
 	// Get current index for fullscreen dialog
 	const fullscreenTickerIndex = React.useMemo(() => {
@@ -56,8 +59,14 @@ function CryptoPage() {
 	}, [fullscreenTicker, tickerSymbols]);
 
 	const handleSelectTicker = (symbol: string) => {
+		setTreemapTickerSymbols([]);
 		setFullscreenTicker(symbol);
-	}
+	};
+
+	const handleTreemapSelectTicker = (symbol: string, sectorTickers: string[]) => {
+		setTreemapTickerSymbols(sectorTickers);
+		setFullscreenTicker(symbol);
+	};
 
 	const handleCloseFullscreen = () => {
 		setFullscreenTicker(null);
@@ -140,7 +149,12 @@ function CryptoPage() {
 				</div>
 			</div>
 
-			{/* Section 2.5: Relative Rotation Graph */}
+			{/* Section 2.5: Market Treemap */}
+			<div className="p-3 md:p-4 border-t">
+				<TradingTreemap mode="crypto" onSelectTicker={handleTreemapSelectTicker} />
+			</div>
+
+			{/* Section 2.6: Relative Rotation Graph */}
 			<div className="p-3 md:p-4 border-t">
 				<RRGWidget defaultGroup={CRYPTO_WATCHLIST_NAME} />
 			</div>
