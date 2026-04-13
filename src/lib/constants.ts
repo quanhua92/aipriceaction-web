@@ -131,12 +131,14 @@ export const MATRIX_DAYS_PER_PAGE = 21
 /**
  * Default number of records to load for charts
  */
-export const DEFAULT_CHART_LIMIT = 256
+export const DEFAULT_CHART_LIMIT = 100
+export const DEFAULT_DESKTOP_CHART_LIMIT = 200
+export const MAX_CHART_LIMIT = 256
 
 /**
  * Number of additional records to load when clicking "Load More" button
  */
-export const LOAD_MORE_LIMIT = 256
+export const LOAD_MORE_LIMIT = 50
 
 /**
  * Bars from left edge to trigger infinite history load

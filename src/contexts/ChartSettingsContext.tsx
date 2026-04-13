@@ -1,6 +1,6 @@
 import React from 'react'
 import { Interval } from '@/lib/api-client'
-import { DEFAULT_CHART_LIMIT, CHART_SETTINGS_STORAGE_KEY } from '@/lib/constants'
+import { DEFAULT_CHART_LIMIT, DEFAULT_DESKTOP_CHART_LIMIT, MAX_CHART_LIMIT, CHART_SETTINGS_STORAGE_KEY } from '@/lib/constants'
 import { SafeLocalStorage } from '@/lib/localStorage'
 
 export interface MaVisibility {
@@ -104,8 +104,8 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 	const [limit, setLimit] = React.useState<number>(
 		() => {
 			const saved = persisted.current.limit
-			if (saved === undefined || saved === null) return DEFAULT_CHART_LIMIT
-			return saved > DEFAULT_CHART_LIMIT * 3 ? DEFAULT_CHART_LIMIT : saved
+			if (saved === undefined || saved === null) return typeof window !== 'undefined' && window.innerWidth >= 768 ? DEFAULT_DESKTOP_CHART_LIMIT : DEFAULT_CHART_LIMIT
+			return saved > MAX_CHART_LIMIT ? MAX_CHART_LIMIT : saved
 		}
 	)
 	const [height, setHeight] = React.useState<number>(
