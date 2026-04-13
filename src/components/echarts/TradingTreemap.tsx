@@ -7,12 +7,11 @@ import {
 } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useAPI } from '@/contexts/APIContext'
-import { useWatchListData } from '@/hooks/useWatchListData'
 import { useTranslation } from '@/hooks/useTranslation'
 import { MARKET_INDICES } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getSectorDisplayName } from '@/lib/sector-names'
-import type { StockData } from '@/lib/api-client'
+import type { BasicStockData } from '@/lib/api-client'
 import { Loader2 } from 'lucide-react'
 
 echarts.use([
@@ -47,7 +46,7 @@ const MAX_TICKERS_PER_SECTOR = 15
 
 function buildSectorNodes(
   groups: Record<string, string[]> | null | undefined,
-  data: Record<string, StockData[]>,
+  data: Record<string, BasicStockData[]>,
   wrapperName: string | null,
   language: 'vn' | 'en',
 ): TreemapNode[] {
@@ -60,13 +59,15 @@ function buildSectorNodes(
     const children: TreemapNode[] = []
     for (const symbol of symbols) {
       const latestData = data[symbol]?.[0]
-      if (!latestData || !latestData.close || latestData.close_changed == null) continue
+      if (!latestData || !latestData.close) continue
+      const change = latestData.close_changed ?? 0
       const tradedValue = latestData.close * (latestData.volume || 0)
-      if (tradedValue === 0) continue
+      const size = tradedValue > 0 ? tradedValue : latestData.close
+      if (size === 0) continue
       children.push({
         name: symbol,
-        value: [tradedValue, latestData.close_changed, latestData.close],
-        itemStyle: { color: getChangeColor(latestData.close_changed) },
+        value: [size, change, latestData.close],
+        itemStyle: { color: getChangeColor(change) },
       })
     }
     if (children.length === 0) continue
@@ -90,9 +91,20 @@ export function TradingTreemap({
   className,
   onSelectTicker,
 }: TradingTreemapProps) {
-  const { tickerGroups, cryptoTickerGroups, globalTickerGroups } = useAPI()
-  const { stockData, cryptoData, globalData, loading: dataLoading, error: dataError } = useWatchListData({ needsMA: false })
+  const {
+    tickerGroups, cryptoTickerGroups, globalTickerGroups,
+    allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData,
+    stockLoading, cryptoLoading, globalLoading,
+    stockError, cryptoError, globalError,
+  } = useAPI()
   const { t, language } = useTranslation()
+
+  const loading = mode === 'global' ? globalLoading
+    : mode === 'crypto' ? cryptoLoading
+    : stockLoading
+  const dataError = mode === 'global' ? globalError
+    : mode === 'crypto' ? cryptoError
+    : stockError
 
   // Theme + viewport detection
   const [isDark, setIsDark] = React.useState(
@@ -119,19 +131,19 @@ export function TradingTreemap({
   const treemapData = React.useMemo<TreemapNode[]>(() => {
     if (mode === 'all') {
       return [
-        ...buildSectorNodes(tickerGroups, stockData, 'VN Stocks', language),
-        ...buildSectorNodes(cryptoTickerGroups, cryptoData, 'Crypto', language),
-        ...buildSectorNodes(globalTickerGroups, globalData, 'Global', language),
+        ...buildSectorNodes(tickerGroups, allTickersLastData, 'VN Stocks', language),
+        ...buildSectorNodes(cryptoTickerGroups, allCryptoTickersLastData, 'Crypto', language),
+        ...buildSectorNodes(globalTickerGroups, allGlobalTickersLastData, 'Global', language),
       ]
     }
-    const dataMap = mode === 'crypto' ? cryptoData
-      : mode === 'global' ? globalData
-      : stockData
+    const dataMap = mode === 'crypto' ? allCryptoTickersLastData
+      : mode === 'global' ? allGlobalTickersLastData
+      : allTickersLastData
     const groups = mode === 'crypto' ? cryptoTickerGroups
       : mode === 'global' ? globalTickerGroups
       : tickerGroups
     return buildSectorNodes(groups, dataMap, null, language)
-  }, [mode, tickerGroups, cryptoTickerGroups, globalTickerGroups, stockData, cryptoData, globalData, language])
+  }, [mode, tickerGroups, cryptoTickerGroups, globalTickerGroups, allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, language])
 
   // Theme-dependent colors
   const colors = React.useMemo(() => ({
@@ -294,7 +306,7 @@ export function TradingTreemap({
     },
   }), [onSelectTicker, treemapData])
 
-  if (dataLoading) {
+  if (loading) {
     return (
       <div className={className} style={{ height }}>
         <div className="flex items-center justify-center h-full">
