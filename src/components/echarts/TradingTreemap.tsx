@@ -296,6 +296,8 @@ export function TradingTreemap({
   // Click handler — find the sector this ticker belongs to and pass sector tickers
   const onEvents = React.useMemo(() => ({
     click: (params: any) => {
+      // Only trigger on leaf nodes (individual tickers), not sector headers
+      if (params.data?.children?.length > 0) return
       if (!params.data?.value || params.data.value.length < 3 || !onSelectTicker) return
       const symbol = params.name
       const treePath = params.treePathInfo
