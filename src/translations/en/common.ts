@@ -188,6 +188,7 @@ export default {
 		editWatchlist: "Edit Watchlist",
 		new: "New",
 	},
+	heatmap: "Heatmap",
 	volumeProfile: {
 		poc: "POC",
 		vaLow: "VA Low",

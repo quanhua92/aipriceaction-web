@@ -187,6 +187,7 @@ export default {
 		editWatchlist: "Chỉnh Sửa Danh Mục",
 		new: "Tạo Mới",
 	},
+	heatmap: "Bản đồ nhiệt",
 	volumeProfile: {
 		poc: "POC",
 		vaLow: "VA Low",

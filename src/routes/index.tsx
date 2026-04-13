@@ -8,6 +8,7 @@ import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { RRGWidget } from "@/components/widgets/RRGWidget";
+import { TradingTreemap } from "@/components/echarts/TradingTreemap";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
@@ -141,7 +142,12 @@ function HomePage() {
 				</div>
 			</div>
 
-			{/* Section 2.5: Relative Rotation Graph */}
+			{/* Section 2.5: Market Treemap */}
+			<div className="p-3 md:p-4 border-t">
+				<TradingTreemap mode="vn" onSelectTicker={handleSelectTicker} />
+			</div>
+
+			{/* Section 2.6: Relative Rotation Graph */}
 			<div className="p-3 md:p-4 border-t">
 				<RRGWidget defaultGroup={ALL_WATCHLIST_NAME} />
 			</div>
