@@ -201,7 +201,7 @@ export function TradingTreemap({
       height: '90%',
       top: 10,
       left: 'center',
-      roam: false,
+      roam: true,
       nodeClick: 'zoomToNode',
       breadcrumb: {
         show: true,
