@@ -7,6 +7,7 @@ import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListD
 import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { getTickerMode } from '@/lib/ticker-utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
   const { t } = useTranslation()
   const { getTickers, ema, tickers, globalTickers, cryptoTickers } = useAPI()
   const { lastRefresh } = useRefresh()
+  const { endDate } = useChartSettings()
   const maPrefix = ema ? 'EMA' : 'MA'
 
   const effectiveInitialTicker = ticker ?? initialTicker
@@ -55,6 +57,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
           interval: '1D',
           mode,
           limit: 1,
+          ...(endDate ? { end_date: endDate } : {}),
           ...(ema ? { ema: true } : {}),
         })
         if (!cancelled) {
@@ -70,7 +73,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
 
     fetch()
     return () => { cancelled = true }
-  }, [selectedTicker, lastRefresh, getTickers, ema, tickers.length, globalTickers.length, cryptoTickers.length])
+  }, [selectedTicker, lastRefresh, getTickers, ema, endDate, tickers.length, globalTickers.length, cryptoTickers.length])
 
   const handleSelectTicker = (newTicker: string) => {
     setSelectedTicker(newTicker)
