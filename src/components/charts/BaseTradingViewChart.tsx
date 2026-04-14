@@ -383,7 +383,7 @@ export function BaseTradingViewChart({
 			lines: [
 				{
 					text: "aipriceaction.com",
-					color: "rgba(113, 113, 122, 0.15)",
+					color: "rgba(113, 113, 122, 0.5)",
 					fontSize: 20,
 				},
 			],
@@ -1397,7 +1397,23 @@ export function BaseTradingViewChart({
 								</span>
 							</div>
 
-							{/* Second line - MA values */}
+							{/* Symbol top-right */}
+							<div
+								className={cn(
+									"absolute top-3 right-20 text-zinc-700 dark:text-zinc-300 z-10 pointer-events-none opacity-50",
+									displayData.symbol && displayData.symbol.length >= 4
+										? "text-[11px]"
+										: "text-[12px]",
+								)}
+								style={{
+									WebkitFontSmoothing: "antialiased",
+									MozOsxFontSmoothing: "grayscale",
+								}}
+							>
+								{displayData.symbol}
+							</div>
+
+							{/* MA values */}
 							{maValues.length > 0 && (
 								<div
 									className={cn(
