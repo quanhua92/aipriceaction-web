@@ -3,6 +3,7 @@ import * as React from "react";
 import { TradingTreemap } from "@/components/echarts/TradingTreemap";
 import { BasicWatchList } from "@/components/lists/BasicWatchList";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
+import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 
@@ -32,6 +33,11 @@ function HeatmapPage() {
 
 	return (
 		<div className="space-y-6">
+			{/* Section: Date Control */}
+			<div className="p-3 md:p-4">
+				<DateControlWidget />
+			</div>
+
 			{/* Section: Market Treemap */}
 			<div className="p-3 md:p-4">
 				<TradingTreemap defaultWatchlist={ALL_WATCHLIST_NAME} />

@@ -160,6 +160,10 @@ export default {
 		cacheEntries: "mục cache",
 		uptime: "Thời gian hoạt động",
 	},
+	historicalWarning: {
+		message: "Đang xem dữ liệu lịch sử — ngày kết thúc được đặt là {date}",
+		dismiss: "Đóng",
+	},
 	watch: {
 		title: "Theo Dõi Đa Biểu Đồ",
 		description: "Xem nhiều biểu đồ cùng lúc, sắp xếp và phân trang dễ dàng",

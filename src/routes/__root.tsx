@@ -7,6 +7,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import { DebugFooter } from '../components/DebugFooter'
 import { StatusBar } from '../components/StatusBar'
+import { HistoricalDataWarningBar } from '../components/HistoricalDataWarningBar'
 import { ThemeProvider } from '../components/ThemeProvider'
 import { APIProvider } from '../contexts/APIContext'
 import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
@@ -87,6 +88,7 @@ function RootComponent() {
                     <NoteProvider>
                       <PWAInstallProvider>
                         <Header />
+                        <HistoricalDataWarningBar />
                         <Outlet />
                         <Footer />
                         <StatusBar />

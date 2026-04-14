@@ -160,6 +160,10 @@ export default {
 		cacheEntries: "cache entries",
 		uptime: "Uptime",
 	},
+	historicalWarning: {
+		message: "Viewing historical data — end date is set to {date}",
+		dismiss: "Dismiss",
+	},
 	watch: {
 		title: "Watch - Multi-Chart View",
 		description:
