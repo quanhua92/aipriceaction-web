@@ -7,6 +7,7 @@ import {
   Coins,
   Globe,
   Dices,
+  LayoutGrid,
 } from 'lucide-react'
 import {
   Sheet,
@@ -117,6 +118,19 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             >
               <Eye size={20} />
               <span className="font-medium">Watchlist</span>
+            </Link>
+
+            <Link
+              to="/heatmap"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+              }}
+            >
+              <LayoutGrid size={20} />
+              <span className="font-medium">Heatmap</span>
             </Link>
 
             {/* Mobile PWA Install Button */}

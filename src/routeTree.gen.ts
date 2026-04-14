@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchRouteImport } from './routes/watch'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as MatrixRouteImport } from './routes/matrix'
+import { Route as HeatmapRouteImport } from './routes/heatmap'
 import { Route as GlobalRouteImport } from './routes/global'
 import { Route as DebugRouteImport } from './routes/debug'
 import { Route as CryptoRouteImport } from './routes/crypto'
@@ -37,6 +38,11 @@ const SignalsRoute = SignalsRouteImport.update({
 const MatrixRoute = MatrixRouteImport.update({
   id: '/matrix',
   path: '/matrix',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HeatmapRoute = HeatmapRouteImport.update({
+  id: '/heatmap',
+  path: '/heatmap',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GlobalRoute = GlobalRouteImport.update({
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
   '/global': typeof GlobalRoute
+  '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
   '/global': typeof GlobalRoute
+  '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/crypto': typeof CryptoRoute
   '/debug': typeof DebugRoute
   '/global': typeof GlobalRoute
+  '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/watch': typeof WatchRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/crypto'
     | '/debug'
     | '/global'
+    | '/heatmap'
     | '/matrix'
     | '/signals'
     | '/watch'
@@ -170,6 +180,7 @@ export interface FileRouteTypes {
     | '/crypto'
     | '/debug'
     | '/global'
+    | '/heatmap'
     | '/matrix'
     | '/signals'
     | '/watch'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/crypto'
     | '/debug'
     | '/global'
+    | '/heatmap'
     | '/matrix'
     | '/signals'
     | '/watch'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   CryptoRoute: typeof CryptoRoute
   DebugRoute: typeof DebugRoute
   GlobalRoute: typeof GlobalRoute
+  HeatmapRoute: typeof HeatmapRoute
   MatrixRoute: typeof MatrixRoute
   SignalsRoute: typeof SignalsRoute
   WatchRoute: typeof WatchRoute
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/matrix'
       fullPath: '/matrix'
       preLoaderRoute: typeof MatrixRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/heatmap': {
+      id: '/heatmap'
+      path: '/heatmap'
+      fullPath: '/heatmap'
+      preLoaderRoute: typeof HeatmapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/global': {
@@ -323,6 +343,7 @@ const rootRouteChildren: RootRouteChildren = {
   CryptoRoute: CryptoRoute,
   DebugRoute: DebugRoute,
   GlobalRoute: GlobalRoute,
+  HeatmapRoute: HeatmapRoute,
   MatrixRoute: MatrixRoute,
   SignalsRoute: SignalsRoute,
   WatchRoute: WatchRoute,

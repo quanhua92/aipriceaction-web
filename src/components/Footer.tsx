@@ -33,6 +33,9 @@ export default function Footer() {
             <Link to="/watch" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               Watchlist
             </Link>
+            <Link to="/heatmap" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
+              Heatmap
+            </Link>
             <Link to="/matrix" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               Market Matrix
             </Link>
