@@ -570,6 +570,48 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 						? `Based on the MA scores and moving averages for ${ticker}, assess the current momentum across all timeframes. Are the MAs aligning bullishly or bearishly? What potential signals do the MA crossovers or divergences suggest?`
 						: `Dựa trên điểm MA và đường trung bình cho ${ticker}, đánh giá động lực hiện tại trên tất cả các khung thời gian. Các đường MA đang xếp hạng tăng hay giảm? Các tín hiệu cắt chéo hay phân kỳ MA cho thấy điều gì?`,
 			},
+			{
+				title:
+					language === "en"
+						? "News & Events Research"
+						: "Tìm Kiếm Tin Tức & Sự Kiện",
+				snippet:
+					language === "en"
+						? "Detect extreme price moves and unusual volume, research potential causes"
+						: "Phát hiện biến động giá mạnh và khối lượng bất thường, tìm nguyên nhân tiềm năng",
+				question:
+					language === "en"
+						? `Check if ${ticker} moved more than ±6.7% in a single day or shows unusual volume patterns. For each significant move, search recent news and events to understand what caused it.`
+						: `Kiểm tra xem ${ticker} có thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, tìm tin tức và sự kiện gần đây để hiểu nguyên nhân.`,
+			},
+			{
+				title:
+					language === "en"
+						? "Wyckoff Method Analysis"
+						: "Phân Tích Phương Pháp Wyckoff",
+				snippet:
+					language === "en"
+						? "Identify accumulation/distribution phases, springs, upthrusts, and price targets"
+						: "Nhận diện giai đoạn tích lũy/phân phối, spring/upthrust và mục tiêu giá",
+				question:
+					language === "en"
+						? `Analyze ${ticker} using the Wyckoff Method. (1) Determine the current Wyckoff phase — Accumulation (A–E), Markup, Distribution (A–E), or Markdown based on price-volume behavior. (2) Identify key Wyckoff events: Springs, Upthrusts, Sign of Strength (SOS), Sign of Weakness (SOW), Last Point of Support (LPS), and Last Point of Supply (LPSY). (3) Estimate a price target using Wyckoff's horizontal counting method. (4) Analyze volume patterns — effort vs result — to confirm whether smart money is accumulating or distributing.`
+						: `Phân tích ${ticker} theo Phương Pháp Wyckoff. (1) Xác định giai đoạn Wyckoff hiện tại — Tích lũy (A–E), Tăng Giá, Phân Phối (A–E), hoặc Giảm Giá dựa trên hành vi giá và khối lượng. (2) Nhận diện các sự kiện Wyckoff quan trọng: Spring, Upthrust, Sign of Strength (SOS), Sign of Weakness (SOW), Last Point of Support (LPS), và Last Point of Supply (LPSY). (3) Ước tính mục tiêu giá theo phương pháp đếm ngang của Wyckoff. (4) Phân tích mô hình khối lượng — so sánh nỗ lực và kết quả — để xác nhận dòng tiền thông minh đang tích lũy hay phân phối.`,
+			},
+			{
+				title:
+					language === "en"
+						? "Bob Volman Price Action"
+						: "Hành Động Giá Bob Volman",
+				snippet:
+					language === "en"
+						? "Micro pullback entries, breakout confirmations, and fading setups at key levels"
+						: "Điểm vào lệnh micro pullback, xác nhận breakout và thiết lập fading tại vùng cản",
+				question:
+					language === "en"
+						? `Analyze ${ticker} using Bob Volman's price action methodology. (1) Identify the dominant trend using swing highs and lows. (2) Look for micro pullback setups — a pullback of 3+ consecutive bars against the trend followed by a reversal bar or breakout candle. (3) Identify breakout setups where price breaks a significant level on strong momentum. (4) Check for fading setups at key support/resistance where price action shows rejection patterns (pin bars, engulfing). (5) Assess volume behavior at key levels to confirm or deny each setup.`
+						: `Phân tích ${ticker} theo phương pháp hành động giá của Bob Volman. (1) Xác định xu hướng chủ đạo thông qua các đỉnh và đáy dao động. (2) Tìm các thiết lập micro pullback — nhịp điều chỉnh 3+ nến liên tiếp ngược xu hướng, theo sau bởi nến đảo chiều hoặc nến breakout. (3) Nhận diện các thiết lập breakout khi giá phá vỡ một mức quan trọng với động lực mạnh. (4) Kiểm tra các thiết lập fading tại vùng hỗ trợ/kháng cự chính khi hành động giá cho thấy mô hình từ chối (pin bar, engulfing). (5) Đánh giá hành vi khối lượng tại các mức quan trọng để xác nhận hoặc phủ nhận từng thiết lập.`,
+			},
 		],
 		[language, ticker],
 	);
@@ -690,7 +732,7 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 						{t("templates.sectionDescription")}
 					</p>
 				</div>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 					{questions.map((q, index) => {
 						const isCopied = copiedQuestion === index;
 						return (
