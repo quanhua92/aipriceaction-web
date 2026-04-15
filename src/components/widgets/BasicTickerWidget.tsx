@@ -1,10 +1,8 @@
-import { TrendingUp, TrendingDown, ChevronDown, Star, Bell } from 'lucide-react'
+import { TrendingUp, TrendingDown, ChevronDown, Maximize2 } from 'lucide-react'
 import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
-import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
-import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { useAPI } from '@/contexts/APIContext'
 import { useRefresh } from '@/contexts/RefreshContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -19,9 +17,10 @@ interface BasicTickerWidgetProps {
   initialTicker?: string
   ticker?: string
   onTickerChange?: (ticker: string) => void
+  onFullscreenClick?: () => void
 }
 
-export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerChange }: BasicTickerWidgetProps) {
+export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerChange, onFullscreenClick }: BasicTickerWidgetProps) {
   const { t } = useTranslation()
   const { getTickers, ema, tickers, globalTickers, cryptoTickers } = useAPI()
   const { lastRefresh } = useRefresh()
@@ -153,18 +152,17 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                 <ChevronDown className="ml-1 h-4 w-4 opacity-60" />
               </div>
             </SelectTickerDialog>
-            <QuickAddWatchListDialog ticker={selectedTicker}>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted/50">
-                <Star className="h-3.5 w-3.5" />
-                <span className="sr-only">Add to watchlist</span>
+            {onFullscreenClick && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 hover:bg-muted/50"
+                onClick={onFullscreenClick}
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+                <span className="sr-only">Fullscreen</span>
               </Button>
-            </QuickAddWatchListDialog>
-            <QuickAddAlertDialog ticker={selectedTicker}>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-muted/50">
-                <Bell className="h-3.5 w-3.5" />
-                <span className="sr-only">Add price alert</span>
-              </Button>
-            </QuickAddAlertDialog>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <FreshnessIndicator dataDate={data.time} />

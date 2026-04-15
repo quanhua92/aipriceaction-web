@@ -408,6 +408,7 @@ function WatchPage() {
 										<BasicTickerWidget
 											ticker={activeTicker}
 											onTickerChange={handleSelectTicker}
+											onFullscreenClick={() => setFullscreenTicker(activeTicker)}
 										/>
 										<VolumeProfileWidget
 											ticker={activeTicker}

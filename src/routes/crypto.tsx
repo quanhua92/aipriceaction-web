@@ -107,6 +107,7 @@ function CryptoPage() {
 					<BasicTickerWidget
 						ticker={chartTickers[0]}
 						onTickerChange={handleChartTickerChange(0)}
+						onFullscreenClick={() => setFullscreenTicker(chartTickers[0])}
 					/>
 					<VolumeProfileWidget
 						ticker={chartTickers[0]}
