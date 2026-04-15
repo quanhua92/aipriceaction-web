@@ -54,6 +54,7 @@ export default {
       chart: 'Chart',
       compare: 'Compare',
       trendSignal: 'TrendSignal',
+      aiContext: 'AI Context',
     },
     note: {
       label: 'Note (optional)',

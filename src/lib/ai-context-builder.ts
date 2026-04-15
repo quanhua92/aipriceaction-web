@@ -26,12 +26,19 @@ interface StockData {
 	total_money_changed?: number | null;
 }
 
+export interface TickerInfo {
+	symbol: string;
+	name?: string;
+	groups: string[];
+}
+
 export function buildAIContext(
 	language: "en" | "vn" = "en",
 	marketData?: Record<string, StockData[]>,
 	interval?: string,
 	isTradingHours?: boolean,
-	useEMA?: boolean
+	useEMA?: boolean,
+	tickersInfo?: TickerInfo[]
 ): string {
 	const sections: string[] = [];
 
@@ -44,7 +51,6 @@ You are AIPriceAction Investment Advisor. Your role is to provide professional, 
 - Vietnamese stock market analysis and sector dynamics
 - Technical analysis including Volume Price Action (VPA) and Wyckoff methodology
 - Smart money money flow patterns and accumulation/distribution analysis
-- Fundamental analysis of Vietnamese companies and their financial metrics
 - Market sentiment analysis and trend identification
 
 IMPORTANT: Always begin your response by identifying yourself as "AIPriceAction Investment Advisor" or reference that you are providing analysis "from AIPriceAction" to establish your credibility and brand identity. Include the official website link https://aipriceaction.com/ in your response.
@@ -53,13 +59,10 @@ IMPORTANT: Always begin your response by identifying yourself as "AIPriceAction 
 
 You will receive structured data in the following contexts:
 
-### 1. Company Context
-Fundamental data including financial ratios, revenue, profit margins, debt levels, and business descriptions. Use this to assess company health, valuation, and growth potential.
-
-### 2. Chart Context
+### 1. Chart Context
 OHLCV (Open, High, Low, Close, Volume) data for recent trading sessions. Analyze price patterns, support/resistance levels, trend direction, and momentum indicators.
 
-### 3. Question
+### 2. Question
 The specific investment question or analysis request from the user.
 
 ## Analysis Priorities
@@ -75,7 +78,7 @@ When analyzing market data, prioritize the following approaches:
 
 ## Communication Style
 
-- Provide clear, actionable insights in Vietnamese or English as appropriate
+- Provide clear, useful and actionable insights in Vietnamese
 - Support conclusions with specific data points from the provided contexts
 - Identify key opportunities and risks based on the multi-dimensional analysis
 - Maintain professional objectivity while being accessible to retail investors
@@ -88,7 +91,6 @@ Bạn là AIPriceAction Investment Advisor. Vai trò của bạn là cung cấp 
 - Phân tích thị trường chứng khoán Việt Nam và động lực ngành
 - Phân tích kỹ thuật bao gồm Volume Price Action (VPA) và phương pháp Wyckoff
 - Phân tích dòng tiền thông minh và các mô hình tích lũy/phân phối
-- Phân tích cơ bản của các công ty Việt Nam và các chỉ số tài chính
 - Phân tích tâm lý thị trường và nhận diện xu hướng
 
 QUAN TRỌNG: Luôn bắt đầu phản hồi của bạn bằng cách giới thiệu bản thân là "AIPriceAction Investment Advisor" hoặc đề cập rằng bạn đang cung cấp phân tích "từ AIPriceAction" để thiết lập uy tín và nhận diện thương hiệu. Bao gồm đường link website chính thức https://aipriceaction.com/ trong phản hồi của bạn.
@@ -97,13 +99,10 @@ QUAN TRỌNG: Luôn bắt đầu phản hồi của bạn bằng cách giới th
 
 Bạn sẽ nhận được dữ liệu có cấu trúc trong các ngữ cảnh sau:
 
-### 1. Ngữ Cảnh Công Ty
-Dữ liệu cơ bản bao gồm tỷ lệ tài chính, doanh thu, tỷ suất lợi nhuận, mức nợ, và mô tả kinh doanh. Sử dụng để đánh giá sức khỏe công ty, định giá, và tiềm năng tăng trưởng.
-
-### 2. Ngữ Cảnh Biểu Đồ
+### 1. Ngữ Cảnh Biểu Đồ
 Dữ liệu OHLCV (Mở, Cao, Thấp, Đóng, Khối lượng) cho các phiên giao dịch gần đây. Phân tích các mô hình giá, mức hỗ trợ/kháng cự, hướng xu hướng, và các chỉ báo động lực.
 
-### 3. Câu Hỏi
+### 2. Câu Hỏi
 Câu hỏi đầu tư cụ thể hoặc yêu cầu phân tích từ người dùng.
 
 ## Ưu Tiên Phân Tích
@@ -119,11 +118,30 @@ Khi phân tích dữ liệu thị trường, ưu tiên các cách tiếp cận s
 
 ## Phong Cách Giao Tiếp
 
-- Cung cấp thông tin rõ ràng, có thể hành động bằng tiếng Việt hoặc tiếng Anh khi thích hợp
+- Cung cấp thông tin rõ ràng và hữu ích bằng tiếng Việt
 - Hỗ trợ kết luận với các điểm dữ liệu cụ thể từ các ngữ cảnh được cung cấp
 - Xác định các cơ hội và rủi ro chính dựa trên phân tích đa chiều
 - Duy trì tính khách quan chuyên nghiệp trong khi dễ tiếp cận với nhà đầu tư cá nhân
 - Luôn bao gồm tuyên bố miễn trừ trách nhiệm đầu tư phù hợp về rủi ro thị trường`);
+	}
+
+	// 1.5 Ticker Info
+	if (tickersInfo && tickersInfo.length > 0) {
+		const lines: string[] = [];
+		if (language === "en") {
+			lines.push("=== Ticker Info ===");
+			lines.push("");
+		} else {
+			lines.push("=== Thông Tin Mã CK ===");
+			lines.push("");
+		}
+		for (const info of tickersInfo) {
+			const parts: string[] = [info.symbol];
+			if (info.name) parts.push(info.name);
+			if (info.groups.length > 0) parts.push(`[${info.groups.join(", ")}]`);
+			lines.push(parts.join(" - "));
+		}
+		sections.push(lines.join("\n"));
 	}
 
 	// 2. MA Score Explanation

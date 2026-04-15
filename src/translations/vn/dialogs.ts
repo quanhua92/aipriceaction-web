@@ -54,6 +54,7 @@ export default {
       chart: 'Biểu Đồ',
       compare: 'So Sánh',
       trendSignal: 'Tín Hiệu',
+      aiContext: 'AI Context',
     },
     note: {
       label: 'Ghi chú (tùy chọn)',
