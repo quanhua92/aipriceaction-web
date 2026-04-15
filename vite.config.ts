@@ -1,11 +1,13 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-const config = defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  return {
   plugins: [
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
@@ -93,13 +95,12 @@ const config = defineConfig({
   server: {
     proxy: {
       '/aipriceaction-api': {
-        target: 'http://127.0.0.1:3000',
+        target: env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:3000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/aipriceaction-api/, ''),
         secure: false,
       },
     },
   },
-})
+}})
 
-export default config
