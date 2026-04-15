@@ -547,6 +547,20 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 			{
 				title:
 					language === "en"
+						? "News & Events Research"
+						: "Tìm Kiếm Tin Tức & Sự Kiện",
+				snippet:
+					language === "en"
+						? "Detect extreme price moves and unusual volume, research potential causes"
+						: "Phát hiện biến động giá mạnh và khối lượng bất thường, tìm nguyên nhân tiềm năng",
+				question:
+					language === "en"
+						? `Check if ${ticker} moved more than ±6.7% in a single day or shows unusual volume patterns. For each significant move, search recent news and events to understand what caused it.`
+						: `Kiểm tra xem ${ticker} có thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, tìm tin tức và sự kiện gần đây để hiểu nguyên nhân.`,
+			},
+			{
+				title:
+					language === "en"
 						? "Price Action & Volume"
 						: "Hành Động Giá & Khối Lượng",
 				snippet:
@@ -569,20 +583,6 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 					language === "en"
 						? `Based on the MA scores and moving averages for ${ticker}, assess the current momentum across all timeframes. Are the MAs aligning bullishly or bearishly? What potential signals do the MA crossovers or divergences suggest?`
 						: `Dựa trên điểm MA và đường trung bình cho ${ticker}, đánh giá động lực hiện tại trên tất cả các khung thời gian. Các đường MA đang xếp hạng tăng hay giảm? Các tín hiệu cắt chéo hay phân kỳ MA cho thấy điều gì?`,
-			},
-			{
-				title:
-					language === "en"
-						? "News & Events Research"
-						: "Tìm Kiếm Tin Tức & Sự Kiện",
-				snippet:
-					language === "en"
-						? "Detect extreme price moves and unusual volume, research potential causes"
-						: "Phát hiện biến động giá mạnh và khối lượng bất thường, tìm nguyên nhân tiềm năng",
-				question:
-					language === "en"
-						? `Check if ${ticker} moved more than ±6.7% in a single day or shows unusual volume patterns. For each significant move, search recent news and events to understand what caused it.`
-						: `Kiểm tra xem ${ticker} có thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, tìm tin tức và sự kiện gần đây để hiểu nguyên nhân.`,
 			},
 			{
 				title:
