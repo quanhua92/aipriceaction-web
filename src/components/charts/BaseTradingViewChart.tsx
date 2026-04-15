@@ -383,7 +383,7 @@ export function BaseTradingViewChart({
 			lines: [
 				{
 					text: "aipriceaction.com",
-					color: "rgba(113, 113, 122, 0.5)",
+					color: "rgba(113, 113, 122, 0.3)",
 					fontSize: 20,
 				},
 			],
