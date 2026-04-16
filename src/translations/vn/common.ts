@@ -46,6 +46,7 @@ export default {
 		ma50: "MA50",
 		ma100: "MA100",
 		score: "Điểm",
+		viewFullChart: "Xem biểu đồ đầy đủ",
 	},
 	aiContext: {
 		title: "Xây Dựng Ngữ Cảnh AI",

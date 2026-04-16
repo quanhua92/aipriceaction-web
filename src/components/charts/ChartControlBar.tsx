@@ -218,6 +218,19 @@ export function ChartControlBar({
 
 			{/* Right-aligned buttons group */}
 			<div className="ml-auto flex items-center gap-0.5">
+				{/* Fullscreen Button (if provided) */}
+				{onFullscreenClick && (
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 w-7 p-0"
+						onClick={onFullscreenClick}
+						title="Open fullscreen chart"
+					>
+						<Maximize2 className="h-4 w-4" />
+					</Button>
+				)}
+
 				{/* Load More Button - Icon Only */}
 				<Button
 					variant="ghost"
@@ -260,19 +273,6 @@ export function ChartControlBar({
 						<span className="sr-only">Add price alert</span>
 					</Button>
 				</QuickAddAlertDialog>
-
-				{/* Fullscreen Button (if provided) */}
-				{onFullscreenClick && (
-					<Button
-						variant="ghost"
-						size="sm"
-						className="h-7 w-7 p-0"
-						onClick={onFullscreenClick}
-						title="Open fullscreen chart"
-					>
-						<Maximize2 className="h-4 w-4" />
-					</Button>
-				)}
 
 				{/* Settings Button - Top Right */}
 				<ChartSettingsDialog>

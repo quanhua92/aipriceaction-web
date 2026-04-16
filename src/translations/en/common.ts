@@ -46,6 +46,7 @@ export default {
 		ma50: "MA50",
 		ma100: "MA100",
 		score: "Score",
+		viewFullChart: "View full chart",
 	},
 	aiContext: {
 		title: "Build AI Context",

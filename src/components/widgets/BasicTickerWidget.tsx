@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, ChevronDown, Maximize2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, ChevronDown, Maximize2, ArrowUpRight } from 'lucide-react'
 import { formatPrice, formatPercent, formatVolume, parseUTCISOString, formatToVietnamDate } from '@/lib/format'
 import { getPriceChangeColor, getVolumeChangeColor } from '@/lib/colors'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -299,6 +299,17 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
           </div>
         </div>
       </div>
+
+      {/* View Full Chart Button */}
+      {onFullscreenClick && (
+        <button
+          onClick={onFullscreenClick}
+          className="mt-4 w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground py-1.5 rounded-md border border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors cursor-pointer"
+        >
+          <ArrowUpRight className="h-3.5 w-3.5" />
+          <span>{t('common.ticker.viewFullChart')}</span>
+        </button>
+      )}
     </div>
   )
 }
