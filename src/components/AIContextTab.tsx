@@ -415,7 +415,7 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 	const { lastRefresh } = useRefresh();
 
 	const [interval, setInterval] = React.useState("1D");
-	const [limit, setLimit] = React.useState(20);
+	const [limit, setLimit] = React.useState(60);
 	const [marketData, setMarketData] = React.useState<StockData[] | null>(null);
 	const [isFetching, setIsFetching] = React.useState(false);
 	const [isTradingHours, setIsTradingHours] = React.useState(false);
@@ -676,8 +676,11 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 							<SelectItem value="10">10</SelectItem>
 							<SelectItem value="20">20</SelectItem>
 							<SelectItem value="30">30</SelectItem>
-							<SelectItem value="50">50</SelectItem>
+							<SelectItem value="60">60</SelectItem>
 							<SelectItem value="100">100</SelectItem>
+							<SelectItem value="120">120</SelectItem>
+							<SelectItem value="160">160</SelectItem>
+							<SelectItem value="200">200</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
