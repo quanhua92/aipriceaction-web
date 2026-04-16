@@ -1,7 +1,7 @@
 export default {
   sectionTitle: 'Mẫu Phân Tích Nhanh',
   sectionDescription: 'Một cú nhấp để sao chép ngữ cảnh AI với câu hỏi phân tích có sẵn',
-  copyTemplate: 'Sao Chép với Câu Hỏi',
+  copyTemplate: 'Sao chép kèm câu hỏi',
   templateCopied: 'Đã Sao Chép!',
   templates: [
     {
