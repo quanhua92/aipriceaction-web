@@ -12,7 +12,7 @@ export default {
 	edit: "Chỉnh sửa",
 	add: "Thêm",
 	back: "Quay lại",
-	next: "Tiếp theo",
+	next: "Sau",
 	previous: "Trước",
 	submit: "Gửi",
 	reset: "Đặt lại",
