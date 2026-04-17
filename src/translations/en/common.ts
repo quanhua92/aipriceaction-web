@@ -317,6 +317,8 @@ export default {
 		noNativePrompt:
 			"To install this app:\n\nChrome: Click the install icon in the address bar\nSafari: Tap Share → Add to Home Screen\nFirefox: Follow your browser's PWA installation process",
 		alreadyInstalled: "App is already installed!",
+		samsungWarning:
+			"Samsung Internet may show a safety warning during install. Tap \"More details\" → \"Install anyway\" to continue.",
 	},
 	backtest: {
 		title: "Backtesting",

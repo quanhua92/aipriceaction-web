@@ -31,10 +31,16 @@ export function usePWAInstall() {
   return context
 }
 
+function isSamsungInternet(): boolean {
+  const ua = navigator.userAgent
+  return /SamsungBrowser/i.test(ua)
+}
+
 export function PWAInstallProvider({ children }: { children: React.ReactNode }) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
+  const isSamsung = isSamsungInternet()
   const { info, debug, warn, error } = useLogs()
   const { t } = useTranslation()
 
@@ -233,6 +239,11 @@ export function PWAInstallProvider({ children }: { children: React.ReactNode }) 
               <X className="h-4 w-4" />
             </Button>
           </div>
+          {isSamsung && (
+            <p className="text-xs text-muted-foreground bg-muted/50 rounded-md p-2 mt-2">
+              {t('common.pwa.samsungWarning')}
+            </p>
+          )}
           <div className="flex gap-2 mt-3">
             <Button
               onClick={triggerInstall}

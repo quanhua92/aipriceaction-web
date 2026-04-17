@@ -71,6 +71,7 @@
       "label": "AIPriceAction mobile view - Stock charts and analysis on the go"
     }
   ],
+  "id": "/",
   "shortcuts": [
     {
       "name": "Crypto",
@@ -79,7 +80,7 @@
       "url": "/crypto",
       "icons": [
         {
-          "src": "logo192.png",
+          "src": "logo-192.png",
           "sizes": "192x192"
         }
       ]
@@ -91,7 +92,7 @@
       "url": "/ai",
       "icons": [
         {
-          "src": "logo192.png",
+          "src": "logo-192.png",
           "sizes": "192x192"
         }
       ]
@@ -103,7 +104,7 @@
       "url": "/watch",
       "icons": [
         {
-          "src": "logo192.png",
+          "src": "logo-192.png",
           "sizes": "192x192"
         }
       ]
@@ -115,7 +116,7 @@
       "url": "/global",
       "icons": [
         {
-          "src": "logo192.png",
+          "src": "logo-192.png",
           "sizes": "192x192"
         }
       ]
@@ -127,7 +128,7 @@
       "url": "/backtesting",
       "icons": [
         {
-          "src": "logo192.png",
+          "src": "logo-192.png",
           "sizes": "192x192"
         }
       ]
@@ -139,7 +140,7 @@
       "url": "/heatmap",
       "icons": [
         {
-          "src": "logo192.png",
+          "src": "logo-192.png",
           "sizes": "192x192"
         }
       ]

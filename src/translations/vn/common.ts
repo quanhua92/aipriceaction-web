@@ -316,6 +316,8 @@ export default {
 		noNativePrompt:
 			"Để cài đặt ứng dụng này:\n\nChrome: Nhấp vào biểu tượng cài đặt trong thanh địa chỉ\nSafari: Nhấn Chia sẻ → Thêm vào Màn Hình Chính\nFirefox: Làm theo quy trình cài đặt PWA của trình duyệt",
 		alreadyInstalled: "Ứng dụng đã được cài đặt rồi!",
+		samsungWarning:
+			"Samsung Internet có thể hiện cảnh báo an toàn khi cài đặt. Nhấn \"Xem thêm\" → \"Vẫn cài đặt\" để tiếp tục.",
 	},
 	backtest: {
 		title: "Backtesting",
