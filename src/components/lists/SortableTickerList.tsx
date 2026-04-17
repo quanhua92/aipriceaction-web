@@ -140,13 +140,9 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
   }
 
   const { filteredMarketIndices, filteredTickers, filteredMajorCrypto, filteredCryptoTickers, filteredMajorGlobal, filteredGlobalTickers } = React.useMemo(() => {
-    const searchLower = searchQuery.toLowerCase()
-
     // Filter market indices
     const indices = showMarketIndices
-      ? marketIndices.filter(index =>
-          index.toLowerCase().includes(searchLower)
-        )
+      ? marketIndices.filter(index => matchesSearch(index))
       : []
 
     // Filter major crypto (BTCUSDT, ETHUSDT, XRPUSDT, TONUSDT)
@@ -167,7 +163,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     const regularTickers = tickers.filter(
       (ticker) =>
         !marketIndices.includes(ticker.symbol as any) &&
-        ticker.symbol.toLowerCase().includes(searchLower)
+        matchesSearch(ticker.symbol)
     )
 
     // Sort tickers based on selected sort option
