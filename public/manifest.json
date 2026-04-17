@@ -73,10 +73,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Market Matrix",
-      "short_name": "Matrix",
-      "description": "View comprehensive market analysis matrix",
-      "url": "/matrix",
+      "name": "Crypto",
+      "short_name": "Crypto",
+      "description": "Cryptocurrency market analysis",
+      "url": "/crypto",
       "icons": [
         {
           "src": "logo192.png",
@@ -85,9 +85,9 @@
       ]
     },
     {
-      "name": "AI Analysis",
+      "name": "AI Context",
       "short_name": "AI",
-      "description": "Get AI-powered stock insights",
+      "description": "AI-powered stock insights",
       "url": "/ai",
       "icons": [
         {
@@ -101,6 +101,42 @@
       "short_name": "Watch",
       "description": "Manage your stock watchlist",
       "url": "/watch",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Global Market",
+      "short_name": "Global",
+      "description": "Global stock market analysis",
+      "url": "/global",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Backtesting",
+      "short_name": "Backtest",
+      "description": "Backtest trading strategies",
+      "url": "/backtesting",
+      "icons": [
+        {
+          "src": "logo192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Heatmap",
+      "short_name": "Heatmap",
+      "description": "Stock market sector heatmap",
+      "url": "/heatmap",
       "icons": [
         {
           "src": "logo192.png",
