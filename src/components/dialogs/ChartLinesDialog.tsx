@@ -25,9 +25,10 @@ import type { ChartLine } from '@/lib/chart-lines-storage'
 export interface ChartLinesDialogProps {
 	children: React.ReactNode
 	ticker: string
+	currentPrice?: number
 }
 
-export function ChartLinesDialog({ children, ticker }: ChartLinesDialogProps) {
+export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceProp }: ChartLinesDialogProps) {
 	const { t } = useTranslation()
 	const {
 		addChartLine,
@@ -50,8 +51,8 @@ export function ChartLinesDialog({ children, ticker }: ChartLinesDialogProps) {
 	// File input ref for import
 	const fileInputRef = React.useRef<HTMLInputElement>(null)
 
-	// Get current price for reference
-	const currentPrice = React.useMemo(() => {
+	// Use prop-provided price (from chart's last candle) or fall back to API data
+	const apiPrice = React.useMemo(() => {
 		const data =
 			allTickersLastData[ticker] ||
 			allCryptoTickersLastData[ticker] ||
@@ -59,6 +60,7 @@ export function ChartLinesDialog({ children, ticker }: ChartLinesDialogProps) {
 		if (!data || data.length === 0) return null
 		return data[data.length - 1].close
 	}, [allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, ticker])
+	const currentPrice = currentPriceProp ?? apiPrice
 
 	// Get ticker data for formatting
 	const tickerData = React.useMemo(() => {
@@ -220,7 +222,7 @@ export function ChartLinesDialog({ children, ticker }: ChartLinesDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-md w-[90vw] flex flex-col overflow-hidden p-0">
+			<DialogContent className="sm:max-w-md w-[90vw] h-[90vh] h-[90dvh] flex flex-col overflow-hidden p-0">
 				<DialogHeader className="flex-shrink-0 px-6 pt-6">
 					<DialogTitle className="flex items-center gap-2">
 						<PenLine className="h-5 w-5" />
@@ -362,7 +364,12 @@ export function ChartLinesDialog({ children, ticker }: ChartLinesDialogProps) {
 														)}
 													</span>
 													{lineDistance !== null && (
-														<span className="text-muted-foreground text-xs">
+														<span className={`${
+															Math.abs(lineDistance) < 2 ? 'text-red-600 dark:text-red-500' :
+															Math.abs(lineDistance) < 5 ? 'text-orange-600 dark:text-orange-500' :
+															Math.abs(lineDistance) < 10 ? 'text-yellow-600 dark:text-yellow-500' :
+															'text-green-600 dark:text-green-500'
+														} text-xs`}>
 															{formatPercent(lineDistance)}
 														</span>
 													)}

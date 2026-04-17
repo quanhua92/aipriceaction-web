@@ -30,14 +30,16 @@ import { TradingViewChart } from '@/components/charts/TradingViewChart'
 export interface QuickAddAlertDialogProps {
   children: React.ReactNode
   ticker: string
+  currentPrice?: number
 }
 
 export function QuickAddAlertDialog({
   children,
   ticker,
+  currentPrice: currentPriceProp,
 }: QuickAddAlertDialogProps) {
   const { t } = useTranslation()
-  const { addAlert, getAlertsByTickerSymbol } = useAlert()
+  const { addAlert, deleteAlert, getAlertsByTickerSymbol } = useAlert()
   const { allTickersLastData } = useAPI()
 
   const [open, setOpen] = React.useState(false)
@@ -46,12 +48,13 @@ export function QuickAddAlertDialog({
   const [note, setNote] = React.useState('')
   const [error, setError] = React.useState('')
 
-  // Get current price for reference
-  const currentPrice = React.useMemo(() => {
+  // Use prop-provided price (from chart's last candle) or fall back to API data
+  const apiPrice = React.useMemo(() => {
     const tickerData = allTickersLastData[ticker]
     if (!tickerData || tickerData.length === 0) return null
     return tickerData[tickerData.length - 1].close
   }, [allTickersLastData, ticker])
+  const currentPrice = currentPriceProp ?? apiPrice
 
   // Get ticker data for formatting
   const tickerData = React.useMemo(() => {
@@ -310,8 +313,19 @@ export function QuickAddAlertDialog({
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {alert.triggered ? t('dialogs.quickAddAlert.existingAlerts.triggered') : t('dialogs.quickAddAlert.existingAlerts.active')}
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs text-muted-foreground">
+                            {alert.triggered ? t('dialogs.quickAddAlert.existingAlerts.triggered') : t('dialogs.quickAddAlert.existingAlerts.active')}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            onClick={() => deleteAlert(alert.id)}
+                            title={t('dialogs.quickAddAlert.existingAlerts.delete')}
+                          >
+                            &times;
+                          </Button>
                         </div>
                       </div>
                       {alert.note && alert.note.trim() && (

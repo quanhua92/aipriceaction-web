@@ -64,6 +64,7 @@ export default {
       empty: 'No existing alerts for this ticker',
       active: 'Active',
       triggered: 'Triggered',
+      delete: 'Delete alert',
     },
     validation: {
       required: 'Target price is required',

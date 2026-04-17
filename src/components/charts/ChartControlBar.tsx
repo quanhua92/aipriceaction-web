@@ -233,7 +233,7 @@ export function ChartControlBar({
 				)}
 
 				{/* Chart Lines Button - Add/Manage Chart Lines */}
-				<ChartLinesDialog ticker={ticker}>
+				<ChartLinesDialog ticker={ticker} currentPrice={chartData.length > 0 ? chartData[chartData.length - 1].close : undefined}>
 					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add chart line">
 						<PenLine className="h-4 w-4" />
 						<span className="sr-only">Add chart line</span>
@@ -241,7 +241,7 @@ export function ChartControlBar({
 				</ChartLinesDialog>
 
 				{/* Bell Button - Add Alert */}
-				<QuickAddAlertDialog ticker={ticker}>
+				<QuickAddAlertDialog ticker={ticker} currentPrice={chartData.length > 0 ? chartData[chartData.length - 1].close : undefined}>
 					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add price alert">
 						<Bell className="h-4 w-4" />
 						<span className="sr-only">Add price alert</span>

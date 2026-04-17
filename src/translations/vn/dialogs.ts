@@ -64,6 +64,7 @@ export default {
       empty: 'Chưa có cảnh báo nào cho mã này',
       active: 'Đang hoạt động',
       triggered: 'Đã kích hoạt',
+      delete: 'Xóa cảnh báo',
     },
     validation: {
       required: 'Vui lòng nhập giá mục tiêu',
