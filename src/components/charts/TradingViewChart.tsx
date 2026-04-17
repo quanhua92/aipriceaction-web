@@ -130,7 +130,7 @@ function TradingViewChartContent({
 		return activeAlerts.map((alert) => ({
 			price: alert.target_price,
 			color: '#eab308',
-			lineWidth: 1 as const,
+			lineWidth: 2 as const,
 			lineStyle: 2 as const,
 			axisLabelVisible: true,
 			title: '',
@@ -148,7 +148,7 @@ function TradingViewChartContent({
 		return tickerLines.map((line) => ({
 			price: line.price,
 			color: '#9ca3af',
-			lineWidth: 1 as const,
+			lineWidth: 2 as const,
 			lineStyle: 2 as const,
 			axisLabelVisible: true,
 			title: '',

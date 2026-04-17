@@ -153,7 +153,7 @@ export function PlaygroundChart() {
 				priceLines.push({
 					price: order.stoploss,
 					color: "#ef4444",
-					lineWidth: 1,
+					lineWidth: 2,
 					lineStyle: 2, // Dashed
 					axisLabelVisible: true,
 					title: `SL ${order.stoploss.toFixed(2)}`,

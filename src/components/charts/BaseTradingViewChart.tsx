@@ -288,6 +288,7 @@ export function BaseTradingViewChart({
 			borderVisible: false,
 			wickUpColor: "#1e8c82",
 			wickDownColor: "#d94040",
+			priceLineWidth: 2,
 			priceFormat: {
 				type: "custom",
 				formatter: (price: number) => {
