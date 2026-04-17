@@ -4,6 +4,7 @@ import { useState } from 'react'
 import {
   Zap,
   Settings,
+  Bell,
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
@@ -115,6 +116,18 @@ export default function Header() {
               }}
             >
               <span className="font-medium">Heatmap</span>
+            </Link>
+
+            <Link
+              to="/alert"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
+              activeProps={{
+                className:
+                  'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
+              }}
+            >
+              <Bell size={16} />
+              <span className="font-medium">Alerts</span>
             </Link>
           </nav>
         </div>

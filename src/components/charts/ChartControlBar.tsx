@@ -231,6 +231,33 @@ export function ChartControlBar({
 					</Button>
 				)}
 
+				{/* Bell Button - Add Alert */}
+				<QuickAddAlertDialog ticker={ticker}>
+					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add price alert">
+						<Bell className="h-4 w-4" />
+						<span className="sr-only">Add price alert</span>
+					</Button>
+				</QuickAddAlertDialog>
+
+				{/* Star Button - Add to Watchlist */}
+				<QuickAddWatchListDialog ticker={ticker}>
+					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add to watchlist">
+						<Star className="h-4 w-4" />
+						<span className="sr-only">Add to watchlist</span>
+					</Button>
+				</QuickAddWatchListDialog>
+
+				{/* Ruler Button */}
+				<Button
+					variant="ghost"
+					size="sm"
+					className="h-7 w-7 p-0"
+					title="Toggle ruler"
+					onClick={() => setRulerVisible(!rulerVisible)}
+				>
+					<Ruler className="h-4 w-4" />
+				</Button>
+
 				{/* Load More Button - Icon Only */}
 				<Button
 					variant="ghost"
@@ -246,33 +273,6 @@ export function ChartControlBar({
 						<Download className="h-4 w-4" />
 					)}
 				</Button>
-
-				{/* Ruler Button */}
-				<Button
-					variant="ghost"
-					size="sm"
-					className="h-7 w-7 p-0"
-					title="Toggle ruler"
-					onClick={() => setRulerVisible(!rulerVisible)}
-				>
-					<Ruler className="h-4 w-4" />
-				</Button>
-
-				{/* Star Button - Add to Watchlist */}
-				<QuickAddWatchListDialog ticker={ticker}>
-					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add to watchlist">
-						<Star className="h-4 w-4" />
-						<span className="sr-only">Add to watchlist</span>
-					</Button>
-				</QuickAddWatchListDialog>
-
-				{/* Bell Button - Add Alert */}
-				<QuickAddAlertDialog ticker={ticker}>
-					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add price alert">
-						<Bell className="h-4 w-4" />
-						<span className="sr-only">Add price alert</span>
-					</Button>
-				</QuickAddAlertDialog>
 
 				{/* Settings Button - Top Right */}
 				<ChartSettingsDialog>

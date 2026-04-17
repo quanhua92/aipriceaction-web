@@ -5,6 +5,7 @@ import {
 	MaVisibility,
 } from "@/contexts/ChartSettingsContext";
 import { useAPI } from "@/contexts/APIContext";
+import { useAlert } from "@/contexts/AlertContext";
 import * as React from "react";
 import { Interval } from "@/lib/api-client";
 import { BaseTradingViewChart } from "./BaseTradingViewChart";
@@ -108,6 +109,25 @@ function TradingViewChartContent({
 		cryptoTickerNames,
 		globalTickerNames,
 	} = useAPI();
+
+	// Build alert price lines for current ticker
+	const { getAlertsByTickerSymbol } = useAlert();
+	const alertPriceLines = React.useMemo(() => {
+		if (!selectedTicker) return [];
+		const tickerAlerts = getAlertsByTickerSymbol(selectedTicker);
+		const activeAlerts = tickerAlerts.filter((a) => !a.triggered);
+		if (activeAlerts.length === 0) return [];
+
+		return activeAlerts.map((alert) => ({
+			price: alert.target_price,
+			color: '#eab308',
+			lineWidth: 1 as const,
+			lineStyle: 2 as const,
+			axisLabelVisible: true,
+			title: '',
+			id: `alert-${alert.id}`,
+		}));
+	}, [selectedTicker, getAlertsByTickerSymbol]);
 
 	// Resolve ticker name for overlay display
 	const resolvedTickerName = React.useMemo(() => {
@@ -261,6 +281,13 @@ function TradingViewChartContent({
 				)}
 				<BaseTradingViewChart
 					{...visualProps}
+					overlay={{
+						...visualProps.overlay,
+						priceLines: [
+							...(visualProps.overlay?.priceLines ?? []),
+							...alertPriceLines,
+						],
+					}}
 					height={currentHeight}
 					maVisibility={currentMaVisibility}
 					noDataMessage={t("common.noDataAvailable")}
