@@ -431,6 +431,7 @@ export default {
 			secondaryChart: "Biểu Đồ Phụ",
 			showSecondaryChart: "Hiển Thị Biểu Đồ Phụ",
 			showAlertLines: "Hiển Thị Đường Cảnh Báo Giá",
+			showChartLines: "Hiển Thị Đường Kẻ Biểu Đồ",
 			secondaryChartPosition: "Vị Trí",
 			secondaryTicker: "Mã Cổ Phiếu Phụ",
 			secondaryLoading: "Đang tải dữ liệu phụ...",

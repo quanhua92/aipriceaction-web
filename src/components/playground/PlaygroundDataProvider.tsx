@@ -4,6 +4,7 @@ import { usePlaygroundOrders } from "./hooks/usePlaygroundOrders";
 import { SafeLocalStorage } from "@/lib/localStorage";
 
 const SHOW_ALERT_LINES_KEY = "playground-show-alert-lines";
+const SHOW_CHART_LINES_KEY = "playground-show-chart-lines";
 
 interface PlaygroundContextValue {
 	playgroundData: ReturnType<typeof usePlaygroundData>["playgroundData"];
@@ -34,6 +35,8 @@ interface PlaygroundContextValue {
 	handleClearOrders: ReturnType<typeof usePlaygroundOrders>["handleClear"];
 	showAlertLines: boolean;
 	setShowAlertLines: (value: boolean) => void;
+	showChartLines: boolean;
+	setShowChartLines: (value: boolean) => void;
 }
 
 const PlaygroundContext = React.createContext<
@@ -96,6 +99,15 @@ export function PlaygroundDataProvider({
 		SafeLocalStorage.setItem(SHOW_ALERT_LINES_KEY, String(value));
 	}, []);
 
+	const [showChartLines, setShowChartLinesState] = React.useState<boolean>(() => {
+		const stored = SafeLocalStorage.getItem(SHOW_CHART_LINES_KEY);
+		return stored === null ? true : stored === "true";
+	});
+	const setShowChartLines = React.useCallback((value: boolean) => {
+		setShowChartLinesState(value);
+		SafeLocalStorage.setItem(SHOW_CHART_LINES_KEY, String(value));
+	}, []);
+
 	const value: PlaygroundContextValue = {
 		playgroundData: playgroundDataValue.playgroundData,
 		visibleData: playgroundDataValue.visibleData,
@@ -117,6 +129,8 @@ export function PlaygroundDataProvider({
 		handleClearOrders: ordersValue.handleClear,
 		showAlertLines,
 		setShowAlertLines,
+		showChartLines,
+		setShowChartLines,
 	};
 
 	return (

@@ -78,4 +78,32 @@ export default {
     triggeredAt: 'Triggered',
     triggeredReason: 'Price hit target at',
   },
+  chartLines: {
+    title: 'Chart Lines',
+    currentPrice: 'Current Price',
+    price: 'Line Price',
+    distance: 'Distance',
+    save: 'Add Line',
+    cancel: 'Cancel',
+    delete: 'Delete line',
+    tabs: {
+      add: 'Add Line',
+      lines: 'Lines',
+      settings: 'Settings',
+    },
+    note: {
+      label: 'Note (optional)',
+      placeholder: 'Add a note for this line...',
+    },
+    existingLines: {
+      empty: 'No chart lines for this ticker',
+    },
+    validation: {
+      required: 'Line price is required',
+      positive: 'Line price must be greater than 0',
+    },
+    export: 'Export Lines',
+    import: 'Import Lines',
+    settingsDescription: 'Export chart lines to a JSON file for backup or import on another device. Duplicate lines (same ticker + price) are skipped on import.',
+  },
 }

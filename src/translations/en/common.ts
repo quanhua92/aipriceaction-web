@@ -432,6 +432,7 @@ export default {
 			secondaryChart: "Secondary Chart",
 			showSecondaryChart: "Show Secondary Chart",
 			showAlertLines: "Show Alert Price Lines",
+			showChartLines: "Show Chart Lines",
 			secondaryChartPosition: "Position",
 			secondaryTicker: "Secondary Ticker",
 			secondaryLoading: "Loading secondary data...",

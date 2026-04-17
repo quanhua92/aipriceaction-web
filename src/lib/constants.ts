@@ -80,6 +80,7 @@ export const API_BASE_URL_OVERRIDE_STORAGE_KEY = 'api-base-url-override'
  * LocalStorage key for price alerts
  */
 export const ALERTS_STORAGE_KEY = 'alerts'
+export const CHART_LINES_STORAGE_KEY = 'chart-lines'
 
 /**
  * LocalStorage key for markdown notes

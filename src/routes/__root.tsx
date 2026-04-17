@@ -13,6 +13,7 @@ import { APIProvider } from '../contexts/APIContext'
 import { SiteSettingsProvider } from '../contexts/SiteSettingsContext'
 import { ChartSettingsProvider } from '../contexts/ChartSettingsContext'
 import { AlertProvider } from '../contexts/AlertContext'
+import { ChartLinesProvider } from '../contexts/ChartLinesContext'
 import { NoteProvider } from '../contexts/NoteContext'
 import { RefreshProvider } from '../contexts/RefreshContext'
 import { DialogProvider } from '../contexts/DialogContext'
@@ -85,6 +86,7 @@ function RootComponent() {
                 <ChartSettingsProvider>
                 <APIProvider>
                   <AlertProvider>
+                    <ChartLinesProvider>
                     <NoteProvider>
                       <PWAInstallProvider>
                         <Header />
@@ -95,6 +97,7 @@ function RootComponent() {
                         <DebugFooter />
                       </PWAInstallProvider>
                     </NoteProvider>
+                    </ChartLinesProvider>
                   </AlertProvider>
                 </APIProvider>
               </ChartSettingsProvider>

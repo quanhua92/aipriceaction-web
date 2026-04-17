@@ -3,6 +3,7 @@ import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
 import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
+import { ChartLinesDialog } from '@/components/dialogs/ChartLinesDialog'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTicker } from '@/contexts/TickerContext'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -14,7 +15,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star, Bell, Download, Ruler } from 'lucide-react'
+import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star, Bell, Download, Ruler, PenLine } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -231,6 +232,14 @@ export function ChartControlBar({
 					</Button>
 				)}
 
+				{/* Chart Lines Button - Add/Manage Chart Lines */}
+				<ChartLinesDialog ticker={ticker}>
+					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add chart line">
+						<PenLine className="h-4 w-4" />
+						<span className="sr-only">Add chart line</span>
+					</Button>
+				</ChartLinesDialog>
+
 				{/* Bell Button - Add Alert */}
 				<QuickAddAlertDialog ticker={ticker}>
 					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add price alert">
@@ -274,12 +283,12 @@ export function ChartControlBar({
 					)}
 				</Button>
 
-				{/* Settings Button - Top Right */}
-				<ChartSettingsDialog>
+				{/* Settings Button - Top Right (hidden for now) */}
+				{/* <ChartSettingsDialog>
 					<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
 						<Settings className="h-4 w-4" />
 					</Button>
-				</ChartSettingsDialog>
+				</ChartSettingsDialog> */}
 			</div>
 		</div>
 	)

@@ -78,4 +78,32 @@ export default {
     triggeredAt: 'Kích hoạt lúc',
     triggeredReason: 'Giá chạm mục tiêu tại',
   },
+  chartLines: {
+    title: 'Đường Kẻ Biểu Đồ',
+    currentPrice: 'Giá Hiện Tại',
+    price: 'Giá Đường Kẻ',
+    distance: 'Khoảng Cách',
+    save: 'Thêm Đường',
+    cancel: 'Hủy',
+    delete: 'Xóa đường',
+    tabs: {
+      add: 'Thêm Đường',
+      lines: 'Các Đường',
+      settings: 'Cài Đặt',
+    },
+    note: {
+      label: 'Ghi chú (tùy chọn)',
+      placeholder: 'Thêm ghi chú cho đường này...',
+    },
+    existingLines: {
+      empty: 'Chưa có đường kẻ nào cho mã này',
+    },
+    validation: {
+      required: 'Vui lòng nhập giá đường kẻ',
+      positive: 'Giá đường kẻ phải lớn hơn 0',
+    },
+    export: 'Xuất Các Đường',
+    import: 'Nhập Các Đường',
+    settingsDescription: 'Xuất đường kẻ biểu đồ ra file JSON để sao lưu hoặc nhập trên thiết bị khác. Các đường trùng (cùng mã + giá) sẽ được bỏ qua khi nhập.',
+  },
 }

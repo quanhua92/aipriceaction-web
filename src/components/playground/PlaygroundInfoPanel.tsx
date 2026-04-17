@@ -33,6 +33,8 @@ export function PlaygroundInfoPanel() {
     updateLimit,
     showAlertLines,
     setShowAlertLines,
+    showChartLines,
+    setShowChartLines,
   } = usePlayground()
   const { info } = useLogs()
   const { setInterval: setGlobalInterval } = useChartSettings()
@@ -342,6 +344,21 @@ export function PlaygroundInfoPanel() {
           />
           <label htmlFor="show-alert-lines" className="text-sm text-muted-foreground">
             {t('common.playground.info.showAlertLines')}
+          </label>
+        </div>
+
+        {/* Show/Hide Chart Lines Checkbox */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="show-chart-lines"
+            checked={showChartLines}
+            onChange={(e) => setShowChartLines(e.target.checked)}
+            disabled={isLoading}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="show-chart-lines" className="text-sm text-muted-foreground">
+            {t('common.playground.info.showChartLines')}
           </label>
         </div>
 

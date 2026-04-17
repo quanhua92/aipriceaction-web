@@ -6,6 +6,7 @@ import {
 } from "@/contexts/ChartSettingsContext";
 import { useAPI } from "@/contexts/APIContext";
 import { useAlert } from "@/contexts/AlertContext";
+import { useChartLines } from "@/contexts/ChartLinesContext";
 import * as React from "react";
 import { Interval } from "@/lib/api-client";
 import { BaseTradingViewChart } from "./BaseTradingViewChart";
@@ -73,6 +74,9 @@ interface TradingViewChartProps {
 
 	// Show alert price lines on chart (default: true)
 	showAlertLines?: boolean;
+
+	// Show chart lines on chart (default: true)
+	showChartLines?: boolean;
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -97,6 +101,7 @@ function TradingViewChartContent({
 	infiniteHistory = true,
 	hideFullscreenButton = false,
 	showAlertLines = true,
+	showChartLines = true,
 	...visualProps
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
@@ -132,6 +137,24 @@ function TradingViewChartContent({
 			id: `alert-${alert.id}`,
 		}));
 	}, [selectedTicker, getAlertsByTickerSymbol]);
+
+	// Build chart line price lines for current ticker
+	const { getChartLinesByTicker: getChartLinesByTickerSymbol } = useChartLines();
+	const chartLinePriceLines = React.useMemo(() => {
+		if (!selectedTicker) return [];
+		const tickerLines = getChartLinesByTickerSymbol(selectedTicker);
+		if (tickerLines.length === 0) return [];
+
+		return tickerLines.map((line) => ({
+			price: line.price,
+			color: '#9ca3af',
+			lineWidth: 1 as const,
+			lineStyle: 2 as const,
+			axisLabelVisible: true,
+			title: '',
+			id: `chartline-${line.id}`,
+		}));
+	}, [selectedTicker, getChartLinesByTickerSymbol]);
 
 	// Resolve ticker name for overlay display
 	const resolvedTickerName = React.useMemo(() => {
@@ -289,6 +312,7 @@ function TradingViewChartContent({
 						...visualProps.overlay,
 						priceLines: [
 							...(visualProps.overlay?.priceLines ?? []),
+							...(showChartLines ? chartLinePriceLines : []),
 							...(showAlertLines ? alertPriceLines : []),
 						],
 					}}
