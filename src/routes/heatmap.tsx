@@ -59,6 +59,7 @@ function HeatmapPage() {
 						ticker={chartTicker}
 						showControls={true}
 						hideFullscreenButton={false}
+						onTickerChange={handleTreemapSelect}
 					/>
 				</div>
 			)}

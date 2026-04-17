@@ -158,7 +158,7 @@ function GlobalPage() {
 			{/* Section 2.5.1: Treemap Ticker Chart */}
 			{treemapTicker && (
 				<div className="p-3 md:p-4">
-					<TradingViewChart ticker={treemapTicker} showControls={true} hideFullscreenButton={false} />
+					<TradingViewChart ticker={treemapTicker} showControls={true} hideFullscreenButton={false} onTickerChange={handleTreemapSelect} />
 				</div>
 			)}
 
