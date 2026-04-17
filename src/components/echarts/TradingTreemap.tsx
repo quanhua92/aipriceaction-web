@@ -35,6 +35,7 @@ interface TradingTreemapProps {
   defaultWatchlist?: string
   height?: string
   className?: string
+  onSelectTicker?: (symbol: string) => void
 }
 
 function getChangeColor(change: number): string {
@@ -176,6 +177,7 @@ export function TradingTreemap({
   defaultWatchlist = ALL_WATCHLIST_NAME,
   height = '60vh',
   className,
+  onSelectTicker,
 }: TradingTreemapProps) {
   const {
     tickerGroups, cryptoTickerGroups, globalTickerGroups,
@@ -507,6 +509,13 @@ export function TradingTreemap({
         opts={{ renderer: 'canvas' }}
         style={{ height: chartHeight, width: '100%' }}
         notMerge={true}
+        onEvents={{
+          click: (params: any) => {
+            if (params.data?._data?.symbol) {
+              onSelectTicker?.(params.data._data.symbol)
+            }
+          },
+        }}
       />
     </div>
   )

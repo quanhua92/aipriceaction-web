@@ -108,9 +108,13 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 			return saved > MAX_CHART_LIMIT ? MAX_CHART_LIMIT : saved
 		}
 	)
-	const [height, setHeight] = React.useState<number>(
-		typeof window !== 'undefined' && window.innerWidth >= 768 ? 400 : 300
-	)
+	const [height, setHeight] = React.useState<number>(() => {
+		if (typeof window === 'undefined') return 400
+		const w = window.innerWidth
+		if (w >= 1024) return 500
+		if (w >= 768) return 400
+		return 300
+	})
 	const [maVisibility, setMaVisibility] = React.useState<MaVisibility>(
 		() => persisted.current.maVisibility ?? getDefaultMaVisibility(Interval.Daily)
 	)

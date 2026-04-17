@@ -42,6 +42,7 @@ function GlobalPage() {
 
 	// Fullscreen dialog state
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
+	const [treemapTicker, setTreemapTicker] = React.useState<string | null>(null);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
 	const [treemapTickerSymbols, setTreemapTickerSymbols] = React.useState<string[]>([]);
 
@@ -66,6 +67,10 @@ function GlobalPage() {
 	const handleCloseFullscreen = () => {
 		setFullscreenTicker(null);
 	}
+
+	const handleTreemapSelect = (symbol: string) => {
+		setTreemapTicker(symbol);
+	};
 
 	const handleSortedTickersChange = (tickers: Ticker[]) => {
 		setSortedTickers(tickers);
@@ -147,8 +152,15 @@ function GlobalPage() {
 
 			{/* Section 2.5: Market Treemap */}
 			<div className="p-3 md:p-4 border-t">
-				<TradingTreemap defaultWatchlist={GLOBAL_WATCHLIST_NAME} />
+				<TradingTreemap defaultWatchlist={GLOBAL_WATCHLIST_NAME} onSelectTicker={handleTreemapSelect} />
 			</div>
+
+			{/* Section 2.5.1: Treemap Ticker Chart */}
+			{treemapTicker && (
+				<div className="p-3 md:p-4">
+					<TradingViewChart ticker={treemapTicker} showControls={true} hideFullscreenButton={false} />
+				</div>
+			)}
 
 			{/* Section 2.6: Relative Rotation Graph */}
 			<div className="p-3 md:p-4 border-t">
