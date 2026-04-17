@@ -431,6 +431,7 @@ export default {
 			loadingData: "Loading data...",
 			secondaryChart: "Secondary Chart",
 			showSecondaryChart: "Show Secondary Chart",
+			showAlertLines: "Show Alert Price Lines",
 			secondaryChartPosition: "Position",
 			secondaryTicker: "Secondary Ticker",
 			secondaryLoading: "Loading secondary data...",

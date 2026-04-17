@@ -1,6 +1,9 @@
 import * as React from "react";
 import { usePlaygroundData } from "./hooks/usePlaygroundData";
 import { usePlaygroundOrders } from "./hooks/usePlaygroundOrders";
+import { SafeLocalStorage } from "@/lib/localStorage";
+
+const SHOW_ALERT_LINES_KEY = "playground-show-alert-lines";
 
 interface PlaygroundContextValue {
 	playgroundData: ReturnType<typeof usePlaygroundData>["playgroundData"];
@@ -29,6 +32,8 @@ interface PlaygroundContextValue {
 	setStoplossPct: ReturnType<typeof usePlaygroundOrders>["setStoplossPct"];
 	handlePlaceOrder: ReturnType<typeof usePlaygroundOrders>["handlePlace"];
 	handleClearOrders: ReturnType<typeof usePlaygroundOrders>["handleClear"];
+	showAlertLines: boolean;
+	setShowAlertLines: (value: boolean) => void;
 }
 
 const PlaygroundContext = React.createContext<
@@ -82,6 +87,15 @@ export function PlaygroundDataProvider({
 		playgroundDataValue.playgroundData.currentIndex,
 	);
 
+	const [showAlertLines, setShowAlertLinesState] = React.useState<boolean>(() => {
+		const stored = SafeLocalStorage.getItem(SHOW_ALERT_LINES_KEY);
+		return stored === null ? false : stored === "true";
+	});
+	const setShowAlertLines = React.useCallback((value: boolean) => {
+		setShowAlertLinesState(value);
+		SafeLocalStorage.setItem(SHOW_ALERT_LINES_KEY, String(value));
+	}, []);
+
 	const value: PlaygroundContextValue = {
 		playgroundData: playgroundDataValue.playgroundData,
 		visibleData: playgroundDataValue.visibleData,
@@ -101,6 +115,8 @@ export function PlaygroundDataProvider({
 		setStoplossPct: ordersValue.setStoplossPct,
 		handlePlaceOrder: ordersValue.handlePlace,
 		handleClearOrders: ordersValue.handleClear,
+		showAlertLines,
+		setShowAlertLines,
 	};
 
 	return (

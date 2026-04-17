@@ -430,6 +430,7 @@ export default {
 			loadingData: "Đang tải dữ liệu...",
 			secondaryChart: "Biểu Đồ Phụ",
 			showSecondaryChart: "Hiển Thị Biểu Đồ Phụ",
+			showAlertLines: "Hiển Thị Đường Cảnh Báo Giá",
 			secondaryChartPosition: "Vị Trí",
 			secondaryTicker: "Mã Cổ Phiếu Phụ",
 			secondaryLoading: "Đang tải dữ liệu phụ...",

@@ -42,6 +42,7 @@ export function PlaygroundChart() {
 		updateTicker,
 		updateSecondaryTicker,
 		orders,
+		showAlertLines,
 	} = usePlayground();
 	const { t } = useTranslation();
 
@@ -206,6 +207,7 @@ export function PlaygroundChart() {
 		height: chartHeight, // Pass the selected height
 		preserveViewport: true,
 		infiniteHistory: false,
+		showAlertLines,
 		cacheData: visibleData,
 		cacheMetadata: {
 			symbol: playgroundData.ticker,
@@ -226,6 +228,7 @@ export function PlaygroundChart() {
 		height: chartHeight, // Pass the selected height
 		preserveViewport: true,
 		infiniteHistory: false,
+		showAlertLines,
 		cacheData: secondaryVisibleData,
 		cacheMetadata: {
 			symbol: playgroundData.secondaryTicker!,

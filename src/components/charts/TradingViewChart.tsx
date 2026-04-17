@@ -70,6 +70,9 @@ interface TradingViewChartProps {
 
 	// Hide fullscreen button (e.g. when inside ChartFullscreenDialog)
 	hideFullscreenButton?: boolean;
+
+	// Show alert price lines on chart (default: true)
+	showAlertLines?: boolean;
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -93,6 +96,7 @@ function TradingViewChartContent({
 	preserveViewport = false,
 	infiniteHistory = true,
 	hideFullscreenButton = false,
+	showAlertLines = true,
 	...visualProps
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
@@ -285,7 +289,7 @@ function TradingViewChartContent({
 						...visualProps.overlay,
 						priceLines: [
 							...(visualProps.overlay?.priceLines ?? []),
-							...alertPriceLines,
+							...(showAlertLines ? alertPriceLines : []),
 						],
 					}}
 					height={currentHeight}

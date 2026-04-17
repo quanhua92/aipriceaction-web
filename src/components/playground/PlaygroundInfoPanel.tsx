@@ -31,6 +31,8 @@ export function PlaygroundInfoPanel() {
     setShowSecondaryChart,
     updateInterval,
     updateLimit,
+    showAlertLines,
+    setShowAlertLines,
   } = usePlayground()
   const { info } = useLogs()
   const { setInterval: setGlobalInterval } = useChartSettings()
@@ -328,6 +330,21 @@ export function PlaygroundInfoPanel() {
 
       {/* Secondary Chart Controls */}
       <div className="space-y-3">
+        {/* Show/Hide Alert Lines Checkbox */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="show-alert-lines"
+            checked={showAlertLines}
+            onChange={(e) => setShowAlertLines(e.target.checked)}
+            disabled={isLoading}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="show-alert-lines" className="text-sm text-muted-foreground">
+            {t('common.playground.info.showAlertLines')}
+          </label>
+        </div>
+
         {/* Show/Hide Secondary Chart Checkbox */}
         <div className="flex items-center space-x-2">
           <input
