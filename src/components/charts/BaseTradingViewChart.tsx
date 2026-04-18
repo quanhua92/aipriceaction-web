@@ -141,6 +141,7 @@ export function BaseTradingViewChart({
 	const tooltipRef = useRef<HTMLElement | null>(null);
 	const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
 	const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+	const volumeMA20SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const ma10SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const ma20SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
 	const ma50SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
@@ -321,6 +322,17 @@ export function BaseTradingViewChart({
 				bottom: 0,
 			},
 		});
+
+		// Add volume MA20 line on the same price scale
+		const volumeMA20Series = chart.addSeries(LineSeries, {
+			color: "#f59e0b",
+			lineWidth: 1,
+			priceScaleId: "volume",
+			crosshairMarkerVisible: false,
+			lastValueVisible: false,
+			priceLineVisible: false,
+		});
+		volumeMA20SeriesRef.current = volumeMA20Series;
 
 		// Add moving average series (initially empty) using configuration
 		MA_CONFIG.forEach(({ key, color }) => {
@@ -835,6 +847,7 @@ export function BaseTradingViewChart({
 		chartRef.current = null;
 		candlestickSeriesRef.current = null;
 		volumeSeriesRef.current = null;
+		volumeMA20SeriesRef.current = null;
 		ma10SeriesRef.current = null;
 		ma20SeriesRef.current = null;
 		ma50SeriesRef.current = null;
@@ -1029,6 +1042,7 @@ export function BaseTradingViewChart({
 			tooltipRef.current = null;
 			candlestickSeriesRef.current = null;
 			volumeSeriesRef.current = null;
+			volumeMA20SeriesRef.current = null;
 			ma10SeriesRef.current = null;
 			ma20SeriesRef.current = null;
 			ma50SeriesRef.current = null;
@@ -1096,6 +1110,7 @@ export function BaseTradingViewChart({
 		// Update series data (even if empty - this clears the chart)
 		candlestickSeriesRef.current.setData(chartData.candlestick);
 		volumeSeriesRef.current.setData(chartData.volume);
+		volumeMA20SeriesRef.current?.setData(chartData.volumeMA20);
 
 		// Update MA series data - set to empty array if not visible
 		if (ma10SeriesRef.current) {

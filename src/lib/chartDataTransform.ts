@@ -14,6 +14,7 @@ import type { Bar } from "oakscriptjs";
 export interface ChartData {
 	candlestick: CandlestickData[];
 	volume: HistogramData[];
+	volumeMA20: LineData[];
 	ma10: LineData[];
 	ma20: LineData[];
 	ma50: LineData[];
@@ -30,6 +31,7 @@ export interface ChartData {
 export const createEmptyChartData = (): ChartData => ({
 	candlestick: [],
 	volume: [],
+	volumeMA20: [],
 	ma10: [],
 	ma20: [],
 	ma50: [],
@@ -262,9 +264,22 @@ export const transformStockDataToChartData = (data: StockData[]): ChartData => {
 	// Calculate MACD using the library (pass deduplicated data to match timestamps)
 	const { macdHistogram, macdLine, macdSignal } = calculateMACDFromStockData(deduplicatedData, timestamps);
 
+	// Calculate 20-period simple moving average of volume
+	const volumeMA20: LineData[] = [];
+	if (volume.length >= 20) {
+		for (let i = 19; i < volume.length; i++) {
+			let sum = 0;
+			for (let j = 0; j < 20; j++) {
+				sum += volume[i - j].value;
+			}
+			volumeMA20.push({ time: volume[i].time, value: sum / 20 });
+		}
+	}
+
 	return {
 		candlestick,
 		volume,
+		volumeMA20,
 		ma10: maDataArrays.ma10,
 		ma20: maDataArrays.ma20,
 		ma50: maDataArrays.ma50,
