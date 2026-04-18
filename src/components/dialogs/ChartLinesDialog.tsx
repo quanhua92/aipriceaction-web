@@ -47,6 +47,14 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 	const [price, setPrice] = React.useState('')
 	const [note, setNote] = React.useState('')
 	const [error, setError] = React.useState('')
+	const [settingsStatus, setSettingsStatus] = React.useState<{ message: string; isError: boolean } | null>(null)
+	const settingsStatusTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
+
+	const showSettingsStatus = (message: string, isError: boolean) => {
+		if (settingsStatusTimer.current) clearTimeout(settingsStatusTimer.current)
+		setSettingsStatus({ message, isError })
+		settingsStatusTimer.current = setTimeout(() => setSettingsStatus(null), 4000)
+	}
 
 	// File input ref for import
 	const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -151,9 +159,11 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 			URL.revokeObjectURL(url)
 
 			info('Chart Lines', `Exported ${allLines.length} chart lines`)
+			showSettingsStatus(`Exported ${allLines.length} chart lines`, false)
 		} catch (err) {
 			console.error('Export failed:', err)
 			logError('Chart Lines', 'Failed to export chart lines')
+			showSettingsStatus('Export failed', true)
 		}
 	}
 
@@ -170,11 +180,24 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 
 		try {
 			const text = await file.text()
-			const importedLines = JSON.parse(text) as ChartLine[]
+			const importedLines = JSON.parse(text) as unknown[]
 
 			// Validate structure
 			if (!Array.isArray(importedLines)) {
 				throw new Error('Invalid file format: expected array')
+			}
+
+			// Validate each item has required fields
+			const validLines = importedLines.filter(
+				(l): l is ChartLine =>
+					typeof l === 'object' && l !== null &&
+					typeof (l as Record<string, unknown>).id === 'string' &&
+					typeof (l as Record<string, unknown>).ticker === 'string' &&
+					typeof (l as Record<string, unknown>).price === 'number',
+			)
+			const invalidCount = importedLines.length - validLines.length
+			if (invalidCount === importedLines.length) {
+				throw new Error('No valid chart lines found in file')
 			}
 
 			// Get existing lines
@@ -186,7 +209,7 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 			)
 
 			// Only add imported lines that don't have the same (ticker, price) combo
-			const newLines = importedLines.filter(
+			const newLines = validLines.filter(
 				(l) => !existingKeys.has(`${l.ticker}:${l.price}`),
 			)
 
@@ -203,14 +226,17 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 			const skippedCount = importedLines.length - newLines.length
 			info(
 				'Chart Lines',
-				`Imported ${importedLines.length} lines (${newLines.length} new, ${skippedCount} duplicate skipped)`,
+				`Imported ${validLines.length} lines (${newLines.length} new, ${skippedCount} skipped${invalidCount > 0 ? `, ${invalidCount} invalid` : ''})`,
 			)
+			showSettingsStatus(`Imported ${validLines.length} lines (${newLines.length} new, ${skippedCount} skipped)`, false)
 		} catch (err) {
 			console.error('Import failed:', err)
+			const msg = err instanceof Error ? err.message : 'Unknown error'
 			logError(
 				'Chart Lines',
-				`Failed to import chart lines: ${err instanceof Error ? err.message : 'Unknown error'}`,
+				`Failed to import chart lines: ${msg}`,
 			)
+			showSettingsStatus(`Import failed: ${msg}`, true)
 		} finally {
 			// Reset file input
 			if (fileInputRef.current) {
@@ -421,6 +447,11 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 						<p className="text-xs text-muted-foreground">
 							{t('dialogs.chartLines.settingsDescription')}
 						</p>
+						{settingsStatus && (
+							<p className={`text-xs ${settingsStatus.isError ? 'text-destructive' : 'text-green-600 dark:text-green-500'}`}>
+								{settingsStatus.message}
+							</p>
+						)}
 						<input
 							ref={fileInputRef}
 							type="file"

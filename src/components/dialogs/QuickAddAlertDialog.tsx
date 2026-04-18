@@ -51,6 +51,14 @@ export function QuickAddAlertDialog({
   const [alertType, setAlertType] = React.useState<Alert['alert_type']>(ALERT_TYPES.PRICE_HITS)
   const [note, setNote] = React.useState('')
   const [error, setError] = React.useState('')
+  const [settingsStatus, setSettingsStatus] = React.useState<{ message: string; isError: boolean } | null>(null)
+  const settingsStatusTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  const showSettingsStatus = (message: string, isError: boolean) => {
+    if (settingsStatusTimer.current) clearTimeout(settingsStatusTimer.current)
+    setSettingsStatus({ message, isError })
+    settingsStatusTimer.current = setTimeout(() => setSettingsStatus(null), 4000)
+  }
 
   // Use prop-provided price (from chart's last candle) or fall back to API data
   const apiPrice = React.useMemo(() => {
@@ -174,9 +182,11 @@ export function QuickAddAlertDialog({
       URL.revokeObjectURL(url)
 
       info('Alerts', `Exported ${allAlerts.length} alerts`)
+      showSettingsStatus(`Exported ${allAlerts.length} alerts`, false)
     } catch (err) {
       console.error('Export failed:', err)
       logError('Alerts', 'Failed to export alerts')
+      showSettingsStatus('Export failed', true)
     }
   }
 
@@ -191,36 +201,53 @@ export function QuickAddAlertDialog({
 
     try {
       const text = await file.text()
-      const importedAlerts = JSON.parse(text) as Alert[]
+      const importedAlerts = JSON.parse(text) as unknown[]
 
       // Validate structure
       if (!Array.isArray(importedAlerts)) {
         throw new Error('Invalid file format: expected array of alerts')
       }
 
+      // Validate each item has required fields
+      const validAlerts = importedAlerts.filter(
+        (a): a is Alert =>
+          typeof a === 'object' && a !== null &&
+          typeof (a as Record<string, unknown>).id === 'string' &&
+          typeof (a as Record<string, unknown>).ticker === 'string' &&
+          typeof (a as Record<string, unknown>).target_price === 'number' &&
+          typeof (a as Record<string, unknown>).alert_type === 'string',
+      )
+      const invalidCount = importedAlerts.length - validAlerts.length
+      if (invalidCount === importedAlerts.length) {
+        throw new Error('No valid alerts found in file')
+      }
+
       // Get existing alerts
       const existingAlertsList = getAlerts()
-      const importedIds = new Set(importedAlerts.map(a => a.id))
+      const importedIds = new Set(validAlerts.map(a => a.id))
       const existingIds = new Set(existingAlertsList.map(a => a.id))
 
       // Track new vs overwritten counts
-      const overwrittenCount = importedAlerts.filter(alert => existingIds.has(alert.id)).length
-      const newCount = importedAlerts.length - overwrittenCount
+      const overwrittenCount = validAlerts.filter(alert => existingIds.has(alert.id)).length
+      const newCount = validAlerts.length - overwrittenCount
 
       // Filter out existing alerts that will be overwritten
       const nonDuplicateExisting = existingAlertsList.filter(alert => !importedIds.has(alert.id))
 
       // Merge with all imported alerts (includes both new and overwrites)
-      const merged = [...nonDuplicateExisting, ...importedAlerts]
+      const merged = [...nonDuplicateExisting, ...validAlerts]
       SafeLocalStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(merged))
 
       // Refresh UI
       refreshAlerts()
 
-      info('Alerts', `Imported ${importedAlerts.length} alerts (${newCount} new, ${overwrittenCount} overwritten)`)
+      info('Alerts', `Imported ${validAlerts.length} alerts (${newCount} new, ${overwrittenCount} overwritten${invalidCount > 0 ? `, ${invalidCount} invalid` : ''})`)
+      showSettingsStatus(`Imported ${validAlerts.length} alerts (${newCount} new, ${overwrittenCount} overwritten)`, false)
     } catch (err) {
       console.error('Import failed:', err)
-      logError('Alerts', `Failed to import alerts: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      logError('Alerts', `Failed to import alerts: ${msg}`)
+      showSettingsStatus(`Import failed: ${msg}`, true)
     } finally {
       // Reset file input
       if (fileInputRef.current) {
@@ -441,6 +468,11 @@ export function QuickAddAlertDialog({
             <p className="text-xs text-muted-foreground">
               {t('dialogs.quickAddAlert.settingsDescription')}
             </p>
+            {settingsStatus && (
+              <p className={`text-xs ${settingsStatus.isError ? 'text-destructive' : 'text-green-600 dark:text-green-500'}`}>
+                {settingsStatus.message}
+              </p>
+            )}
             <input
               ref={fileInputRef}
               type="file"

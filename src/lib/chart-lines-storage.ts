@@ -13,7 +13,24 @@ export function getChartLines(): ChartLine[] {
 	try {
 		const stored = SafeLocalStorage.getItem(CHART_LINES_STORAGE_KEY)
 		if (!stored) return []
-		return JSON.parse(stored) as ChartLine[]
+		const parsed = JSON.parse(stored) as unknown[]
+		if (!Array.isArray(parsed)) return []
+
+		// Filter out invalid entries (e.g. from a bad import)
+		const valid = parsed.filter(
+			(item): item is ChartLine =>
+				typeof item === 'object' && item !== null &&
+				typeof (item as Record<string, unknown>).id === 'string' &&
+				typeof (item as Record<string, unknown>).ticker === 'string' &&
+				typeof (item as Record<string, unknown>).price === 'number',
+		)
+
+		// If any items were filtered out, persist the clean data back
+		if (valid.length !== parsed.length) {
+			SafeLocalStorage.setItem(CHART_LINES_STORAGE_KEY, JSON.stringify(valid))
+		}
+
+		return valid
 	} catch (error) {
 		console.error('Failed to get chart lines from localStorage:', error)
 		return []

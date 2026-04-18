@@ -74,6 +74,7 @@ export default {
     export: 'Xuất Cảnh Báo',
     import: 'Nhập Cảnh Báo',
     settingsDescription: 'Xuất tất cả cảnh báo ra file JSON hoặc nhập cảnh báo từ file đã xuất trước đó.',
+    noFileSelected: 'Chưa chọn file',
   },
   editAlert: {
     title: 'Sửa Cảnh Báo',
@@ -110,5 +111,6 @@ export default {
     export: 'Xuất Các Đường',
     import: 'Nhập Các Đường',
     settingsDescription: 'Xuất đường kẻ biểu đồ ra file JSON để sao lưu hoặc nhập trên thiết bị khác. Các đường trùng (cùng mã + giá) sẽ được bỏ qua khi nhập.',
+    noFileSelected: 'Chưa chọn file',
   },
 }

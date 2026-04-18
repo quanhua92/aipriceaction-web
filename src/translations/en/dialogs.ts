@@ -74,6 +74,7 @@ export default {
     export: 'Export Alerts',
     import: 'Import Alerts',
     settingsDescription: 'Export all alerts to a JSON file or import alerts from a previously exported file.',
+    noFileSelected: 'No file selected',
   },
   editAlert: {
     title: 'Edit Alert',
@@ -110,5 +111,6 @@ export default {
     export: 'Export Lines',
     import: 'Import Lines',
     settingsDescription: 'Export chart lines to a JSON file for backup or import on another device. Duplicate lines (same ticker + price) are skipped on import.',
+    noFileSelected: 'No file selected',
   },
 }
