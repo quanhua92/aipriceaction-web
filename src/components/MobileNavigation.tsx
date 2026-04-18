@@ -8,7 +8,6 @@ import {
   Globe,
   Dices,
   LayoutGrid,
-  Bell,
 } from 'lucide-react'
 import {
   Sheet,
@@ -95,6 +94,18 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             </Link>
 
             <Link
+              to="/alert"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
+              }}
+            >
+              <span className="font-medium">Alerts</span>
+            </Link>
+
+            <Link
               to="/backtesting"
               search={{ ticker: undefined, endDate: undefined, interval: undefined, limit: undefined }}
               onClick={() => setIsOpen(false)}
@@ -132,19 +143,6 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             >
               <LayoutGrid size={20} />
               <span className="font-medium">Heatmap</span>
-            </Link>
-
-            <Link
-              to="/alert"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Bell size={20} />
-              <span className="font-medium">Alerts</span>
             </Link>
 
             {/* Mobile PWA Install Button */}
