@@ -137,31 +137,6 @@ Khi phân tích dữ liệu thị trường, ưu tiên các cách tiếp cận s
 - Luôn bao gồm tuyên bố miễn trừ trách nhiệm đầu tư phù hợp về rủi ro thị trường`);
 	}
 
-	// 1.5 Ticker Info
-	const tickerInfoLines: string[] = [];
-	if (tickerInfo.name || tickerInfo.groups.length > 0) {
-		if (language === "en") {
-			tickerInfoLines.push("=== Ticker Info ===");
-			tickerInfoLines.push("");
-			if (tickerInfo.name) {
-				tickerInfoLines.push(`Name: ${tickerInfo.name}`);
-			}
-			if (tickerInfo.groups.length > 0) {
-				tickerInfoLines.push(`Sector: ${tickerInfo.groups.join(", ")}`);
-			}
-		} else {
-			tickerInfoLines.push("=== Thông Tin Mã CK ===");
-			tickerInfoLines.push("");
-			if (tickerInfo.name) {
-				tickerInfoLines.push(`Tên: ${tickerInfo.name}`);
-			}
-			if (tickerInfo.groups.length > 0) {
-				tickerInfoLines.push(`Ngành: ${tickerInfo.groups.join(", ")}`);
-			}
-		}
-		sections.push(tickerInfoLines.join("\n"));
-	}
-
 	// 2. MA Score Explanation
 	if (language === "en") {
 		sections.push(`=== MA Score: What It Is and How to Calculate ===
@@ -288,7 +263,34 @@ Các Điểm Chính:
 - Luôn chỉ đầu tư số tiền bạn có thể chấp nhận mất`);
 	}
 
-	// 4. Market Data
+	// 4. Ticker Info
+	const tickerInfoLines: string[] = [];
+	if (tickerInfo.name || tickerInfo.groups.length > 0) {
+		if (language === "en") {
+			tickerInfoLines.push("");
+			tickerInfoLines.push("=== Ticker Info ===");
+			tickerInfoLines.push("");
+			if (tickerInfo.name) {
+				tickerInfoLines.push(`Name: ${tickerInfo.name}`);
+			}
+			if (tickerInfo.groups.length > 0) {
+				tickerInfoLines.push(`Sector: ${tickerInfo.groups.join(", ")}`);
+			}
+		} else {
+			tickerInfoLines.push("");
+			tickerInfoLines.push("=== Thông Tin Mã CK ===");
+			tickerInfoLines.push("");
+			if (tickerInfo.name) {
+				tickerInfoLines.push(`Tên: ${tickerInfo.name}`);
+			}
+			if (tickerInfo.groups.length > 0) {
+				tickerInfoLines.push(`Ngành: ${tickerInfo.groups.join(", ")}`);
+			}
+		}
+		sections.push(tickerInfoLines.join("\n"));
+	}
+
+	// 5. Market Data
 	if (data && data.length > 0) {
 		const marketDataLines: string[] = [];
 

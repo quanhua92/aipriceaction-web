@@ -125,25 +125,6 @@ Khi phân tích dữ liệu thị trường, ưu tiên các cách tiếp cận s
 - Luôn bao gồm tuyên bố miễn trừ trách nhiệm đầu tư phù hợp về rủi ro thị trường`);
 	}
 
-	// 1.5 Ticker Info
-	if (tickersInfo && tickersInfo.length > 0) {
-		const lines: string[] = [];
-		if (language === "en") {
-			lines.push("=== Ticker Info ===");
-			lines.push("");
-		} else {
-			lines.push("=== Thông Tin Mã CK ===");
-			lines.push("");
-		}
-		for (const info of tickersInfo) {
-			const parts: string[] = [info.symbol];
-			if (info.name) parts.push(info.name);
-			if (info.groups.length > 0) parts.push(`[${info.groups.join(", ")}]`);
-			lines.push(parts.join(" - "));
-		}
-		sections.push(lines.join("\n"));
-	}
-
 	// 2. MA Score Explanation
 	const maType = useEMA ? "EMA (Exponential Moving Average)" : "SMA (Simple Moving Average)";
 	const maTypeVN = useEMA ? "EMA (Đường Trung Bình Lũy Thừa)" : "SMA (Đường Trung Bình Đơn Giản)";
@@ -273,7 +254,28 @@ Các Điểm Chính:
 - Luôn chỉ đầu tư số tiền bạn có thể chấp nhận mất`);
 	}
 
-	// 4. Market Data (if provided)
+	// 4. Ticker Info
+	if (tickersInfo && tickersInfo.length > 0) {
+		const lines: string[] = [];
+		if (language === "en") {
+			lines.push("");
+			lines.push("=== Ticker Info ===");
+			lines.push("");
+		} else {
+			lines.push("");
+			lines.push("=== Thông Tin Mã CK ===");
+			lines.push("");
+		}
+		for (const info of tickersInfo) {
+			const parts: string[] = [info.symbol];
+			if (info.name) parts.push(info.name);
+			if (info.groups.length > 0) parts.push(`[${info.groups.join(", ")}]`);
+			lines.push(parts.join(" - "));
+		}
+		sections.push(lines.join("\n"));
+	}
+
+	// 5. Market Data (if provided)
 	if (marketData && Object.keys(marketData).length > 0) {
 		const marketDataLines: string[] = [];
 
