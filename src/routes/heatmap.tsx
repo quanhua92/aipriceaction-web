@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { TradingTreemap } from "@/components/echarts/TradingTreemap";
-import { TradingViewChart } from "@/components/charts/TradingViewChart";
+import { TreemapChartBar } from "@/components/echarts/TreemapChartBar";
 import { BasicWatchList } from "@/components/lists/BasicWatchList";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/heatmap")({
 
 function HeatmapPage() {
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
-	const [chartTicker, setChartTicker] = React.useState<string | null>(null);
+	const [treemapTicker, setTreemapTicker] = React.useState<string | null>(null);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
 
 	const tickerSymbols = React.useMemo(() => sortedTickers.map((t) => t.symbol), [sortedTickers]);
@@ -30,7 +30,7 @@ function HeatmapPage() {
 	};
 
 	const handleTreemapSelect = (symbol: string) => {
-		setChartTicker(symbol);
+		setTreemapTicker(symbol);
 	};
 
 	const handleCloseFullscreen = () => {
@@ -53,16 +53,12 @@ function HeatmapPage() {
 			</div>
 
 			{/* Section: Ticker Chart */}
-			{chartTicker && (
-				<div className="p-3 md:p-4">
-					<TradingViewChart
-						ticker={chartTicker}
-						showControls={true}
-						hideFullscreenButton={false}
-						onTickerChange={handleTreemapSelect}
-					/>
-				</div>
-			)}
+			<TreemapChartBar
+				defaultTicker="VNINDEX"
+				selectedTicker={treemapTicker}
+				onTickerChange={handleTreemapSelect}
+				storageKeyPrefix="heatmap"
+			/>
 
 			{/* Section: Watchlist */}
 			<div className="p-2 md:p-6 border-t">

@@ -9,6 +9,7 @@ import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { RRGWidget } from "@/components/widgets/RRGWidget";
 import { TradingTreemap } from "@/components/echarts/TradingTreemap";
+import { TreemapChartBar } from "@/components/echarts/TreemapChartBar";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
@@ -157,11 +158,12 @@ function HomePage() {
 			</div>
 
 			{/* Section 2.5.1: Treemap Ticker Chart */}
-			{treemapTicker && (
-				<div className="p-3 md:p-4">
-					<TradingViewChart ticker={treemapTicker} showControls={true} hideFullscreenButton={false} onTickerChange={handleTreemapSelect} />
-				</div>
-			)}
+			<TreemapChartBar
+				defaultTicker="VNINDEX"
+				selectedTicker={treemapTicker}
+				onTickerChange={handleTreemapSelect}
+				storageKeyPrefix="home"
+			/>
 
 			{/* Section 2.6: Relative Rotation Graph */}
 			<div className="p-3 md:p-4 border-t">

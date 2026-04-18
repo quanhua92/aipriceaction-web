@@ -188,6 +188,13 @@ export default {
 		loadMore: "Load More",
 		ending: "Ending",
 	},
+	treemapControl: {
+		referenceChart: "Reference Chart",
+		horizontal: "Side by side",
+		vertical: "Stacked",
+		swap: "Swap",
+		height: "Height",
+	},
 	watchlist: {
 		title: "Watchlist",
 		editWatchlist: "Edit Watchlist",

@@ -10,6 +10,7 @@ import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { RRGWidget } from "@/components/widgets/RRGWidget";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { TradingTreemap } from "@/components/echarts/TradingTreemap";
+import { TreemapChartBar } from "@/components/echarts/TreemapChartBar";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { GLOBAL_WATCHLIST_NAME, GLOBAL_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
@@ -156,11 +157,12 @@ function GlobalPage() {
 			</div>
 
 			{/* Section 2.5.1: Treemap Ticker Chart */}
-			{treemapTicker && (
-				<div className="p-3 md:p-4">
-					<TradingViewChart ticker={treemapTicker} showControls={true} hideFullscreenButton={false} onTickerChange={handleTreemapSelect} />
-				</div>
-			)}
+			<TreemapChartBar
+				defaultTicker="^GSPC"
+				selectedTicker={treemapTicker}
+				onTickerChange={handleTreemapSelect}
+				storageKeyPrefix="global"
+			/>
 
 			{/* Section 2.6: Relative Rotation Graph */}
 			<div className="p-3 md:p-4 border-t">

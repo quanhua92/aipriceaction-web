@@ -187,6 +187,13 @@ export default {
 		loadMore: "Nhiều Hơn",
 		ending: "Kết thúc",
 	},
+	treemapControl: {
+		referenceChart: "Biểu Đồ Tham Chiếu",
+		horizontal: "Cạnh nhau",
+		vertical: "Xếp chồng",
+		swap: "Đổi chỗ",
+		height: "Chiều cao",
+	},
 	watchlist: {
 		title: "Danh Sách Theo Dõi",
 		editWatchlist: "Chỉnh Sửa Danh Mục",
