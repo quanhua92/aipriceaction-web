@@ -370,7 +370,7 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 							</div>
 						) : (
 							<div className="space-y-2">
-								{existingLines.map((line) => {
+								{existingLines.sort((a, b) => a.price - b.price).map((line) => {
 									const lineDistance = currentPrice
 										? ((line.price - currentPrice) / currentPrice) * 100
 										: null

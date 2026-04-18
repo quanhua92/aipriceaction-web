@@ -387,7 +387,7 @@ export function QuickAddAlertDialog({
               </div>
             ) : (
               <div className="space-y-2">
-                {existingAlerts.map((alert) => {
+                {existingAlerts.sort((a, b) => a.target_price - b.target_price).map((alert) => {
                   const alertCurrentPrice = allTickersLastData[ticker]?.[allTickersLastData[ticker].length - 1]?.close
                   const alertDistance = alertCurrentPrice
                     ? ((alert.target_price - alertCurrentPrice) / alertCurrentPrice) * 100
