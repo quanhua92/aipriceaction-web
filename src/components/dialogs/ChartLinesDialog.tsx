@@ -356,7 +356,7 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 										>
 											<div className="flex items-center justify-between">
 												<div className="flex items-center gap-2">
-													<span className="text-gray-500">—</span>
+													<PenLine className="h-3.5 w-3.5 text-gray-500" />
 													<span className="font-semibold">
 														{formatPrice(
 															line.price,

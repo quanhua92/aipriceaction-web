@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Bell } from 'lucide-react'
+import { Bell, Download, Upload } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -21,11 +21,12 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
+import { useLogs } from '@/contexts/LogsContext'
 import { useTranslation } from '@/hooks/useTranslation'
 import { formatPrice, formatPercent } from '@/lib/format'
-import { ALERT_TYPES } from '@/lib/constants'
-import type { Alert } from '@/lib/alert-storage'
-import { TradingViewChart } from '@/components/charts/TradingViewChart'
+import { ALERT_TYPES, ALERTS_STORAGE_KEY } from '@/lib/constants'
+import { getAlerts, type Alert } from '@/lib/alert-storage'
+import { SafeLocalStorage } from '@/lib/localStorage'
 
 export interface QuickAddAlertDialogProps {
   children: React.ReactNode
@@ -39,8 +40,11 @@ export function QuickAddAlertDialog({
   currentPrice: currentPriceProp,
 }: QuickAddAlertDialogProps) {
   const { t } = useTranslation()
-  const { addAlert, deleteAlert, getAlertsByTickerSymbol } = useAlert()
+  const { addAlert, deleteAlert, getAlertsByTickerSymbol, refreshAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
+  const { info, error: logError } = useLogs()
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const [open, setOpen] = React.useState(false)
   const [targetPrice, setTargetPrice] = React.useState('')
@@ -150,6 +154,81 @@ export function QuickAddAlertDialog({
     }
   }
 
+  // Export alerts to JSON file
+  const handleExport = () => {
+    try {
+      const allAlerts = getAlerts()
+      const dataStr = JSON.stringify(allAlerts, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement('a')
+      link.href = url
+      const now = new Date()
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`
+      link.download = `alerts-${timestamp}.json`
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      info('Alerts', `Exported ${allAlerts.length} alerts`)
+    } catch (err) {
+      console.error('Export failed:', err)
+      logError('Alerts', 'Failed to export alerts')
+    }
+  }
+
+  // Import alerts from JSON file
+  const handleImport = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const importedAlerts = JSON.parse(text) as Alert[]
+
+      // Validate structure
+      if (!Array.isArray(importedAlerts)) {
+        throw new Error('Invalid file format: expected array of alerts')
+      }
+
+      // Get existing alerts
+      const existingAlertsList = getAlerts()
+      const importedIds = new Set(importedAlerts.map(a => a.id))
+      const existingIds = new Set(existingAlertsList.map(a => a.id))
+
+      // Track new vs overwritten counts
+      const overwrittenCount = importedAlerts.filter(alert => existingIds.has(alert.id)).length
+      const newCount = importedAlerts.length - overwrittenCount
+
+      // Filter out existing alerts that will be overwritten
+      const nonDuplicateExisting = existingAlertsList.filter(alert => !importedIds.has(alert.id))
+
+      // Merge with all imported alerts (includes both new and overwrites)
+      const merged = [...nonDuplicateExisting, ...importedAlerts]
+      SafeLocalStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(merged))
+
+      // Refresh UI
+      refreshAlerts()
+
+      info('Alerts', `Imported ${importedAlerts.length} alerts (${newCount} new, ${overwrittenCount} overwritten)`)
+    } catch (err) {
+      console.error('Import failed:', err)
+      logError('Alerts', `Failed to import alerts: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -166,10 +245,10 @@ export function QuickAddAlertDialog({
         <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col gap-0">
           <TabsList className="mx-6 mb-4 grid grid-cols-3">
             <TabsTrigger value="details">{t('dialogs.quickAddAlert.tabs.details')}</TabsTrigger>
-            <TabsTrigger value="chart">{t('dialogs.quickAddAlert.tabs.chart')}</TabsTrigger>
             <TabsTrigger value="existing">
               {t('dialogs.quickAddAlert.tabs.existing')} ({existingAlerts.length})
             </TabsTrigger>
+            <TabsTrigger value="settings">{t('dialogs.quickAddAlert.tabs.settings')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 pb-4">
@@ -340,11 +419,34 @@ export function QuickAddAlertDialog({
             )}
           </TabsContent>
 
-          <TabsContent value="chart" className="flex-1 min-h-0 overflow-hidden px-6 pb-4">
-            <TradingViewChart
-              initialTicker={ticker}
-              height={400}
-              showControls={false}
+          <TabsContent value="settings" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 pb-4">
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full flex items-center gap-2 justify-center"
+                onClick={handleExport}
+              >
+                <Download className="h-4 w-4" />
+                {t('dialogs.quickAddAlert.export')}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full flex items-center gap-2 justify-center"
+                onClick={handleImport}
+              >
+                <Upload className="h-4 w-4" />
+                {t('dialogs.quickAddAlert.import')}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('dialogs.quickAddAlert.settingsDescription')}
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="hidden"
             />
           </TabsContent>
         </Tabs>

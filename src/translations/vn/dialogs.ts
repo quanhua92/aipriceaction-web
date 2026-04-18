@@ -49,8 +49,9 @@ export default {
     save: 'Lưu Cảnh Báo',
     cancel: 'Hủy',
     tabs: {
-      details: 'Chi Tiết',
+      details: 'Tạo Cảnh Báo',
       existing: 'Tất Cả',
+      settings: 'Cài Đặt',
       chart: 'Biểu Đồ',
       compare: 'So Sánh',
       trendSignal: 'Tín Hiệu',
@@ -70,6 +71,9 @@ export default {
       required: 'Vui lòng nhập giá mục tiêu',
       positive: 'Giá mục tiêu phải lớn hơn 0',
     },
+    export: 'Xuất Cảnh Báo',
+    import: 'Nhập Cảnh Báo',
+    settingsDescription: 'Xuất tất cả cảnh báo ra file JSON hoặc nhập cảnh báo từ file đã xuất trước đó.',
   },
   editAlert: {
     title: 'Sửa Cảnh Báo',
@@ -88,8 +92,8 @@ export default {
     cancel: 'Hủy',
     delete: 'Xóa đường',
     tabs: {
-      add: 'Thêm Đường',
-      lines: 'Các Đường',
+      add: 'Tạo Đường',
+      lines: 'Tất Cả',
       settings: 'Cài Đặt',
     },
     note: {

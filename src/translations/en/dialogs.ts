@@ -49,8 +49,9 @@ export default {
     save: 'Save Alert',
     cancel: 'Cancel',
     tabs: {
-      details: 'Alert Details',
+      details: 'Create Alert',
       existing: 'All Alerts',
+      settings: 'Settings',
       chart: 'Chart',
       compare: 'Compare',
       trendSignal: 'TrendSignal',
@@ -70,6 +71,9 @@ export default {
       required: 'Target price is required',
       positive: 'Target price must be greater than 0',
     },
+    export: 'Export Alerts',
+    import: 'Import Alerts',
+    settingsDescription: 'Export all alerts to a JSON file or import alerts from a previously exported file.',
   },
   editAlert: {
     title: 'Edit Alert',
@@ -88,8 +92,8 @@ export default {
     cancel: 'Cancel',
     delete: 'Delete line',
     tabs: {
-      add: 'Add Line',
-      lines: 'Lines',
+      add: 'Create Line',
+      lines: 'All Lines',
       settings: 'Settings',
     },
     note: {
