@@ -379,13 +379,13 @@ export function BaseTradingViewChart({
 
 		// Create watermark using official API
 		const watermark = createTextWatermark(chart.panes()[0], {
-			horzAlign: "center",
-			vertAlign: "center",
+			horzAlign: "left",
+			vertAlign: "bottom",
 			lines: [
 				{
 					text: "aipriceaction.com",
-					color: "rgba(113, 113, 122, 0.3)",
-					fontSize: 20,
+					color: "rgba(113, 113, 122, 0.5)",
+					fontSize: 18,
 				},
 			],
 		});
