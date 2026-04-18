@@ -93,7 +93,7 @@ export const SortableTickerList = React.forwardRef<SortableTickerListRef, Sortab
     return defaultSectionFilter ?? 'stocks'
   })
   const [showAll, setShowAll] = React.useState(false)
-  const MAX_VISIBLE = 60
+  const MAX_VISIBLE = 30
   const { t, language } = useTranslation()
 
   // Persist sort and section filter to localStorage
