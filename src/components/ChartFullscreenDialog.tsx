@@ -3,7 +3,6 @@ import * as React from "react";
 import { AIContextTab } from "@/components/AIContextTab";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { TrendSignalTable } from "@/components/TrendSignalTable";
-import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -452,11 +451,9 @@ export function ChartFullscreenDialog({
 							<span className="hidden sm:inline">{t("common.previous")}</span>
 						</Button>
 
-						<SelectTickerDialog onSelectTicker={handleTickerChange} endDate={endDate ?? undefined}>
-							<div className="px-6 py-3 sm:px-4 sm:py-2 text-sm font-medium bg-muted rounded-md min-w-[90px] text-center cursor-pointer hover:bg-muted/80 transition-colors">
-								{internalIndex + 1} / {tickerList.length}
-							</div>
-						</SelectTickerDialog>
+						<div className="px-6 py-3 sm:px-4 sm:py-2 text-sm font-medium bg-muted rounded-md min-w-[90px] text-center">
+							{internalIndex + 1} / {tickerList.length}
+						</div>
 
 						<Button
 							variant="outline"
