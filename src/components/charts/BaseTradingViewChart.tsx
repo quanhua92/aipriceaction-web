@@ -289,7 +289,7 @@ export function BaseTradingViewChart({
 			borderVisible: false,
 			wickUpColor: "#1e8c82",
 			wickDownColor: "#d94040",
-			priceLineWidth: 2,
+			priceLineWidth: globalSettings.priceLineWidth as 1 | 2 | 3 | 4,
 			priceFormat: {
 				type: "custom",
 				formatter: (price: number) => {
@@ -957,6 +957,12 @@ export function BaseTradingViewChart({
 				if (pl.id && !priceLinesRef.current.has(pl.id as string)) {
 					const line = series.createPriceLine(pl);
 					priceLinesRef.current.set(pl.id as string, line);
+				} else if (pl.id) {
+					// Update existing lines (e.g. lineWidth change)
+					const existingLine = priceLinesRef.current.get(pl.id as string);
+					if (existingLine) {
+						existingLine.applyOptions({ lineWidth: pl.lineWidth });
+					}
 				}
 			}
 		} else {
@@ -1244,9 +1250,10 @@ export function BaseTradingViewChart({
 					},
 					minMove: getOptimalMinMove(currentData.close, currentData.mode),
 				},
+				priceLineWidth: globalSettings.priceLineWidth as 1 | 2 | 3 | 4,
 			});
 		}
-	}, [data, getOptimalMinMove]);
+	}, [data, getOptimalMinMove, globalSettings.priceLineWidth]);
 
 	if (data && data.length > 0) hasEverHadData.current = true;
 

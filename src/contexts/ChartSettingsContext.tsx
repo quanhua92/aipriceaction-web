@@ -32,6 +32,8 @@ interface ChartSettingsState {
 	setStartDate: (date?: string) => void
 	endDate?: string
 	setEndDate: (date?: string) => void
+	priceLineWidth: number
+	setPriceLineWidth: (width: number) => void
 	rulerVisible: boolean
 	setRulerVisible: (visible: boolean) => void
 	rulerTimeA?: string
@@ -48,6 +50,7 @@ interface PersistedChartSettings {
 	maVisibility: MaVisibility
 	macdVisible: boolean
 	macdHeight: MacdHeight
+	priceLineWidth: number
 }
 
 const ChartSettingsContext = React.createContext<ChartSettingsState | undefined>(
@@ -130,6 +133,7 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 	const [startDate, setStartDate] = React.useState<string | undefined>(undefined)
 	const [endDate, setEndDate] = React.useState<string | undefined>(undefined)
 	const [rulerVisible, setRulerVisible] = React.useState<boolean>(false)
+	const [priceLineWidth, setPriceLineWidth] = React.useState<number>(() => persisted.current.priceLineWidth ?? 2)
 	const [rulerTimeA, setRulerTimeA] = React.useState<string | undefined>(undefined)
 	const [rulerTimeB, setRulerTimeB] = React.useState<string | undefined>(undefined)
 
@@ -141,8 +145,9 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 			maVisibility,
 			macdVisible,
 			macdHeight,
+			priceLineWidth,
 		})
-	}, [interval, limit, maVisibility, macdVisible, macdHeight])
+	}, [interval, limit, maVisibility, macdVisible, macdHeight, priceLineWidth])
 
 	// Update MA visibility when interval changes
 	const prevIntervalRef = React.useRef(interval)
@@ -176,6 +181,8 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		setMacdVisible,
 		macdHeight,
 		setMacdHeight,
+		priceLineWidth,
+		setPriceLineWidth,
 		startDate,
 		setStartDate,
 		endDate,
@@ -187,7 +194,7 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		rulerTimeB,
 		setRulerTimeB,
 		clearRuler,
-	}), [interval, limit, height, maVisibility, macdVisible, macdHeight, startDate, endDate, resetMaVisibility, rulerVisible, rulerTimeA, rulerTimeB, clearRuler])
+	}), [interval, limit, height, maVisibility, macdVisible, macdHeight, priceLineWidth, startDate, endDate, resetMaVisibility, rulerVisible, rulerTimeA, rulerTimeB, clearRuler])
 
 	return (
 		<ChartSettingsContext.Provider value={value}>

@@ -62,6 +62,8 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 		setStartDate,
 		endDate,
 		setEndDate,
+		priceLineWidth,
+		setPriceLineWidth,
 	} = useChartSettings()
 	const { ema, setEma } = useAPI()
 
@@ -78,6 +80,8 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 		setStartDate(undefined)
 		setEndDate(undefined)
 		setLimit(DEFAULT_CHART_LIMIT)
+		setPriceLineWidth(2)
+		setHeight(typeof window !== 'undefined' && window.innerWidth >= 1024 ? 500 : window.innerWidth >= 768 ? 400 : 300)
 	}
 
 	return (
@@ -308,6 +312,28 @@ export function ChartSettingsDialog({ children }: ChartSettingsDialogProps) {
 										{HEIGHT_OPTIONS.map((option) => (
 											<SelectItem key={option.value} value={option.value}>
 												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* Price Line Width */}
+							<div className="space-y-2">
+								<Label htmlFor="price-line-width" className="text-sm">
+									Price Line Width
+								</Label>
+								<Select
+									value={priceLineWidth.toString()}
+									onValueChange={(value) => setPriceLineWidth(parseInt(value))}
+								>
+									<SelectTrigger id="price-line-width" className="w-full">
+										<SelectValue placeholder="Select width" />
+									</SelectTrigger>
+									<SelectContent>
+										{[1, 2, 3, 4].map((w) => (
+											<SelectItem key={w} value={w.toString()}>
+												{w}px
 											</SelectItem>
 										))}
 									</SelectContent>

@@ -106,6 +106,7 @@ function TradingViewChartContent({
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
 	const globalSettings = useChartSettings();
+	const { priceLineWidth } = globalSettings;
 	const { selectedTicker, setSelectedTicker } = useTicker();
 	const {
 		allTickersLastData,
@@ -130,13 +131,13 @@ function TradingViewChartContent({
 		return activeAlerts.map((alert) => ({
 			price: alert.target_price,
 			color: '#eab308',
-			lineWidth: 2 as const,
+			lineWidth: priceLineWidth as 1 | 2 | 3 | 4,
 			lineStyle: 2 as const,
 			axisLabelVisible: true,
 			title: '',
 			id: `alert-${alert.id}`,
 		}));
-	}, [selectedTicker, getAlertsByTickerSymbol]);
+	}, [selectedTicker, getAlertsByTickerSymbol, priceLineWidth]);
 
 	// Build chart line price lines for current ticker
 	const { getChartLinesByTicker: getChartLinesByTickerSymbol } = useChartLines();
@@ -148,13 +149,13 @@ function TradingViewChartContent({
 		return tickerLines.map((line) => ({
 			price: line.price,
 			color: '#9ca3af',
-			lineWidth: 2 as const,
+			lineWidth: priceLineWidth as 1 | 2 | 3 | 4,
 			lineStyle: 2 as const,
 			axisLabelVisible: true,
 			title: '',
 			id: `chartline-${line.id}`,
 		}));
-	}, [selectedTicker, getChartLinesByTickerSymbol]);
+	}, [selectedTicker, getChartLinesByTickerSymbol, priceLineWidth]);
 
 	// Resolve ticker name for overlay display
 	const resolvedTickerName = React.useMemo(() => {

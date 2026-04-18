@@ -13,6 +13,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useAPI } from "@/contexts/APIContext";
+import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { getTickerMode } from "@/lib/ticker-utils";
 import { parseUTCISOString, toVietnamUnixTime } from "@/lib/format";
 import { useMemo } from "react";
@@ -46,6 +47,7 @@ export function PlaygroundChart() {
 		showChartLines,
 	} = usePlayground();
 	const { t } = useTranslation();
+	const { priceLineWidth } = useChartSettings();
 
 	// State for chart layout and height with localStorage persistence
 	const [chartLayout, setChartLayout] = React.useState<
@@ -153,7 +155,7 @@ export function PlaygroundChart() {
 				priceLines.push({
 					price: order.stoploss,
 					color: "#ef4444",
-					lineWidth: 2,
+					lineWidth: priceLineWidth as 1 | 2 | 3 | 4,
 					lineStyle: 2, // Dashed
 					axisLabelVisible: true,
 					title: `SL ${order.stoploss.toFixed(2)}`,
@@ -166,7 +168,7 @@ export function PlaygroundChart() {
 		markers.sort((a, b) => (a.time as number) - (b.time as number));
 
 		return { markers, priceLines };
-	}, [orders, visibleData]);
+	}, [orders, visibleData, priceLineWidth]);
 
 	// Charts will use their natural height since page scrolls vertically
 
