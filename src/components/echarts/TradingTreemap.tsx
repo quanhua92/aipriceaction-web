@@ -383,7 +383,11 @@ export function TradingTreemap({
       height: '90%',
       top: 10,
       left: 'center',
-      roam: true,
+      roam: false,
+      scaleLimit: {
+        min: 0.8,
+        max: 3,
+      },
       nodeClick: 'zoomToNode',
       breadcrumb: {
         show: true,
