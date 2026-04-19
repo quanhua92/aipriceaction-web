@@ -24,6 +24,8 @@ import {
 	type SyncData,
 	type SyncEntry,
 } from '@/lib/api-client'
+import { type Alert } from '@/lib/alert-storage'
+import { type ChartLine } from '@/lib/chart-lines-storage'
 import { useLogs } from '@/contexts/LogsContext'
 import {
 	Upload,
@@ -79,6 +81,11 @@ function SyncPageContent() {
 	const [serverEntry, setServerEntry] = React.useState<SyncEntry | null>(null)
 	const [localData, setLocalData] = React.useState<SyncData | null>(null)
 	const [copied, setCopied] = React.useState(false)
+
+	// Local backup state
+	const fileInputRef = React.useRef<HTMLInputElement>(null)
+	const [confirmImport, setConfirmImport] = React.useState<'overwrite' | 'merge' | null>(null)
+	const [pendingImportData, setPendingImportData] = React.useState<SyncData | null>(null)
 
 	// Load stored credentials on mount
 	React.useEffect(() => {
@@ -232,6 +239,140 @@ function SyncPageContent() {
 		clearCredentials()
 		info('[Sync] Disconnected from sync')
 		showStatus('success', 'Disconnected from sync')
+	}
+
+	function handleExportJSON() {
+		try {
+			const data = collectLocalSyncData()
+			const dataStr = JSON.stringify(data, null, 2)
+			const blob = new Blob([dataStr], { type: 'application/json' })
+			const url = URL.createObjectURL(blob)
+			const link = document.createElement('a')
+			link.href = url
+			const now = new Date()
+			const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`
+			link.download = `sync-${ts}.json`
+			document.body.appendChild(link)
+			link.click()
+			document.body.removeChild(link)
+			URL.revokeObjectURL(url)
+			info(`[Sync] Exported: ${Object.keys(data.watchlists).length} watchlists, ${data.alerts.length} alerts, ${data.chartLines.length} chart lines`)
+			showStatus('success', `Exported sync-${ts}.json`)
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : String(err)
+			logError(`[Sync] Export failed: ${msg}`)
+			showStatus('error', msg)
+		}
+	}
+
+	function handleImportJSON() {
+		fileInputRef.current?.click()
+	}
+
+	async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+		const file = event.target.files?.[0]
+		if (!file) return
+
+		try {
+			const text = await file.text()
+			const raw = JSON.parse(text) as unknown
+
+			if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+				throw new Error('Invalid file format: expected a JSON object')
+			}
+
+			const obj = raw as Record<string, unknown>
+
+			// Validate watchlists
+			let watchlists: Record<string, string> = {}
+			if (obj.watchlists !== undefined) {
+				if (typeof obj.watchlists !== 'object' || obj.watchlists === null || Array.isArray(obj.watchlists)) {
+					throw new Error('Invalid watchlists: expected an object')
+				}
+				const wl = obj.watchlists as Record<string, unknown>
+				for (const [key, value] of Object.entries(wl)) {
+					if (typeof value !== 'string') {
+						throw new Error(`Invalid watchlists: value for "${key}" is not a string`)
+					}
+					watchlists[key] = value
+				}
+			}
+
+			// Validate alerts
+			let alerts: Alert[] = []
+			if (obj.alerts !== undefined) {
+				if (!Array.isArray(obj.alerts)) {
+					throw new Error('Invalid alerts: expected an array')
+				}
+				alerts = obj.alerts.filter(
+					(a): a is Alert =>
+						typeof a === 'object' && a !== null &&
+						typeof (a as Record<string, unknown>).id === 'string' &&
+						typeof (a as Record<string, unknown>).ticker === 'string' &&
+						typeof (a as Record<string, unknown>).target_price === 'number' &&
+						typeof (a as Record<string, unknown>).alert_type === 'string',
+				)
+				if (alerts.length === 0 && obj.alerts.length > 0) {
+					throw new Error('Invalid alerts: no valid alert entries found')
+				}
+			}
+
+			// Validate chartLines
+			let chartLines: ChartLine[] = []
+			if (obj.chartLines !== undefined) {
+				if (!Array.isArray(obj.chartLines)) {
+					throw new Error('Invalid chartLines: expected an array')
+				}
+				chartLines = obj.chartLines.filter(
+					(l): l is ChartLine =>
+						typeof l === 'object' && l !== null &&
+						typeof (l as Record<string, unknown>).id === 'string' &&
+						typeof (l as Record<string, unknown>).ticker === 'string' &&
+						typeof (l as Record<string, unknown>).price === 'number',
+				)
+				if (chartLines.length === 0 && obj.chartLines.length > 0) {
+					throw new Error('Invalid chartLines: no valid chart line entries found')
+				}
+			}
+
+			if (Object.keys(watchlists).length === 0 && alerts.length === 0 && chartLines.length === 0) {
+				throw new Error('No valid data found in file')
+			}
+
+			const data: SyncData = {
+				watchlists,
+				alerts,
+				chartLines,
+				exportedAt: new Date().toISOString(),
+			}
+
+			setPendingImportData(data)
+			setConfirmImport(null) // show the overwrite/merge choice
+			info(`[Sync] Parsed import: ${Object.keys(watchlists).length} watchlists, ${alerts.length} alerts, ${chartLines.length} chart lines`)
+			showStatus('success', `File loaded. Choose Overwrite or Merge to apply.`)
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : String(err)
+			logError(`[Sync] Import failed: ${msg}`)
+			showStatus('error', msg)
+			setPendingImportData(null)
+			setConfirmImport(null)
+		} finally {
+			if (fileInputRef.current) {
+				fileInputRef.current.value = ''
+			}
+		}
+	}
+
+	function handleApplyImport(mode: 'overwrite' | 'merge') {
+		if (!pendingImportData) return
+		applySyncData(pendingImportData, mode)
+		const d = pendingImportData
+		const label = mode === 'overwrite' ? 'Overwritten' : 'Merged'
+		info(`[Sync] Import ${label.toLowerCase()}: ${Object.keys(d.watchlists).length} watchlists, ${d.alerts.length} alerts, ${d.chartLines.length} chart lines`)
+		showStatus('success', `${label} local data. Reload pages to see changes.`)
+		setPendingImportData(null)
+		setConfirmImport(null)
+		setLocalData(null)
 	}
 
 	async function handleCopyKey() {
@@ -652,6 +793,88 @@ function SyncPageContent() {
 					</TabsContent>
 				</Tabs>
 			)}
+
+			{/* Local Backup - always visible */}
+			<Card>
+				<CardHeader className="pb-3">
+					<CardTitle className="text-base">Local Backup</CardTitle>
+					<CardDescription className="text-xs">
+						Export or import all watchlists, alerts, and chart lines as a single JSON file.
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-3">
+					<div className="space-y-1">
+						<Button onClick={handleExportJSON} variant="outline" className="w-full gap-2">
+							<Download className="h-4 w-4" />
+							Export JSON
+						</Button>
+						<p className="text-xs text-muted-foreground">Download all local data as sync.json</p>
+					</div>
+
+					<div className="space-y-1">
+						{confirmImport && pendingImportData ? (
+							<div className="flex gap-2">
+								<Button
+									onClick={() => handleApplyImport(confirmImport)}
+									variant={confirmImport === 'overwrite' ? 'destructive' : 'default'}
+									size="sm"
+									className="flex-1 gap-1"
+								>
+									Confirm {confirmImport === 'overwrite' ? 'Overwrite' : 'Merge'}
+								</Button>
+								<Button
+									onClick={() => { setConfirmImport(null); setPendingImportData(null) }}
+									variant="outline"
+									size="sm"
+									className="flex-1"
+								>
+									Cancel
+								</Button>
+							</div>
+						) : pendingImportData ? (
+							<div className="flex gap-2">
+								<Button
+									onClick={() => setConfirmImport('overwrite')}
+									variant="destructive"
+									size="sm"
+									className="flex-1 gap-1"
+								>
+									Overwrite Local
+								</Button>
+								<Button
+									onClick={() => setConfirmImport('merge')}
+									variant="secondary"
+									size="sm"
+									className="flex-1 gap-1"
+								>
+									Merge into Local
+								</Button>
+								<Button
+									onClick={() => setPendingImportData(null)}
+									variant="ghost"
+									size="sm"
+								>
+									Cancel
+								</Button>
+							</div>
+						) : (
+							<Button onClick={handleImportJSON} variant="outline" className="w-full gap-2">
+								<Upload className="h-4 w-4" />
+								Import JSON
+							</Button>
+						)}
+						<p className="text-xs text-muted-foreground">Load a sync.json file and apply to local data</p>
+					</div>
+
+					<input
+						ref={fileInputRef}
+						type="file"
+						accept=".json"
+						onChange={handleFileChange}
+						className="hidden"
+					/>
+				</CardContent>
+			</Card>
 		</div>
 	)
 }
