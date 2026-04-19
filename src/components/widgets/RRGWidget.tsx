@@ -179,8 +179,8 @@ export function RRGWidget({
 			window.addEventListener("resize", cb);
 			return () => window.removeEventListener("resize", cb);
 		},
-		() => (window.innerWidth < 640 ? 30 : 60),
-		() => (typeof window === "undefined" ? 60 : 60),
+		() => (window.innerWidth < 640 ? 20 : 30),
+		() => (typeof window === "undefined" ? 30 : 30),
 	);
 
 	// Watchlist group state
