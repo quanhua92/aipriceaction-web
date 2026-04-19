@@ -4,6 +4,7 @@ import {
   Menu,
   Brain,
   Eye,
+  Bell,
   Coins,
   Globe,
   Dices,
@@ -102,6 +103,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
                   'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
               }}
             >
+              <Bell size={20} />
               <span className="font-medium">Alerts</span>
             </Link>
 
