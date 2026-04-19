@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchRouteImport } from './routes/watch'
+import { Route as SyncRouteImport } from './routes/sync'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as MatrixRouteImport } from './routes/matrix'
 import { Route as HeatmapRouteImport } from './routes/heatmap'
@@ -28,6 +29,11 @@ import { Route as NoteIdRouteImport } from './routes/note.$id'
 const WatchRoute = WatchRouteImport.update({
   id: '/watch',
   path: '/watch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SyncRoute = SyncRouteImport.update({
+  id: '/sync',
+  path: '/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignalsRoute = SignalsRouteImport.update({
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
+  '/sync': typeof SyncRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
   '/notes/new': typeof NotesNewRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
+  '/sync': typeof SyncRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
   '/notes/new': typeof NotesNewRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
+  '/sync': typeof SyncRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
   '/notes/new': typeof NotesNewRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/matrix'
     | '/signals'
+    | '/sync'
     | '/watch'
     | '/note/$id'
     | '/notes/new'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/matrix'
     | '/signals'
+    | '/sync'
     | '/watch'
     | '/note/$id'
     | '/notes/new'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/matrix'
     | '/signals'
+    | '/sync'
     | '/watch'
     | '/note/$id'
     | '/notes/new'
@@ -218,6 +230,7 @@ export interface RootRouteChildren {
   HeatmapRoute: typeof HeatmapRoute
   MatrixRoute: typeof MatrixRoute
   SignalsRoute: typeof SignalsRoute
+  SyncRoute: typeof SyncRoute
   WatchRoute: typeof WatchRoute
   NoteIdRoute: typeof NoteIdRoute
   NotesNewRoute: typeof NotesNewRoute
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       path: '/watch'
       fullPath: '/watch'
       preLoaderRoute: typeof WatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sync': {
+      id: '/sync'
+      path: '/sync'
+      fullPath: '/sync'
+      preLoaderRoute: typeof SyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signals': {
@@ -346,6 +366,7 @@ const rootRouteChildren: RootRouteChildren = {
   HeatmapRoute: HeatmapRoute,
   MatrixRoute: MatrixRoute,
   SignalsRoute: SignalsRoute,
+  SyncRoute: SyncRoute,
   WatchRoute: WatchRoute,
   NoteIdRoute: NoteIdRoute,
   NotesNewRoute: NotesNewRoute,

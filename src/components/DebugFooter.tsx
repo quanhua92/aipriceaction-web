@@ -1,5 +1,5 @@
 import React from 'react'
-import { useLocation } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { ChevronDown, Copy, Check, Edit, X, RotateCcw } from 'lucide-react'
 import {
 	Collapsible,
@@ -307,7 +307,7 @@ function DebugFooterContent() {
 			</CollapsibleTrigger>
 
 			<CollapsibleContent className="p-2 md:p-4 border-t">
-				<Tabs defaultValue="api" className="w-full gap-2">
+				<Tabs defaultValue="quicklinks" className="w-full gap-2">
 					<TabsList className="w-full overflow-x-auto flex-wrap h-auto gap-1 mb-4">
 						<TabsTrigger value="api" className="text-xs">
 							API
@@ -330,8 +330,8 @@ function DebugFooterContent() {
 						<TabsTrigger value="logs" className="text-xs">
 							Logs
 						</TabsTrigger>
-						<TabsTrigger value="performance" className="text-xs">
-							Performance
+						<TabsTrigger value="quicklinks" className="text-xs">
+							QuickLinks
 						</TabsTrigger>
 					</TabsList>
 
@@ -522,10 +522,17 @@ function DebugFooterContent() {
 							)}
 						</TabsContent>
 
-						<TabsContent value="performance" className="mt-0">
-							<div className="text-sm text-muted-foreground">
-								Performance metrics coming soon...
-							</div>
+						<TabsContent value="quicklinks" className="mt-0 min-h-20">
+							<Link
+								to="/sync"
+								className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors ${
+									location.pathname === '/sync'
+										? 'bg-blue-500/20 text-blue-400 font-medium'
+										: 'text-muted-foreground hover:bg-muted hover:text-foreground'
+								}`}
+							>
+								/sync — Cross-device data sync
+							</Link>
 						</TabsContent>
 					</div>
 				</Tabs>

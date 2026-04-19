@@ -312,3 +312,10 @@ export const CHART_COMPARE_STORAGE_KEY = 'chart-compare-state'
  */
 export const CHART_SETTINGS_STORAGE_KEY = 'chart-settings'
 export const EMA_STORAGE_KEY = 'ema-enabled'
+
+/**
+ * LocalStorage keys for sync feature
+ */
+export const SYNC_TOKEN_STORAGE_KEY = 'sync-token'
+export const SYNC_KEY_STORAGE_KEY = 'sync-key'
+export const SYNC_SECRET_STORAGE_KEY = 'sync-secret'

@@ -9,7 +9,7 @@ import { SafeLocalStorage } from '@/lib/localStorage'
  * - Development: /aipriceaction-api (proxied to localhost:3000 by Vite)
  * - Production: https://api.aipriceaction.com
  */
-function getApiBaseURL(): string {
+export function getApiBaseURL(): string {
   // Check localStorage for override first
   const override = SafeLocalStorage.getItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
   if (override) {
@@ -565,4 +565,134 @@ export async function deleteSession(
 	}
 
 	return response.json()
+}
+
+// ──────────────────────────────────────────────
+// Sync API helpers
+// ──────────────────────────────────────────────
+
+import { getCustomWatchlists, type CustomWatchlists } from './watchlist-storage'
+import { getAlerts, type Alert } from './alert-storage'
+import { getChartLines, type ChartLine } from './chart-lines-storage'
+import {
+	CUSTOM_WATCHLISTS_STORAGE_KEY,
+	ALERTS_STORAGE_KEY,
+	CHART_LINES_STORAGE_KEY,
+} from './constants'
+
+export interface SyncData {
+	watchlists: CustomWatchlists
+	alerts: Alert[]
+	chartLines: ChartLine[]
+	exportedAt: string
+}
+
+export interface SyncEntry {
+	id: string
+	value: SyncData
+	created_at: string
+	updated_at: string
+}
+
+/**
+ * POST /sync/{key} — Create or update a sync entry on the server
+ */
+export async function syncCreateOrUpdate(
+	token: string,
+	key: string,
+	secret: string,
+	value: SyncData,
+	baseUrl?: string,
+): Promise<SyncEntry> {
+	const baseURL = (baseUrl || getApiBaseURL()).replace(/\/$/, '')
+	const response = await fetch(`${baseURL}/sync/${key}`, {
+		method: 'POST',
+		headers: {
+			'Authorization': `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ secret, value }),
+	})
+
+	if (!response.ok) {
+		if (response.status === 401) throw new Error('Invalid sync token')
+		if (response.status === 403) throw new Error('Invalid secret')
+		if (response.status === 422 || response.status === 400) {
+			const err = await response.json().catch(() => ({ error: response.statusText }))
+			throw new Error(err.error || `Validation failed: ${response.statusText}`)
+		}
+		throw new Error(`Sync upload failed: ${response.statusText}`)
+	}
+
+	return response.json()
+}
+
+/**
+ * GET /sync/{key}?secret=... — Fetch a sync entry from the server
+ */
+export async function syncFetch(
+	token: string,
+	key: string,
+	secret: string,
+	baseUrl?: string,
+): Promise<SyncEntry> {
+	const baseURL = (baseUrl || getApiBaseURL()).replace(/\/$/, '')
+	const response = await fetch(`${baseURL}/sync/${key}?secret=${encodeURIComponent(secret)}`, {
+		headers: {
+			'Authorization': `Bearer ${token}`,
+		},
+	})
+
+	if (!response.ok) {
+		if (response.status === 401) throw new Error('Invalid sync token')
+		if (response.status === 403) throw new Error('Invalid secret')
+		if (response.status === 404) throw new Error('Sync entry not found')
+		throw new Error(`Sync fetch failed: ${response.statusText}`)
+	}
+
+	return response.json()
+}
+
+/**
+ * Collect local watchlists, alerts, and chart lines into a single sync payload
+ */
+export function collectLocalSyncData(): SyncData {
+	return {
+		watchlists: getCustomWatchlists(),
+		alerts: getAlerts(),
+		chartLines: getChartLines(),
+		exportedAt: new Date().toISOString(),
+	}
+}
+
+/**
+ * Apply sync data to local storage
+ * @param data - Sync data from server
+ * @param mode - 'overwrite' replaces everything, 'merge' combines intelligently
+ */
+export function applySyncData(data: SyncData, mode: 'overwrite' | 'merge'): void {
+	if (mode === 'overwrite') {
+		SafeLocalStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(data.watchlists))
+		SafeLocalStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(data.alerts))
+		SafeLocalStorage.setItem(CHART_LINES_STORAGE_KEY, JSON.stringify(data.chartLines))
+		return
+	}
+
+	// Merge mode
+	const localWatchlists = getCustomWatchlists()
+	const mergedWatchlists = { ...localWatchlists, ...data.watchlists }
+	SafeLocalStorage.setItem(CUSTOM_WATCHLISTS_STORAGE_KEY, JSON.stringify(mergedWatchlists))
+
+	const localAlerts = getAlerts()
+	const mergedAlerts = [
+		...localAlerts.filter(a => !data.alerts.some(da => da.id === a.id)),
+		...data.alerts,
+	]
+	SafeLocalStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(mergedAlerts))
+
+	const localChartLines = getChartLines()
+	const localChartLineKeys = new Set(localChartLines.map(l => `${l.ticker}:${l.price}`))
+	const newChartLines = data.chartLines.filter(l => !localChartLineKeys.has(`${l.ticker}:${l.price}`))
+	const mergedChartLines = [...localChartLines, ...newChartLines]
+	SafeLocalStorage.setItem(CHART_LINES_STORAGE_KEY, JSON.stringify(mergedChartLines))
 }
