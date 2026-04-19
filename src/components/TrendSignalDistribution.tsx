@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { TrendingDown, Minus, TrendingUp } from 'lucide-react'
 
 interface SignalDistributionData {
@@ -14,9 +13,9 @@ interface TrendSignalDistributionProps {
 
 export function TrendSignalDistribution({ distribution, totalSignals }: TrendSignalDistributionProps) {
   const segments = [
-    { key: 'sell', label: 'SELL', color: 'red', icon: TrendingDown },
-    { key: 'none', label: 'NONE', color: 'gray', icon: Minus },
-    { key: 'buy', label: 'BUY', color: 'green', icon: TrendingUp },
+    { key: 'sell', label: 'YẾU', color: 'red', icon: TrendingDown },
+    { key: 'none', label: 'KHÔNG', color: 'gray', icon: Minus },
+    { key: 'buy', label: 'MẠNH', color: 'green', icon: TrendingUp },
   ]
 
   const calculatePercentage = (count: number) =>
@@ -100,7 +99,6 @@ export function TrendSignalDistribution({ distribution, totalSignals }: TrendSig
       <div className="grid grid-cols-3 gap-2">
         {segmentData.map(segment => {
           const Icon = segment.icon
-          const percentage = Math.round(segment.percentage)
           return (
             <div
               key={`card-${segment.key}`}
