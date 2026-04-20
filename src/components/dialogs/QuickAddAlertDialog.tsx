@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Bell, Download, Upload } from 'lucide-react'
+import { Bell, Download, Pencil, Upload } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,7 @@ import { formatPrice, formatPercent } from '@/lib/format'
 import { ALERT_TYPES, ALERTS_STORAGE_KEY } from '@/lib/constants'
 import { getAlerts, type Alert } from '@/lib/alert-storage'
 import { SafeLocalStorage } from '@/lib/localStorage'
+import { EditAlertDialog } from '@/components/dialogs/EditAlertDialog'
 
 export interface QuickAddAlertDialogProps {
   children: React.ReactNode
@@ -423,6 +424,16 @@ export function QuickAddAlertDialog({
                           <div className="text-xs text-muted-foreground">
                             {alert.triggered ? t('dialogs.quickAddAlert.existingAlerts.triggered') : t('dialogs.quickAddAlert.existingAlerts.active')}
                           </div>
+                          <EditAlertDialog alert={alert}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                              title={t('dialogs.editAlert.title')}
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          </EditAlertDialog>
                           <Button
                             variant="ghost"
                             size="sm"
