@@ -405,7 +405,7 @@ export function EditAlertDialog({
             <TradingViewChart
               initialTicker={alert.ticker}
               height={400}
-              showControls={false}
+              showControls={true}
             />
           </TabsContent>
         </Tabs>
