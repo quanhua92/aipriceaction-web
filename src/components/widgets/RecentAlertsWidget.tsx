@@ -4,19 +4,18 @@ import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useTranslation } from '@/hooks/useTranslation'
 import { formatPrice, parseUTCISOString } from '@/lib/format'
-import { EditAlertDialog } from '@/components/dialogs/EditAlertDialog'
-import type { Alert } from '@/lib/alert-storage'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 const MAX_ALERTS = 5
 
 export interface RecentAlertsWidgetProps {
   className?: string
+  onFullscreenClick?: (ticker: string) => void
 }
 
-export function RecentAlertsWidget({ className = '' }: RecentAlertsWidgetProps) {
+export function RecentAlertsWidget({ className = '', onFullscreenClick }: RecentAlertsWidgetProps) {
   const { t } = useTranslation()
-  const { triggeredAlerts, refreshAlerts } = useAlert()
+  const { triggeredAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
 
   // Filter to alerts triggered in the last 7 days, sort by most recent
@@ -48,10 +47,6 @@ export function RecentAlertsWidget({ className = '' }: RecentAlertsWidgetProps) 
     return `${diffDays}d ago`
   }
 
-  const handleAlertUpdated = () => {
-    refreshAlerts()
-  }
-
   // Don't render if no recent alerts
   if (recentAlerts.length === 0) {
     return null
@@ -69,27 +64,23 @@ export function RecentAlertsWidget({ className = '' }: RecentAlertsWidgetProps) 
           const lastBar = tickerData?.[tickerData.length - 1]
 
           return (
-            <EditAlertDialog
+            <button
               key={alert.id}
-              alert={alert}
-              onAlertUpdated={handleAlertUpdated}
+              type="button"
+              onClick={() => onFullscreenClick?.(alert.ticker)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-background hover:bg-muted/50 transition-colors text-sm"
             >
-              <button
-                type="button"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-background hover:bg-muted/50 transition-colors text-sm"
-              >
-                <span className="text-green-600 dark:text-green-500">✓</span>
-                <span className="font-mono font-semibold">{alert.ticker}</span>
-                <span className="text-muted-foreground">
-                  {formatPrice(alert.target_price, lastBar || { mode: 'vn' })}
+              <span className="text-green-600 dark:text-green-500">✓</span>
+              <span className="font-mono font-semibold">{alert.ticker}</span>
+              <span className="text-muted-foreground">
+                {formatPrice(alert.target_price, lastBar || { mode: 'vn' })}
+              </span>
+              {alert.triggered_at && (
+                <span className="text-xs text-muted-foreground">
+                  {getRelativeTime(alert.triggered_at)}
                 </span>
-                {alert.triggered_at && (
-                  <span className="text-xs text-muted-foreground">
-                    {getRelativeTime(alert.triggered_at)}
-                  </span>
-                )}
-              </button>
-            </EditAlertDialog>
+              )}
+            </button>
           )
         })}
       </div>

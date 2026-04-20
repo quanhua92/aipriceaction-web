@@ -106,7 +106,7 @@ function HomePage() {
 			</div>
 
 			{/* Section: Recent Triggered Alerts */}
-			<RecentAlertsWidget />
+			<RecentAlertsWidget onFullscreenClick={setFullscreenTicker} />
 
 			{/* Section: Ticker Info + Volume Profile */}
 			<div className="p-4 md:p-6">
