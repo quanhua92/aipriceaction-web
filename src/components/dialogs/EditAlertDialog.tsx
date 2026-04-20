@@ -152,12 +152,13 @@ export function EditAlertDialog({
     if (!currentPrice) return
 
     try {
+      const now = new Date().toISOString()
       updateAlert(alert.id, {
         triggered: false,
         triggered_at: undefined,
-        created_at: new Date().toISOString(),
+        created_at: now,
         price_at_creation: currentPrice,
-        last_checked_bar_time: undefined,
+        last_checked_bar_time: now,
       })
 
       setOpen(false)
