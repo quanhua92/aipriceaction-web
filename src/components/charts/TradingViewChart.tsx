@@ -125,16 +125,15 @@ function TradingViewChartContent({
 	const alertPriceLines = React.useMemo(() => {
 		if (!selectedTicker) return [];
 		const tickerAlerts = getAlertsByTickerSymbol(selectedTicker);
-		const activeAlerts = tickerAlerts.filter((a) => !a.triggered);
-		if (activeAlerts.length === 0) return [];
+		if (tickerAlerts.length === 0) return [];
 
-		return activeAlerts.map((alert) => ({
+		return tickerAlerts.map((alert) => ({
 			price: alert.target_price,
 			color: '#eab308',
 			lineWidth: priceLineWidth as 1 | 2 | 3 | 4,
 			lineStyle: 2 as const,
 			axisLabelVisible: true,
-			title: '',
+			title: alert.triggered ? '🔔' : '',
 			id: `alert-${alert.id}`,
 		}));
 	}, [selectedTicker, getAlertsByTickerSymbol, priceLineWidth]);

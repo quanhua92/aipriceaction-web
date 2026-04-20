@@ -958,10 +958,10 @@ export function BaseTradingViewChart({
 					const line = series.createPriceLine(pl);
 					priceLinesRef.current.set(pl.id as string, line);
 				} else if (pl.id) {
-					// Update existing lines (e.g. lineWidth change)
+					// Update existing lines (e.g. lineWidth or title change)
 					const existingLine = priceLinesRef.current.get(pl.id as string);
 					if (existingLine) {
-						existingLine.applyOptions({ lineWidth: pl.lineWidth });
+						existingLine.applyOptions({ lineWidth: pl.lineWidth, title: pl.title });
 					}
 				}
 			}
