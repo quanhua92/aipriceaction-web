@@ -2,51 +2,40 @@ import { describe, expect, it } from "vitest";
 import { findPriceCrossBar } from "./alert-utils";
 import type { StockData } from "@/integrations/aipriceaction/src/types";
 
-function bar(time: string, low: number, high: number): StockData {
+function bar(time: string, close: number): StockData {
   return {
     symbol: "TEST",
     time,
-    open: low,
-    high,
-    low,
-    close: high,
+    open: close,
+    high: close,
+    low: close,
+    close,
     volume: 1000,
   };
 }
 
 describe("findPriceCrossBar", () => {
   describe("upward alert (creationPrice < targetPrice)", () => {
-    it("triggers when price crosses from below to above target", () => {
+    it("triggers on first bar where close >= target", () => {
       const bars = [
-        bar("2025-01-01", 50000, 55000),
-        bar("2025-01-02", 58000, 62000), // crosses above 60000
-        bar("2025-01-03", 61000, 65000),
+        bar("2025-01-01", 50000),
+        bar("2025-01-02", 55000),
+        bar("2025-01-03", 62000),
       ];
       const result = findPriceCrossBar(50000, 60000, bars);
-      expect(result).toBe(bars[1]);
+      expect(result).toBe(bars[2]);
     });
 
-    it("does not trigger when bars are below target", () => {
-      const bars = [
-        bar("2025-01-01", 50000, 55000),
-        bar("2025-01-02", 52000, 58000),
-      ];
+    it("triggers immediately if first bar is already above target", () => {
+      const bars = [bar("2025-01-01", 65000)];
       const result = findPriceCrossBar(50000, 60000, bars);
-      expect(result).toBeNull();
+      expect(result).toBe(bars[0]);
     });
 
-    it("does not trigger when bars are entirely above target (no cross)", () => {
+    it("does not trigger when all closes are below target", () => {
       const bars = [
-        bar("2025-01-01", 61000, 65000),
-        bar("2025-01-02", 62000, 66000),
-      ];
-      const result = findPriceCrossBar(50000, 60000, bars);
-      expect(result).toBeNull();
-    });
-
-    it("does not trigger when bar touches target but doesn't cross (low == target)", () => {
-      const bars = [
-        bar("2025-01-01", 60000, 62000), // low equals target, no "below" to cross from
+        bar("2025-01-01", 50000),
+        bar("2025-01-02", 55000),
       ];
       const result = findPriceCrossBar(50000, 60000, bars);
       expect(result).toBeNull();
@@ -54,28 +43,26 @@ describe("findPriceCrossBar", () => {
   });
 
   describe("downward alert (creationPrice > targetPrice)", () => {
-    it("triggers when price crosses from above to below target", () => {
+    it("triggers on first bar where close <= target", () => {
       const bars = [
-        bar("2025-01-01", 42000, 45000),
-        bar("2025-01-02", 38000, 41000), // crosses below 40000
+        bar("2025-01-01", 48000),
+        bar("2025-01-02", 42000),
+        bar("2025-01-03", 38000),
       ];
       const result = findPriceCrossBar(50000, 40000, bars);
-      expect(result).toBe(bars[1]);
+      expect(result).toBe(bars[2]);
     });
 
-    it("does not trigger when bars are above target", () => {
-      const bars = [
-        bar("2025-01-01", 42000, 45000),
-        bar("2025-01-02", 43000, 46000),
-      ];
+    it("triggers immediately if first bar is already below target", () => {
+      const bars = [bar("2025-01-01", 35000)];
       const result = findPriceCrossBar(50000, 40000, bars);
-      expect(result).toBeNull();
+      expect(result).toBe(bars[0]);
     });
 
-    it("does not trigger when bars are entirely below target (no cross)", () => {
+    it("does not trigger when all closes are above target", () => {
       const bars = [
-        bar("2025-01-01", 38000, 39000),
-        bar("2025-01-02", 37000, 38500),
+        bar("2025-01-01", 48000),
+        bar("2025-01-02", 45000),
       ];
       const result = findPriceCrossBar(50000, 40000, bars);
       expect(result).toBeNull();
@@ -83,61 +70,43 @@ describe("findPriceCrossBar", () => {
   });
 
   describe("reset scenario — price already past target", () => {
-    it("upward alert reset at 110k with target 100k: does not re-trigger while price stays above", () => {
+    it("reset at 110, target 100: triggers when close drops to or below 100", () => {
       const bars = [
-        bar("2025-01-01", 105000, 115000),
-        bar("2025-01-02", 108000, 112000),
-      ];
-      const result = findPriceCrossBar(110000, 100000, bars);
-      // creationPrice (110k) > targetPrice (100k) → this is actually a downward alert direction
-      // bars don't cross from above to below
-      expect(result).toBeNull();
-    });
-
-    it("upward alert reset at 110k with target 100k: triggers only after price drops below then rises back", () => {
-      const bars = [
-        bar("2025-01-01", 105000, 115000),
-        bar("2025-01-02", 95000, 98000),  // drops below 100k
-        bar("2025-01-03", 97000, 102000), // rises back above 100k
+        bar("2025-01-01", 108000),
+        bar("2025-01-02", 104000),
+        bar("2025-01-03", 97000),
       ];
       const result = findPriceCrossBar(110000, 100000, bars);
       expect(result).toBe(bars[2]);
     });
 
-    it("downward alert reset at 50k with target 60k: does not re-trigger while price stays below", () => {
+    it("reset at 50, target 60: triggers when close rises to or above 60", () => {
       const bars = [
-        bar("2025-01-01", 55000, 59000),
-        bar("2025-01-02", 52000, 56000),
-      ];
-      const result = findPriceCrossBar(50000, 60000, bars);
-      // creationPrice (50k) < targetPrice (60k) → upward alert direction
-      // bars don't cross from below to above
-      expect(result).toBeNull();
-    });
-
-    it("downward alert reset at 50k with target 60k: triggers only after price rises above then drops back", () => {
-      const bars = [
-        bar("2025-01-01", 55000, 59000),
-        bar("2025-01-02", 61000, 65000),  // rises above 60k
-        bar("2025-01-03", 58000, 62000),  // drops back below 60k
+        bar("2025-01-01", 55000),
+        bar("2025-01-02", 58000),
+        bar("2025-01-03", 62000),
       ];
       const result = findPriceCrossBar(50000, 60000, bars);
       expect(result).toBe(bars[2]);
+    });
+
+    it("does not re-trigger while close stays on the same side", () => {
+      const bars = [
+        bar("2025-01-01", 108000),
+        bar("2025-01-02", 112000),
+      ];
+      const result = findPriceCrossBar(110000, 100000, bars);
+      expect(result).toBeNull();
     });
   });
 
-  describe("edge case — creationPrice equals targetPrice", () => {
-    it("never triggers when creation price equals target", () => {
-      const bars = [
-        bar("2025-01-01", 50000, 60000),
-        bar("2025-01-02", 40000, 70000),
-      ];
+  describe("edge cases", () => {
+    it("never triggers when creationPrice equals targetPrice", () => {
+      const bars = [bar("2025-01-01", 60000)];
       const result = findPriceCrossBar(50000, 50000, bars);
       expect(result).toBeNull();
     });
-  });
 
-  describe("empty bars", () => {
     it("returns null for empty array", () => {
       const result = findPriceCrossBar(50000, 60000, []);
       expect(result).toBeNull();

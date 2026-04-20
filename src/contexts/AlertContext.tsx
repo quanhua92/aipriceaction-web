@@ -146,7 +146,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
               end_date: createdDate, // Use end_date to look backwards from creation
               limit: 10, // Get 10 bars backwards to handle weekends/holidays
               mode,
-              ema: ema || undefined,
+              ma: false,
             })
 
             const bars = historicalData[alert.ticker]
@@ -211,43 +211,33 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
           continue
         }
 
-        // Determine the date range to check
-        // Use the most recent between created_at and last_checked_bar_time, subtract 2 days buffer
-        const createdDate = new Date(alert.created_at)
-        const lastCheckedDate = alert.last_checked_bar_time
-          ? new Date(alert.last_checked_bar_time)
-          : createdDate
-
-        const mostRecentDate = lastCheckedDate > createdDate ? lastCheckedDate : createdDate
-
-        // Subtract 2 days as buffer to avoid incomplete bars
-        const checkDate = new Date(mostRecentDate)
-        checkDate.setDate(checkDate.getDate() - 2)
-
-        // Ensure not earlier than created_at
-        const startDate = (checkDate >= createdDate ? checkDate : createdDate).toISOString().split('T')[0]
+        // Determine the start date to filter bars from
+        const createdDate = alert.created_at.split('T')[0]
+        const daysSinceCreation = Math.max(1, Math.min(100, Math.ceil(
+          (Date.now() - new Date(alert.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        )))
 
         // Detect mode based on whether ticker is in VN stocks, crypto, or global
         const isInCrypto = allCryptoTickersLastData[alert.ticker] !== undefined
         const isGlobal = allGlobalTickersLastData[alert.ticker] !== undefined
         const mode = isInCrypto ? 'crypto' : isGlobal ? 'yahoo' : 'vn'
 
-        info('Alerts', `  📊 Fetching historical 1D bars from ${startDate} onwards (mode=${mode}, -2d buffer)...`)
+        info('Alerts', `  📊 Fetching ${daysSinceCreation} daily bars (mode=${mode}, from=${createdDate})...`)
 
         try {
-          // Fetch historical 1D data from last check (or creation) to now
-          // Don't use end_date - if today is weekend, start=end=weekend returns 0 bars
+          // Fetch only needed daily bars — fast, cacheable
           const historicalData = await getTickers('AlertContext.checkHistoricalCross', {
             symbol: alert.ticker,
             interval: Interval.Daily,
-            start_date: startDate,
-            // No end_date - get all available bars from start_date
+            limit: daysSinceCreation,
             mode,
-            ema: ema || undefined,
+            ma: false,
           })
 
-          const bars = historicalData[alert.ticker]
-          if (bars && bars.length > 0) {
+          const allBars = historicalData[alert.ticker]
+          // Only check bars from creation date onwards
+          const bars = allBars?.filter(b => b.time.split('T')[0] >= createdDate) ?? []
+          if (bars.length > 0) {
             info('Alerts', `  📈 Got ${bars.length} bar(s), checking for cross from ${creationPrice} to ${alert.target_price}...`)
 
             // Find if price crossed target in any bar
