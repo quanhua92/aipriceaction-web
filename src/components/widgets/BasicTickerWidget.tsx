@@ -198,7 +198,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
       <div className="flex flex-col gap-4">
         {/* OHLCV Grid */}
         <div className="flex-1">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.open')}</p>
               <p className="text-sm font-semibold">{formatPrice(data.open, data)}</p>
@@ -215,7 +215,7 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
               <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.close')}</p>
               <p className="text-sm font-semibold">{formatPrice(data.close, data)}</p>
             </div>
-            <div className="space-y-1 col-span-2 sm:col-span-2">
+            <div className="space-y-1 col-span-2">
               <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.ticker.volume')}</p>
               <div className="flex items-center gap-2">
                 <p className="text-sm font-semibold">{formatVolume(data.volume)}</p>
