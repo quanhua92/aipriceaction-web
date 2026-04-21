@@ -41,7 +41,7 @@ export function EditAlertDialog({
   onAlertDeleted,
 }: EditAlertDialogProps) {
   const { t } = useTranslation()
-  const { updateAlert, deleteAlert, getAlertsByTickerSymbol } = useAlert()
+  const { updateAlert, deleteAlert, resetAlert, getAlertsByTickerSymbol } = useAlert()
   const { allTickersLastData } = useAPI()
 
   const [open, setOpen] = React.useState(false)
@@ -152,15 +152,7 @@ export function EditAlertDialog({
     if (!currentPrice) return
 
     try {
-      const now = new Date().toISOString()
-      updateAlert(alert.id, {
-        triggered: false,
-        triggered_at: undefined,
-        created_at: now,
-        price_at_creation: currentPrice,
-        last_checked_bar_time: now,
-      })
-
+      resetAlert(alert.id)
       setOpen(false)
       if (onAlertUpdated) {
         onAlertUpdated()

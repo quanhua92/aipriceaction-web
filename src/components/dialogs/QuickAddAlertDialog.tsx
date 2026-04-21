@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Bell, Download, Pencil, Upload } from 'lucide-react'
+import { Bell, Download, Pencil, RotateCcw, Upload } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,7 @@ export function QuickAddAlertDialog({
   currentPrice: currentPriceProp,
 }: QuickAddAlertDialogProps) {
   const { t } = useTranslation()
-  const { addAlert, deleteAlert, getAlertsByTickerSymbol, refreshAlerts } = useAlert()
+  const { addAlert, deleteAlert, resetAlert, getAlertsByTickerSymbol, refreshAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
   const { info, error: logError } = useLogs()
 
@@ -449,6 +449,17 @@ export function QuickAddAlertDialog({
                         <div className="text-xs text-muted-foreground italic">
                           {alert.note}
                         </div>
+                      )}
+                      {alert.triggered && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => resetAlert(alert.id)}
+                          className="h-6 w-full text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          {t('common.alerts.resetAlert')}
+                        </Button>
                       )}
                     </div>
                   )

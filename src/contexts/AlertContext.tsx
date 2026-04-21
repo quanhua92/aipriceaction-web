@@ -22,6 +22,7 @@ interface AlertContextValue {
   addAlert: (alert: Omit<Alert, 'id' | 'created_at' | 'triggered'>) => Alert
   updateAlert: (id: string, updates: Partial<Alert>) => void
   deleteAlert: (id: string) => void
+  resetAlert: (id: string) => void
   getAlertsByTickerSymbol: (ticker: string) => Alert[]
   checkAlerts: () => void
   lastChecked: Date | null
@@ -105,6 +106,34 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
       info('Alerts', `Deleted alert ${id}`)
     },
     [info]
+  )
+
+  // Reset triggered alert
+  const resetAlert = React.useCallback(
+    (id: string) => {
+      const alert = getAlerts().find((a) => a.id === id)
+      if (!alert) return
+
+      const tickerData = allMarketsData[alert.ticker]
+      const currentPrice = tickerData && tickerData.length > 0
+        ? tickerData[tickerData.length - 1].close
+        : undefined
+
+      const now = new Date().toISOString()
+      const updates = {
+        triggered: false,
+        triggered_at: undefined,
+        created_at: now,
+        price_at_creation: currentPrice,
+        last_checked_bar_time: now,
+      }
+      updateAlertInStorage(id, updates)
+      setAlerts((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, ...updates } : a))
+      )
+      info('Alerts', `Reset alert for ${alert.ticker} at ${alert.target_price}`)
+    },
+    [allMarketsData, info]
   )
 
   // Get alerts by ticker
@@ -318,6 +347,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
     addAlert,
     updateAlert,
     deleteAlert,
+    resetAlert,
     getAlertsByTickerSymbol,
     checkAlerts,
     lastChecked,
