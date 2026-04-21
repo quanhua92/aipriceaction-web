@@ -221,6 +221,10 @@ export function ChartFullscreenDialog({
 		if (!isOpen || !tickerList || tickerList.length === 0) return;
 
 		const handleKeyDown = (event: KeyboardEvent) => {
+			const target = event.target as HTMLElement;
+			if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+				return;
+			}
 			if (event.key === "ArrowLeft") {
 				event.preventDefault();
 				navigateToPrevious();
