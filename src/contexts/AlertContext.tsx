@@ -13,7 +13,7 @@ import {
 } from '@/lib/alert-storage'
 import { ALERT_TRIGGER_THRESHOLD } from '@/lib/constants'
 import { findPriceCrossBar } from '@/lib/alert-utils'
-import { Interval } from '@/integrations/aipriceaction/src/types'
+import { Interval, type StockData } from '@/integrations/aipriceaction/src/types'
 
 interface AlertContextValue {
   alerts: Alert[]
@@ -32,7 +32,7 @@ interface AlertContextValue {
 const AlertContext = React.createContext<AlertContextValue | undefined>(undefined)
 
 export function AlertProvider({ children }: { children: React.ReactNode }) {
-  const { allTickersLastData, allCryptoTickersLastData, allGlobalTickersLastData, getTickers, ema } = useAPI()
+  const { allTickersLastData, allCryptoTickersLastData, getTickers, ema } = useAPI()
   const { lastRefresh } = useRefresh()
   const { info } = useLogs()
   const { endDate: globalEndDate } = useChartSettings()
@@ -147,167 +147,163 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
   // Check alerts against current prices
   const checkAlerts = React.useCallback(async () => {
     const activeAlertsList = getActiveAlertsFromStorage()
+    if (activeAlertsList.length === 0) return
+
     const newlyTriggered: Alert[] = []
     let hasUpdates = false // Track if any updates were made
 
     info('Alerts', `🔍 Checking ${activeAlertsList.length} active alert(s)...`)
 
-    for (const alert of activeAlertsList) {
+    // Pre-scan: find the max days since creation across all alerts for a single batch fetch
+    const priceHitsAlerts = activeAlertsList.filter(a => a.alert_type === 'price_hits')
+    if (priceHitsAlerts.length === 0) {
+      setLastChecked(new Date())
+      return
+    }
+
+    const maxDaysSinceCreation = Math.max(
+      ...priceHitsAlerts.map(a =>
+        Math.max(1, Math.min(100, Math.ceil(
+          (Date.now() - new Date(a.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        )))
+      )
+    )
+
+    // Single batch fetch: all tickers, all modes, enough bars for the oldest alert + buffer
+    const batchLimit = maxDaysSinceCreation + 10
+    info('Alerts', `📊 Batch fetching ${batchLimit} daily bars (mode=all) for ${priceHitsAlerts.length} alert(s)...`)
+
+    let batchData: Record<string, StockData[]> = {}
+    try {
+      batchData = await getTickers('AlertContext.batchCheck', {
+        interval: Interval.Daily,
+        limit: batchLimit,
+        mode: 'all',
+        ma: false,
+      })
+    } catch (error) {
+      info('Alerts', `❌ Batch fetch failed: ${error}`)
+      setLastChecked(new Date())
+      return
+    }
+
+    const uniqueTickersInBatch = Object.keys(batchData).length
+    info('Alerts', `📊 Batch fetched ${uniqueTickersInBatch} ticker(s)`)
+
+    for (const alert of priceHitsAlerts) {
       info('Alerts', `→ ${alert.ticker} target=${alert.target_price} created=${alert.created_at.split('T')[0]} price_at_creation=${alert.price_at_creation ?? 'N/A'} last_checked=${alert.last_checked_bar_time?.split('T')[0] ?? 'never'}`)
-      // Check if alert triggered based on alert type
-      if (alert.alert_type === 'price_hits') {
-        let creationPrice = alert.price_at_creation
 
-        // If no creation price, try to estimate from earliest data
-        if (!creationPrice) {
-          // Detect mode based on whether ticker is in VN stocks, crypto, or global
-          const isInCrypto = allCryptoTickersLastData[alert.ticker] !== undefined
-          const isGlobal = allGlobalTickersLastData[alert.ticker] !== undefined
-          const mode = isInCrypto ? 'crypto' : isGlobal ? 'yahoo' : 'vn'
+      let creationPrice = alert.price_at_creation
+      const createdDate = alert.created_at.split('T')[0]
 
-          const createdDate = alert.created_at.split('T')[0]
-
-          info('Alerts', `  ⚠️  No creation price, estimating backwards from ${createdDate} (mode=${mode})...`)
-          try {
-            const historicalData = await getTickers('AlertContext.estimateCreationPrice', {
-              symbol: alert.ticker,
-              interval: Interval.Daily,
-              end_date: createdDate, // Use end_date to look backwards from creation
-              limit: 10, // Get 10 bars backwards to handle weekends/holidays
-              mode,
-              ma: false,
-            })
-
-            const bars = historicalData[alert.ticker]
-            if (bars && bars.length > 0) {
-              // Pick the most recent bar (closest to creation date)
-              const nearestBar = bars[bars.length - 1]
-              creationPrice = nearestBar.close
-              // Update alert with estimated creation price
-              const updates = { price_at_creation: creationPrice }
-              updateAlertInStorage(alert.id, updates)
-              hasUpdates = true
-              info('Alerts', `  ✅ Estimated creation price: ${creationPrice} (from ${nearestBar.time.split('T')[0]})`)
-              info('Alerts', `  💾 Saved to localStorage: ${JSON.stringify(updates)}`)
-            } else {
-              info('Alerts', `  ❌ No bars returned for ${alert.ticker}`)
-            }
-          } catch (error) {
-            info('Alerts', `  ❌ Failed to estimate: ${error}`)
-          }
-        }
-
-        // Check if ticker data is available for real-time checking
-        const tickerData = allMarketsData[alert.ticker]
-        if (!tickerData || tickerData.length === 0) {
-          info('Alerts', `  ⏭️  No current market data for ${alert.ticker}, skipping...`)
-          continue
-        }
-
-        const currentPrice = tickerData[tickerData.length - 1].close
-        info('Alerts', `  💹 Current price: ${currentPrice}`)
-
-        // If we still don't have creation price, fall back to threshold-based check
-        if (!creationPrice) {
-          const distance = Math.abs(
-            ((currentPrice - alert.target_price) / alert.target_price) * 100
-          )
-          info('Alerts', `  🎯 Fallback: distance=${distance.toFixed(2)}% threshold=${ALERT_TRIGGER_THRESHOLD}%`)
-
-          if (distance <= ALERT_TRIGGER_THRESHOLD) {
-            const triggeredAt = new Date().toISOString()
-            const updates = {
-              triggered: true,
-              triggered_at: triggeredAt,
-            }
+      // If no creation price, estimate from batch data
+      if (!creationPrice) {
+        const bars = batchData[alert.ticker]
+        if (bars && bars.length > 0) {
+          // Find bar closest to (but not after) creation date
+          const nearestBar = bars
+            .filter(b => b.time.split('T')[0] <= createdDate)
+            .pop()
+          if (nearestBar) {
+            creationPrice = nearestBar.close
+            const updates = { price_at_creation: creationPrice }
             updateAlertInStorage(alert.id, updates)
-
-            newlyTriggered.push({
-              ...alert,
-              triggered: true,
-              triggered_at: triggeredAt,
-            })
             hasUpdates = true
-
-            info(
-              'Alerts',
-              `🔔 Alert triggered (fallback): ${alert.ticker} reached ${currentPrice} (target: ${alert.target_price})`
-            )
+            info('Alerts', `  ✅ Estimated creation price: ${creationPrice} (from ${nearestBar.time.split('T')[0]})`)
             info('Alerts', `  💾 Saved to localStorage: ${JSON.stringify(updates)}`)
           } else {
-            info('Alerts', `  ⏸️  Not triggered (too far)`)
+            info('Alerts', `  ⚠️  No bars before creation date in batch for ${alert.ticker}`)
           }
-          continue
+        } else {
+          info('Alerts', `  ⚠️  No bars in batch for ${alert.ticker}`)
         }
+      }
 
-        // Determine the start date to filter bars from
-        const createdDate = alert.created_at.split('T')[0]
-        const daysSinceCreation = Math.max(1, Math.min(100, Math.ceil(
-          (Date.now() - new Date(alert.created_at).getTime()) / (1000 * 60 * 60 * 24)
-        )))
+      // Check if ticker data is available for real-time checking
+      const tickerData = allMarketsData[alert.ticker]
+      if (!tickerData || tickerData.length === 0) {
+        info('Alerts', `  ⏭️  No current market data for ${alert.ticker}, skipping...`)
+        continue
+      }
 
-        // Detect mode based on whether ticker is in VN stocks, crypto, or global
-        const isInCrypto = allCryptoTickersLastData[alert.ticker] !== undefined
-        const isGlobal = allGlobalTickersLastData[alert.ticker] !== undefined
-        const mode = isInCrypto ? 'crypto' : isGlobal ? 'yahoo' : 'vn'
+      const currentPrice = tickerData[tickerData.length - 1].close
+      info('Alerts', `  💹 Current price: ${currentPrice}`)
 
-        info('Alerts', `  📊 Fetching ${daysSinceCreation} daily bars (mode=${mode}, from=${createdDate})...`)
+      // If we still don't have creation price, fall back to threshold-based check
+      if (!creationPrice) {
+        const distance = Math.abs(
+          ((currentPrice - alert.target_price) / alert.target_price) * 100
+        )
+        info('Alerts', `  🎯 Fallback: distance=${distance.toFixed(2)}% threshold=${ALERT_TRIGGER_THRESHOLD}%`)
 
-        try {
-          // Fetch only needed daily bars — fast, cacheable
-          const historicalData = await getTickers('AlertContext.checkHistoricalCross', {
-            symbol: alert.ticker,
-            interval: Interval.Daily,
-            limit: daysSinceCreation,
-            mode,
-            ma: false,
+        if (distance <= ALERT_TRIGGER_THRESHOLD) {
+          const triggeredAt = new Date().toISOString()
+          const updates = {
+            triggered: true,
+            triggered_at: triggeredAt,
+          }
+          updateAlertInStorage(alert.id, updates)
+
+          newlyTriggered.push({
+            ...alert,
+            triggered: true,
+            triggered_at: triggeredAt,
           })
+          hasUpdates = true
 
-          const allBars = historicalData[alert.ticker]
-          // Only check bars from creation date onwards
-          const bars = allBars?.filter(b => b.time.split('T')[0] >= createdDate) ?? []
-          if (bars.length > 0) {
-            info('Alerts', `  📈 Got ${bars.length} bar(s), checking for cross from ${creationPrice} to ${alert.target_price}...`)
-
-            // Find if price crossed target in any bar
-            const crossedBar = findPriceCrossBar(creationPrice, alert.target_price, bars)
-
-            if (crossedBar) {
-              // Alert triggered! Use the bar's timestamp
-              const triggeredAt = crossedBar.time
-              const updates = {
-                triggered: true,
-                triggered_at: triggeredAt,
-              }
-              updateAlertInStorage(alert.id, updates)
-
-              newlyTriggered.push({
-                ...alert,
-                triggered: true,
-                triggered_at: triggeredAt,
-              })
-              hasUpdates = true
-
-              info(
-                'Alerts',
-                `🔔 Alert triggered: ${alert.ticker} crossed ${alert.target_price} on ${triggeredAt.split('T')[0]} (from ${creationPrice})`
-              )
-              info('Alerts', `  💾 Saved to localStorage: ${JSON.stringify(updates)}`)
-            } else {
-              // No crossing found, update last_checked_bar_time to latest bar
-              const latestBar = bars[bars.length - 1]
-              const updates = { last_checked_bar_time: latestBar.time }
-              updateAlertInStorage(alert.id, updates)
-              hasUpdates = true
-              info('Alerts', `  ✅ No cross found. Updated last_checked to ${latestBar.time.split('T')[0]}`)
-              info('Alerts', `  💾 Saved to localStorage: ${JSON.stringify(updates)}`)
-            }
-          } else {
-            info('Alerts', `  ⚠️  No bars returned for ${alert.ticker}`)
-          }
-        } catch (error) {
-          info('Alerts', `  ❌ Failed to check historical data: ${error}`)
+          info(
+            'Alerts',
+            `🔔 Alert triggered (fallback): ${alert.ticker} reached ${currentPrice} (target: ${alert.target_price})`
+          )
+          info('Alerts', `  💾 Saved to localStorage: ${JSON.stringify(updates)}`)
+        } else {
+          info('Alerts', `  ⏸️  Not triggered (too far)`)
         }
+        continue
+      }
+
+      // Use batch data for cross checking
+      const allBars = batchData[alert.ticker]
+      // Only check bars from creation date onwards
+      const bars = allBars?.filter(b => b.time.split('T')[0] >= createdDate) ?? []
+      if (bars.length > 0) {
+        info('Alerts', `  📈 Got ${bars.length} bar(s), checking for cross from ${creationPrice} to ${alert.target_price}...`)
+
+        // Find if price crossed target in any bar
+        const crossedBar = findPriceCrossBar(creationPrice, alert.target_price, bars)
+
+        if (crossedBar) {
+          // Alert triggered! Use the bar's timestamp
+          const triggeredAt = crossedBar.time
+          const updates = {
+            triggered: true,
+            triggered_at: triggeredAt,
+          }
+          updateAlertInStorage(alert.id, updates)
+
+          newlyTriggered.push({
+            ...alert,
+            triggered: true,
+            triggered_at: triggeredAt,
+          })
+          hasUpdates = true
+
+          info(
+            'Alerts',
+            `🔔 Alert triggered: ${alert.ticker} crossed ${alert.target_price} on ${triggeredAt.split('T')[0]} (from ${creationPrice})`
+          )
+          info('Alerts', `  💾 Saved to localStorage: ${JSON.stringify(updates)}`)
+        } else {
+          // No crossing found, update last_checked_bar_time to latest bar
+          const latestBar = bars[bars.length - 1]
+          const updates = { last_checked_bar_time: latestBar.time }
+          updateAlertInStorage(alert.id, updates)
+          hasUpdates = true
+          info('Alerts', `  ✅ No cross found. Updated last_checked to ${latestBar.time.split('T')[0]}`)
+          info('Alerts', `  💾 Saved to localStorage: ${JSON.stringify(updates)}`)
+        }
+      } else {
+        info('Alerts', `  ⚠️  No bars returned for ${alert.ticker}`)
       }
     }
 
