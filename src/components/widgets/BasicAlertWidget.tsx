@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Edit, Trash2, Search } from 'lucide-react'
+import { Edit, RotateCcw, Trash2, Search } from 'lucide-react'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -25,7 +25,7 @@ export function BasicAlertWidget({
   onSelectAlert,
 }: BasicAlertWidgetProps) {
   const { t } = useTranslation()
-  const { alerts, deleteAlert, refreshAlerts } = useAlert()
+  const { alerts, deleteAlert, resetAlert, refreshAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
 
   const [searchQuery, setSearchQuery] = React.useState('')
@@ -354,6 +354,22 @@ export function BasicAlertWidget({
                     </span>
                   )}
                 </div>
+
+                {/* Reset Button - only for triggered alerts */}
+                {alert.triggered && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2 w-full text-xs text-muted-foreground hover:text-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      resetAlert(alert.id)
+                    }}
+                  >
+                    <RotateCcw className="h-3 w-3 mr-1" />
+                    {t('common.alerts.resetAlert')}
+                  </Button>
+                )}
               </div>
             ))}
           </div>
