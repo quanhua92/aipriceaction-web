@@ -5,6 +5,7 @@ import { TreemapChartBar } from "@/components/echarts/TreemapChartBar";
 import { BasicWatchList } from "@/components/lists/BasicWatchList";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
+import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 
@@ -39,6 +40,11 @@ function HeatmapPage() {
 
 	return (
 		<div className="space-y-6">
+			{/* Section: Recent Alerts */}
+			<div className="p-3 md:p-4">
+				<RecentAlertsWidget onFullscreenClick={setFullscreenTicker} />
+			</div>
+
 			{/* Section: Date Control */}
 			<div className="p-3 md:p-4">
 				<DateControlWidget />
