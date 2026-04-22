@@ -121,8 +121,10 @@ function AIContextPage() {
 
 	const tickersInfo = React.useMemo((): TickerInfo[] => {
 		return selectedTickers.map((symbol) => {
-			const names = tickerNames || cryptoTickerNames || globalTickerNames || {};
-			const name = names[symbol];
+			const name =
+				tickerNames?.[symbol] ??
+				cryptoTickerNames?.[symbol] ??
+				globalTickerNames?.[symbol];
 
 			const groups: string[] = [];
 			const allGroups: Record<string, Record<string, string[]> | null> = {

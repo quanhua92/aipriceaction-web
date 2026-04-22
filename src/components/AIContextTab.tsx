@@ -487,8 +487,10 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 	]);
 
 	const tickerInfo = React.useMemo(() => {
-		const names = tickerNames || cryptoTickerNames || globalTickerNames || {};
-		const name = names[ticker];
+		const name =
+			tickerNames?.[ticker] ??
+			cryptoTickerNames?.[ticker] ??
+			globalTickerNames?.[ticker];
 
 		const groups: string[] = [];
 		const allGroups: Record<string, TickerGroups | null> = {
