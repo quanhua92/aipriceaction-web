@@ -352,20 +352,15 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
         let dates: string[] = []
 
         if (isMixed || isCryptoOnly || isGlobalOnly) {
-          // Pick reference symbol with the most recent last date
-          // This ensures the matrix shows the widest possible date range
-          // e.g. VNINDEX (Apr 6) wins over ^GSPC (Apr 2) when US markets are closed
-          const refSymbol = Object.entries(response)
-            .filter(([, data]) => data.length > 0)
-            .sort(([, a], [, b]) => {
-              const aTime = a[a.length - 1]?.time || ''
-              const bTime = b[b.length - 1]?.time || ''
-              return bTime.localeCompare(aTime)
-            })[0]?.[0]
-          const refData = response[refSymbol] || []
-          dates = refData
-            .map((point) => formatToVietnamDate(parseUTCISOString(point.time)))
-            .sort((a, b) => b.localeCompare(a)) // Newest first
+          // Use union of all tickers' dates so no trading day is missed
+          // e.g. crypto trades on weekends while VN stocks don't
+          const allDates = new Set<string>()
+          Object.values(response).forEach((tickerData) => {
+            tickerData.forEach((point) => {
+              allDates.add(formatToVietnamDate(parseUTCISOString(point.time)))
+            })
+          })
+          dates = Array.from(allDates).sort((a, b) => b.localeCompare(a)) // Newest first
         } else {
           // Use VNINDEX as trading day calendar for stock-only watchlists
           const vnindexData = response['VNINDEX'] || []
