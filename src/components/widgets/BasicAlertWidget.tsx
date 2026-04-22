@@ -32,6 +32,7 @@ export function BasicAlertWidget({
   const [sortBy, setSortBy] = React.useState<AlertSortBy>('distance')
   const [filterBy, setFilterBy] = React.useState<AlertFilter>('all')
   const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
+  const [resetConfirmId, setResetConfirmId] = React.useState<string | null>(null)
 
   // Calculate distance for each alert
   const alertsWithDistance = React.useMemo(() => {
@@ -133,6 +134,11 @@ export function BasicAlertWidget({
   const handleDelete = (id: string) => {
     deleteAlert(id)
     setDeleteConfirmId(null)
+  }
+
+  const handleReset = (id: string) => {
+    resetAlert(id)
+    setResetConfirmId(null)
   }
 
   const handleAlertUpdated = () => {
@@ -357,18 +363,40 @@ export function BasicAlertWidget({
 
                 {/* Reset Button - only for triggered alerts */}
                 {alert.triggered && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-2 w-full text-xs text-muted-foreground hover:text-foreground"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      resetAlert(alert.id)
-                    }}
-                  >
-                    <RotateCcw className="h-3 w-3 mr-1" />
-                    {t('common.alerts.resetAlert')}
-                  </Button>
+                  resetConfirmId === alert.id ? (
+                    <div className="flex items-center gap-1 mt-2" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-7 px-2 text-xs"
+                        onClick={() => setResetConfirmId(null)}
+                      >
+                        {t('common.cancel')}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1 h-7 px-2 text-xs"
+                        onClick={() => handleReset(alert.id)}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        {t('common.alerts.resetAlert')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 w-full text-xs text-muted-foreground hover:text-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setResetConfirmId(alert.id)
+                      }}
+                    >
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      {t('common.alerts.resetAlert')}
+                    </Button>
+                  )
                 )}
               </div>
             ))}
