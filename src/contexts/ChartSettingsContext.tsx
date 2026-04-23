@@ -41,6 +41,10 @@ interface ChartSettingsState {
 	rulerTimeB?: string
 	setRulerTimeB: (time?: string) => void
 	clearRuler: () => void
+	showAlertLines: boolean
+	setShowAlertLines: (visible: boolean) => void
+	showChartLines: boolean
+	setShowChartLines: (visible: boolean) => void
 }
 
 /** Shape of data persisted to localStorage */
@@ -136,6 +140,8 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 	const [priceLineWidth, setPriceLineWidth] = React.useState<number>(() => persisted.current.priceLineWidth ?? 2)
 	const [rulerTimeA, setRulerTimeA] = React.useState<string | undefined>(undefined)
 	const [rulerTimeB, setRulerTimeB] = React.useState<string | undefined>(undefined)
+	const [showAlertLines, setShowAlertLines] = React.useState<boolean>(true)
+	const [showChartLines, setShowChartLines] = React.useState<boolean>(true)
 
 	// Persist settings to localStorage when they change
 	React.useEffect(() => {
@@ -194,7 +200,11 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 		rulerTimeB,
 		setRulerTimeB,
 		clearRuler,
-	}), [interval, limit, height, maVisibility, macdVisible, macdHeight, priceLineWidth, startDate, endDate, resetMaVisibility, rulerVisible, rulerTimeA, rulerTimeB, clearRuler])
+		showAlertLines,
+		setShowAlertLines,
+		showChartLines,
+		setShowChartLines,
+	}), [interval, limit, height, maVisibility, macdVisible, macdHeight, priceLineWidth, startDate, endDate, resetMaVisibility, rulerVisible, rulerTimeA, rulerTimeB, clearRuler, showAlertLines, showChartLines])
 
 	return (
 		<ChartSettingsContext.Provider value={value}>

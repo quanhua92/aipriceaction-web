@@ -100,13 +100,15 @@ function TradingViewChartContent({
 	preserveViewport = false,
 	infiniteHistory = true,
 	hideFullscreenButton = false,
-	showAlertLines = true,
-	showChartLines = true,
+	showAlertLines: propsShowAlertLines,
+	showChartLines: propsShowChartLines,
 	...visualProps
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
 	const globalSettings = useChartSettings();
 	const { priceLineWidth } = globalSettings;
+	const showAlertLines = propsShowAlertLines ?? globalSettings.showAlertLines;
+	const showChartLines = propsShowChartLines ?? globalSettings.showChartLines;
 	const { selectedTicker, setSelectedTicker } = useTicker();
 	const {
 		allTickersLastData,

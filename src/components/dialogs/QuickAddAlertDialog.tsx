@@ -22,12 +22,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useLogs } from '@/contexts/LogsContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTranslation } from '@/hooks/useTranslation'
 import { formatPrice, formatPercent } from '@/lib/format'
 import { ALERT_TYPES, ALERTS_STORAGE_KEY } from '@/lib/constants'
 import { getAlerts, type Alert } from '@/lib/alert-storage'
 import { SafeLocalStorage } from '@/lib/localStorage'
 import { EditAlertDialog } from '@/components/dialogs/EditAlertDialog'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
 export interface QuickAddAlertDialogProps {
   children: React.ReactNode
@@ -44,6 +47,7 @@ export function QuickAddAlertDialog({
   const { addAlert, deleteAlert, resetAlert, getAlertsByTickerSymbol, refreshAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
   const { info, error: logError } = useLogs()
+  const { showAlertLines, setShowAlertLines } = useChartSettings()
 
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -469,8 +473,22 @@ export function QuickAddAlertDialog({
           </TabsContent>
 
           <TabsContent value="settings" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 pb-4">
-            <div className="space-y-3">
-              <Button
+            <div className="flex items-center justify-between p-3 rounded-md border bg-muted/30">
+              <div className="space-y-0.5">
+                <Label htmlFor="show-alert-lines" className="text-sm font-medium cursor-pointer">
+                  {t('common.playground.info.showAlertLines')}
+                </Label>
+              </div>
+              <Switch
+                id="show-alert-lines"
+                checked={showAlertLines}
+                onCheckedChange={setShowAlertLines}
+              />
+            </div>
+
+            <div className="border-t pt-4">
+              <div className="space-y-3">
+                <Button
                 variant="outline"
                 className="w-full flex items-center gap-2 justify-center"
                 onClick={handleExport}
@@ -495,6 +513,7 @@ export function QuickAddAlertDialog({
                 {settingsStatus.message}
               </p>
             )}
+            </div>
             <input
               ref={fileInputRef}
               type="file"

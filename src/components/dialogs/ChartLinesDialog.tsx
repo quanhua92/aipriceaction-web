@@ -15,7 +15,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useChartLines } from '@/contexts/ChartLinesContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useLogs } from '@/contexts/LogsContext'
+import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTranslation } from '@/hooks/useTranslation'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { formatPrice, formatPercent } from '@/lib/format'
 import { getChartLines } from '@/lib/chart-lines-storage'
 import { SafeLocalStorage } from '@/lib/localStorage'
@@ -42,6 +45,7 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 		allGlobalTickersLastData,
 	} = useAPI()
 	const { info, error: logError } = useLogs()
+	const { showChartLines, setShowChartLines } = useChartSettings()
 
 	const [open, setOpen] = React.useState(false)
 	const [price, setPrice] = React.useState('')
@@ -426,8 +430,22 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 						value="settings"
 						className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 pb-4"
 					>
-						<div className="space-y-3">
-							<Button
+						<div className="flex items-center justify-between p-3 rounded-md border bg-muted/30">
+							<div className="space-y-0.5">
+								<Label htmlFor="show-chart-lines" className="text-sm font-medium cursor-pointer">
+									{t('common.playground.info.showChartLines')}
+								</Label>
+							</div>
+							<Switch
+								id="show-chart-lines"
+								checked={showChartLines}
+								onCheckedChange={setShowChartLines}
+							/>
+						</div>
+
+						<div className="border-t pt-4">
+							<div className="space-y-3">
+								<Button
 								variant="outline"
 								className="w-full flex items-center gap-2 justify-center"
 								onClick={handleExport}
@@ -452,7 +470,8 @@ export function ChartLinesDialog({ children, ticker, currentPrice: currentPriceP
 								{settingsStatus.message}
 							</p>
 						)}
-						<input
+					</div>
+					<input
 							ref={fileInputRef}
 							type="file"
 							accept=".json"
