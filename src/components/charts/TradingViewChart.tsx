@@ -335,6 +335,7 @@ function TradingViewChartContent({
 					tickerName={resolvedTickerName}
 					preserveViewport={preserveViewport}
 					infiniteHistory={infiniteHistory}
+					interval={currentInterval}
 				/>
 			</div>
 

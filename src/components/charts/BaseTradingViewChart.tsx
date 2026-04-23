@@ -31,6 +31,7 @@ import {
 	INFINITE_SCROLL_DEBOUNCE_MS,
 	LOAD_MORE_LIMIT,
 } from "@/lib/constants";
+import { type Interval } from "@/lib/api-client";
 import {
 	formatPercent,
 	formatPrice,
@@ -81,6 +82,8 @@ interface BaseTradingViewChartProps {
 	};
 	preserveViewport?: boolean;
 	infiniteHistory?: boolean;
+	/** Override the global chart settings interval (e.g. for playground) */
+	interval?: Interval;
 }
 
 export function BaseTradingViewChart({
@@ -93,9 +96,10 @@ export function BaseTradingViewChart({
 	overlay,
 	preserveViewport = false,
 	infiniteHistory = true,
+	interval: intervalProp,
 }: BaseTradingViewChartProps) {
 	// Get global settings
-	const { interval, rulerVisible, macdVisible, macdHeight, ...globalSettings } =
+	const { interval: globalInterval, rulerVisible, macdVisible, macdHeight, ...globalSettings } =
 		useChartSettings();
 
 	// Initialize logging
@@ -104,8 +108,11 @@ export function BaseTradingViewChart({
 	// Infinite history: pull getTickers from API context and ticker info
 	const { getTickers, tickers, globalTickers, cryptoTickers, ema } = useAPI();
 
+	// Use prop interval when provided (e.g. playground), otherwise global settings
+	const interval = intervalProp ?? globalInterval;
+
 	// Helper function to check if current interval is intraday
-	const isIntradayInterval = INTRADAY_INTERVALS.includes(interval);
+	const isIntradayInterval = INTRADAY_INTERVALS.includes(interval as typeof INTRADAY_INTERVALS[number]);
 
 	// Always use context for data
 	const { loading, error, chartData: data, selectedTicker, localEndDate } = useTicker();
