@@ -22,7 +22,7 @@ export default {
     {
       title: 'News & Events Research',
       snippet: 'Find recent news and events that explain extreme price movements or unusual volume activity',
-      question: 'Check if any stocks moved more than ±6.7% in a single day or show unusual volume patterns. For each significant move, search recent news and events to understand what caused it.',
+      question: 'Check if any stocks moved more than ±6.7% in a single day or show unusual volume patterns. For each significant move, you MUST actively search the internet to gather recent news and events to understand what caused it. Start your analysis by saying "I\'ve begun searching for recent news, focusing on earnings, corporate events, and broader market context for [TICKER]." Then proceed to search and report findings.',
     },
     {
       title: 'Bob Volman Price Action Analysis',

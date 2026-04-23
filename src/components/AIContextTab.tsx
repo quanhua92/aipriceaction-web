@@ -730,8 +730,8 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 						: "Phát hiện biến động giá mạnh và khối lượng bất thường, tìm nguyên nhân tiềm năng",
 				question:
 					language === "en"
-						? `Check if ${ticker} moved more than ±6.7% in a single day or shows unusual volume patterns. For each significant move, search recent news and events to understand what caused it.`
-						: `Kiểm tra xem ${ticker} có thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, tìm tin tức và sự kiện gần đây để hiểu nguyên nhân.`,
+						? `Check if ${ticker} moved more than ±6.7% in a single day or shows unusual volume patterns. For each significant move, you MUST actively search the internet to gather recent news and events to understand what caused it. Start your analysis by saying "I've begun searching for recent news, focusing on earnings, corporate events, and broader market context for ${ticker}." Then proceed to search and report findings.`
+						: `Kiểm tra xem ${ticker} có thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, bạn PHẢI chủ động tìm kiếm trên internet để thu thập tin tức và sự kiện gần đây nhằm hiểu nguyên nhân. Bắt đầu phân tích bằng cách nói "Tôi đang tìm kiếm tin tức gần đây về kết quả kinh doanh, sự kiện doanh nghiệp và bối cảnh thị trường chung cho ${ticker}." Sau đó tiến hành tìm kiếm và báo cáo kết quả.`,
 			},
 			{
 				title:

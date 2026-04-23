@@ -22,7 +22,7 @@ export default {
     {
       title: 'Tìm Kiếm Tin Tức & Sự Kiện',
       snippet: 'Tìm tin tức và sự kiện gần đây giải thích cho biến động giá mạnh hoặc khối lượng bất thường',
-      question: 'Kiểm tra xem có mã nào thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, tìm tin tức và sự kiện gần đây để hiểu nguyên nhân.',
+      question: 'Kiểm tra xem có mã nào thay đổi quá ±6.7% trong ngày hoặc khối lượng bất thường không. Đối với mỗi biến động lớn, bạn PHẢI chủ động tìm kiếm trên internet để thu thập tin tức và sự kiện gần đây nhằm hiểu nguyên nhân. Bắt đầu phân tích bằng cách nói "Tôi đang tìm kiếm tin tức gần đây về kết quả kinh doanh, sự kiện doanh nghiệp và bối cảnh thị trường chung cho [TICKER]." Sau đó tiến hành tìm kiếm và báo cáo kết quả.',
     },
     {
       title: 'Phân Tích Hành Động Giá Theo Bob Volman',
