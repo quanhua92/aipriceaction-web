@@ -110,23 +110,36 @@ export function PlaygroundChart() {
 	const disabledIntervals = useMemo(() => {
 		const currentDate = playgroundData.allData[playgroundData.currentIndex]?.time?.split("T")[0] || ""
 		const disabled: Interval[] = []
+		let anyIntradayDisabled = false
 
+		// Check fetched intervals first
 		for (const iv of PLAYGROUND_INTERVALS) {
 			if (!isIntradayInterval(iv)) continue
-			// Only check intervals that have been fetched (exist as key in nativeData)
 			if (!(iv in playgroundData.nativeData)) continue
 
 			const bars = playgroundData.nativeData[iv]
 			if (!bars?.length || !currentDate) {
 				disabled.push(iv as Interval)
+				anyIntradayDisabled = true
 				continue
 			}
 
-			// Check if current date is within the data range
 			const start = bars[0]?.time?.split("T")[0] || ""
 			const end = bars[bars.length - 1]?.time?.split("T")[0] || ""
 			if (currentDate < start || currentDate > end) {
 				disabled.push(iv as Interval)
+				anyIntradayDisabled = true
+			}
+		}
+
+		// If any fetched intraday doesn't cover current date, unfetched minute
+		// intervals won't have data either — disable them too
+		if (anyIntradayDisabled) {
+			for (const iv of PLAYGROUND_INTERVALS) {
+				if (!isIntradayInterval(iv)) continue
+				if (!(iv in playgroundData.nativeData)) {
+					disabled.push(iv as Interval)
+				}
 			}
 		}
 
