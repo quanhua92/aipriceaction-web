@@ -77,6 +77,10 @@ interface TradingViewChartProps {
 
 	// Show chart lines on chart (default: true)
 	showChartLines?: boolean;
+
+	// Interval selector customization
+	visibleIntervals?: Interval[];
+	mobileVisibleIntervals?: Interval[];
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -102,6 +106,8 @@ function TradingViewChartContent({
 	hideFullscreenButton = false,
 	showAlertLines: propsShowAlertLines,
 	showChartLines: propsShowChartLines,
+	visibleIntervals,
+	mobileVisibleIntervals,
 	...visualProps
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
@@ -306,6 +312,8 @@ function TradingViewChartContent({
 						}}
 						showTickerSelect={true}
 						onFullscreenClick={hideFullscreenButton ? undefined : handleFullscreenClick}
+						visibleIntervals={visibleIntervals}
+						mobileVisibleIntervals={mobileVisibleIntervals}
 					/>
 				)}
 				<BaseTradingViewChart

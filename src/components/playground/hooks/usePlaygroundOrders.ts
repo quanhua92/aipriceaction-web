@@ -11,12 +11,11 @@ import {
 export function usePlaygroundOrders(
 	ticker: string,
 	visibleData: StockData[],
-	currentIndex: number,
 ) {
 	const [orders, setOrders] = useState<Order[]>(() => loadOrderBook(ticker));
 	const [stoplossPct, setStoplossPct] = useState("1");
 
-	const currentBar = visibleData[currentIndex];
+	const currentBar = visibleData[visibleData.length - 1];
 
 	// Load orders when ticker changes
 	useEffect(() => {

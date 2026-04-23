@@ -8,6 +8,32 @@ import { SafeLocalStorage } from '@/lib/localStorage'
 export const PLAYGROUND_INTERVALS = ['1m', '5m', '15m', '1h', '4h', '1D', '1W', '2W', '1M'] as const
 export type PlaygroundInterval = typeof PLAYGROUND_INTERVALS[number]
 
+// All intervals are native — lazy-fetched on first use and cached in nativeData
+// 1D is always available as the backbone; 1h + 1W are pre-fetched in Phase 2
+// Everything else lazy-loads on first interval switch
+export const NATIVE_INTERVALS: PlaygroundInterval[] = [...PLAYGROUND_INTERVALS]
+
+export function isNativeInterval(interval: string): boolean {
+  return (NATIVE_INTERVALS as readonly string[]).includes(interval)
+}
+
+// Map a day-level date to an index in a native interval's bar array
+function findNativeIndex(nativeBars: StockData[], interval: PlaygroundInterval, currentDate: string): number {
+  if (!currentDate || !nativeBars.length) return 0
+
+  if (['1W', '2W', '1M'].includes(interval)) {
+    // Week/month bars: find the bar whose date is <= currentDate (iterate from end)
+    for (let i = nativeBars.length - 1; i >= 0; i--) {
+      if (nativeBars[i].time.split('T')[0] <= currentDate) return i
+    }
+    return 0
+  }
+
+  // Intraday intervals (1m, 5m, 15m, 30m, 1h, 4h): find first bar matching the date
+  const idx = nativeBars.findIndex(bar => bar.time.split('T')[0] === currentDate)
+  return idx !== -1 ? idx : 0
+}
+
 // Check if an interval is intraday (not daily or weekly)
 export function isIntradayInterval(interval: string): boolean {
   return !['1D', '1W', '2W', '1M'].includes(interval)
@@ -33,13 +59,19 @@ const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
 
 export interface PlaygroundData {
   ticker: string          // Randomly selected Vietnamese stock or index
-  allData: StockData[]    // Bars cached from API
-  currentIndex: number    // Current position within data
+  allData: StockData[]    // 1D bars for native intervals (backbone); interval-specific bars for non-native
+  currentIndex: number    // Current position within allData (day level)
   endDate: string        // End date of the data window
   interval: PlaygroundInterval  // Current interval
   limit: PlaygroundLimit      // Number of bars to fetch
   isLoading: boolean
   error?: string
+
+  // Native multi-timeframe support
+  nativeData: Partial<Record<PlaygroundInterval, StockData[]>>
+  nativeSecondaryData: Partial<Record<PlaygroundInterval, StockData[]>>
+  currentNativeIndex: number    // Index into nativeData[interval] for non-1D native intervals
+  nativeDataLoading: boolean    // True while Phase 2 (1W + 1H) is fetching
 
   // Secondary ticker support
   secondaryTicker?: string
@@ -196,6 +228,9 @@ interface FetchIntent {
   // Snapshot of current data at intent creation (for findPreservedIndex)
   _currentAllData?: StockData[]
   _currentIndex?: number
+  // Multi-phase fetch support
+  fetchPhase?: 'primary' | 'native'
+  _derivedStartDate?: string // Used by Phase 2 to know the date range
 }
 
 export function usePlaygroundData(
@@ -218,6 +253,8 @@ export function usePlaygroundData(
   const playgroundDataRef = useRef<PlaygroundData>({} as PlaygroundData)
   // Ref to skip the URL→State sync after a State→URL navigation
   const skipNextUrlSync = useRef(false)
+  // Track whether the initial interval was non-1D (for auto-switch after Phase 2)
+  const pendingInitialInterval = useRef<PlaygroundInterval | null>(null)
 
   // Get initial value from localStorage
   const initialShowSecondaryChart = SafeLocalStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true'
@@ -226,6 +263,11 @@ export function usePlaygroundData(
   const resolvedInterval: PlaygroundInterval = isValidInterval(initialInterval || '')
     ? initialInterval as PlaygroundInterval
     : '1D'
+
+  // If initial interval is a native non-1D, remember it for auto-switch after Phase 2
+  if (resolvedInterval !== '1D' && isNativeInterval(resolvedInterval)) {
+    pendingInitialInterval.current = resolvedInterval
+  }
 
   // Resolve initial limit
   const resolvedLimit: PlaygroundLimit = isValidLimit(initialLimit)
@@ -236,10 +278,14 @@ export function usePlaygroundData(
     ticker: '',
     allData: [],
     currentIndex: 0,
+    currentNativeIndex: 0,
     endDate: '',
     interval: resolvedInterval,
     limit: resolvedLimit,
     isLoading: true,
+    nativeData: {},
+    nativeSecondaryData: {},
+    nativeDataLoading: false,
     secondaryTicker: initialSecondaryTicker || 'VNINDEX',
     secondaryAllData: undefined,
     secondaryIsLoading: false,
@@ -268,125 +314,284 @@ export function usePlaygroundData(
 
   // === Centralized fetch effect ===
   // Watches fetchIntent, fetches data, updates playgroundData
+  // Supports two phases: 'primary' (1D backbone) and 'native' (1H + 1W background fetch)
   useEffect(() => {
     if (!fetchIntent) return
 
-    const { ticker, endDate, interval, limit, secondaryTicker, source, preserveIndex, _currentAllData, _currentIndex } = fetchIntent
+    const { ticker, endDate, interval, limit, secondaryTicker, source, preserveIndex, _currentAllData, _currentIndex, fetchPhase, _derivedStartDate } = fetchIntent
     const controller = new AbortController()
 
-    const fetchData = async () => {
-      setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined, secondaryIsLoading: !!secondaryTicker }))
+    // === Phase 1: Primary fetch (1D backbone for native intervals, or any interval for non-native) ===
+    if (!fetchPhase || fetchPhase === 'primary') {
+      const fetchData = async () => {
+        // For native intervals, always fetch 1D as the backbone
+        const fetchInterval = isNativeInterval(interval) ? '1D' as PlaygroundInterval : interval
 
-      try {
-        const promises = [
-          getTickers(`${source}.primary`, {
-            symbol: ticker,
-            end_date: endDate,
-            limit,
-            mode: getMode(ticker),
-            interval,
-            ema: ema || undefined,
-          })
-        ]
+        setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined, secondaryIsLoading: !!secondaryTicker }))
 
-        if (secondaryTicker) {
-          promises.push(
-            getTickers(`${source}.secondary`, {
-              symbol: secondaryTicker,
+        try {
+          const promises = [
+            getTickers(`${source}.primary`, {
+              symbol: ticker,
               end_date: endDate,
               limit,
-              mode: getMode(secondaryTicker),
-              interval,
+              mode: getMode(ticker),
+              interval: fetchInterval,
               ema: ema || undefined,
             })
-          )
-        }
+          ]
 
-        const results = await Promise.allSettled(promises)
-
-        // Process primary
-        const primaryResult = results[0]
-        let primaryData: StockData[] = []
-        let primaryError: string | undefined
-
-        if (primaryResult.status === 'fulfilled') {
-          primaryData = primaryResult.value[ticker] || []
-        } else {
-          primaryError = primaryResult.reason?.message || 'Failed to fetch data'
-        }
-
-        // Process secondary
-        let secondaryData: StockData[] = playgroundDataRef.current.secondaryAllData || []
-        let secondaryError: string | undefined = playgroundDataRef.current.secondaryError
-
-        if (results.length > 1 && secondaryTicker) {
-          const secondaryResult = results[1]
-          if (secondaryResult.status === 'fulfilled') {
-            secondaryData = secondaryResult.value[secondaryTicker] || []
-          } else {
-            secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary data'
+          if (secondaryTicker) {
+            promises.push(
+              getTickers(`${source}.secondary`, {
+                symbol: secondaryTicker,
+                end_date: endDate,
+                limit,
+                mode: getMode(secondaryTicker),
+                interval: fetchInterval,
+                ema: ema || undefined,
+              })
+            )
           }
+
+          const results = await Promise.allSettled(promises)
+
+          // Process primary
+          const primaryResult = results[0]
+          let primaryData: StockData[] = []
+          let primaryError: string | undefined
+
+          if (primaryResult.status === 'fulfilled') {
+            primaryData = primaryResult.value[ticker] || []
+          } else {
+            primaryError = primaryResult.reason?.message || 'Failed to fetch data'
+          }
+
+          // Process secondary
+          let secondaryData: StockData[] = playgroundDataRef.current.secondaryAllData || []
+          let secondaryError: string | undefined = playgroundDataRef.current.secondaryError
+
+          if (results.length > 1 && secondaryTicker) {
+            const secondaryResult = results[1]
+            if (secondaryResult.status === 'fulfilled') {
+              secondaryData = secondaryResult.value[secondaryTicker] || []
+            } else {
+              secondaryError = secondaryResult.reason?.message || 'Failed to fetch secondary data'
+            }
+          }
+
+          // Calculate start index
+          let startIndex: number
+          if (preserveIndex && _currentAllData?.length && primaryData.length) {
+            startIndex = findPreservedIndex(primaryData, _currentAllData, _currentIndex ?? 0)
+          } else {
+            startIndex = Math.min(Math.floor(primaryData.length * 0.2), 100, Math.max(0, primaryData.length - 1))
+          }
+
+          // Derive start date from primary data for Phase 2
+          const startDate = primaryData[0]?.time?.split('T')[0] || ''
+
+          // Clear intent BEFORE setting data to avoid stale-intent issues
+          setFetchIntent(null)
+
+          // For native intervals, set the interval to '1D' initially (backbone)
+          // For non-native intervals, keep the requested interval
+          const displayInterval = isNativeInterval(interval) ? '1D' as PlaygroundInterval : interval
+
+          setPlaygroundData({
+            ticker,
+            allData: primaryData,
+            currentIndex: startIndex,
+            currentNativeIndex: 0,
+            endDate,
+            interval: displayInterval,
+            limit,
+            isLoading: false,
+            nativeData: isNativeInterval(interval) ? { '1D': primaryData } : {},
+            nativeSecondaryData: {},
+            nativeDataLoading: false,
+            error: primaryError,
+            secondaryTicker,
+            secondaryAllData: secondaryData,
+            secondaryIsLoading: false,
+            secondaryError,
+            showSecondaryChart: SafeLocalStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true',
+          })
+
+          // Mark that we wrote state so URL→State sync should skip
+          skipNextUrlSync.current = true
+
+          // Trigger Phase 2 if this is a native interval fetch
+          if (isNativeInterval(interval) && startDate) {
+            setFetchIntent({
+              ticker,
+              endDate,
+              interval: '1D', // Not used by Phase 2, but required by interface
+              limit,
+              secondaryTicker,
+              source: `${source}.native`,
+              fetchPhase: 'native',
+              _derivedStartDate: startDate,
+            })
+          }
+        } catch (err) {
+          setFetchIntent(null)
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data'
+          setPlaygroundData(prev => ({
+            ...prev,
+            isLoading: false,
+            secondaryIsLoading: false,
+            error: errorMessage,
+          }))
         }
-
-        // Calculate start index
-        let startIndex: number
-        if (preserveIndex && _currentAllData?.length && primaryData.length) {
-          startIndex = findPreservedIndex(primaryData, _currentAllData, _currentIndex ?? 0)
-        } else {
-          startIndex = Math.min(Math.floor(primaryData.length * 0.2), 100, Math.max(0, primaryData.length - 1))
-        }
-
-        // Clear intent BEFORE setting data to avoid stale-intent issues
-        setFetchIntent(null)
-
-        setPlaygroundData({
-          ticker,
-          allData: primaryData,
-          currentIndex: startIndex,
-          endDate,
-          interval,
-          limit,
-          isLoading: false,
-          error: primaryError,
-          secondaryTicker,
-          secondaryAllData: secondaryData,
-          secondaryIsLoading: false,
-          secondaryError,
-          showSecondaryChart: SafeLocalStorage.getItem(SECONDARY_CHART_VISIBLE_KEY) === 'true',
-        })
-
-        // Mark that we wrote state so URL→State sync should skip
-        skipNextUrlSync.current = true
-      } catch (err) {
-        setFetchIntent(null)
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data'
-        setPlaygroundData(prev => ({
-          ...prev,
-          isLoading: false,
-          secondaryIsLoading: false,
-          error: errorMessage,
-        }))
       }
+
+      fetchData()
+      return () => controller.abort()
     }
 
-    fetchData()
+    // === Phase 2: Native fetch (1H + 1W for primary AND secondary) ===
+    if (fetchPhase === 'native' && _derivedStartDate) {
+      const fetchNativeData = async () => {
+        setPlaygroundData(prev => ({ ...prev, nativeDataLoading: true }))
 
-    return () => controller.abort()
+        try {
+          // Fetch 1H and 1W for primary and secondary in parallel
+          const promises: Promise<Record<string, StockData[]>>[] = [
+            getTickers(`${source}.1h.primary`, {
+              symbol: ticker,
+              interval: '1h',
+              start_date: _derivedStartDate,
+              end_date: endDate,
+              mode: getMode(ticker),
+              ema: ema || undefined,
+            }),
+            getTickers(`${source}.1W.primary`, {
+              symbol: ticker,
+              interval: '1W',
+              start_date: _derivedStartDate,
+              end_date: endDate,
+              mode: getMode(ticker),
+              ema: ema || undefined,
+            }),
+          ]
+
+          if (secondaryTicker) {
+            promises.push(
+              getTickers(`${source}.1h.secondary`, {
+                symbol: secondaryTicker,
+                interval: '1h',
+                start_date: _derivedStartDate,
+                end_date: endDate,
+                mode: getMode(secondaryTicker),
+                ema: ema || undefined,
+              }),
+              getTickers(`${source}.1W.secondary`, {
+                symbol: secondaryTicker,
+                interval: '1W',
+                start_date: _derivedStartDate,
+                end_date: endDate,
+                mode: getMode(secondaryTicker),
+                ema: ema || undefined,
+              })
+            )
+          }
+
+          const results = await Promise.allSettled(promises)
+
+          // Process primary 1H
+          const primary1h = results[0].status === 'fulfilled' ? results[0].value[ticker] || [] : []
+          // Process primary 1W
+          const primary1W = results[1].status === 'fulfilled' ? results[1].value[ticker] || [] : []
+
+          let secondary1h: StockData[] = []
+          let secondary1W: StockData[] = []
+
+          if (results.length > 2 && secondaryTicker) {
+            secondary1h = results[2].status === 'fulfilled' ? results[2].value[secondaryTicker] || [] : []
+            secondary1W = results[3].status === 'fulfilled' ? results[3].value[secondaryTicker] || [] : []
+          }
+
+          // Clear intent
+          setFetchIntent(null)
+
+          // Get existing 1D data from nativeData
+          const existingNativeData = playgroundDataRef.current.nativeData
+          const existingNativeSecondaryData = playgroundDataRef.current.nativeSecondaryData
+
+          setPlaygroundData(prev => ({
+            ...prev,
+            nativeDataLoading: false,
+            nativeData: {
+              ...existingNativeData,
+              '1h': primary1h,
+              '1W': primary1W,
+            },
+            nativeSecondaryData: {
+              ...existingNativeSecondaryData,
+              '1h': secondary1h,
+              '1W': secondary1W,
+            },
+          }))
+
+          // Auto-switch to initial interval if it was non-1D native
+          const pending = pendingInitialInterval.current
+          if (pending && (pending === '1h' ? primary1h.length > 0 : pending === '1W' ? primary1W.length > 0 : false)) {
+            pendingInitialInterval.current = null
+            // Use setTimeout to ensure state is updated before switching
+            setTimeout(() => {
+              // updateInterval will be defined below — use the ref pattern
+              // We'll trigger it via setPlaygroundData directly
+              setPlaygroundData(prev => {
+                const nativeBars = prev.nativeData[pending]
+                if (!nativeBars?.length) return prev
+                const currentDate = prev.allData[prev.currentIndex]?.time?.split('T')[0] || ''
+                let targetIndex = 0
+                if (pending === '1h') {
+                  targetIndex = nativeBars.findIndex(bar => bar.time.split('T')[0] === currentDate)
+                } else if (pending === '1W') {
+                  // findLastIndex polyfill for ES2022
+                  for (let i = nativeBars.length - 1; i >= 0; i--) {
+                    if (nativeBars[i].time.split('T')[0] <= currentDate) { targetIndex = i; break }
+                  }
+                }
+                return {
+                  ...prev,
+                  interval: pending,
+                  currentNativeIndex: targetIndex !== -1 ? targetIndex : 0,
+                }
+              })
+            }, 0)
+          }
+        } catch (err) {
+          setFetchIntent(null)
+          // Phase 2 failure is non-critical — 1D still works
+          console.warn('[Playground] Phase 2 native fetch failed:', err)
+          setPlaygroundData(prev => ({ ...prev, nativeDataLoading: false }))
+        }
+      }
+
+      fetchNativeData()
+      return () => controller.abort()
+    }
   }, [fetchIntent, getTickers, ema])
 
   // === State → URL sync effect ===
   // Watches playgroundData URL-relevant fields, updates URL one-way
+  // NOTE: interval is NOT synced to URL — always defaults to 1D on page load
   useEffect(() => {
     if (!navigateFn || !playgroundData.ticker || !playgroundData.endDate) return
+    console.log(`[PG] URL sync: ticker=${playgroundData.ticker} endDate=${playgroundData.endDate} interval=${playgroundData.interval}`)
     skipNextUrlSync.current = true
     navigateFn({
       to: '/backtesting',
-      search: buildSearchParams(playgroundData.ticker, playgroundData.endDate, playgroundData.interval, playgroundData.limit),
+      search: buildSearchParams(playgroundData.ticker, playgroundData.endDate, '1D', playgroundData.limit),
     })
-  }, [playgroundData.ticker, playgroundData.endDate, playgroundData.interval, playgroundData.limit, navigateFn, buildSearchParams])
+  }, [playgroundData.ticker, playgroundData.endDate, playgroundData.limit, navigateFn, buildSearchParams])
 
   // === URL → State sync effect ===
   // Watches initial* URL params, updates state if they differ (skips when skipNextUrlSync is set)
+  // NOTE: interval is ignored from URL — always starts at 1D
   useEffect(() => {
     if (skipNextUrlSync.current) {
       skipNextUrlSync.current = false
@@ -395,39 +600,38 @@ export function usePlaygroundData(
 
     const urlTicker = initialTicker || undefined
     const urlEndDate = initialEndDate || undefined
-    const urlInterval = isValidInterval(initialInterval || '') ? initialInterval as PlaygroundInterval : undefined
     const urlLimit = isValidLimit(initialLimit) ? initialLimit as PlaygroundLimit : undefined
 
     const current = playgroundDataRef.current
 
     // Skip if no URL params or all match current state
-    if (!urlTicker && !urlEndDate && !urlInterval && !urlLimit) return
+    if (!urlTicker && !urlEndDate && !urlLimit) return
     if (
       urlTicker === current.ticker &&
       urlEndDate === current.endDate &&
-      urlInterval === current.interval &&
       urlLimit === current.limit
     ) return
+
+    console.log(`[PG] URL→State sync: ticker=${urlTicker} endDate=${urlEndDate} limit=${urlLimit}`)
 
     // Only fire fetch intent if we have a ticker (skip if data hasn't loaded yet)
     const ticker = urlTicker || current.ticker
     const endDate = urlEndDate || current.endDate
-    const interval = urlInterval || current.interval
     const limit = urlLimit || current.limit
 
     if (!ticker || !endDate) return
 
-    setPlaygroundData(prev => ({ ...prev, ticker, endDate, interval, limit, isLoading: true, error: undefined }))
+    setPlaygroundData(prev => ({ ...prev, ticker, endDate, interval: '1D', limit, isLoading: true, error: undefined }))
 
     setFetchIntent({
       ticker,
       endDate,
-      interval,
+      interval: '1D',
       limit,
       secondaryTicker: current.secondaryTicker,
       source: 'Playground.urlChange',
     })
-  }, [initialTicker, initialEndDate, initialInterval, initialLimit])
+  }, [initialTicker, initialEndDate, initialLimit])
 
   // === Initialization ===
   // Fire initial fetch once on mount
@@ -480,7 +684,6 @@ export function usePlaygroundData(
   const randomizeData = useCallback(async (smartRandom?: boolean, randomTicker?: boolean) => {
     setPlaygroundData(prev => ({ ...prev, isLoading: true, error: undefined }))
 
-    const currentInterval = playgroundDataRef.current.interval
     const currentLimit = playgroundDataRef.current.limit
 
     let ticker: string
@@ -489,15 +692,15 @@ export function usePlaygroundData(
     if (randomTicker === false) {
       // Date-only randomization: keep current ticker, randomize date
       ticker = playgroundDataRef.current.ticker
-      endDate = generateRandomDate(currentInterval)
+      endDate = generateRandomDate('1D')
     } else if (smartRandom) {
       const maxDate = new Date()
-      maxDate.setDate(maxDate.getDate() - getCalDays(currentInterval, currentLimit))
-      const viewDate = generateRandomDate(currentInterval, maxDate)
+      maxDate.setDate(maxDate.getDate() - getCalDays('1D', currentLimit))
+      const viewDate = generateRandomDate('1D', maxDate)
       ticker = await getTopTickersByValue(getTickers, viewDate, tickerGroups)
-      endDate = deriveEndDate(viewDate, currentInterval, currentLimit)
+      endDate = deriveEndDate(viewDate, '1D', currentLimit)
     } else {
-      endDate = generateRandomDate(currentInterval)
+      endDate = generateRandomDate('1D')
       ticker = getRandomTicker(tickerGroups)
     }
 
@@ -505,7 +708,7 @@ export function usePlaygroundData(
     setFetchIntent({
       ticker,
       endDate,
-      interval: currentInterval,
+      interval: '1D', // Always start with 1D backbone
       limit: currentLimit,
       secondaryTicker: playgroundDataRef.current.secondaryTicker,
       source: 'Playground.randomize',
@@ -554,19 +757,126 @@ export function usePlaygroundData(
     })
   }, [])
 
-  // Update interval
+  // Update interval — all intervals are native (lazy-fetched on first use, instant after)
   const updateInterval = useCallback((newInterval: PlaygroundInterval) => {
+    const t0 = performance.now()
     if (newInterval === playgroundDataRef.current.interval) return
 
-    setPlaygroundData(prev => ({ ...prev, interval: newInterval, isLoading: true, error: undefined }))
-    setFetchIntent({
-      ticker: playgroundDataRef.current.ticker || 'VNINDEX',
-      endDate: playgroundDataRef.current.endDate,
+    const current = playgroundDataRef.current
+    console.log(`[PG] updateInterval(${newInterval}) from=${current.interval} hasNative=${!!current.nativeData[newInterval]?.length} nativeDataLoading=${current.nativeDataLoading}`)
+    const hasNativeData = (iv: PlaygroundInterval) => !!current.nativeData[iv]?.length
+
+    // Switching TO 1D
+    if (newInterval === '1D') {
+      if (current.interval !== '1D' && hasNativeData(current.interval)) {
+        // Map native index → day index
+        const nativeBars = current.nativeData[current.interval]!
+        const currentBar = nativeBars[current.currentNativeIndex]
+        if (currentBar) {
+          const barDate = currentBar.time.split('T')[0]
+          const dayIndex = current.allData.findIndex(bar => bar.time.split('T')[0] === barDate)
+          setPlaygroundData(prev => ({
+            ...prev,
+            interval: '1D',
+            currentIndex: dayIndex !== -1 ? dayIndex : prev.currentIndex,
+          }))
+        } else {
+          setPlaygroundData(prev => ({ ...prev, interval: '1D' }))
+        }
+      } else {
+        setPlaygroundData(prev => ({ ...prev, interval: '1D' }))
+      }
+      return
+    }
+
+    // Switching TO any non-1D interval
+    if (!hasNativeData(newInterval)) {
+      // Data not available yet — lazy fetch on demand
+      if (current.nativeDataLoading) {
+        setPlaygroundData(prev => ({ ...prev, interval: newInterval, isLoading: true }))
+        return
+      }
+      console.log(`[PG] updateInterval(${newInterval}) → lazy fetch`)
+      setPlaygroundData(prev => ({ ...prev, interval: newInterval, isLoading: true, error: undefined }))
+
+      const ticker = current.ticker || 'VNINDEX'
+      const endDate = current.endDate
+      const startDate = current.allData[0]?.time?.split('T')[0] || ''
+
+      const fetchLazy = async () => {
+        try {
+          const promises: Promise<Record<string, StockData[]>>[] = [
+            getTickers(`Playground.lazyNative.${newInterval}.primary`, {
+              symbol: ticker,
+              interval: newInterval,
+              start_date: startDate,
+              end_date: endDate,
+              mode: getMode(ticker),
+              ema: ema || undefined,
+            }),
+          ]
+          if (current.secondaryTicker) {
+            promises.push(
+              getTickers(`Playground.lazyNative.${newInterval}.secondary`, {
+                symbol: current.secondaryTicker,
+                interval: newInterval,
+                start_date: startDate,
+                end_date: endDate,
+                mode: getMode(current.secondaryTicker),
+                ema: ema || undefined,
+              })
+            )
+          }
+          const results = await Promise.allSettled(promises)
+          const primaryData = results[0].status === 'fulfilled' ? results[0].value[ticker] || [] : []
+          const secondaryData = results.length > 1 && current.secondaryTicker
+            ? (results[1].status === 'fulfilled' ? results[1].value[current.secondaryTicker] || [] : [])
+            : []
+
+          if (!primaryData.length) {
+            setPlaygroundData(prev => ({
+              ...prev,
+              isLoading: false,
+              nativeData: { ...prev.nativeData, [newInterval]: [] },
+            }))
+            return
+          }
+
+          // Map current day → native index
+          const currentDate = current.allData[current.currentIndex]?.time?.split('T')[0] || ''
+          const targetIndex = findNativeIndex(primaryData, newInterval, currentDate)
+
+          setPlaygroundData(prev => ({
+            ...prev,
+            isLoading: false,
+            currentNativeIndex: targetIndex,
+            nativeData: { ...prev.nativeData, [newInterval]: primaryData },
+            nativeSecondaryData: { ...prev.nativeSecondaryData, [newInterval]: secondaryData },
+          }))
+          console.log(`[PG] updateInterval(${newInterval}) → lazy fetch done, ${primaryData.length} bars, nativeIndex=${targetIndex}`)
+        } catch (err) {
+          console.warn(`[Playground] Lazy native fetch failed for ${newInterval}:`, err)
+          setPlaygroundData(prev => ({ ...prev, isLoading: false, error: `Failed to fetch ${newInterval} data` }))
+        }
+      }
+      fetchLazy()
+      return
+    }
+
+    // Data already cached — instant switch
+    const currentDate = current.allData[current.currentIndex]?.time?.split('T')[0] || ''
+    const nativeBars = current.nativeData[newInterval]!
+    const nativeStart = nativeBars[0]?.time?.split('T')[0] || ''
+    const nativeEnd = nativeBars[nativeBars.length - 1]?.time?.split('T')[0] || ''
+    console.log(`[PG] updateInterval(${newInterval}) mapping: currentDate=${currentDate} dayIdx=${current.currentIndex} nativeBars=${nativeBars.length} nativeRange=[${nativeStart}..${nativeEnd}]`)
+    const targetIndex = findNativeIndex(nativeBars, newInterval, currentDate)
+
+    setPlaygroundData(prev => ({
+      ...prev,
       interval: newInterval,
-      limit: playgroundDataRef.current.limit,
-      secondaryTicker: playgroundDataRef.current.secondaryTicker,
-      source: 'Playground.updateInterval',
-    })
+      currentNativeIndex: targetIndex,
+    }))
+    console.log(`[PG] updateInterval(${newInterval}) → instant switch in ${(performance.now() - t0).toFixed(1)}ms, nativeIndex=${targetIndex}`)
   }, [])
 
   // Update limit
@@ -602,7 +912,7 @@ export function usePlaygroundData(
         end_date: current.endDate,
         limit: current.limit,
         mode: getMode(newSecondaryTicker),
-        interval: current.interval,
+        interval: '1D', // Always fetch 1D backbone for secondary
         ema: ema || undefined,
       })
 
@@ -612,6 +922,40 @@ export function usePlaygroundData(
         secondaryAllData: data,
         secondaryIsLoading: false,
       }))
+
+      // Also fetch native data for secondary if we have native data for primary
+      const nativeIntervalsWithData = (Object.keys(current.nativeData) as PlaygroundInterval[]).filter(
+        iv => current.nativeData[iv]?.length
+      )
+      if (nativeIntervalsWithData.length > 0) {
+        const startDate = current.allData[0]?.time?.split('T')[0] || ''
+        if (startDate) {
+          const secResults = await Promise.allSettled(
+            nativeIntervalsWithData.map(iv =>
+              getTickers(`Playground.updateSecondaryTicker.${iv}`, {
+                symbol: newSecondaryTicker,
+                interval: iv,
+                start_date: startDate,
+                end_date: current.endDate,
+                mode: getMode(newSecondaryTicker),
+                ema: ema || undefined,
+              })
+            )
+          )
+
+          const secNativeData: Partial<Record<PlaygroundInterval, StockData[]>> = {}
+          nativeIntervalsWithData.forEach((iv, i) => {
+            secNativeData[iv] = secResults[i].status === 'fulfilled'
+              ? secResults[i].value[newSecondaryTicker] || []
+              : []
+          })
+
+          setPlaygroundData(prev => ({
+            ...prev,
+            nativeSecondaryData: secNativeData,
+          }))
+        }
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update secondary ticker'
       setPlaygroundData(prev => ({
@@ -622,11 +966,21 @@ export function usePlaygroundData(
     }
   }, [getTickers])
 
-  // Navigate to new index
+  // Navigate to new index — updates both currentIndex and currentNativeIndex as needed
   const setCurrentIndex = useCallback((newIndex: number) => {
     setPlaygroundData(prev => {
       const clampedIndex = Math.max(0, Math.min(prev.allData.length - 1, newIndex))
-      return { ...prev, currentIndex: clampedIndex }
+      const newState: Partial<PlaygroundData> = { currentIndex: clampedIndex }
+
+      // If in native non-1D mode, also update currentNativeIndex to match day
+      if (prev.interval !== '1D' && prev.nativeData[prev.interval]) {
+        const newDate = prev.allData[clampedIndex]?.time?.split('T')[0]
+        const nativeBars = prev.nativeData[prev.interval]!
+        const targetIndex = nativeBars.findIndex(bar => bar.time.split('T')[0] === newDate)
+        newState.currentNativeIndex = targetIndex !== -1 ? targetIndex : 0
+      }
+
+      return { ...prev, ...newState }
     })
   }, [])
 
@@ -646,43 +1000,87 @@ export function usePlaygroundData(
     }))
   }, [])
 
-  // Navigation helpers
+  // Navigation helpers — handles 1D, native non-1D, and non-native intervals
   const navigateDate = useCallback((direction: 'back5' | 'back1' | 'next1' | 'next5') => {
+    const t0 = performance.now()
     setPlaygroundData(prev => {
-      const prevIndex = prev.currentIndex
-      let newIndex: number
+      const isNative = prev.interval !== '1D' && !!prev.nativeData[prev.interval]?.length
 
-      switch (direction) {
-        case 'back5':
-          newIndex = Math.max(0, prevIndex - 5)
-          break
-        case 'back1':
-          newIndex = Math.max(0, prevIndex - 1)
-          break
-        case 'next1':
-          newIndex = Math.min(prev.allData.length - 1, prevIndex + 1)
-          break
-        case 'next5':
-          newIndex = Math.min(prev.allData.length - 1, prevIndex + 5)
-          break
-        default:
-          newIndex = prevIndex
+      if (!isNative) {
+        // 1D and non-native interval navigation (existing behavior)
+        const prevIndex = prev.currentIndex
+        let newIndex: number
+
+        switch (direction) {
+          case 'back5':
+            newIndex = Math.max(0, prevIndex - 5)
+            break
+          case 'back1':
+            newIndex = Math.max(0, prevIndex - 1)
+            break
+          case 'next1':
+            newIndex = Math.min(prev.allData.length - 1, prevIndex + 1)
+            break
+          case 'next5':
+            newIndex = Math.min(prev.allData.length - 1, prevIndex + 5)
+            break
+          default:
+            newIndex = prevIndex
+        }
+
+        if (newIndex === prevIndex) return prev
+        console.log(`[PG] navigate(${direction}) 1D/non-native: idx=${prevIndex}→${newIndex}/${prev.allData.length - 1}`)
+        return { ...prev, currentIndex: newIndex }
       }
 
-      if (newIndex === prevIndex) return prev
-      return { ...prev, currentIndex: newIndex }
+      // Native non-1D navigation (1W, 1h)
+      const nativeBars = prev.nativeData[prev.interval]!
+      const maxIndex = nativeBars.length - 1
+      let newNativeIndex = prev.currentNativeIndex
+
+      const delta = direction === 'back5' ? -5 : direction === 'next5' ? 5
+                    : direction === 'back1' ? -1 : 1
+      newNativeIndex = Math.max(0, Math.min(maxIndex, newNativeIndex + delta))
+
+      if (newNativeIndex === prev.currentNativeIndex) return prev
+
+      // Also update currentIndex (day) for consistency
+      const currentBar = nativeBars[newNativeIndex]
+      const barDate = currentBar.time.split('T')[0]
+      const dayIndex = prev.allData.findIndex(bar => bar.time.split('T')[0] === barDate)
+
+      console.log(`[PG] navigate(${direction}) native: interval=${prev.interval} nativeIdx=${prev.currentNativeIndex}→${newNativeIndex}/${maxIndex} barDate=${barDate} dayIdx=${dayIndex}`)
+
+      return {
+        ...prev,
+        currentNativeIndex: newNativeIndex,
+        currentIndex: dayIndex !== -1 ? dayIndex : prev.currentIndex,
+      }
     })
+    console.log(`[PG] navigateDate(${direction}) done in ${(performance.now() - t0).toFixed(1)}ms`)
   }, [])
 
-  // Get visible data based on current index
+  // Get visible data based on current index and interval
   const visibleData = useMemo(() => {
+    const t0 = performance.now()
     if (!playgroundData.allData.length) return []
 
-    // Show data from index 0 to currentIndex (cumulative view)
-    const visible = playgroundData.allData.slice(0, playgroundData.currentIndex + 1)
+    // 1D: cumulative view up to currentIndex (existing behavior)
+    if (playgroundData.interval === '1D') {
+      return playgroundData.allData.slice(0, playgroundData.currentIndex + 1)
+    }
 
-    return visible
-  }, [playgroundData.allData, playgroundData.currentIndex])
+    // Native non-1D (1W, 1h): use nativeData
+    const nativeBars = playgroundData.nativeData[playgroundData.interval]
+    if (nativeBars?.length) {
+      return nativeBars.slice(0, playgroundData.currentNativeIndex + 1)
+    }
+
+    // Fallback for non-native intervals (15m, etc.)
+    const result = playgroundData.allData.slice(0, playgroundData.currentIndex + 1)
+    console.log(`[PG] visibleData: interval=${playgroundData.interval} idx=${playgroundData.currentIndex} nativeIdx=${playgroundData.currentNativeIndex} len=${result.length} in ${(performance.now() - t0).toFixed(1)}ms`)
+    return result
+  }, [playgroundData.allData, playgroundData.nativeData, playgroundData.currentIndex, playgroundData.currentNativeIndex, playgroundData.interval])
 
   // Align primary and secondary data to common date range
   useEffect(() => {
@@ -723,17 +1121,31 @@ export function usePlaygroundData(
   const secondaryVisibleData = useMemo(() => {
     if (!playgroundData.secondaryAllData?.length) return []
 
-    // Show data from index 0 to currentIndex (cumulative view)
-    const visible = playgroundData.secondaryAllData.slice(0, playgroundData.currentIndex + 1)
+    // 1D: cumulative view up to currentIndex
+    if (playgroundData.interval === '1D') {
+      return playgroundData.secondaryAllData.slice(0, playgroundData.currentIndex + 1)
+    }
 
-    return visible
-  }, [playgroundData.secondaryAllData, playgroundData.currentIndex])
+    // Native non-1D: use nativeSecondaryData
+    const nativeBars = playgroundData.nativeSecondaryData?.[playgroundData.interval]
+    if (nativeBars?.length) {
+      return nativeBars.slice(0, playgroundData.currentNativeIndex + 1)
+    }
+
+    // Fallback for non-native intervals
+    return playgroundData.secondaryAllData.slice(0, playgroundData.currentIndex + 1)
+  }, [playgroundData.secondaryAllData, playgroundData.nativeSecondaryData, playgroundData.currentIndex, playgroundData.currentNativeIndex, playgroundData.interval])
 
 
   return {
     playgroundData,
     visibleData,
     secondaryVisibleData,
+    currentNativeIndex: playgroundData.currentNativeIndex,
+    setCurrentNativeIndex: useCallback((index: number) => {
+      setPlaygroundData(prev => ({ ...prev, currentNativeIndex: index }))
+    }, []),
+    nativeDataLoading: playgroundData.nativeDataLoading,
     setCurrentIndex,
     navigate: navigateDate,
     randomizeData,

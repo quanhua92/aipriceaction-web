@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { usePlayground } from './PlaygroundDataProvider'
+import { isNativeInterval } from './hooks/usePlaygroundData'
 import { useAPI } from '@/contexts/APIContext'
 import { useLogs } from '@/contexts/LogsContext'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -34,6 +35,13 @@ export function PlaygroundIntervalWatcher() {
   React.useEffect(() => {
     // Only check if we have a visible date and interval actually changed
     if (!currentVisibleDate || interval === prevIntervalRef.current) {
+      return
+    }
+
+    // Skip check for native intervals — data is pre-fetched in Phase 2
+    if (isNativeInterval(interval)) {
+      setIsDataAvailable(true)
+      prevIntervalRef.current = interval
       return
     }
 

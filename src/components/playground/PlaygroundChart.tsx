@@ -1,6 +1,7 @@
 import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { usePlayground } from "./PlaygroundDataProvider";
+import { type PlaygroundInterval } from "./hooks/usePlaygroundData";
 import { Loader2, AlertCircle, Rows, Columns } from "lucide-react";
 import { Interval } from "@/lib/api-client";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -42,12 +43,20 @@ export function PlaygroundChart() {
 		setCurrentIndex,
 		updateTicker,
 		updateSecondaryTicker,
+		updateInterval,
 		orders,
 		showAlertLines,
 		showChartLines,
 	} = usePlayground();
 	const { t } = useTranslation();
-	const { priceLineWidth } = useChartSettings();
+	const { priceLineWidth, setInterval: setGlobalInterval } = useChartSettings();
+
+	// Keep global interval in sync with playground interval
+	// TickerContext inside TradingViewChart checks cacheMetadata.interval !== settings.interval
+	// If they don't match, it re-fetches on every render, killing performance
+	React.useEffect(() => {
+		setGlobalInterval(playgroundData.interval as Interval)
+	}, [playgroundData.interval, setGlobalInterval])
 
 	// State for chart layout and height with localStorage persistence
 	const [chartLayout, setChartLayout] = React.useState<
@@ -222,6 +231,12 @@ export function PlaygroundChart() {
 		},
 		onTickerChange: updateTicker,
 		overlay,
+		interval: playgroundData.interval as Interval,
+		onIntervalChange: (newInterval: Interval) => {
+			updateInterval(newInterval as PlaygroundInterval)
+		},
+		visibleIntervals: [Interval.Hourly, Interval.Daily, Interval.Weekly],
+		mobileVisibleIntervals: [Interval.Hourly, Interval.Daily, Interval.Weekly],
 	};
 
 	// Secondary chart props
@@ -252,6 +267,12 @@ export function PlaygroundChart() {
 			mode: getMode(playgroundData.secondaryTicker!, tickers, globalTickers, cryptoTickers),
 		},
 		onTickerChange: updateSecondaryTicker,
+		interval: playgroundData.interval as Interval,
+		onIntervalChange: (newInterval: Interval) => {
+			updateInterval(newInterval as PlaygroundInterval)
+		},
+		visibleIntervals: [Interval.Hourly, Interval.Daily, Interval.Weekly],
+		mobileVisibleIntervals: [Interval.Hourly, Interval.Daily, Interval.Weekly],
 	};
 
 	// Show loading state for secondary chart

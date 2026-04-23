@@ -28,6 +28,9 @@ interface PlaygroundContextValue {
 	setShowSecondaryChart: ReturnType<
 		typeof usePlaygroundData
 	>["setShowSecondaryChart"];
+	currentNativeIndex: ReturnType<typeof usePlaygroundData>["currentNativeIndex"];
+	setCurrentNativeIndex: ReturnType<typeof usePlaygroundData>["setCurrentNativeIndex"];
+	nativeDataLoading: ReturnType<typeof usePlaygroundData>["nativeDataLoading"];
 	orders: ReturnType<typeof usePlaygroundOrders>["orders"];
 	stoplossPct: ReturnType<typeof usePlaygroundOrders>["stoplossPct"];
 	setStoplossPct: ReturnType<typeof usePlaygroundOrders>["setStoplossPct"];
@@ -87,7 +90,6 @@ export function PlaygroundDataProvider({
 	const ordersValue = usePlaygroundOrders(
 		playgroundDataValue.playgroundData.ticker,
 		playgroundDataValue.visibleData,
-		playgroundDataValue.playgroundData.currentIndex,
 	);
 
 	const [showAlertLines, setShowAlertLinesState] = React.useState<boolean>(() => {
@@ -122,6 +124,9 @@ export function PlaygroundDataProvider({
 		updateSecondaryTicker: playgroundDataValue.updateSecondaryTicker,
 		toggleSecondaryChart: playgroundDataValue.toggleSecondaryChart,
 		setShowSecondaryChart: playgroundDataValue.setShowSecondaryChart,
+		currentNativeIndex: playgroundDataValue.currentNativeIndex,
+		setCurrentNativeIndex: playgroundDataValue.setCurrentNativeIndex,
+		nativeDataLoading: playgroundDataValue.nativeDataLoading,
 		orders: ordersValue.orders,
 		stoplossPct: ordersValue.stoplossPct,
 		setStoplossPct: ordersValue.setStoplossPct,

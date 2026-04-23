@@ -4,14 +4,13 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { usePlayground } from './PlaygroundDataProvider'
 import { useLogs } from '@/contexts/LogsContext'
-import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { Dices, Calendar, Edit, Share2, X } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { SafeLocalStorage } from '@/lib/localStorage'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { DateInput } from '@/components/DateInput'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { PLAYGROUND_INTERVALS, PLAYGROUND_LIMITS, isIntradayInterval, type PlaygroundInterval, type PlaygroundLimit } from './hooks/usePlaygroundData'
+import { PLAYGROUND_LIMITS, isIntradayInterval, type PlaygroundLimit } from './hooks/usePlaygroundData'
 
 // localStorage key for secondary chart visibility
 const SECONDARY_CHART_VISIBLE_KEY = 'playground-secondary-chart-visible'
@@ -31,7 +30,6 @@ export function PlaygroundInfoPanel() {
     updateSecondaryTicker,
     toggleSecondaryChart,
     setShowSecondaryChart,
-    updateInterval,
     updateLimit,
     showAlertLines,
     setShowAlertLines,
@@ -39,7 +37,6 @@ export function PlaygroundInfoPanel() {
     setShowChartLines,
   } = usePlayground()
   const { info } = useLogs()
-  const { setInterval: setGlobalInterval } = useChartSettings()
   const { t } = useTranslation()
 
   // Smart random toggle state, persisted to localStorage
@@ -232,27 +229,6 @@ export function PlaygroundInfoPanel() {
 
         {/* Interval Selection */}
         <div className="space-y-2">
-          <label className="text-xs text-muted-foreground">{t('common.playground.info.interval')}</label>
-          <Select
-            value={playgroundData.interval}
-            onValueChange={(value) => {
-              const newInterval = value as PlaygroundInterval
-              info(`[Playground] User changed interval to ${newInterval}`)
-              updateInterval(newInterval)
-              setGlobalInterval(newInterval as import('@/lib/api-client').Interval)
-            }}
-            disabled={isLoading}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PLAYGROUND_INTERVALS.map(iv => (
-                <SelectItem key={iv} value={iv}>{iv}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           {/* Limit Selection */}
           <label className="text-xs text-muted-foreground">{t('common.playground.info.limit')}</label>
           <Select

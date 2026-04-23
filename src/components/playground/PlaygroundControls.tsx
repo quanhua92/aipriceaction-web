@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useLogs } from "@/contexts/LogsContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import { isIntradayInterval } from "./hooks/usePlaygroundData";
+import { isIntradayInterval, isNativeInterval } from "./hooks/usePlaygroundData";
 import { usePlayground } from "./PlaygroundDataProvider";
 
 interface PlaygroundControlsProps {
@@ -25,7 +25,7 @@ export function PlaygroundControls({
 	const { info } = useLogs();
 	const { t } = useTranslation();
 
-	const { currentIndex, allData, interval } = playgroundData;
+	const { currentIndex, allData, interval, currentNativeIndex, nativeData } = playgroundData;
 	const isIntraday = isIntradayInterval(interval);
 
 	// Get current and end dates for display
@@ -56,8 +56,12 @@ export function PlaygroundControls({
 	};
 
 	// Check if buttons should be disabled
-	const isAtStart = currentIndex === 0;
-	const isAtEnd = currentIndex >= allData.length - 1;
+	const isNativeNonDaily = isNativeInterval(interval) && interval !== '1D'
+	const nativeBars = isNativeNonDaily ? nativeData[interval] : undefined
+	const isAtStart = isNativeNonDaily ? currentNativeIndex === 0 : currentIndex === 0
+	const isAtEnd = isNativeNonDaily
+		? currentNativeIndex >= (nativeBars?.length ?? 1) - 1
+		: currentIndex >= allData.length - 1
 
 	// Keyboard shortcuts: Shift+Arrow for navigation (only one instance should register)
 	const navigateRef = React.useRef(navigate);
