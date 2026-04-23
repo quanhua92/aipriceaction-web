@@ -132,13 +132,13 @@ export function PlaygroundChart() {
 			}
 		}
 
-		// If any fetched intraday doesn't cover current date, unfetched minute
-		// intervals won't have data either — disable them too
+		// If any fetched intraday doesn't cover current date, unfetched
+		// intraday intervals won't have data either — disable them all.
+		// Includes intervals from ChartControlBar that aren't in PLAYGROUND_INTERVALS (e.g. 30m).
 		if (anyIntradayDisabled) {
-			for (const iv of PLAYGROUND_INTERVALS) {
-				if (!isIntradayInterval(iv)) continue
+			for (const iv of [Interval.Minute, Interval.Minutes5, Interval.Minutes15, Interval.Minutes30, Interval.Hourly, Interval.Hours4]) {
 				if (!(iv in playgroundData.nativeData)) {
-					disabled.push(iv as Interval)
+					disabled.push(iv)
 				}
 			}
 		}
