@@ -14,7 +14,8 @@ import {
 } from '@/lib/constants'
 import { formatToVietnamDate, parseUTCISOString } from '@/lib/format'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -573,20 +574,17 @@ export function TrendSignal({
             </Select>
           </div>
 
-          {/* Control Bar - Row 3: Show All checkbox */}
+          {/* Control Bar - Row 3: Show All toggle */}
           <div className="flex items-center gap-2 mb-3 shrink-0 px-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
+            <div className="flex items-center gap-2">
+              <Label htmlFor="show-all" className="text-sm font-medium cursor-pointer">
+                {t('common.trendSignal.showAll')}
+              </Label>
+              <Switch
                 id="show-all"
                 checked={showAll}
-                onCheckedChange={(checked) => setShowAll(checked as boolean)}
+                onCheckedChange={setShowAll}
               />
-              <label
-                htmlFor="show-all"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                {t('common.trendSignal.showAll')}
-              </label>
             </div>
           </div>
 
