@@ -49,14 +49,7 @@ export function PlaygroundChart() {
 		showChartLines,
 	} = usePlayground();
 	const { t } = useTranslation();
-	const { priceLineWidth, setInterval: setGlobalInterval } = useChartSettings();
-
-	// Keep global interval in sync with playground interval
-	// TickerContext inside TradingViewChart checks cacheMetadata.interval !== settings.interval
-	// If they don't match, it re-fetches on every render, killing performance
-	React.useEffect(() => {
-		setGlobalInterval(playgroundData.interval as Interval)
-	}, [playgroundData.interval, setGlobalInterval])
+	const { priceLineWidth } = useChartSettings();
 
 	// State for chart layout and height with localStorage persistence
 	const [chartLayout, setChartLayout] = React.useState<

@@ -145,16 +145,15 @@ export function TickerProvider({
   // Local endDate state (independent of global settings)
   const [localEndDate, setLocalEndDate] = React.useState<string | null>(null)
 
-  // Initialize chart data from cache if cache is valid
+  // Initialize chart data from cache if provided
   React.useEffect(() => {
     if (cacheData && cacheMetadata &&
-        cacheMetadata.symbol === (ticker ?? initialTicker) &&
-        cacheMetadata.interval === settings.interval) {
+        cacheMetadata.symbol === (ticker ?? initialTicker)) {
       setChartData(cacheData)
       setLoading(false)
       setError(null)
     }
-  }, [cacheData, cacheMetadata, ticker, initialTicker, settings.interval])
+  }, [cacheData, cacheMetadata, ticker, initialTicker])
 
 
   // Refs for stable access (avoid re-fetching when these change reference)
@@ -268,6 +267,17 @@ export function TickerProvider({
 
     // 1. Perfect cache match (symbol, interval, date, mode)
     if (isCacheValid(cacheData, cacheMetadata, selectedTicker, settings.interval, localEndDate ?? settings.endDate, tickersRef.current, globalTickersRef.current, cryptoTickersRef.current)) {
+      setChartData(cacheData!)
+      setLoading(false)
+      setError(null)
+      return
+    }
+
+    // 1b. Cache provided with matching symbol — use it directly.
+    // When external code (e.g. Playground) manages data, it handles interval
+    // switching itself. Skip the interval-mismatch re-fetch to avoid redundant
+    // API calls and cross-component state updates (React error #185).
+    if (cacheData && cacheMetadata && cacheMetadata.symbol === selectedTicker) {
       setChartData(cacheData)
       setLoading(false)
       setError(null)
