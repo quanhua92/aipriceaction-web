@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -112,21 +112,21 @@ export function TreemapChartBar({
 		<>
 			{/* Control Bar */}
 			<div className="flex items-center gap-3 px-3 py-2 md:px-4 border-t border-b bg-background/50">
-				{/* Checkbox: Show Additional Chart */}
-				<div className="flex items-center gap-1.5">
-					<Checkbox
-						id={`${storageKeyPrefix}-additional-chart`}
-						checked={state.showAdditionalChart}
-						onCheckedChange={(checked) =>
-							updateState({ showAdditionalChart: checked === true })
-						}
-					/>
+				{/* Switch: Show Additional Chart */}
+				<div className="flex items-center gap-2">
 					<Label
 						htmlFor={`${storageKeyPrefix}-additional-chart`}
 						className="text-xs text-muted-foreground cursor-pointer select-none"
 					>
 						{t("common.treemapControl.referenceChart")}
 					</Label>
+					<Switch
+						id={`${storageKeyPrefix}-additional-chart`}
+						checked={state.showAdditionalChart}
+						onCheckedChange={(checked) =>
+							updateState({ showAdditionalChart: checked === true })
+						}
+					/>
 				</div>
 
 				{/* Layout toggle (only when additional chart is ON) */}
