@@ -58,7 +58,7 @@ export default function Header() {
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-green-600 hover:bg-green-700 transition-colors',
               }}
             >
-              <span className="font-medium">Crypto</span>
+              <span className="font-medium">Crypto Market</span>
             </Link>
 
             <Link

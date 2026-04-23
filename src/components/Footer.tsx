@@ -19,7 +19,7 @@ export default function Footer() {
 
           <div className="space-y-2">
             <Link to="/crypto" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
-              Crypto
+              Crypto Market
             </Link>
             <Link to="/global" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               Global Market
@@ -39,14 +39,17 @@ export default function Footer() {
             <Link to="/matrix" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               Market Matrix
             </Link>
-            <Link to="/signals" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
-              Signals
-            </Link>
           </div>
 
           <div className="space-y-2">
+            <Link to="/signals" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
+              Signals
+            </Link>
             <Link to="/alert" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               Alerts
+            </Link>
+            <Link to="/sync" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
+              Sync
             </Link>
           </div>
         </div>

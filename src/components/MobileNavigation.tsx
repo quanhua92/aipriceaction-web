@@ -65,7 +65,7 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
               }}
             >
               <Coins size={20} />
-              <span className="font-medium">Crypto</span>
+              <span className="font-medium">Crypto Market</span>
             </Link>
 
             <Link

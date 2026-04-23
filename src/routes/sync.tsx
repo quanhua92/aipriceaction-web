@@ -27,6 +27,7 @@ import {
 import { type Alert } from '@/lib/alert-storage'
 import { type ChartLine } from '@/lib/chart-lines-storage'
 import { useLogs } from '@/contexts/LogsContext'
+import { useTranslation } from '@/hooks/useTranslation'
 import {
 	Upload,
 	Download,
@@ -46,13 +47,14 @@ export const Route = createFileRoute('/sync')({
 
 function SyncPage() {
 	const [isMounted, setIsMounted] = React.useState(false)
+	const { t } = useTranslation()
 
 	React.useEffect(() => {
 		setIsMounted(true)
 	}, [])
 
 	if (!isMounted) {
-		return <div className="p-4 md:p-6 space-y-4">Loading...</div>
+		return <div className="p-4 md:p-6 space-y-4">{t('common.loading')}</div>
 	}
 
 	return <SyncPageContent />
@@ -60,6 +62,7 @@ function SyncPage() {
 
 function SyncPageContent() {
 	const { info, error: logError } = useLogs()
+	const { t } = useTranslation()
 
 	// Stored credentials
 	const [token, setToken] = React.useState('')
@@ -141,7 +144,7 @@ function SyncPageContent() {
 
 	async function handleCreate() {
 		if (!token.trim() || !secret.trim() || !syncKey.trim()) {
-			showStatus('error', 'All fields are required')
+			showStatus('error', t('common.sync.allFieldsRequired'))
 			return
 		}
 		setLoading('create')
@@ -151,7 +154,7 @@ function SyncPageContent() {
 			saveCredentials(token.trim(), syncKey.trim(), secret.trim())
 			setServerEntry(entry)
 			info(`[Sync] Created sync entry: ${syncKey.trim().slice(0, 8)}...`)
-			showStatus('success', 'Sync entry created and local data uploaded')
+			showStatus('success', t('common.sync.createdAndUploaded'))
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err)
 			logError(`[Sync] Create failed: ${msg}`)
@@ -163,7 +166,7 @@ function SyncPageContent() {
 
 	async function handleJoin() {
 		if (!token.trim() || !secret.trim() || !syncKey.trim()) {
-			showStatus('error', 'All fields are required')
+			showStatus('error', t('common.sync.allFieldsRequired'))
 			return
 		}
 		setLoading('join')
@@ -172,7 +175,7 @@ function SyncPageContent() {
 			saveCredentials(token.trim(), syncKey.trim(), secret.trim())
 			setServerEntry(entry)
 			info(`[Sync] Connected to sync entry: ${syncKey.trim().slice(0, 8)}... (updated: ${entry.updated_at})`)
-			showStatus('success', 'Connected to existing sync entry')
+			showStatus('success', t('common.sync.connectedToExisting'))
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err)
 			logError(`[Sync] Join failed: ${msg}`)
@@ -195,7 +198,7 @@ function SyncPageContent() {
 			setServerEntry(entry)
 			setLocalData(data)
 			info(`[Sync] Uploaded: ${Object.keys(data.watchlists).length} watchlists, ${data.alerts.length} alerts, ${data.chartLines.length} chart lines`)
-			showStatus('success', `Uploaded: ${Object.keys(data.watchlists).length} watchlists, ${data.alerts.length} alerts, ${data.chartLines.length} chart lines`)
+			showStatus('success', t('common.sync.uploaded', { watchlists: Object.keys(data.watchlists).length, alerts: data.alerts.length, chartLines: data.chartLines.length }))
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err)
 			logError(`[Sync] Upload failed: ${msg}`)
@@ -230,15 +233,15 @@ function SyncPageContent() {
 		const data = serverEntry.value
 		applySyncData(data, mode)
 		setLocalData(null) // clear cached local data
-		const label = mode === 'overwrite' ? 'Overwrite' : 'Merge'
+		const label = mode === 'overwrite' ? t('common.sync.overwritten') : t('common.sync.merged')
 		info(`[Sync] Applied server data (${label}): ${Object.keys(data.watchlists).length} watchlists, ${data.alerts.length} alerts, ${data.chartLines.length} chart lines`)
-		showStatus('success', `Server data ${mode === 'overwrite' ? 'overwritten' : 'merged'} into local. Reload pages to see changes.`)
+		showStatus('success', t('common.sync.serverDataApplied', { mode: mode === 'overwrite' ? t('common.sync.overwritten').toLowerCase() : t('common.sync.merged').toLowerCase() }))
 	}
 
 	function handleDisconnect() {
 		clearCredentials()
 		info('[Sync] Disconnected from sync')
-		showStatus('success', 'Disconnected from sync')
+		showStatus('success', t('common.sync.disconnected'))
 	}
 
 	function handleExportJSON() {
@@ -257,7 +260,7 @@ function SyncPageContent() {
 			document.body.removeChild(link)
 			URL.revokeObjectURL(url)
 			info(`[Sync] Exported: ${Object.keys(data.watchlists).length} watchlists, ${data.alerts.length} alerts, ${data.chartLines.length} chart lines`)
-			showStatus('success', `Exported sync-${ts}.json`)
+			showStatus('success', t('common.sync.exportedFile', { filename: `sync-${ts}.json` }))
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err)
 			logError(`[Sync] Export failed: ${msg}`)
@@ -349,7 +352,7 @@ function SyncPageContent() {
 			setPendingImportData(data)
 			setConfirmImport(null) // show the overwrite/merge choice
 			info(`[Sync] Parsed import: ${Object.keys(watchlists).length} watchlists, ${alerts.length} alerts, ${chartLines.length} chart lines`)
-			showStatus('success', `File loaded. Choose Overwrite or Merge to apply.`)
+			showStatus('success', t('common.sync.fileLoaded'))
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err)
 			logError(`[Sync] Import failed: ${msg}`)
@@ -367,9 +370,9 @@ function SyncPageContent() {
 		if (!pendingImportData) return
 		applySyncData(pendingImportData, mode)
 		const d = pendingImportData
-		const label = mode === 'overwrite' ? 'Overwritten' : 'Merged'
+		const label = mode === 'overwrite' ? t('common.sync.overwritten') : t('common.sync.merged')
 		info(`[Sync] Import ${label.toLowerCase()}: ${Object.keys(d.watchlists).length} watchlists, ${d.alerts.length} alerts, ${d.chartLines.length} chart lines`)
-		showStatus('success', `${label} local data. Reload pages to see changes.`)
+		showStatus('success', t('common.sync.importApplied', { label }))
 		setPendingImportData(null)
 		setConfirmImport(null)
 		setLocalData(null)
@@ -387,7 +390,7 @@ function SyncPageContent() {
 			setCopied(true)
 			setTimeout(() => setCopied(false), 2000)
 		} catch {
-			showStatus('error', 'Failed to copy to clipboard')
+			showStatus('error', t('common.sync.failedToCopy'))
 		}
 	}
 
@@ -398,16 +401,16 @@ function SyncPageContent() {
 	return (
 		<div className="p-4 md:p-6 space-y-4 max-w-2xl mx-auto">
 			<div className="flex items-center gap-3">
-				<h1 className="text-xl font-bold">Sync</h1>
+				<h1 className="text-xl font-bold">{t('common.sync.title')}</h1>
 				{isConnected ? (
 					<Badge variant="default" className="gap-1">
 						<Wifi className="h-3 w-3" />
-						Connected
+						{t('common.sync.connected')}
 					</Badge>
 				) : (
 					<Badge variant="secondary" className="gap-1">
 						<WifiOff className="h-3 w-3" />
-						Not connected
+						{t('common.sync.notConnected')}
 					</Badge>
 				)}
 				<span className="text-xs text-muted-foreground font-mono">{effectiveBaseUrl}</span>
@@ -427,18 +430,18 @@ function SyncPageContent() {
 				// ── Sync Tab ──
 				<Card>
 					<CardHeader className="pb-3">
-						<CardTitle className="text-base">Sync Settings</CardTitle>
+						<CardTitle className="text-base">{t('common.sync.settings')}</CardTitle>
 						<CardDescription className="text-xs flex items-center gap-2">
-							Key:
+							{t('common.sync.key')}:
 							<code className="bg-muted px-1.5 py-0.5 rounded text-xs">{syncKey.slice(0, 8)}...</code>
 							<Button variant="ghost" size="sm" className="h-6 gap-1" onClick={handleCopyKey}>
 								{copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-								{copied ? 'Copied' : 'Copy Settings'}
+								{copied ? t('common.sync.copied') : t('common.sync.copySettings')}
 							</Button>
 						</CardDescription>
 						{serverEntry && (
 							<p className="text-xs text-muted-foreground mt-1">
-								Updated: {new Date(serverEntry.updated_at).toLocaleString()}
+								{t('common.sync.updated')}: {new Date(serverEntry.updated_at).toLocaleString()}
 							</p>
 						)}
 					</CardHeader>
@@ -456,14 +459,14 @@ function SyncPageContent() {
 										{loading === 'upload'
 											? <RefreshCw className="h-4 w-4 animate-spin" />
 											: <Upload className="h-4 w-4" />}
-										Confirm Upload
+										{t('common.sync.confirmUpload')}
 									</Button>
 									<Button
 										onClick={() => setConfirmUpload(false)}
 										variant="outline"
 										className="flex-1"
 									>
-										Cancel
+										{t('common.cancel')}
 									</Button>
 								</div>
 							) : (
@@ -475,10 +478,10 @@ function SyncPageContent() {
 									{loading === 'upload'
 										? <RefreshCw className="h-4 w-4 animate-spin" />
 										: <Upload className="h-4 w-4" />}
-									Upload to Server
+									{t('common.sync.uploadToServer')}
 								</Button>
 							)}
-							<p className="text-xs text-muted-foreground">Overwrite server with local data</p>
+							<p className="text-xs text-muted-foreground">{t('common.sync.overwriteServerDesc')}</p>
 						</div>
 
 						{/* Download section */}
@@ -492,31 +495,31 @@ function SyncPageContent() {
 								{loading === 'download'
 									? <RefreshCw className="h-4 w-4 animate-spin" />
 									: <Download className="h-4 w-4" />}
-								Fetch Server Data
+								{t('common.sync.fetchServerData')}
 							</Button>
 
 							{/* Diff display */}
 							{serverData && (
 								<div className="bg-muted/50 border rounded-md p-3 space-y-2 text-xs">
-									<div className="font-medium mb-2">Data Comparison</div>
+									<div className="font-medium mb-2">{t('common.sync.dataComparison')}</div>
 									<div className="grid grid-cols-3 gap-2">
 										<div />
-										<div className="font-medium text-center">Local</div>
-										<div className="font-medium text-center">Server</div>
+										<div className="font-medium text-center">{t('common.sync.local')}</div>
+										<div className="font-medium text-center">{t('common.sync.server')}</div>
 
-										<div>Watchlists</div>
+										<div>{t('common.sync.watchlists')}</div>
 										<div className="text-center">{Object.keys(currentLocalData.watchlists).length}</div>
 										<div className="text-center">{Object.keys(serverData.watchlists).length}</div>
 
-										<div>Alerts</div>
+										<div>{t('common.sync.alerts')}</div>
 										<div className="text-center">{currentLocalData.alerts.length}</div>
 										<div className="text-center">{serverData.alerts.length}</div>
 
-										<div>Chart Lines</div>
+										<div>{t('common.sync.chartLines')}</div>
 										<div className="text-center">{currentLocalData.chartLines.length}</div>
 										<div className="text-center">{serverData.chartLines.length}</div>
 
-										<div className="pt-1 text-muted-foreground">Server exported at</div>
+										<div className="pt-1 text-muted-foreground">{t('common.sync.serverExportedAt')}</div>
 										<div className="col-span-2 text-center text-muted-foreground">
 											{serverData.exportedAt ? new Date(serverData.exportedAt).toLocaleString() : 'N/A'}
 										</div>
@@ -531,14 +534,14 @@ function SyncPageContent() {
 													variant={confirmApply === 'overwrite' ? 'destructive' : 'default'}
 													className="gap-1"
 												>
-													Confirm {confirmApply === 'overwrite' ? 'Overwrite' : 'Merge'}
+													{t('common.confirm')} {confirmApply === 'overwrite' ? t('common.sync.overwrite') : t('common.sync.merge')}
 												</Button>
 												<Button
 													onClick={() => setConfirmApply(null)}
 													size="sm"
 													variant="outline"
 												>
-													Cancel
+													{t('common.cancel')}
 												</Button>
 											</div>
 										) : (
@@ -549,7 +552,7 @@ function SyncPageContent() {
 													variant="destructive"
 													className="gap-1"
 												>
-													Overwrite Local
+													{t('common.sync.overwriteLocal')}
 												</Button>
 												<Button
 													onClick={() => handleApply('merge')}
@@ -557,7 +560,7 @@ function SyncPageContent() {
 													variant="secondary"
 													className="gap-1"
 												>
-													Merge into Local
+													{t('common.sync.mergeIntoLocal')}
 												</Button>
 											</div>
 										)}
@@ -575,7 +578,7 @@ function SyncPageContent() {
 								className="gap-2 text-destructive hover:text-destructive"
 							>
 								<Unplug className="h-4 w-4" />
-								Disconnect
+								{t('common.sync.disconnect')}
 							</Button>
 						</div>
 					</CardContent>
@@ -584,22 +587,21 @@ function SyncPageContent() {
 				// ── Setup Tab ──
 				<Tabs value={setupMode} onValueChange={(v) => setSetupMode(v as 'create' | 'join')} className="w-full">
 					<TabsList className="w-full">
-						<TabsTrigger value="create" className="flex-1">Create New Sync</TabsTrigger>
-						<TabsTrigger value="join" className="flex-1">Join Existing Sync</TabsTrigger>
+						<TabsTrigger value="create" className="flex-1">{t('common.sync.createNewSync')}</TabsTrigger>
+						<TabsTrigger value="join" className="flex-1">{t('common.sync.joinExistingSync')}</TabsTrigger>
 					</TabsList>
 
 					<TabsContent value="create" className="space-y-4 mt-4">
 						<Card>
 							<CardHeader className="pb-3">
-								<CardTitle className="text-base">Create New Sync</CardTitle>
+								<CardTitle className="text-base">{t('common.sync.createNewSync')}</CardTitle>
 								<CardDescription className="text-xs">
-									Generate a new sync key and upload your local data to the server.
-									Share the key, token, and secret with other devices to sync.
+									{t('common.sync.createDescription')}
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-3">
 								<div className="space-y-1.5">
-									<Label htmlFor="create-api-url" className="text-xs">API Server URL</Label>
+									<Label htmlFor="create-api-url" className="text-xs">{t('common.sync.apiServerUrl')}</Label>
 									<Input
 										id="create-api-url"
 										type="text"
@@ -609,17 +611,20 @@ function SyncPageContent() {
 										className="text-xs font-mono"
 									/>
 									<p className="text-[10px] text-muted-foreground">
-										Default: {getApiBaseURL()}
+										{t('common.sync.default')}: {getApiBaseURL()}
 									</p>
 								</div>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="create-token" className="text-xs">Sync Token</Label>
+									<div className="flex items-center gap-1.5">
+									<Label htmlFor="create-token" className="text-xs">{t('common.sync.syncToken')}</Label>
+									<span className="text-[10px] text-muted-foreground">{t('common.sync.syncTokenHint')}</span>
+								</div>
 									<div className="relative">
 										<Input
 											id="create-token"
 											type={showToken ? 'text' : 'password'}
-											placeholder="Enter your sync token"
+											placeholder={t('common.sync.enterSyncToken')}
 											value={token}
 											onChange={(e) => setToken(e.target.value)}
 											className="pr-10 text-xs font-mono"
@@ -637,12 +642,35 @@ function SyncPageContent() {
 								</div>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="create-secret" className="text-xs">Secret</Label>
+									<Label htmlFor="create-key" className="text-xs">{t('common.sync.syncKey')}</Label>
+									<div className="flex gap-2">
+										<Input
+											id="create-key"
+											type="text"
+											placeholder={t('common.sync.generateKey')}
+											value={syncKey}
+											onChange={(e) => setSyncKey(e.target.value)}
+											readOnly
+											className="flex-1 text-xs font-mono bg-muted"
+										/>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setSyncKey(generateUUIDv7())}
+											className="shrink-0 text-xs"
+										>
+											{t('common.sync.generate')}
+										</Button>
+									</div>
+								</div>
+
+								<div className="space-y-1.5">
+									<Label htmlFor="create-secret" className="text-xs">{t('common.sync.secret')}</Label>
 									<div className="relative">
 										<Input
 											id="create-secret"
 											type={showSecret ? 'text' : 'password'}
-											placeholder="Choose a secret password"
+											placeholder={t('common.sync.chooseSecret')}
 											value={secret}
 											onChange={(e) => setSecret(e.target.value)}
 											className="pr-10 text-xs font-mono"
@@ -659,28 +687,6 @@ function SyncPageContent() {
 									</div>
 								</div>
 
-								<div className="space-y-1.5">
-									<Label htmlFor="create-key" className="text-xs">Sync Key (UUID v7)</Label>
-									<div className="flex gap-2">
-										<Input
-											id="create-key"
-											type="text"
-											placeholder="Generate a new key..."
-											value={syncKey}
-											onChange={(e) => setSyncKey(e.target.value)}
-											className="flex-1 text-xs font-mono"
-										/>
-										<Button
-											variant="outline"
-											size="sm"
-											onClick={() => setSyncKey(generateUUIDv7())}
-											className="shrink-0 text-xs"
-										>
-											Generate
-										</Button>
-									</div>
-								</div>
-
 								<Button
 									onClick={handleCreate}
 									disabled={loading === 'create' || !token.trim() || !secret.trim() || !syncKey.trim()}
@@ -689,7 +695,7 @@ function SyncPageContent() {
 									{loading === 'create'
 										? <RefreshCw className="h-4 w-4 animate-spin" />
 										: <Upload className="h-4 w-4" />}
-									Create & Upload
+									{t('common.sync.createAndUpload')}
 								</Button>
 							</CardContent>
 						</Card>
@@ -698,14 +704,14 @@ function SyncPageContent() {
 					<TabsContent value="join" className="space-y-4 mt-4">
 						<Card>
 							<CardHeader className="pb-3">
-								<CardTitle className="text-base">Join Existing Sync</CardTitle>
+								<CardTitle className="text-base">{t('common.sync.joinExistingSync')}</CardTitle>
 								<CardDescription className="text-xs">
-									Enter the token, key, and secret from another device to connect.
+									{t('common.sync.joinDescription')}
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-3">
 								<div className="space-y-1.5">
-									<Label htmlFor="join-api-url" className="text-xs">API Server URL</Label>
+									<Label htmlFor="join-api-url" className="text-xs">{t('common.sync.apiServerUrl')}</Label>
 									<Input
 										id="join-api-url"
 										type="text"
@@ -715,17 +721,20 @@ function SyncPageContent() {
 										className="text-xs font-mono"
 									/>
 									<p className="text-[10px] text-muted-foreground">
-										Default: {getApiBaseURL()}
+										{t('common.sync.default')}: {getApiBaseURL()}
 									</p>
 								</div>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="join-token" className="text-xs">Sync Token</Label>
+									<div className="flex items-center gap-1.5">
+									<Label htmlFor="join-token" className="text-xs">{t('common.sync.syncToken')}</Label>
+									<span className="text-[10px] text-muted-foreground">{t('common.sync.syncTokenHint')}</span>
+								</div>
 									<div className="relative">
 										<Input
 											id="join-token"
 											type={showToken ? 'text' : 'password'}
-											placeholder="Enter sync token"
+											placeholder={t('common.sync.enterSyncTokenJoin')}
 											value={token}
 											onChange={(e) => setToken(e.target.value)}
 											className="pr-10 text-xs font-mono"
@@ -743,11 +752,11 @@ function SyncPageContent() {
 								</div>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="join-key" className="text-xs">Sync Key</Label>
+									<Label htmlFor="join-key" className="text-xs">{t('common.sync.syncKey').replace(' (UUID v7)', '')}</Label>
 									<Input
 										id="join-key"
 										type="text"
-										placeholder="Paste the sync key..."
+										placeholder={t('common.sync.pasteSyncKey')}
 										value={syncKey}
 										onChange={(e) => setSyncKey(e.target.value)}
 										className="text-xs font-mono"
@@ -755,12 +764,12 @@ function SyncPageContent() {
 								</div>
 
 								<div className="space-y-1.5">
-									<Label htmlFor="join-secret" className="text-xs">Secret</Label>
+									<Label htmlFor="join-secret" className="text-xs">{t('common.sync.secret')}</Label>
 									<div className="relative">
 										<Input
 											id="join-secret"
 											type={showSecret ? 'text' : 'password'}
-											placeholder="Enter the secret"
+											placeholder={t('common.sync.enterSecret')}
 											value={secret}
 											onChange={(e) => setSecret(e.target.value)}
 											className="pr-10 text-xs font-mono"
@@ -786,7 +795,7 @@ function SyncPageContent() {
 									{loading === 'join'
 										? <RefreshCw className="h-4 w-4 animate-spin" />
 										: <Download className="h-4 w-4" />}
-									Connect
+									{t('common.sync.connect')}
 								</Button>
 							</CardContent>
 						</Card>
@@ -797,18 +806,18 @@ function SyncPageContent() {
 			{/* Local Backup - always visible */}
 			<Card>
 				<CardHeader className="pb-3">
-					<CardTitle className="text-base">Local Backup</CardTitle>
+					<CardTitle className="text-base">{t('common.sync.localBackup')}</CardTitle>
 					<CardDescription className="text-xs">
-						Export or import all watchlists, alerts, and chart lines as a single JSON file.
+						{t('common.sync.localBackupDescription')}
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-3">
 					<div className="space-y-1">
 						<Button onClick={handleExportJSON} variant="outline" className="w-full gap-2">
 							<Download className="h-4 w-4" />
-							Export JSON
+							{t('common.sync.exportJson')}
 						</Button>
-						<p className="text-xs text-muted-foreground">Download all local data as sync.json</p>
+						<p className="text-xs text-muted-foreground">{t('common.sync.exportJsonDesc')}</p>
 					</div>
 
 					<div className="space-y-1">
@@ -820,7 +829,7 @@ function SyncPageContent() {
 									size="sm"
 									className="flex-1 gap-1"
 								>
-									Confirm {confirmImport === 'overwrite' ? 'Overwrite' : 'Merge'}
+									{t('common.confirm')} {confirmImport === 'overwrite' ? t('common.sync.overwrite') : t('common.sync.merge')}
 								</Button>
 								<Button
 									onClick={() => { setConfirmImport(null); setPendingImportData(null) }}
@@ -828,7 +837,7 @@ function SyncPageContent() {
 									size="sm"
 									className="flex-1"
 								>
-									Cancel
+									{t('common.cancel')}
 								</Button>
 							</div>
 						) : pendingImportData ? (
@@ -839,7 +848,7 @@ function SyncPageContent() {
 									size="sm"
 									className="flex-1 gap-1"
 								>
-									Overwrite Local
+									{t('common.sync.overwriteLocal')}
 								</Button>
 								<Button
 									onClick={() => setConfirmImport('merge')}
@@ -847,23 +856,23 @@ function SyncPageContent() {
 									size="sm"
 									className="flex-1 gap-1"
 								>
-									Merge into Local
+									{t('common.sync.mergeIntoLocal')}
 								</Button>
 								<Button
 									onClick={() => setPendingImportData(null)}
 									variant="ghost"
 									size="sm"
 								>
-									Cancel
+									{t('common.cancel')}
 								</Button>
 							</div>
 						) : (
 							<Button onClick={handleImportJSON} variant="outline" className="w-full gap-2">
 								<Upload className="h-4 w-4" />
-								Import JSON
+								{t('common.sync.importJson')}
 							</Button>
 						)}
-						<p className="text-xs text-muted-foreground">Load a sync.json file and apply to local data</p>
+						<p className="text-xs text-muted-foreground">{t('common.sync.importJsonDesc')}</p>
 					</div>
 
 					<input
