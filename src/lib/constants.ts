@@ -308,6 +308,11 @@ export const WATCH_LAYOUT_STORAGE_KEY = 'watch-page-layout'
 export const CHART_COMPARE_STORAGE_KEY = 'chart-compare-state'
 
 /**
+ * LocalStorage key for AI context reference ticker state (enabled, ticker symbol)
+ */
+export const AI_CONTEXT_REFERENCE_STORAGE_KEY = 'ai-context-reference-state'
+
+/**
  * LocalStorage key for chart settings (interval, MA visibility, MACD, etc.)
  */
 export const CHART_SETTINGS_STORAGE_KEY = 'chart-settings'

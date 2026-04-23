@@ -1,7 +1,9 @@
 import { Check, Copy, Loader2 } from "lucide-react";
 import * as React from "react";
+import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -9,21 +11,127 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useAPI } from "@/contexts/APIContext";
 import { useRefresh } from "@/contexts/RefreshContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { StockData, TickerGroups } from "@/integrations/aipriceaction/src";
+import { AI_CONTEXT_REFERENCE_STORAGE_KEY } from "@/lib/constants";
 import {
 	formatToVietnamDate,
 	formatToVietnamTime,
 	parseUTCISOString,
 } from "@/lib/format";
+import { SafeLocalStorage } from "@/lib/localStorage";
 import { getSectorDisplayName } from "@/lib/sector-names";
 import { getTickerMode } from "@/lib/ticker-utils";
 
 interface AIContextTabProps {
 	ticker: string;
 	endDate?: string | null;
+}
+
+interface ReferenceState {
+	enabled: boolean;
+	ticker: string;
+}
+
+function loadReferenceState(): ReferenceState {
+	const defaults: ReferenceState = { enabled: true, ticker: "VNINDEX" };
+	const stored = SafeLocalStorage.getItem(AI_CONTEXT_REFERENCE_STORAGE_KEY);
+	if (stored) {
+		try {
+			const parsed = JSON.parse(stored);
+			return {
+				enabled:
+					typeof parsed.enabled === "boolean"
+						? parsed.enabled
+						: defaults.enabled,
+				ticker:
+					typeof parsed.ticker === "string" && parsed.ticker
+						? parsed.ticker
+						: defaults.ticker,
+			};
+		} catch {
+			// fall through
+		}
+	}
+	return { ...defaults };
+}
+
+function buildTickerDataLines(
+	ticker: string,
+	data: StockData[],
+	interval: string,
+): string[] {
+	const lines: string[] = [];
+	const sortedData = [...data].sort((a, b) => a.time.localeCompare(b.time));
+
+	lines.push(`## ${ticker} (${sortedData.length} records)`);
+
+	for (const record of sortedData as readonly StockData[]) {
+		const fields: string[] = [];
+
+		const date = parseUTCISOString(record.time);
+		let formattedTime: string;
+
+		if (["1D", "2W", "1M"].includes(interval)) {
+			formattedTime = formatToVietnamDate(date);
+		} else {
+			formattedTime = formatToVietnamTime(date);
+		}
+
+		fields.push(`ticker=${record.symbol || ticker}`);
+		fields.push(`time=${formattedTime}`);
+		fields.push(`open=${record.open.toFixed(2)}`);
+		fields.push(`high=${record.high.toFixed(2)}`);
+		fields.push(`low=${record.low.toFixed(2)}`);
+		fields.push(`close=${record.close.toFixed(2)}`);
+		fields.push(`volume=${record.volume}`);
+
+		if (record.ma10 !== null && record.ma10 !== undefined) {
+			fields.push(`ma10=${record.ma10.toFixed(2)}`);
+		}
+		if (record.ma20 !== null && record.ma20 !== undefined) {
+			fields.push(`ma20=${record.ma20.toFixed(2)}`);
+		}
+		if (record.ma50 !== null && record.ma50 !== undefined) {
+			fields.push(`ma50=${record.ma50.toFixed(2)}`);
+		}
+		if (record.ma100 !== null && record.ma100 !== undefined) {
+			fields.push(`ma100=${record.ma100.toFixed(2)}`);
+		}
+		if (record.ma200 !== null && record.ma200 !== undefined) {
+			fields.push(`ma200=${record.ma200.toFixed(2)}`);
+		}
+
+		if (record.ma10_score !== null && record.ma10_score !== undefined) {
+			fields.push(`ma10_score=${record.ma10_score.toFixed(2)}`);
+		}
+		if (record.ma20_score !== null && record.ma20_score !== undefined) {
+			fields.push(`ma20_score=${record.ma20_score.toFixed(2)}`);
+		}
+		if (record.ma50_score !== null && record.ma50_score !== undefined) {
+			fields.push(`ma50_score=${record.ma50_score.toFixed(2)}`);
+		}
+		if (record.ma100_score !== null && record.ma100_score !== undefined) {
+			fields.push(`ma100_score=${record.ma100_score.toFixed(2)}`);
+		}
+		if (record.ma200_score !== null && record.ma200_score !== undefined) {
+			fields.push(`ma200_score=${record.ma200_score.toFixed(2)}`);
+		}
+
+		if (record.close_changed !== null && record.close_changed !== undefined) {
+			fields.push(`close_changed=${record.close_changed.toFixed(2)}`);
+		}
+		if (record.volume_changed !== null && record.volume_changed !== undefined) {
+			fields.push(`volume_changed=${record.volume_changed.toFixed(2)}`);
+		}
+
+		lines.push(fields.join(" "));
+	}
+
+	return lines;
 }
 
 function buildSingleTickerContext(
@@ -34,6 +142,12 @@ function buildSingleTickerContext(
 	isTradingHours: boolean,
 	useEMA: boolean,
 	tickerInfo: {
+		name: string | undefined;
+		groups: string[];
+	},
+	referenceData?: StockData[] | null,
+	referenceTicker?: string,
+	referenceInfo?: {
 		name: string | undefined;
 		groups: string[];
 	},
@@ -265,27 +379,41 @@ Các Điểm Chính:
 
 	// 4. Ticker Info
 	const tickerInfoLines: string[] = [];
-	if (tickerInfo.name || tickerInfo.groups.length > 0) {
+	const hasReference =
+		referenceData && referenceData.length > 0 && referenceTicker;
+	if (tickerInfo.name || tickerInfo.groups.length > 0 || hasReference) {
 		if (language === "en") {
 			tickerInfoLines.push("");
 			tickerInfoLines.push("=== Ticker Info ===");
 			tickerInfoLines.push("");
-			if (tickerInfo.name) {
-				tickerInfoLines.push(`Name: ${tickerInfo.name}`);
+			if (hasReference) {
+				const refParts: string[] = [
+					`${referenceTicker} — Reference Ticker (use for market context comparison)`,
+				];
+				if (referenceInfo?.name) refParts.push(referenceInfo.name);
+				if (referenceInfo?.groups?.length)
+					refParts.push(`[${referenceInfo.groups.join(", ")}]`);
+				tickerInfoLines.push(refParts.join(" - "));
 			}
-			if (tickerInfo.groups.length > 0) {
-				tickerInfoLines.push(`Sector: ${tickerInfo.groups.join(", ")}`);
-			}
+			tickerInfoLines.push(
+				`${ticker} — Primary Ticker (subject of analysis)${tickerInfo.name ? ` - ${tickerInfo.name}` : ""}${tickerInfo.groups.length > 0 ? ` [${tickerInfo.groups.join(", ")}]` : ""}`,
+			);
 		} else {
 			tickerInfoLines.push("");
 			tickerInfoLines.push("=== Thông Tin Mã CK ===");
 			tickerInfoLines.push("");
-			if (tickerInfo.name) {
-				tickerInfoLines.push(`Tên: ${tickerInfo.name}`);
+			if (hasReference) {
+				const refParts: string[] = [
+					`${referenceTicker} — Mã Tham Chiếu (dùng để so sánh bối cảnh thị trường)`,
+				];
+				if (referenceInfo?.name) refParts.push(referenceInfo.name);
+				if (referenceInfo?.groups?.length)
+					refParts.push(`[${referenceInfo.groups.join(", ")}]`);
+				tickerInfoLines.push(refParts.join(" - "));
 			}
-			if (tickerInfo.groups.length > 0) {
-				tickerInfoLines.push(`Ngành: ${tickerInfo.groups.join(", ")}`);
-			}
+			tickerInfoLines.push(
+				`${ticker} — Mã Chính (đối tượng phân tích)${tickerInfo.name ? ` - ${tickerInfo.name}` : ""}${tickerInfo.groups.length > 0 ? ` [${tickerInfo.groups.join(", ")}]` : ""}`,
+			);
 		}
 		sections.push(tickerInfoLines.join("\n"));
 	}
@@ -298,91 +426,33 @@ Các Điểm Chính:
 			marketDataLines.push("=== Market Data ===");
 			marketDataLines.push("");
 			marketDataLines.push(
-				`Historical OHLCV data with ${maType} moving averages and momentum indicators for ${ticker}. Each line represents one trading period with explicit key-value pairs.`,
+				`Historical OHLCV data with ${maType} moving averages and momentum indicators for ${hasReference ? `${referenceTicker} (reference) and ` : ""}${ticker}. Each line represents one trading period with explicit key-value pairs.`,
 			);
 			marketDataLines.push("");
 		} else {
 			marketDataLines.push("=== Dữ Liệu Thị Trường ===");
 			marketDataLines.push("");
 			marketDataLines.push(
-				`Dữ liệu OHLCV lịch sử với đường trung bình động ${maTypeVN} và chỉ báo động lực cho ${ticker}. Mỗi dòng đại diện cho một phiên giao dịch với các cặp key-value rõ ràng.`,
+				`Dữ liệu OHLCV lịch sử với đường trung bình động ${maTypeVN} và chỉ báo động lực cho ${hasReference ? `${referenceTicker} (tham chiếu) và ` : ""}${ticker}. Mỗi dòng đại diện cho một phiên giao dịch với các cặp key-value rõ ràng.`,
 			);
 			marketDataLines.push("");
 		}
 
-		const sortedData = [...data].sort((a, b) => a.time.localeCompare(b.time));
-
-		marketDataLines.push(`## ${ticker} (${sortedData.length} records)`);
-
-		for (const record of sortedData as readonly StockData[]) {
-			const fields: string[] = [];
-
-			const date = parseUTCISOString(record.time);
-			let formattedTime: string;
-
-			if (["1D", "2W", "1M"].includes(interval)) {
-				formattedTime = formatToVietnamDate(date);
-			} else {
-				formattedTime = formatToVietnamTime(date);
-			}
-
-			fields.push(`ticker=${record.symbol || ticker}`);
-			fields.push(`time=${formattedTime}`);
-			fields.push(`open=${record.open.toFixed(2)}`);
-			fields.push(`high=${record.high.toFixed(2)}`);
-			fields.push(`low=${record.low.toFixed(2)}`);
-			fields.push(`close=${record.close.toFixed(2)}`);
-			fields.push(`volume=${record.volume}`);
-
-			if (record.ma10 !== null && record.ma10 !== undefined) {
-				fields.push(`ma10=${record.ma10.toFixed(2)}`);
-			}
-			if (record.ma20 !== null && record.ma20 !== undefined) {
-				fields.push(`ma20=${record.ma20.toFixed(2)}`);
-			}
-			if (record.ma50 !== null && record.ma50 !== undefined) {
-				fields.push(`ma50=${record.ma50.toFixed(2)}`);
-			}
-			if (record.ma100 !== null && record.ma100 !== undefined) {
-				fields.push(`ma100=${record.ma100.toFixed(2)}`);
-			}
-			if (record.ma200 !== null && record.ma200 !== undefined) {
-				fields.push(`ma200=${record.ma200.toFixed(2)}`);
-			}
-
-			if (record.ma10_score !== null && record.ma10_score !== undefined) {
-				fields.push(`ma10_score=${record.ma10_score.toFixed(2)}`);
-			}
-			if (record.ma20_score !== null && record.ma20_score !== undefined) {
-				fields.push(`ma20_score=${record.ma20_score.toFixed(2)}`);
-			}
-			if (record.ma50_score !== null && record.ma50_score !== undefined) {
-				fields.push(`ma50_score=${record.ma50_score.toFixed(2)}`);
-			}
-			if (record.ma100_score !== null && record.ma100_score !== undefined) {
-				fields.push(`ma100_score=${record.ma100_score.toFixed(2)}`);
-			}
-			if (record.ma200_score !== null && record.ma200_score !== undefined) {
-				fields.push(`ma200_score=${record.ma200_score.toFixed(2)}`);
-			}
-
-			if (record.close_changed !== null && record.close_changed !== undefined) {
-				fields.push(`close_changed=${record.close_changed.toFixed(2)}`);
-			}
-			if (
-				record.volume_changed !== null &&
-				record.volume_changed !== undefined
-			) {
-				fields.push(`volume_changed=${record.volume_changed.toFixed(2)}`);
-			}
-
-			marketDataLines.push(fields.join(" "));
+		// Reference ticker data FIRST (before main ticker)
+		if (hasReference) {
+			marketDataLines.push(
+				...buildTickerDataLines(referenceTicker, referenceData, interval),
+			);
+			marketDataLines.push("");
 		}
+
+		// Main ticker data
+		marketDataLines.push(...buildTickerDataLines(ticker, data, interval));
 
 		sections.push(marketDataLines.join("\n"));
 	}
 
-	// 5. Trading Hours Notice
+	// 6. Trading Hours Notice
 	if (isTradingHours && data && data.length > 0) {
 		if (language === "en") {
 			sections.push(
@@ -400,6 +470,7 @@ Các Điểm Chính:
 
 export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 	const { t, language } = useTranslation();
+	const referenceSwitchId = React.useId();
 	const {
 		getTickers,
 		getHealth,
@@ -419,12 +490,31 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 	const [interval, setInterval] = React.useState("1D");
 	const [limit, setLimit] = React.useState(60);
 	const [marketData, setMarketData] = React.useState<StockData[] | null>(null);
+	const [referenceData, setReferenceData] = React.useState<StockData[] | null>(
+		null,
+	);
 	const [isFetching, setIsFetching] = React.useState(false);
 	const [isTradingHours, setIsTradingHours] = React.useState(false);
 	const [copied, setCopied] = React.useState(false);
 	const [copiedQuestion, setCopiedQuestion] = React.useState<number | null>(
 		null,
 	);
+
+	// Reference ticker state (persisted)
+	const [referenceState, setReferenceState] = React.useState<ReferenceState>(
+		() => loadReferenceState(),
+	);
+
+	const updateReferenceState = (partial: Partial<ReferenceState>) => {
+		setReferenceState((prev) => {
+			const next = { ...prev, ...partial };
+			SafeLocalStorage.setItem(
+				AI_CONTEXT_REFERENCE_STORAGE_KEY,
+				JSON.stringify(next),
+			);
+			return next;
+		});
+	};
 
 	// Fetch health status for trading hours
 	React.useEffect(() => {
@@ -439,7 +529,7 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 		fetchHealth();
 	}, [getHealth]);
 
-	// Fetch market data
+	// Fetch market data (main + optional reference)
 	React.useEffect(() => {
 		if (!ticker) return;
 
@@ -464,9 +554,35 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 					ema: ema || undefined,
 				});
 				setMarketData(data[ticker] || null);
+
+				// Fetch reference ticker data if enabled
+				if (
+					referenceState.enabled &&
+					referenceState.ticker &&
+					referenceState.ticker !== ticker
+				) {
+					const refMode = getTickerMode(
+						referenceState.ticker,
+						tickers,
+						globalTickers,
+						cryptoTickers,
+					);
+					const refData = await getTickers("AIContextTab.fetchReference", {
+						symbol: [referenceState.ticker],
+						limit,
+						interval,
+						end_date: endDate ?? undefined,
+						mode: refMode,
+						ema: ema || undefined,
+					});
+					setReferenceData(refData[referenceState.ticker] || null);
+				} else {
+					setReferenceData(null);
+				}
 			} catch (error) {
 				console.error("Failed to fetch market data for AI context:", error);
 				setMarketData(null);
+				setReferenceData(null);
 			} finally {
 				setIsFetching(false);
 			}
@@ -484,6 +600,8 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 		cryptoTickers,
 		globalTickers,
 		ema,
+		referenceState.enabled,
+		referenceState.ticker,
 	]);
 
 	const tickerInfo = React.useMemo(() => {
@@ -522,6 +640,44 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 		language,
 	]);
 
+	const referenceTickerInfo = React.useMemo(() => {
+		if (!referenceState.ticker)
+			return { name: undefined, groups: [] as string[] };
+		const name =
+			tickerNames?.[referenceState.ticker] ??
+			cryptoTickerNames?.[referenceState.ticker] ??
+			globalTickerNames?.[referenceState.ticker];
+
+		const groups: string[] = [];
+		const allGroups: Record<string, TickerGroups | null> = {
+			vn: tickerGroups,
+			crypto: cryptoTickerGroups,
+			yahoo: globalTickerGroups,
+		};
+		for (const [, groupsMap] of Object.entries(allGroups)) {
+			if (!groupsMap) continue;
+			for (const [groupKey, tickers] of Object.entries(groupsMap)) {
+				if (tickers.includes(referenceState.ticker)) {
+					const displayName = getSectorDisplayName(groupKey, language);
+					if (!groups.includes(displayName)) {
+						groups.push(displayName);
+					}
+				}
+			}
+		}
+
+		return { name, groups };
+	}, [
+		referenceState.ticker,
+		tickerNames,
+		cryptoTickerNames,
+		globalTickerNames,
+		tickerGroups,
+		cryptoTickerGroups,
+		globalTickerGroups,
+		language,
+	]);
+
 	const aiContext = React.useMemo(() => {
 		if (!marketData || marketData.length === 0) return "";
 		return buildSingleTickerContext(
@@ -532,8 +688,23 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 			isTradingHours,
 			!!ema,
 			tickerInfo,
+			referenceState.enabled ? referenceData : null,
+			referenceState.ticker,
+			referenceTickerInfo,
 		);
-	}, [language, ticker, marketData, interval, isTradingHours, ema, tickerInfo]);
+	}, [
+		language,
+		ticker,
+		marketData,
+		interval,
+		isTradingHours,
+		ema,
+		tickerInfo,
+		referenceState.enabled,
+		referenceState.ticker,
+		referenceData,
+		referenceTickerInfo,
+	]);
 
 	const questions = React.useMemo(
 		() => [
@@ -691,6 +862,36 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 
 				{isFetching && (
 					<Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground ml-1" />
+				)}
+			</div>
+
+			{/* Reference Ticker Row */}
+			<div className="flex items-center gap-2 flex-shrink-0">
+				<div className="flex items-center gap-2">
+					<Switch
+						id={referenceSwitchId}
+						checked={referenceState.enabled}
+						onCheckedChange={(checked) =>
+							updateReferenceState({ enabled: checked === true })
+						}
+					/>
+					<Label
+						htmlFor={referenceSwitchId}
+						className="text-xs text-muted-foreground cursor-pointer select-none"
+					>
+						{t("common.aiContext.includeReference")}
+					</Label>
+				</div>
+				{referenceState.enabled && (
+					<SelectTickerDialog
+						onSelectTicker={(newTicker) =>
+							updateReferenceState({ ticker: newTicker })
+						}
+					>
+						<Button variant="outline" size="sm" className="h-6 text-xs px-2">
+							{referenceState.ticker}
+						</Button>
+					</SelectTickerDialog>
 				)}
 			</div>
 
