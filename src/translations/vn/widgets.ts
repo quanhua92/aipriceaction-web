@@ -1,6 +1,7 @@
 export default {
   recentAlerts: {
     title: 'Cảnh báo gần đây',
+    viewAll: 'Xem tất cả',
   },
   basicAlert: {
     search: 'Tìm cảnh báo...',

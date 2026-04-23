@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Bell } from 'lucide-react'
+import { Bell, ArrowRight } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -19,9 +20,9 @@ export function RecentAlertsWidget({ className = '', onFullscreenClick }: Recent
   const { allTickersLastData } = useAPI()
 
   // Filter to alerts triggered in the last 7 days, sort by most recent
-  const recentAlerts = React.useMemo(() => {
+  const { recentAlerts, totalRecent } = React.useMemo(() => {
     const now = Date.now()
-    return triggeredAlerts
+    const filtered = triggeredAlerts
       .filter((alert) => {
         if (!alert.triggered_at) return false
         const triggeredTime = parseUTCISOString(alert.triggered_at).getTime()
@@ -32,7 +33,7 @@ export function RecentAlertsWidget({ className = '', onFullscreenClick }: Recent
         const timeB = b.triggered_at ? parseUTCISOString(b.triggered_at).getTime() : 0
         return timeB - timeA
       })
-      .slice(0, MAX_ALERTS)
+    return { recentAlerts: filtered.slice(0, MAX_ALERTS), totalRecent: filtered.length }
   }, [triggeredAlerts])
 
   // Format relative time
@@ -48,7 +49,7 @@ export function RecentAlertsWidget({ className = '', onFullscreenClick }: Recent
   }
 
   // Don't render if no recent alerts
-  if (recentAlerts.length === 0) {
+  if (recentAlerts.length === 0 && totalRecent === 0) {
     return null
   }
 
@@ -84,6 +85,15 @@ export function RecentAlertsWidget({ className = '', onFullscreenClick }: Recent
           )
         })}
       </div>
+      {totalRecent > MAX_ALERTS && (
+        <Link
+          to="/alert"
+          className="flex items-center gap-1 mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {t('widgets.recentAlerts.viewAll')} ({totalRecent})
+          <ArrowRight className="h-3 w-3" />
+        </Link>
+      )}
     </div>
   )
 }

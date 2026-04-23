@@ -1,6 +1,7 @@
 export default {
   recentAlerts: {
     title: 'Recent Alerts',
+    viewAll: 'View all alerts',
   },
   basicAlert: {
     search: 'Search alerts...',
