@@ -473,12 +473,10 @@ export function QuickAddAlertDialog({
           </TabsContent>
 
           <TabsContent value="settings" className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 pb-4">
-            <div className="flex items-center justify-between p-3 rounded-md border bg-muted/30">
-              <div className="space-y-0.5">
-                <Label htmlFor="show-alert-lines" className="text-sm font-medium cursor-pointer">
+            <div className="flex items-center gap-2 p-3 rounded-md border bg-muted/30">
+              <Label htmlFor="show-alert-lines" className="text-sm font-medium cursor-pointer">
                   {t('common.playground.info.showAlertLines')}
                 </Label>
-              </div>
               <Switch
                 id="show-alert-lines"
                 checked={showAlertLines}

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { usePlayground } from './PlaygroundDataProvider'
 import { useLogs } from '@/contexts/LogsContext'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
@@ -332,49 +334,43 @@ export function PlaygroundInfoPanel() {
 
       {/* Secondary Chart Controls */}
       <div className="space-y-3">
-        {/* Show/Hide Alert Lines Checkbox */}
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
+        {/* Show/Hide Alert Lines */}
+        <div className="flex items-center justify-between md:max-w-[300px]">
+          <Label htmlFor="show-alert-lines" className="text-sm text-muted-foreground cursor-pointer select-none">
+            {t('common.playground.info.showAlertLines')}
+          </Label>
+          <Switch
             id="show-alert-lines"
             checked={showAlertLines}
-            onChange={(e) => setShowAlertLines(e.target.checked)}
+            onCheckedChange={setShowAlertLines}
             disabled={isLoading}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="show-alert-lines" className="text-sm text-muted-foreground">
-            {t('common.playground.info.showAlertLines')}
-          </label>
         </div>
 
-        {/* Show/Hide Chart Lines Checkbox */}
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
+        {/* Show/Hide Chart Lines */}
+        <div className="flex items-center justify-between md:max-w-[300px]">
+          <Label htmlFor="show-chart-lines" className="text-sm text-muted-foreground cursor-pointer select-none">
+            {t('common.playground.info.showChartLines')}
+          </Label>
+          <Switch
             id="show-chart-lines"
             checked={showChartLines}
-            onChange={(e) => setShowChartLines(e.target.checked)}
+            onCheckedChange={setShowChartLines}
             disabled={isLoading}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="show-chart-lines" className="text-sm text-muted-foreground">
-            {t('common.playground.info.showChartLines')}
-          </label>
         </div>
 
-        {/* Show/Hide Secondary Chart Checkbox */}
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
+        {/* Show/Hide Secondary Chart */}
+        <div className="flex items-center justify-between md:max-w-[300px]">
+          <Label htmlFor="show-secondary-chart" className="text-sm text-muted-foreground cursor-pointer select-none">
+            {t('common.playground.info.showSecondaryChart')}
+          </Label>
+          <Switch
             id="show-secondary-chart"
             checked={showSecondaryChart}
-            onChange={handleSecondaryChartToggle}
+            onCheckedChange={handleSecondaryChartToggle}
             disabled={isLoading}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="show-secondary-chart" className="text-sm text-muted-foreground">
-            {t('common.playground.info.showSecondaryChart')}
-          </label>
         </div>
 
         {/* Secondary Ticker Selection - Show when enabled */}
@@ -474,31 +470,27 @@ export function PlaygroundInfoPanel() {
               <Dices className="h-3.5 w-3.5 mr-2" />
               {randomTicker ? t('common.playground.info.randomizeButton') : t('common.playground.info.randomizeButtonDateOnly')}
             </Button>
-            <div className="flex items-center space-x-2 mt-3">
-              <input
-                type="checkbox"
+            <div className="flex items-center justify-between md:max-w-[300px] mt-3">
+              <Label htmlFor="random-ticker" className="text-xs text-muted-foreground cursor-pointer select-none">
+                {t('common.playground.info.randomTicker')}
+              </Label>
+              <Switch
                 id="random-ticker"
                 checked={randomTicker}
-                onChange={(e) => handleRandomTickerChange(e.target.checked)}
+                onCheckedChange={handleRandomTickerChange}
                 disabled={isLoading}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="random-ticker" className="text-xs text-muted-foreground">
-                {t('common.playground.info.randomTicker')}
-              </label>
             </div>
-            <div className="flex items-center space-x-2 mt-3">
-              <input
-                type="checkbox"
+            <div className="flex items-center justify-between md:max-w-[300px] mt-3">
+              <Label htmlFor="smart-random" className="text-xs text-muted-foreground cursor-pointer select-none">
+                {t('common.playground.info.smartRandom')}
+              </Label>
+              <Switch
                 id="smart-random"
                 checked={smartRandom}
-                onChange={(e) => handleSmartRandomChange(e.target.checked)}
+                onCheckedChange={handleSmartRandomChange}
                 disabled={isLoading || !randomTicker}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="smart-random" className="text-xs text-muted-foreground">
-                {t('common.playground.info.smartRandom')}
-              </label>
             </div>
           </div>
         </div>
