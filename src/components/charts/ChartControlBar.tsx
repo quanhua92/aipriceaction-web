@@ -232,14 +232,6 @@ export function ChartControlBar({
 					</Button>
 				)}
 
-				{/* Chart Lines Button - Add/Manage Chart Lines */}
-				<ChartLinesDialog ticker={ticker} currentPrice={chartData.length > 0 ? chartData[chartData.length - 1].close : undefined}>
-					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add chart line">
-						<PenLine className="h-4 w-4" />
-						<span className="sr-only">Add chart line</span>
-					</Button>
-				</ChartLinesDialog>
-
 				{/* Bell Button - Add Alert */}
 				<QuickAddAlertDialog ticker={ticker} currentPrice={chartData.length > 0 ? chartData[chartData.length - 1].close : undefined}>
 					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add price alert">
@@ -247,6 +239,14 @@ export function ChartControlBar({
 						<span className="sr-only">Add price alert</span>
 					</Button>
 				</QuickAddAlertDialog>
+
+				{/* Chart Lines Button - Add/Manage Chart Lines */}
+				<ChartLinesDialog ticker={ticker} currentPrice={chartData.length > 0 ? chartData[chartData.length - 1].close : undefined}>
+					<Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Add chart line">
+						<PenLine className="h-4 w-4" />
+						<span className="sr-only">Add chart line</span>
+					</Button>
+				</ChartLinesDialog>
 
 				{/* Star Button - Add to Watchlist */}
 				<QuickAddWatchListDialog ticker={ticker}>
