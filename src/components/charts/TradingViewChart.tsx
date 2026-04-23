@@ -81,6 +81,7 @@ interface TradingViewChartProps {
 	// Interval selector customization
 	visibleIntervals?: Interval[];
 	mobileVisibleIntervals?: Interval[];
+	disabledIntervals?: Interval[];
 }
 
 // TradingViewChart content component - assumes it's wrapped in TickerProvider
@@ -108,6 +109,7 @@ function TradingViewChartContent({
 	showChartLines: propsShowChartLines,
 	visibleIntervals,
 	mobileVisibleIntervals,
+	disabledIntervals,
 	...visualProps
 }: TradingViewChartProps) {
 	const { t } = useTranslation();
@@ -314,6 +316,7 @@ function TradingViewChartContent({
 						onFullscreenClick={hideFullscreenButton ? undefined : handleFullscreenClick}
 						visibleIntervals={visibleIntervals}
 						mobileVisibleIntervals={mobileVisibleIntervals}
+						disabledIntervals={disabledIntervals}
 					/>
 				)}
 				<BaseTradingViewChart

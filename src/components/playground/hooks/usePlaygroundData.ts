@@ -614,6 +614,7 @@ export function usePlaygroundData(
   // NOTE: interval is NOT synced to URL — always defaults to 1D on page load
   useEffect(() => {
     if (!navigateFn || !playgroundData.ticker || !playgroundData.endDate) return
+    console.log(`[PG] URL sync: ticker=${playgroundData.ticker} endDate=${playgroundData.endDate} interval=${playgroundData.interval}`)
     skipNextUrlSync.current = true
     navigateFn({
       to: '/backtesting',
@@ -638,6 +639,8 @@ export function usePlaygroundData(
 
     // Skip if initial load hasn't happened yet — the init effect handles it
     if (!current.ticker) return
+
+    console.log(`[PG] URL→State sync: ticker=${urlTicker} endDate=${urlEndDate} limit=${urlLimit}`)
 
     // Skip if no URL params or all match current state
     if (!urlTicker && !urlEndDate && !urlLimit) return
@@ -795,6 +798,7 @@ export function usePlaygroundData(
     if (newInterval === playgroundDataRef.current.interval) return
 
     const current = playgroundDataRef.current
+    console.log(`[PG] updateInterval(${newInterval}) from=${current.interval} hasNative=${!!current.nativeData[newInterval]?.length} loading=${current.nativeDataLoading}`)
     const hasNativeData = (iv: PlaygroundInterval) => !!current.nativeData[iv]?.length
 
     // Switching TO 1D
@@ -827,6 +831,7 @@ export function usePlaygroundData(
         setPlaygroundData(prev => ({ ...prev, interval: newInterval, isLoading: true }))
         return
       }
+      console.log(`[PG] updateInterval(${newInterval}) → lazy fetch, isMinute=${isMinuteInterval(newInterval)}`)
       setPlaygroundData(prev => ({ ...prev, interval: newInterval, isLoading: true, error: undefined }))
 
       const ticker = current.ticker || 'VNINDEX'
@@ -881,6 +886,7 @@ export function usePlaygroundData(
             nativeData: { ...prev.nativeData, [newInterval]: primaryData },
             nativeSecondaryData: { ...prev.nativeSecondaryData, [newInterval]: secondaryData },
           }))
+          console.log(`[PG] updateInterval(${newInterval}) → lazy fetch done, ${primaryData.length} bars, nativeIndex=${targetIndex}`)
         } catch (err) {
           console.warn(`[Playground] Lazy native fetch failed for ${newInterval}:`, err)
           setPlaygroundData(prev => ({ ...prev, isLoading: false, error: `Failed to fetch ${newInterval} data` }))
@@ -893,12 +899,15 @@ export function usePlaygroundData(
     // Data already cached — check coverage for intraday, then instant switch
     const currentDate = current.allData[current.currentIndex]?.time?.split('T')[0] || ''
     const nativeBars = current.nativeData[newInterval]!
+    const nativeRange = getNativeDataDateRange(nativeBars)
+    console.log(`[PG] updateInterval(${newInterval}) cached: currentDate=${currentDate} bars=${nativeBars.length} range=${nativeRange ? `[${nativeRange.start}..${nativeRange.end}]` : 'null'}`)
 
     // For intraday intervals, check if current day is within cached range
     if (isMinuteInterval(newInterval)) {
       const range = getNativeDataDateRange(nativeBars)
       if (range && currentDate && (currentDate < range.start || currentDate > range.end)) {
         // Current day is outside cached range — lazy re-fetch from this day
+        console.log(`[PG] updateInterval(${newInterval}) → coverage miss, re-fetching from ${currentDate}`)
         setPlaygroundData(prev => ({ ...prev, interval: newInterval, isLoading: true, error: undefined }))
 
         const buildLazyParams = (symbol: string) => ({
@@ -958,6 +967,7 @@ export function usePlaygroundData(
     // Instant switch — data is cached and covers the current day
     const targetIndex = findNativeIndex(nativeBars, newInterval, currentDate)
 
+    console.log(`[PG] updateInterval(${newInterval}) → instant switch, nativeIndex=${targetIndex}`)
     setPlaygroundData(prev => ({
       ...prev,
       interval: newInterval,
@@ -1086,6 +1096,7 @@ export function usePlaygroundData(
       if (nativeBars?.length) {
         const range = getNativeDataDateRange(nativeBars)
         if (range && (targetDay < range.start || targetDay > range.end)) {
+          console.log(`[PG] setCurrentIndex: slider to ${targetDay} outside [${range.start}..${range.end}], re-fetching ${current.interval}`)
           const fetchStartDate = calcIntradayStart(targetDay, current.interval)
           const ticker = current.ticker || 'VNINDEX'
 
@@ -1193,6 +1204,7 @@ export function usePlaygroundData(
         }
 
         if (newIndex === prevIndex) return prev
+        console.log(`[PG] navigate(${direction}) 1D: idx=${prevIndex}→${newIndex}/${prev.allData.length - 1}`)
         return { ...prev, currentIndex: newIndex }
       }
 
@@ -1212,6 +1224,8 @@ export function usePlaygroundData(
       const barDate = currentBar.time.split('T')[0]
       const dayIndex = prev.allData.findIndex(bar => bar.time.split('T')[0] === barDate)
 
+      console.log(`[PG] navigate(${direction}) native: ${prev.interval} idx=${prev.currentNativeIndex}→${newNativeIndex}/${maxIndex} date=${barDate} dayIdx=${dayIndex}`)
+
       // Check if user hit the last bar going forward on a minute interval
       if (isMinuteInterval(prev.interval) && newNativeIndex === maxIndex && direction.startsWith('next')) {
         hitEnd = true
@@ -1227,6 +1241,7 @@ export function usePlaygroundData(
 
     // Progressive expansion for intraday intervals when hitting the end
     if (hitEnd) {
+      console.log(`[PG] navigate(${direction}) → hit end of native data, expanding`)
       const current = playgroundDataRef.current
       const nativeBars = current.nativeData[current.interval]
       if (!nativeBars?.length) return

@@ -28,6 +28,7 @@ interface ChartControlBarProps {
 	showTickerSelect?: boolean // Default: true
 	visibleIntervals?: Interval[] // Desktop visible intervals
 	mobileVisibleIntervals?: Interval[] // Mobile visible intervals
+	disabledIntervals?: Interval[] // Intervals to disable (greyed out, non-clickable)
 	className?: string
 	onFullscreenClick?: () => void
 }
@@ -66,6 +67,7 @@ export function ChartControlBar({
 	showTickerSelect = true,
 	visibleIntervals = DEFAULT_VISIBLE_INTERVALS,
 	mobileVisibleIntervals = DEFAULT_MOBILE_VISIBLE_INTERVALS,
+	disabledIntervals = [],
 	className = '',
 	onFullscreenClick,
 }: ChartControlBarProps) {
@@ -116,16 +118,20 @@ export function ChartControlBar({
 
 	const renderIntervalButton = (int: Interval, _isMobile: boolean = false) => {
 		const isMediumInterval = int === Interval.Minutes15 || int === Interval.Minutes30
+		const isDisabled = disabledIntervals.includes(int)
 		return (
 			<Button
 				key={int}
 				variant="ghost"
 				size="sm"
-				onClick={() => handleIntervalChange(int)}
+				onClick={() => !isDisabled && handleIntervalChange(int)}
+				disabled={isDisabled}
 				className={`${isMediumInterval ? 'px-1' : 'px-2'} py-1 h-7 text-xs font-medium transition-colors ${
-					currentInterval === int
-						? 'bg-primary text-primary-foreground hover:bg-primary/90'
-						: 'text-muted-foreground hover:bg-muted hover:text-foreground'
+					isDisabled
+						? 'text-muted-foreground/40 cursor-not-allowed'
+						: currentInterval === int
+							? 'bg-primary text-primary-foreground hover:bg-primary/90'
+							: 'text-muted-foreground hover:bg-muted hover:text-foreground'
 				}`}
 			>
 				{int}
@@ -171,11 +177,15 @@ export function ChartControlBar({
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="min-w-[80px]">
-							{desktopHiddenIntervals.map((int) => (
+							{desktopHiddenIntervals.map((int) => {
+								const isDisabled = disabledIntervals.includes(int)
+								return (
 								<DropdownMenuItem
 									key={int}
-									onClick={() => onIntervalChange(int)}
+									onClick={() => !isDisabled && onIntervalChange(int)}
+									disabled={isDisabled}
 									className={`text-xs cursor-pointer ${
+										isDisabled ? 'text-muted-foreground/40' :
 										interval === int
 											? 'bg-primary text-primary-foreground'
 											: ''
@@ -183,7 +193,7 @@ export function ChartControlBar({
 								>
 									{int}
 								</DropdownMenuItem>
-							))}
+							)})}
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
@@ -199,11 +209,15 @@ export function ChartControlBar({
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="min-w-[80px]">
-							{mobileHiddenIntervals.map((int) => (
+							{mobileHiddenIntervals.map((int) => {
+								const isDisabled = disabledIntervals.includes(int)
+								return (
 								<DropdownMenuItem
 									key={int}
-									onClick={() => onIntervalChange(int)}
+									onClick={() => !isDisabled && onIntervalChange(int)}
+									disabled={isDisabled}
 									className={`text-xs cursor-pointer ${
+										isDisabled ? 'text-muted-foreground/40' :
 										interval === int
 											? 'bg-primary text-primary-foreground'
 											: ''
@@ -211,7 +225,7 @@ export function ChartControlBar({
 								>
 									{int}
 								</DropdownMenuItem>
-							))}
+							)})}
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>

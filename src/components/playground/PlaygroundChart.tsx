@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { usePlayground } from "./PlaygroundDataProvider";
-import { type PlaygroundInterval } from "./hooks/usePlaygroundData";
+import { type PlaygroundInterval, PLAYGROUND_INTERVALS, isIntradayInterval } from "./hooks/usePlaygroundData";
 import { Loader2, AlertCircle, Rows, Columns } from "lucide-react";
 import { Interval } from "@/lib/api-client";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -111,6 +111,34 @@ export function PlaygroundChart() {
 	// Check if we should show the secondary chart
 	const shouldShowSecondary =
 		playgroundData.showSecondaryChart && playgroundData.secondaryTicker;
+
+	// Compute disabled intervals: intraday intervals that have been fetched
+	// but either have no data or don't cover the current date
+	const disabledIntervals = useMemo(() => {
+		const currentDate = playgroundData.allData[playgroundData.currentIndex]?.time?.split("T")[0] || ""
+		const disabled: Interval[] = []
+
+		for (const iv of PLAYGROUND_INTERVALS) {
+			if (!isIntradayInterval(iv)) continue
+			// Only check intervals that have been fetched (exist as key in nativeData)
+			if (!(iv in playgroundData.nativeData)) continue
+
+			const bars = playgroundData.nativeData[iv]
+			if (!bars?.length || !currentDate) {
+				disabled.push(iv as Interval)
+				continue
+			}
+
+			// Check if current date is within the data range
+			const start = bars[0]?.time?.split("T")[0] || ""
+			const end = bars[bars.length - 1]?.time?.split("T")[0] || ""
+			if (currentDate < start || currentDate > end) {
+				disabled.push(iv as Interval)
+			}
+		}
+
+		return disabled
+	}, [playgroundData.nativeData, playgroundData.allData, playgroundData.currentIndex])
 
 	// Convert orders to chart overlay (markers + price lines)
 	// Only include markers for bars visible up to currentIndex
@@ -237,9 +265,8 @@ export function PlaygroundChart() {
 		},
 		visibleIntervals: [Interval.Hourly, Interval.Daily, Interval.Weekly],
 		mobileVisibleIntervals: [Interval.Hourly, Interval.Daily, Interval.Weekly],
+		disabledIntervals,
 	};
-
-	// Secondary chart props
 	const secondaryChartProps = {
 		ticker: playgroundData.secondaryTicker!,
 		// No endDateOverride - let secondary chart use its own cache dates
@@ -273,9 +300,8 @@ export function PlaygroundChart() {
 		},
 		visibleIntervals: [Interval.Hourly, Interval.Daily, Interval.Weekly],
 		mobileVisibleIntervals: [Interval.Hourly, Interval.Daily, Interval.Weekly],
+		disabledIntervals,
 	};
-
-	// Show loading state for secondary chart
 	if (
 		shouldShowSecondary &&
 		playgroundData.secondaryIsLoading &&
