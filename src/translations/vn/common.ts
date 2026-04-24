@@ -617,6 +617,9 @@ export default {
 		overwrite: "Ghi đè",
 		merge: "Gộp",
 	},
+	tickerSearch: {
+		placeholder: "Tìm mã chứng khoán để xem biểu đồ...",
+	},
 	rrg: {
 		title: "Biểu Đồ Xoay Tương Đối",
 		mascoreTab: "MA Score",

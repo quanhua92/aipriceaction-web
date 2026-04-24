@@ -12,6 +12,7 @@ import { TradingTreemap } from "@/components/echarts/TradingTreemap";
 import { TreemapChartBar } from "@/components/echarts/TreemapChartBar";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
+import { TickerSearchBar } from "@/components/TickerSearchBar";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { ALL_WATCHLIST_NAME, HOME_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
 
@@ -101,6 +102,7 @@ function HomePage() {
 							{t("common.home.welcomeDescription")}
 						</p>
 						<HeroCTACarousel />
+						<TickerSearchBar onSelectTicker={handleSelectTicker} />
 					</div>
 				</div>
 			</div>

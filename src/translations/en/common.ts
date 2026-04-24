@@ -614,6 +614,9 @@ export default {
 		overwrite: "Overwrite",
 		merge: "Merge",
 	},
+	tickerSearch: {
+		placeholder: "Search ticker to open chart...",
+	},
 	rrg: {
 		title: "Relative Rotation Graph",
 		mascoreTab: "MA Score",

@@ -12,6 +12,7 @@ import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { TradingTreemap } from "@/components/echarts/TradingTreemap";
 import { TreemapChartBar } from "@/components/echarts/TreemapChartBar";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
+import { TickerSearchBar } from "@/components/TickerSearchBar";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { CRYPTO_WATCHLIST_NAME, CRYPTO_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
 import { SafeLocalStorage } from "@/lib/localStorage";
@@ -100,6 +101,7 @@ function CryptoPage() {
 							{t("common.home.welcomeDescription")}
 						</p>
 						<HeroCTACarousel />
+						<TickerSearchBar onSelectTicker={handleSelectTicker} defaultSectionFilter="crypto" />
 					</div>
 				</div>
 			</div>

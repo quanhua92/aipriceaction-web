@@ -97,7 +97,7 @@ export function HeroCTACarousel() {
                     {slide.subtitle}
                   </p>
                   <Link to={slide.to}>
-                    <Button size="lg" className="w-full gap-2">
+                    <Button variant="outline" size="lg" className="w-full gap-2">
                       <SlideIcon className="h-5 w-5" />
                       {slide.title}
                       <ArrowRight className="h-4 w-4" />
