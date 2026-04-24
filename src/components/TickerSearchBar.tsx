@@ -49,10 +49,10 @@ export function TickerSearchBar({
 				className="group relative flex items-center w-full max-w-md lg:max-w-xl mx-auto h-12 px-4 bg-background/60 border border-border/50 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-background/80 shadow-sm hover:shadow-md dark:bg-muted/30 dark:border-border/50 dark:hover:border-primary/50 transition-all"
 			>
 				<Search className="h-5 w-5 text-foreground shrink-0 transition-colors" />
-				<span className="ml-3 text-sm text-foreground select-none transition-colors">
+				<span className="ml-3 text-xs sm:text-sm text-foreground select-none transition-colors">
 					{t("common.tickerSearch.placeholder")}
 				</span>
-				<kbd className="ml-auto pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-md border border-border/60 bg-muted/50 dark:bg-muted dark:border-border px-2 font-mono text-[11px] text-foreground/60 transition-colors">
+				<kbd className="ml-auto hidden sm:inline-flex pointer-events-none h-6 select-none items-center gap-1 rounded-md border border-border/60 bg-muted/50 dark:bg-muted dark:border-border px-2 font-mono text-[11px] text-foreground/60 transition-colors">
 					{modKey} + K
 				</kbd>
 			</div>
