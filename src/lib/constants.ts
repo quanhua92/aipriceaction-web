@@ -139,7 +139,7 @@ export const MAX_CHART_LIMIT = 256
 /**
  * Number of additional records to load when clicking "Load More" button
  */
-export const LOAD_MORE_LIMIT = 50
+export const LOAD_MORE_LIMIT = 256
 
 /**
  * Bars from left edge to trigger infinite history load
