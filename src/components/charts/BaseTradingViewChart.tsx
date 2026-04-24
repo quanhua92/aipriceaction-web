@@ -49,6 +49,7 @@ import { TOOLTIP_MARGIN, TOOLTIP_WIDTH, TOOLTIP_HEIGHT } from "@/lib/constants";
 import { RulerSection } from "./RulerSection";
 import { createTooltipElement } from "@/lib/tooltipStyles";
 import { useLogs } from "@/contexts/LogsContext";
+import { useRefresh } from "@/contexts/RefreshContext";
 import {
 	getChangeColors,
 	getVolumeColor,
@@ -107,6 +108,9 @@ export function BaseTradingViewChart({
 
 	// Infinite history: pull getTickers from API context and ticker info
 	const { getTickers, tickers, globalTickers, cryptoTickers, ema } = useAPI();
+
+	// Refresh context for triggering expanded data refresh on auto-refresh
+	const { lastRefresh } = useRefresh();
 
 	// Use prop interval when provided (e.g. playground), otherwise global settings
 	const interval = intervalProp ?? globalInterval;
@@ -219,11 +223,11 @@ export function BaseTradingViewChart({
 			});
 			const fetched = response[selectedTicker] || [];
 			if (fetched.length > 0) {
-				setExpandedData(fetched);
+				setExpandedData([...fetched]);
 			}
 		};
 		doExpand();
-	}, [data.length, selectedTicker, interval, infiniteHistory, ema]);
+	}, [data.length, selectedTicker, interval, infiniteHistory, ema, lastRefresh]);
 	// Note: intentionally NOT including expandedLimitRef in deps — it's a trigger, not a dep
 
 	// Merge expanded data with context data for chart rendering

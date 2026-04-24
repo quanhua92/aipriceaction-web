@@ -325,7 +325,7 @@ export function TickerProvider({
             })
             const data = response[selectedTicker] || []
 
-            setChartData(data)
+            setChartData([...data])
 
             // Record this API call for future cache detection
             recordApiCall(selectedTicker, settings.interval)
@@ -394,7 +394,7 @@ export function TickerProvider({
           })
           const data = response[selectedTicker] || []
 
-          setChartData(data)
+          setChartData([...data])
 
           // Record this API call for future cache detection
           recordApiCall(selectedTicker, settings.interval)
