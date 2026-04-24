@@ -83,6 +83,9 @@ export default defineConfig(({ mode }) => {
     }),
     viteReact(),
   ],
+  define: {
+    'import.meta.env.VITE_GIT_COMMIT_SHA': JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA || ''),
+  },
   build: {
     rollupOptions: {
       output: {

@@ -191,6 +191,7 @@ function DebugFooterContent() {
 	const apiUrlOverride = SafeLocalStorage.getItem(API_BASE_URL_OVERRIDE_STORAGE_KEY)
 
 	const environmentData = {
+		gitCommit: (import.meta.env.VITE_GIT_COMMIT_SHA as string | undefined) || 'N/A (local dev)',
 		mode: import.meta.env.MODE,
 		dev: import.meta.env.DEV,
 		prod: import.meta.env.PROD,
