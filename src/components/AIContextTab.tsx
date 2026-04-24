@@ -899,7 +899,7 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 			<textarea
 				readOnly
 				value={aiContext}
-				className="w-full h-[180px] md:h-[360px] lg:h-[480px] p-3 font-mono text-xs border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-ring bg-muted/50 overflow-y-auto"
+				className="w-full h-[100px] md:h-[180px] lg:h-[220px] p-3 font-mono text-xs border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-ring bg-muted/50 overflow-y-auto"
 				style={{ whiteSpace: "pre-wrap" }}
 			/>
 
