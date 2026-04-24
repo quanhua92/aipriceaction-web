@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import * as React from "react";
 import { useState } from "react";
 import {
@@ -76,15 +76,23 @@ export function SelectTickerDialog({
 				</DialogTitle>
 				<div className="shrink-0 border-b pb-4">
 					<div className="relative">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
 						<Input
 							placeholder={t("dialogs.selectTicker.searchPlaceholder")}
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
 							onKeyDown={handleKeyDown}
-							className="pl-9 h-9 text-sm bg-muted/50 border-0 focus-visible:ring-1"
+							className="pl-9 pr-9 h-9 text-sm bg-muted/50 border-0 focus-visible:ring-1"
 							autoFocus
 						/>
+						<button
+							type="button"
+							onClick={() => setOpen(false)}
+							className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center h-6 w-6 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+							aria-label="Close"
+						>
+							<X className="h-4 w-4" />
+						</button>
 					</div>
 				</div>
 
