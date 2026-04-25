@@ -89,7 +89,7 @@ function GlobalPage() {
 	};
 
 	return (
-		<div className="space-y-8">
+		<div className="space-y-6">
 			{/* Welcome Section */}
 			<div className="bg-gradient-to-r from-green-500/10 via-blue-500/10 to-purple-500/10 border-b">
 				<div className="container mx-auto p-6 md:p-8">
@@ -101,9 +101,13 @@ function GlobalPage() {
 							{t("common.home.welcomeDescription")}
 						</p>
 						<HeroCTACarousel />
-						<TickerSearchBar onSelectTicker={handleSelectTicker} defaultSectionFilter="global" />
 					</div>
 				</div>
+			</div>
+
+			{/* Ticker Search Bar */}
+			<div className="container mx-auto px-4 md:px-8">
+				<TickerSearchBar onSelectTicker={handleSelectTicker} defaultSectionFilter="global" />
 			</div>
 
 			{/* Section: Recent Triggered Alerts */}

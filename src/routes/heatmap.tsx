@@ -7,6 +7,7 @@ import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
+import { TickerSearchBar } from "@/components/TickerSearchBar";
 import type { Ticker } from "@/components/lists/SortableTickerList";
 
 export const Route = createFileRoute("/heatmap")({
@@ -39,7 +40,13 @@ function HeatmapPage() {
 	};
 
 	return (
-		<div className="space-y-6">
+		<>
+			{/* Ticker Search Bar */}
+			<div className="container mx-auto px-4 md:px-8 pt-4">
+				<TickerSearchBar onSelectTicker={handleSelectTicker} />
+			</div>
+
+			<div className="space-y-6">
 			{/* Section: Recent Alerts */}
 			<div className="p-3 md:p-4">
 				<RecentAlertsWidget onFullscreenClick={setFullscreenTicker} />
@@ -86,5 +93,6 @@ function HeatmapPage() {
 				currentIndex={fullscreenTickerIndex}
 			/>
 		</div>
+		</>
 	);
 }
