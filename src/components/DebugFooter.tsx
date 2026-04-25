@@ -308,7 +308,7 @@ function DebugFooterContent() {
 			</CollapsibleTrigger>
 
 			<CollapsibleContent className="p-2 md:p-4 border-t">
-				<Tabs defaultValue="quicklinks" className="w-full gap-2">
+				<Tabs defaultValue="environment" className="w-full gap-2">
 					<TabsList className="w-full overflow-x-auto flex-wrap h-auto gap-1 mb-4">
 						<TabsTrigger value="api" className="text-xs">
 							API
