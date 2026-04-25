@@ -13,6 +13,8 @@ import {
 	SYNC_TOKEN_STORAGE_KEY,
 	SYNC_KEY_STORAGE_KEY,
 	SYNC_SECRET_STORAGE_KEY,
+	SYNC_LAST_UPLOAD_KEY,
+	SYNC_LAST_DOWNLOAD_KEY,
 } from '@/lib/constants'
 import { generateUUIDv7 } from '@/lib/uuid'
 import {
@@ -84,6 +86,8 @@ function SyncPageContent() {
 	const [serverEntry, setServerEntry] = React.useState<SyncEntry | null>(null)
 	const [localData, setLocalData] = React.useState<SyncData | null>(null)
 	const [copied, setCopied] = React.useState(false)
+	const [lastUploadTime, setLastUploadTime] = React.useState<string | null>(null)
+	const [lastDownloadTime, setLastDownloadTime] = React.useState<string | null>(null)
 
 	// Local backup state
 	const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -101,6 +105,8 @@ function SyncPageContent() {
 		if (storedSecret) setSecret(storedSecret)
 		if (storedUrl) setSyncApiUrl(storedUrl)
 		setIsConnected(!!storedKey && !!storedSecret)
+		setLastUploadTime(SafeLocalStorage.getItem(SYNC_LAST_UPLOAD_KEY))
+		setLastDownloadTime(SafeLocalStorage.getItem(SYNC_LAST_DOWNLOAD_KEY))
 	}, [])
 
 	function showStatus(type: 'success' | 'error', text: string) {
@@ -153,6 +159,9 @@ function SyncPageContent() {
 			const entry = await syncCreateOrUpdate(token.trim(), syncKey.trim(), secret.trim(), data, effectiveBaseUrl)
 			saveCredentials(token.trim(), syncKey.trim(), secret.trim())
 			setServerEntry(entry)
+			const now = new Date().toISOString()
+			SafeLocalStorage.setItem(SYNC_LAST_UPLOAD_KEY, now)
+			setLastUploadTime(now)
 			info(`[Sync] Created sync entry: ${syncKey.trim().slice(0, 8)}...`)
 			showStatus('success', t('common.sync.createdAndUploaded'))
 		} catch (err) {
@@ -197,6 +206,9 @@ function SyncPageContent() {
 			const entry = await syncCreateOrUpdate(token, syncKey, secret, data, effectiveBaseUrl)
 			setServerEntry(entry)
 			setLocalData(data)
+			const now = new Date().toISOString()
+			SafeLocalStorage.setItem(SYNC_LAST_UPLOAD_KEY, now)
+			setLastUploadTime(now)
 			info(`[Sync] Uploaded: ${Object.keys(data.watchlists).length} watchlists, ${data.alerts.length} alerts, ${data.chartLines.length} chart lines`)
 			showStatus('success', t('common.sync.uploaded', { watchlists: Object.keys(data.watchlists).length, alerts: data.alerts.length, chartLines: data.chartLines.length }))
 		} catch (err) {
@@ -233,6 +245,9 @@ function SyncPageContent() {
 		const data = serverEntry.value
 		applySyncData(data, mode)
 		setLocalData(null) // clear cached local data
+		const now = new Date().toISOString()
+		SafeLocalStorage.setItem(SYNC_LAST_DOWNLOAD_KEY, now)
+		setLastDownloadTime(now)
 		const label = mode === 'overwrite' ? t('common.sync.overwritten') : t('common.sync.merged')
 		info(`[Sync] Applied server data (${label}): ${Object.keys(data.watchlists).length} watchlists, ${data.alerts.length} alerts, ${data.chartLines.length} chart lines`)
 		showStatus('success', t('common.sync.serverDataApplied', { mode: mode === 'overwrite' ? t('common.sync.overwritten').toLowerCase() : t('common.sync.merged').toLowerCase() }))
@@ -444,6 +459,12 @@ function SyncPageContent() {
 								{t('common.sync.updated')}: {new Date(serverEntry.updated_at).toLocaleString()}
 							</p>
 						)}
+						<p className="text-xs text-muted-foreground mt-1">
+							{t('common.sync.lastUpload')}: {lastUploadTime ? new Date(lastUploadTime).toLocaleString() : t('common.sync.never')}
+						</p>
+						<p className="text-xs text-muted-foreground mt-1">
+							{t('common.sync.lastDownload')}: {lastDownloadTime ? new Date(lastDownloadTime).toLocaleString() : t('common.sync.never')}
+						</p>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						{/* Upload section */}
