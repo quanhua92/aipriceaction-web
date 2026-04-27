@@ -15,7 +15,7 @@ export type MajorCrypto = typeof MAJOR_CRYPTO[number]
 /**
  * Major global indices (shown at top like market indices on /global page)
  */
-export const MAJOR_GLOBAL = ['^GSPC', '^DJI', '^NDX', 'GC=F', 'CL=F', 'SJC-GOLD'] as const
+export const MAJOR_GLOBAL = ['^GSPC', '^DJI', '^NDX', 'GC=F', 'BZ=F', 'SJC-GOLD'] as const
 
 /**
  * Symbols that should always be formatted as integers (no decimals)

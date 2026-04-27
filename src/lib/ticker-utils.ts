@@ -45,7 +45,7 @@ const COMMON_CRYPTO_SYMBOLS = new Set([
 const COMMON_GLOBAL_SYMBOLS = new Set([
 	"GC=F",
 	"SI=F",
-	"CL=F",
+	"BZ=F",
 	"^GSPC",
 	"^DJI",
 	"^NDX",
