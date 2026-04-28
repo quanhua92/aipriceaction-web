@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Star, HelpCircle, CalendarRange, Bell, Info } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Star, HelpCircle, Bell, Info } from 'lucide-react'
 import { formatPrice, formatVolume, formatPercent } from '@/lib/format'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
@@ -66,7 +66,12 @@ export function VolumeProfileWidget({
 
   // Date range mode state
   const [isRangeMode, setIsRangeMode] = React.useState(false)
-  const [selectedStartDate, setSelectedStartDate] = React.useState(startDate ?? initialStartDate ?? globalStartDate ?? getTodayDate())
+  const defaultRangeStart = React.useMemo(() => {
+    const d = new Date(endDate ?? initialEndDate ?? globalEndDate ?? getTodayDate())
+    d.setDate(d.getDate() - 30)
+    return d.toISOString().split('T')[0]
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const [selectedStartDate, setSelectedStartDate] = React.useState(startDate ?? initialStartDate ?? globalStartDate ?? defaultRangeStart)
   const [selectedEndDate, setSelectedEndDate] = React.useState(endDate ?? initialEndDate ?? globalEndDate ?? getTodayDate())
 
   // Determine mode for price formatting
@@ -432,15 +437,28 @@ export function VolumeProfileWidget({
           </QuickAddAlertDialog>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant={isRangeMode ? 'default' : 'ghost'}
-            size="sm"
-            className="h-6 w-6 p-0 hover:bg-muted/50"
-            onClick={() => setIsRangeMode(!isRangeMode)}
-            title={isRangeMode ? t('common.volumeProfile.singleDay') : t('common.volumeProfile.dateRange')}
-          >
-            <CalendarRange className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex bg-muted rounded-md">
+            <button
+              onClick={() => setIsRangeMode(false)}
+              className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                !isRangeMode
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t('common.volumeProfile.singleDay')}
+            </button>
+            <button
+              onClick={() => setIsRangeMode(true)}
+              className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
+                isRangeMode
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t('common.volumeProfile.dateRange')}
+            </button>
+          </div>
           <Select value={String(bins)} onValueChange={(v) => setBins(Number(v))}>
             <SelectTrigger className="w-16 h-7 text-xs">
               <SelectValue />
