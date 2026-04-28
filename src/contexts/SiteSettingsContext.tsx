@@ -15,7 +15,7 @@ const SiteSettingsContext = React.createContext<SiteSettingsContextType | undefi
 
 const STORAGE_KEY = 'site-settings-language'
 const THEME_STORAGE_KEY = 'site-settings-theme'
-const DEFAULT_LANGUAGE: Language = 'vn'
+const DEFAULT_LANGUAGE: Language = 'en'
 const DEFAULT_THEME: Theme = 'system'
 
 export function SiteSettingsProvider({ children }: { children: React.ReactNode }) {
@@ -38,7 +38,7 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       return storedLang
     }
 
-    // Priority 3: Default to Vietnamese
+    // Priority 3: Default to English
     return DEFAULT_LANGUAGE
   })
 
