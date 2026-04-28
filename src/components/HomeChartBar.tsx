@@ -98,7 +98,7 @@ export function HomeChartBar({
 			<div className="flex items-center gap-3 px-3 py-2 md:px-4 border-t border-b bg-background/50">
 				{/* Charts count selector */}
 				<div className="flex items-center gap-1.5">
-					<span className="text-xs text-muted-foreground hidden sm:inline">
+					<span className="text-xs text-muted-foreground">
 						{t("common.charts")}
 					</span>
 					<Select
@@ -118,10 +118,10 @@ export function HomeChartBar({
 					</Select>
 				</div>
 
-				{/* Columns selector */}
-				<Separator orientation="vertical" className="h-4" />
-				<div className="flex items-center gap-1.5">
-					<span className="text-xs text-muted-foreground hidden sm:inline">
+				{/* Columns selector - hidden on mobile (grid is always 1 col) */}
+				<Separator orientation="vertical" className="h-4 hidden md:block" />
+				<div className="hidden md:flex items-center gap-1.5">
+					<span className="text-xs text-muted-foreground">
 						{t("common.columns")}
 					</span>
 					<Select
@@ -144,7 +144,7 @@ export function HomeChartBar({
 				{/* Height select */}
 				<Separator orientation="vertical" className="h-4" />
 				<div className="flex items-center gap-1.5">
-					<span className="text-xs text-muted-foreground hidden sm:inline">
+					<span className="text-xs text-muted-foreground">
 						{t("common.height")}
 					</span>
 					<Select
