@@ -188,7 +188,7 @@ export function RRGWidget({
 
 	// Tab state
 	const [activeTab, setActiveTab] = React.useState<"mascore" | "jdk">(
-		"mascore",
+		"jdk",
 	);
 
 	// MA Score controls
