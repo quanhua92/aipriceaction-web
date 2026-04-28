@@ -30,14 +30,14 @@ interface TreemapControlState {
 	referenceTicker: string;
 }
 
-const VALID_HEIGHTS = [300, 400, 500, 600] as const;
+const VALID_HEIGHTS = [300, 400, 500, 600, 700, 800] as const;
 
 function makeDefaultState(defaultTicker: string): TreemapControlState {
 	return {
 		showAdditionalChart: false,
 		layout: "horizontal",
 		swapped: false,
-		chartHeight: 400,
+		chartHeight: 500,
 		referenceTicker: defaultTicker,
 	};
 }

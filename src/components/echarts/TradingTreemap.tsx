@@ -388,9 +388,9 @@ export function TradingTreemap({
         min: 0.8,
         max: 3,
       },
-      nodeClick: 'zoomToNode',
+      nodeClick: false,
       breadcrumb: {
-        show: true,
+        show: false,
         left: 'center',
         bottom: 8,
         height: 22,
