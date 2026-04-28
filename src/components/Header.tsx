@@ -5,6 +5,7 @@ import {
   Zap,
   Settings,
 } from 'lucide-react'
+import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
 import { Toggle } from '@/components/ui/toggle'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -15,7 +16,12 @@ import { LanguageToggle } from './LanguageToggle'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const { language, setLanguage } = useSiteSettings()
   const { isRefreshEnabled, toggleRefresh } = useRefresh()
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'vn' : 'en')
+  }
 
   return (
     <>
@@ -156,6 +162,13 @@ export default function Header() {
                     <Settings size={16} />
                   </button>
                 </ChartSettingsDialog>
+                <button
+                  onClick={toggleLanguage}
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm rounded hover:bg-muted transition-colors"
+                >
+                  <span>Language</span>
+                  <span className="font-medium">{language.toUpperCase()}</span>
+                </button>
               </div>
             </PopoverContent>
           </Popover>
