@@ -46,6 +46,8 @@ import {
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { TOOLTIP_MARGIN, TOOLTIP_WIDTH, TOOLTIP_HEIGHT } from "@/lib/constants";
+
+const CHART_RIGHT_OFFSET = 6;
 import { RulerSection } from "./RulerSection";
 import { createTooltipElement } from "@/lib/tooltipStyles";
 import { useLogs } from "@/contexts/LogsContext";
@@ -271,6 +273,7 @@ export function BaseTradingViewChart({
 				borderColor: "#27272a",
 				timeVisible: true,
 				secondsVisible: false,
+				rightOffset: CHART_RIGHT_OFFSET,
 			},
 			handleScroll: {
 				mouseWheel: true,
@@ -1175,6 +1178,7 @@ export function BaseTradingViewChart({
 						.timeScale()
 						.setVisibleLogicalRange(savedLogicalRange);
 				}
+				chartRef.current.timeScale().applyOptions({ rightOffset: CHART_RIGHT_OFFSET });
 			});
 		}
 		// Update ref for next render
@@ -1205,12 +1209,14 @@ export function BaseTradingViewChart({
 				0,
 				chartData.candlestick.length - viewportSize,
 			);
+
 			const from = chartData.candlestick[startIndex].time;
 			const to = chartData.candlestick[chartData.candlestick.length - 1].time;
 
 			requestAnimationFrame(() => {
 				if (!chartRef.current) return;
 				chartRef.current.timeScale().setVisibleRange({ from, to });
+				chartRef.current.timeScale().applyOptions({ rightOffset: CHART_RIGHT_OFFSET });
 				setIsDataInitialized(true);
 			});
 
