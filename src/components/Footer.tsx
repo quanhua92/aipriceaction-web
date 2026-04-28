@@ -6,14 +6,14 @@ export default function Footer() {
       <div className="container mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-2">
-            <Link to="/" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
-              Home
-            </Link>
             <Link to="/ai" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               AI Context
             </Link>
             <Link to="/backtesting" search={{ ticker: undefined, endDate: undefined, interval: undefined, limit: undefined }} className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
               Backtesting
+            </Link>
+            <Link to="/volume-profile" className="block text-sm text-gray-300 hover:text-green-400 transition-colors">
+              Volume Profile
             </Link>
           </div>
 

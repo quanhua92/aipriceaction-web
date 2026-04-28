@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchRouteImport } from './routes/watch'
+import { Route as VolumeProfileRouteImport } from './routes/volume-profile'
 import { Route as SyncRouteImport } from './routes/sync'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as MatrixRouteImport } from './routes/matrix'
@@ -29,6 +30,11 @@ import { Route as NoteIdRouteImport } from './routes/note.$id'
 const WatchRoute = WatchRouteImport.update({
   id: '/watch',
   path: '/watch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VolumeProfileRoute = VolumeProfileRouteImport.update({
+  id: '/volume-profile',
+  path: '/volume-profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SyncRoute = SyncRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/sync': typeof SyncRoute
+  '/volume-profile': typeof VolumeProfileRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
   '/notes/new': typeof NotesNewRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/sync': typeof SyncRoute
+  '/volume-profile': typeof VolumeProfileRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
   '/notes/new': typeof NotesNewRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
   '/sync': typeof SyncRoute
+  '/volume-profile': typeof VolumeProfileRoute
   '/watch': typeof WatchRoute
   '/note/$id': typeof NoteIdRoute
   '/notes/new': typeof NotesNewRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/matrix'
     | '/signals'
     | '/sync'
+    | '/volume-profile'
     | '/watch'
     | '/note/$id'
     | '/notes/new'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/matrix'
     | '/signals'
     | '/sync'
+    | '/volume-profile'
     | '/watch'
     | '/note/$id'
     | '/notes/new'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/matrix'
     | '/signals'
     | '/sync'
+    | '/volume-profile'
     | '/watch'
     | '/note/$id'
     | '/notes/new'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   MatrixRoute: typeof MatrixRoute
   SignalsRoute: typeof SignalsRoute
   SyncRoute: typeof SyncRoute
+  VolumeProfileRoute: typeof VolumeProfileRoute
   WatchRoute: typeof WatchRoute
   NoteIdRoute: typeof NoteIdRoute
   NotesNewRoute: typeof NotesNewRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/watch'
       fullPath: '/watch'
       preLoaderRoute: typeof WatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/volume-profile': {
+      id: '/volume-profile'
+      path: '/volume-profile'
+      fullPath: '/volume-profile'
+      preLoaderRoute: typeof VolumeProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sync': {
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   MatrixRoute: MatrixRoute,
   SignalsRoute: SignalsRoute,
   SyncRoute: SyncRoute,
+  VolumeProfileRoute: VolumeProfileRoute,
   WatchRoute: WatchRoute,
   NoteIdRoute: NoteIdRoute,
   NotesNewRoute: NotesNewRoute,
