@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { MarketMatrix } from "@/components/MarketMatrix";
-import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { BasicWatchList } from "@/components/lists/BasicWatchList";
 import { TrendSignal } from "@/components/TrendSignal";
 import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
@@ -9,12 +8,13 @@ import { BasicTickerWidget } from "@/components/widgets/BasicTickerWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { RRGWidget } from "@/components/widgets/RRGWidget";
 import { TradingTreemap } from "@/components/echarts/TradingTreemap";
+import { HomeChartBar } from "@/components/HomeChartBar";
 import { TreemapChartBar } from "@/components/echarts/TreemapChartBar";
 import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { HeroCTACarousel } from "@/components/HeroCTACarousel";
 import { TickerSearchBar } from "@/components/TickerSearchBar";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
-import { ALL_WATCHLIST_NAME, HOME_CHART_TICKERS_STORAGE_KEY } from "@/lib/constants";
+import { ALL_WATCHLIST_NAME, HOME_CHART_TICKERS_STORAGE_KEY, LANDING_CHART_TICKERS_COUNT } from "@/lib/constants";
 
 import { SafeLocalStorage } from "@/lib/localStorage";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -22,7 +22,7 @@ import type { Ticker } from "@/components/lists/SortableTickerList";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
-const DEFAULT_HOME_TICKERS = ['VNINDEX', 'VIC', 'STB', 'MSB'] as const;
+const DEFAULT_HOME_TICKERS = ['VNINDEX', 'VIC', 'STB', 'MSB', 'FPT', 'VNM', 'HPG', 'MWG'] as const;
 
 function HomePage() {
 	const { t } = useTranslation();
@@ -33,7 +33,7 @@ function HomePage() {
 			const stored = SafeLocalStorage.getItem(HOME_CHART_TICKERS_STORAGE_KEY);
 			if (stored) {
 				const parsed = JSON.parse(stored);
-				if (Array.isArray(parsed) && parsed.length === 4) {
+				if (Array.isArray(parsed) && parsed.length === LANDING_CHART_TICKERS_COUNT) {
 					return parsed;
 				}
 			}
@@ -130,14 +130,11 @@ function HomePage() {
 			</div>
 
 			{/* Section 1: Charts Grid */}
-			<div className="p-4 md:p-6 border-t">
-				<div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-4">
-					<TradingViewChart ticker={chartTickers[0]} onTickerChange={handleChartTickerChange(0)} />
-					<TradingViewChart ticker={chartTickers[1]} onTickerChange={handleChartTickerChange(1)} />
-					<TradingViewChart ticker={chartTickers[2]} onTickerChange={handleChartTickerChange(2)} />
-					<TradingViewChart ticker={chartTickers[3]} onTickerChange={handleChartTickerChange(3)} />
-				</div>
-			</div>
+			<HomeChartBar
+				chartTickers={chartTickers}
+				onChartTickerChange={(index, symbol) => handleChartTickerChange(index)(symbol)}
+				storageKeyPrefix="home"
+			/>
 
 			{/* Section 2: Watchlist + Trend Signals */}
 			<div className="p-2 md:p-6 border-t">
