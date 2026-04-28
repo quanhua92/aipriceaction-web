@@ -2,7 +2,11 @@ import { Globe } from 'lucide-react'
 import { useSiteSettings } from '@/contexts/SiteSettingsContext'
 import { Toggle } from '@/components/ui/toggle'
 
-export function LanguageToggle() {
+interface LanguageToggleProps {
+  className?: string
+}
+
+export function LanguageToggle({ className }: LanguageToggleProps) {
   const { language, setLanguage } = useSiteSettings()
 
   const toggleLanguage = () => {
@@ -17,7 +21,7 @@ export function LanguageToggle() {
     <Toggle
       pressed={false}
       onPressedChange={toggleLanguage}
-      className="border border-gray-600 text-xs font-bold"
+      className={`border border-gray-600 text-xs font-bold ${className ?? ''}`}
       aria-label={`Language: ${getLabel()}. Click to switch.`}
       title={`Language: ${getLabel()}. Click to switch between English and Vietnamese.`}
     >

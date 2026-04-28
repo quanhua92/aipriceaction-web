@@ -160,7 +160,9 @@ export default function Header() {
             </PopoverContent>
           </Popover>
 
-          <LanguageToggle />
+          <div className="max-md:hidden">
+            <LanguageToggle />
+          </div>
         </div>
       </header>
     </>

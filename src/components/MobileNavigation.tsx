@@ -18,6 +18,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { PWAInstallButton } from './PWAInstallButton'
+import { LanguageToggle } from './LanguageToggle'
 
 interface MobileNavigationProps {
   isOpen: boolean
@@ -150,6 +151,9 @@ export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
             {/* Mobile PWA Install Button */}
             <div className="pt-4 mt-4 border-t border-gray-700">
               <PWAInstallButton mobileStyle />
+              <div className="mt-3 flex">
+                <LanguageToggle className="w-full" />
+              </div>
             </div>
           </nav>
         </SheetContent>
