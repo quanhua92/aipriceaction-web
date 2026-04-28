@@ -437,28 +437,6 @@ export function VolumeProfileWidget({
           </QuickAddAlertDialog>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex bg-muted rounded-md">
-            <button
-              onClick={() => setIsRangeMode(false)}
-              className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
-                !isRangeMode
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {t('common.volumeProfile.singleDay')}
-            </button>
-            <button
-              onClick={() => setIsRangeMode(true)}
-              className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors ${
-                isRangeMode
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {t('common.volumeProfile.dateRange')}
-            </button>
-          </div>
           <Select value={String(bins)} onValueChange={(v) => setBins(Number(v))}>
             <SelectTrigger className="w-16 h-7 text-xs">
               <SelectValue />
@@ -492,6 +470,32 @@ export function VolumeProfileWidget({
               </div>
             </PopoverContent>
           </Popover>
+        </div>
+      </div>
+
+      {/* Date Mode Toggle */}
+      <div className="flex items-center justify-center mb-2">
+        <div className="flex bg-muted rounded-md">
+          <button
+            onClick={() => setIsRangeMode(false)}
+            className={`h-8 px-3 text-xs font-medium rounded-md transition-colors ${
+              !isRangeMode
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t('common.volumeProfile.singleDay')}
+          </button>
+          <button
+            onClick={() => setIsRangeMode(true)}
+            className={`h-8 px-3 text-xs font-medium rounded-md transition-colors ${
+              isRangeMode
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t('common.volumeProfile.dateRange')}
+          </button>
         </div>
       </div>
 
