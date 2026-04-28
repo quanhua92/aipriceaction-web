@@ -392,10 +392,10 @@ export function VolumeProfileWidget({
           </div>
         </div>
 
-        {/* Volume Profile Bars - 600px mobile, maxHeight prop for desktop (default 300px) */}
+        {/* Volume Profile Bars - maxHeight prop for all (default 300px) */}
         <div
-          className="space-y-1 overflow-y-auto max-h-[600px] md:max-h-[var(--desktop-max-height)]"
-          style={{ ['--desktop-max-height' as string]: maxHeight ?? '300px' }}
+          className="space-y-1 overflow-y-auto"
+          style={{ maxHeight: maxHeight ?? '300px' }}
         >
           {profile.map((level) => (
             <VolumeProfileRow
