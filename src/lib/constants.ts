@@ -118,6 +118,13 @@ export const CRYPTO_WATCHLIST_NAME = 'CRYPTO'
 export const GLOBAL_WATCHLIST_NAME = 'GLOBAL'
 
 /**
+ * Tickers to exclude from the treemap, keyed by watchlist name.
+ */
+export const TREEMAP_EXCLUDE_TICKERS: Record<string, string[]> = {
+  [GLOBAL_WATCHLIST_NAME]: ['^VIX', '^GSPC', '^NDX', '^DJI'],
+}
+
+/**
  * Names of predefined watchlists (VN30, VINGROUP, TM, etc.)
  * These appear between "ALL" and custom watchlists in the UI
  */

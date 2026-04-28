@@ -14,6 +14,7 @@ import {
   CRYPTO_WATCHLIST_NAME,
   GLOBAL_WATCHLIST_NAME,
   MARKET_INDICES,
+  TREEMAP_EXCLUDE_TICKERS,
 } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
 import { getBasicChangeColor, getMAColor } from '@/lib/chartColors'
@@ -84,15 +85,18 @@ function buildSectorNodes(
   data: Record<string, StockData[]>,
   wrapperName: string | null,
   language: 'vn' | 'en',
+  watchlistName?: string,
 ): TreemapNode[] {
   if (!groups) return []
 
+  const excludeSet = watchlistName ? new Set(TREEMAP_EXCLUDE_TICKERS[watchlistName] ?? []) : null
   const sectorNodes: TreemapNode[] = []
 
   for (const [sector, symbols] of Object.entries(groups)) {
     if (MARKET_INDICES.includes(sector as typeof MARKET_INDICES[number])) continue
     const children: TreemapNode[] = []
     for (const symbol of symbols) {
+      if (excludeSet?.has(symbol)) continue
       const latestData = data[symbol]?.[0]
       if (!latestData) continue
       const price = latestData.close || 0
@@ -221,15 +225,15 @@ export function TradingTreemap({
   // Build treemap data based on selected watchlist
   const treemapData = React.useMemo<TreemapNode[]>(() => {
     if (selectedWatchlist === ALL_WATCHLIST_NAME) {
-      return buildSectorNodes(tickerGroups, combinedData, null, language)
+      return buildSectorNodes(tickerGroups, combinedData, null, language, selectedWatchlist)
     }
 
     if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
-      return buildSectorNodes(cryptoTickerGroups, combinedData, 'Crypto', language)
+      return buildSectorNodes(cryptoTickerGroups, combinedData, 'Crypto', language, selectedWatchlist)
     }
 
     if (selectedWatchlist === GLOBAL_WATCHLIST_NAME) {
-      return buildSectorNodes(globalTickerGroups, combinedData, 'Global', language)
+      return buildSectorNodes(globalTickerGroups, combinedData, 'Global', language, selectedWatchlist)
     }
 
     // Check if it's a VN sector group
@@ -239,6 +243,7 @@ export function TradingTreemap({
         combinedData,
         null,
         language,
+        selectedWatchlist,
       )
     }
 
@@ -249,6 +254,7 @@ export function TradingTreemap({
         combinedData,
         null,
         language,
+        selectedWatchlist,
       )
     }
 
@@ -259,6 +265,7 @@ export function TradingTreemap({
         combinedData,
         null,
         language,
+        selectedWatchlist,
       )
     }
 
@@ -266,14 +273,14 @@ export function TradingTreemap({
     if (isPredefinedWatchlist(selectedWatchlist)) {
       const tickers = getPredefinedWatchlistTickers(selectedWatchlist)
       const sectors = groupBySector(tickers, tickerGroups, cryptoTickerGroups, globalTickerGroups)
-      return buildSectorNodes(sectors, combinedData, null, language)
+      return buildSectorNodes(sectors, combinedData, null, language, selectedWatchlist)
     }
 
     // Otherwise it's a custom watchlist
     const tickers = getWatchlistTickers(selectedWatchlist)
     if (tickers.length > 0) {
       const sectors = groupBySector(tickers, tickerGroups, cryptoTickerGroups, globalTickerGroups)
-      return buildSectorNodes(sectors, combinedData, null, language)
+      return buildSectorNodes(sectors, combinedData, null, language, selectedWatchlist)
     }
 
     return []
