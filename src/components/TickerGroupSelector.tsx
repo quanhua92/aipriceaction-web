@@ -16,7 +16,6 @@ import {
 	ALL_WATCHLIST_NAME,
 	CRYPTO_WATCHLIST_NAME,
 	GLOBAL_WATCHLIST_NAME,
-	MARKET_INDICES,
 	PRIORITY_GROUPS,
 } from '@/lib/constants'
 
@@ -67,7 +66,6 @@ export function TickerGroupSelector({
 	const sectorGroups = React.useMemo(() => {
 		if (!showSectors || !tickerGroups) return []
 		return Object.keys(tickerGroups)
-			.filter((group) => !MARKET_INDICES.includes(group as any))
 			.sort((a, b) => {
 				const priorityA = PRIORITY_GROUPS.indexOf(a as any)
 				const priorityB = PRIORITY_GROUPS.indexOf(b as any)

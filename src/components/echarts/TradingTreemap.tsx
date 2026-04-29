@@ -13,7 +13,6 @@ import {
   ALL_WATCHLIST_NAME,
   CRYPTO_WATCHLIST_NAME,
   GLOBAL_WATCHLIST_NAME,
-  MARKET_INDICES,
   TREEMAP_EXCLUDE_TICKERS,
 } from '@/lib/constants'
 import { formatPrice, formatPercent, formatVolume } from '@/lib/format'
@@ -93,7 +92,6 @@ function buildSectorNodes(
   const sectorNodes: TreemapNode[] = []
 
   for (const [sector, symbols] of Object.entries(groups)) {
-    if (MARKET_INDICES.includes(sector as typeof MARKET_INDICES[number])) continue
     const children: TreemapNode[] = []
     for (const symbol of symbols) {
       if (excludeSet?.has(symbol)) continue

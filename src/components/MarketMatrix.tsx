@@ -10,7 +10,6 @@ import {
   CRYPTO_WATCHLIST_NAME,
   GLOBAL_WATCHLIST_NAME,
   MAJOR_CRYPTO,
-  MARKET_INDICES,
   MATRIX_DAYS_PER_PAGE,
   MATRIX_OPEN_SECTORS_STORAGE_KEY,
   PRIORITY_GROUPS,
@@ -189,10 +188,8 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
     if (selectedWatchlist === ALL_WATCHLIST_NAME) {
       // Get all tickers from all sectors
       const allTickers: string[] = []
-      Object.entries(tickerGroups).forEach(([sector, symbols]) => {
-        if (!MARKET_INDICES.includes(sector as any)) {
-          allTickers.push(...symbols)
-        }
+      Object.entries(tickerGroups).forEach(([, symbols]) => {
+        allTickers.push(...symbols)
       })
       return allTickers
     }

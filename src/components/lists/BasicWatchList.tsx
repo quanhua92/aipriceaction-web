@@ -146,19 +146,16 @@ export function BasicWatchList({
 			const seenSymbols = new Set<string>();
 
 			Object.entries(tickerGroups).forEach(([sector, symbols]) => {
-				// Skip market indices as they're handled by SortableTickerList
-				if (!MARKET_INDICES.includes(sector as any)) {
-					symbols.forEach((symbol) => {
-						// Only add if not already seen (deduplicate across sectors)
-						if (!seenSymbols.has(symbol)) {
-							seenSymbols.add(symbol);
-							allSectorTickers.push({
-								symbol,
-								sector,
-							});
-						}
-					});
-				}
+				symbols.forEach((symbol) => {
+					// Only add if not already seen (deduplicate across sectors)
+					if (!seenSymbols.has(symbol)) {
+						seenSymbols.add(symbol);
+						allSectorTickers.push({
+							symbol,
+							sector,
+						});
+					}
+				});
 			});
 
 			return allSectorTickers;
@@ -327,9 +324,7 @@ export function BasicWatchList({
 		setCustomWatchlists((prev) => prev.filter((w) => w !== selectedGroup));
 		// Select the first available group
 		const sectors = tickerGroups
-			? Object.keys(tickerGroups).filter(
-					(group) => !MARKET_INDICES.includes(group as any),
-				)
+			? Object.keys(tickerGroups)
 			: [];
 		const remainingGroups = [
 			...customWatchlists.filter((w) => w !== selectedGroup),

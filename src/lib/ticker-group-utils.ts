@@ -1,6 +1,6 @@
 import { getWatchlistTickers } from './watchlist-storage'
 import { getPredefinedWatchlistTickers, isPredefinedWatchlist } from './predefined-watchlists'
-import { ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, GLOBAL_WATCHLIST_NAME, MARKET_INDICES } from './constants'
+import { ALL_WATCHLIST_NAME, CRYPTO_WATCHLIST_NAME, GLOBAL_WATCHLIST_NAME } from './constants'
 
 export interface TickerGroupInfo {
 	tickers: string[]
@@ -21,10 +21,8 @@ export function getTickersForGroup(
 	if (groupName === ALL_WATCHLIST_NAME) {
 		const allTickers: string[] = []
 		if (tickerGroups) {
-			Object.entries(tickerGroups).forEach(([sector, symbols]) => {
-				if (!MARKET_INDICES.includes(sector as any)) {
-					allTickers.push(...symbols)
-				}
+			Object.entries(tickerGroups).forEach(([, symbols]) => {
+				allTickers.push(...symbols)
 			})
 		}
 		return { tickers: allTickers, type: 'all' }

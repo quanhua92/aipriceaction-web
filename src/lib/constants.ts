@@ -203,6 +203,9 @@ export const SECTOR_ABBREVIATIONS: Record<string, string> = {
 	// Global/yahoo groups
 	GLOBAL: 'GLB',
 
+	// Index group
+	INDEX: 'IDX',
+
 	// Priority sectors
 	NGAN_HANG: 'NH',
 	CHUNG_KHOAN: 'CK',

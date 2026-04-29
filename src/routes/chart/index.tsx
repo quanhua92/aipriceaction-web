@@ -10,7 +10,7 @@ import { MarketMatrix } from "@/components/MarketMatrix";
 import { TrendSignal } from "@/components/TrendSignal";
 import { BasicTopPerformers } from "@/components/lists/BasicTopPerformers";
 import { BasicBackTestWidget } from "@/components/widgets/BasicBackTestWidget";
-import { ALL_WATCHLIST_NAME, MARKET_INDICES } from "@/lib/constants";
+import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import { useAPI } from "@/contexts/APIContext";
 import { getChartLayout, saveChartLayout, type ChartPageLayout } from "@/lib/layout-storage";
 import type { BasicStockData } from "@/lib/api-client";
@@ -59,12 +59,9 @@ const generateInitialTickers = (
 
 	// Add tickers from all sector groups (similar to ALL watchlist logic)
 	Object.entries(tickerGroups).forEach(([sector, symbols]) => {
-		// Skip market indices as they're already added
-		if (!MARKET_INDICES.includes(sector as any)) {
-			symbols.forEach(symbol => {
-				allTickers.push({ symbol, sector });
-			});
-		}
+		symbols.forEach(symbol => {
+			allTickers.push({ symbol, sector });
+		});
 	});
 
 	// Remove duplicates (keep first occurrence)

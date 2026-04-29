@@ -4,7 +4,6 @@ import {
   ALL_WATCHLIST_NAME,
   CRYPTO_WATCHLIST_NAME,
   GLOBAL_WATCHLIST_NAME,
-  MARKET_INDICES,
   PRIORITY_GROUPS,
 } from './constants'
 import {
@@ -345,10 +344,8 @@ export function getWatchlistTickersByType(
   // Get tickers based on watchlist type
   if (selectedWatchlist === ALL_WATCHLIST_NAME) {
     // Get all tickers from all sectors (excluding market indices like VNINDEX, VN30)
-    Object.entries(tickerGroups).forEach(([sector, symbols]) => {
-      if (!MARKET_INDICES.includes(sector as any)) {
-        selectedTickers.push(...symbols)
-      }
+    Object.entries(tickerGroups).forEach(([, symbols]) => {
+      selectedTickers.push(...symbols)
     })
   } else if (selectedWatchlist === CRYPTO_WATCHLIST_NAME) {
     selectedTickers = cryptoTickers.map(t => t.symbol)
