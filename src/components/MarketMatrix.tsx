@@ -401,14 +401,18 @@ export function MarketMatrix({ defaultWatchlist }: MarketMatrixProps = {}) {
               }
             }
           } else {
-            // Use regular tickerGroups for stocks
-            if (tickerGroups) {
-              for (const [sectorName, symbols] of Object.entries(tickerGroups)) {
+            // Search all group sources for mixed watchlists (predefined, custom, sectors)
+            let found = false
+            for (const groups of [tickerGroups, cryptoTickerGroups, globalTickerGroups]) {
+              if (!groups) continue
+              for (const [sectorName, symbols] of Object.entries(groups)) {
                 if (symbols.includes(ticker)) {
                   sector = sectorName
+                  found = true
                   break
                 }
               }
+              if (found) break
             }
           }
 
