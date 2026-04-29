@@ -839,7 +839,7 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 	return (
 		<div className="flex flex-col gap-3 p-1">
 			{/* Controls Row */}
-			<div className="flex items-center gap-2 flex-shrink-0">
+			<div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
 				<div className="flex items-center gap-2">
 					<span className="text-xs font-medium whitespace-nowrap text-muted-foreground">
 						Interval

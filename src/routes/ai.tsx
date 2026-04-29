@@ -351,7 +351,7 @@ function AIContextPage() {
 						</div>
 
 						{/* Settings Row */}
-						<div className="flex items-center gap-2">
+						<div className="flex items-center gap-2 flex-wrap">
 							{/* Limit Selector */}
 							<div className="flex items-center gap-2">
 								<span className="text-xs font-medium whitespace-nowrap text-muted-foreground">
