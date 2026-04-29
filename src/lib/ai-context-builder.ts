@@ -332,7 +332,7 @@ Các Điểm Chính:
 				const date = parseUTCISOString(record.time);
 				let formattedTime: string;
 
-				if (interval && ['1D', '2W', '1M'].includes(interval)) {
+				if (interval && ['1D', '1W', '2W', '1M'].includes(interval)) {
 					// For day, week, month intervals - only show date (YYYY-MM-DD)
 					formattedTime = formatToVietnamDate(date);
 				} else {

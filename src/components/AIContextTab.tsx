@@ -76,7 +76,7 @@ function buildTickerDataLines(
 		const date = parseUTCISOString(record.time);
 		let formattedTime: string;
 
-		if (["1D", "2W", "1M"].includes(interval)) {
+		if (["1D", "1W", "2W", "1M"].includes(interval)) {
 			formattedTime = formatToVietnamDate(date);
 		} else {
 			formattedTime = formatToVietnamTime(date);
@@ -854,6 +854,7 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 							<SelectItem value="1h">1h</SelectItem>
 							<SelectItem value="4h">4h</SelectItem>
 							<SelectItem value="1D">1D</SelectItem>
+							<SelectItem value="1W">1W</SelectItem>
 							<SelectItem value="2W">2W</SelectItem>
 							<SelectItem value="1M">1M</SelectItem>
 						</SelectContent>
