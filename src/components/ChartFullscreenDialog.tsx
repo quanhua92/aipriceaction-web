@@ -33,6 +33,7 @@ interface ChartFullscreenDialogProps {
 	currentIndex?: number;
 	title?: string;
 	getTitle?: TitleGeneratorCallback;
+	defaultTab?: "chart" | "compare" | "trendSignal" | "aiContext";
 }
 
 export function ChartFullscreenDialog({
@@ -43,6 +44,7 @@ export function ChartFullscreenDialog({
 	currentIndex = 0,
 	title,
 	getTitle,
+	defaultTab = "chart",
 }: ChartFullscreenDialogProps) {
 	const { t } = useTranslation();
 	const { info } = useLogs();
@@ -56,7 +58,7 @@ export function ChartFullscreenDialog({
 	// Active tab state (Chart is default)
 	const [activeTab, setActiveTab] = React.useState<
 		"chart" | "compare" | "trendSignal" | "aiContext"
-	>("chart");
+	>(defaultTab);
 
 	// Internal state for navigation when tickerList is provided
 	const [internalIndex, setInternalIndex] = React.useState(currentIndex);
