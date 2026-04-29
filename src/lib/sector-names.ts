@@ -14,6 +14,12 @@ export interface SectorName {
  * Complete mapping of all sector groups to readable names
  */
 export const SECTOR_NAMES: Record<string, SectorName> = {
+  // Index group
+  INDEX: {
+    vn: 'Chỉ Số Thị Trường',
+    en: 'Market Indices'
+  },
+
   // Priority sectors (most common)
   NGAN_HANG: {
     vn: 'Ngân Hàng',
