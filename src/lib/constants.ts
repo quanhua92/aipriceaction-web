@@ -8,7 +8,7 @@ export type MarketIndex = typeof MARKET_INDICES[number]
 /**
  * Additional Vietnamese index tickers (displayed as regular stocks, not pinned)
  */
-export const INDEX_TICKERS = ['VN100', 'VNMIDCAP', 'VNSMALLCAP', 'VNALLSHARE', 'VNFIN', 'HNX30', 'VNREAL', 'VNENE'] as const
+export const INDEX_TICKERS = ['VN100', 'VNMIDCAP', 'VNSMALLCAP', 'VNALLSHARE', 'VNXALLSHARE', 'VNFIN', 'HNX30', 'VNREAL', 'VNENE', 'VNMITECH', 'VNUTI', 'VNCONS', 'VNCOND', 'VNHEAL', 'VNIND', 'VNFINLEAD', 'VNFINSELECT', 'VNDIAMOND', 'VNDIVIDEND'] as const
 
 export type IndexTicker = typeof INDEX_TICKERS[number]
 
