@@ -1,12 +1,10 @@
 import { Interval } from '@/lib/api-client'
 import { SelectTickerDialog } from '@/components/dialogs/SelectTickerDialog'
-import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
 import { QuickAddWatchListDialog } from '@/components/dialogs/QuickAddWatchListDialog'
 import { QuickAddAlertDialog } from '@/components/dialogs/QuickAddAlertDialog'
 import { ChartLinesDialog } from '@/components/dialogs/ChartLinesDialog'
 import { useChartSettings } from '@/contexts/ChartSettingsContext'
 import { useTicker } from '@/contexts/TickerContext'
-import { useTranslation } from '@/hooks/useTranslation'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -15,7 +13,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Settings, Maximize2, Plus, Loader2, Star, Bell, Download, Ruler, PenLine } from 'lucide-react'
+import { MoreVertical, Maximize2, Star, Bell, Ruler, PenLine } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -71,8 +69,7 @@ export function ChartControlBar({
 	className = '',
 	onFullscreenClick,
 }: ChartControlBarProps) {
-	const { t } = useTranslation()
-	const { loadMoreHistoricalData, loadingMore, chartData } = useTicker()
+	const { chartData } = useTicker()
 	const chartEndDate = chartData[chartData.length - 1]?.time?.split('T')[0]
 	const {
 		interval: globalInterval,
@@ -279,22 +276,6 @@ export function ChartControlBar({
 					onClick={() => setRulerVisible(!rulerVisible)}
 				>
 					<Ruler className="h-4 w-4" />
-				</Button>
-
-				{/* Load More Button - Icon Only */}
-				<Button
-					variant="ghost"
-					size="sm"
-					className="h-7 w-7 p-0"
-					onClick={loadMoreHistoricalData}
-					disabled={loadingMore}
-					title="Load more historical bars"
-				>
-					{loadingMore ? (
-						<Loader2 className="h-4 w-4 animate-spin" />
-					) : (
-						<Download className="h-4 w-4" />
-					)}
 				</Button>
 
 				{/* Settings Button - Top Right (hidden for now) */}

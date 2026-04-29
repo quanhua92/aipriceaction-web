@@ -26,14 +26,12 @@ interface ChartSettingsDialogProps {
 }
 
 const LIMIT_OPTIONS = [
-	{ value: '20', label: '20 bars' },
-	{ value: '30', label: '30 bars' },
-	{ value: '50', label: '50 bars' },
-	{ value: '75', label: '75 bars' },
 	{ value: '100', label: '100 bars' },
 	{ value: '150', label: '150 bars' },
 	{ value: '200', label: '200 bars' },
 	{ value: '256', label: '256 bars' },
+	{ value: '512', label: '512 bars' },
+	{ value: '768', label: '768 bars' },
 ]
 
 const HEIGHT_OPTIONS = [

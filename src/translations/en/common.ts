@@ -688,4 +688,9 @@ export default {
 				"JdK RS-Ratio: X-axis = RS Ratio (vs benchmark). Y-axis = RS Momentum (rate of change). Center (100, 100) = performing at benchmark level.",
 		},
 	},
+	settingsPopover: {
+		bars: "Bars",
+		chartSettings: "Chart Settings",
+		language: "Language",
+	},
 };

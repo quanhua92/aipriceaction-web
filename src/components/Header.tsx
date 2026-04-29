@@ -7,17 +7,28 @@ import {
 } from 'lucide-react'
 import { useSiteSettings } from '../contexts/SiteSettingsContext'
 import { useRefresh } from '../contexts/RefreshContext'
+import { useChartSettings } from '../contexts/ChartSettingsContext'
 import { Toggle } from '@/components/ui/toggle'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ChartSettingsDialog } from '@/components/dialogs/ChartSettingsDialog'
 import { MobileNavigation } from './MobileNavigation'
 import { ThemeToggle } from './ThemeToggle'
 import { LanguageToggle } from './LanguageToggle'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const { t } = useTranslation()
   const { language, setLanguage } = useSiteSettings()
   const { isRefreshEnabled, toggleRefresh } = useRefresh()
+  const { limit, setLimit } = useChartSettings()
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'vn' : 'en')
@@ -156,9 +167,25 @@ export default function Header() {
             </PopoverTrigger>
             <PopoverContent align="end" className="w-48 p-2">
               <div className="space-y-1">
+                <div className="flex items-center justify-between px-3 py-2 text-sm">
+                  <span>{t('common.settingsPopover.bars')}</span>
+                  <Select value={String(limit)} onValueChange={(value) => setLimit(Number(value))}>
+                    <SelectTrigger className="w-[80px] h-7 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="100">100 bars</SelectItem>
+                      <SelectItem value="150">150 bars</SelectItem>
+                      <SelectItem value="200">200 bars</SelectItem>
+                      <SelectItem value="256">256 bars</SelectItem>
+                      <SelectItem value="512">512 bars</SelectItem>
+                      <SelectItem value="768">768 bars</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <ChartSettingsDialog>
                   <button className="w-full flex items-center justify-between px-3 py-2 text-sm rounded hover:bg-muted transition-colors">
-                    <span>Chart Settings</span>
+                    <span>{t('common.settingsPopover.chartSettings')}</span>
                     <Settings size={16} />
                   </button>
                 </ChartSettingsDialog>
@@ -166,7 +193,7 @@ export default function Header() {
                   onClick={toggleLanguage}
                   className="w-full flex items-center justify-between px-3 py-2 text-sm rounded hover:bg-muted transition-colors"
                 >
-                  <span>Language</span>
+                  <span>{t('common.settingsPopover.language')}</span>
                   <span className="font-medium">{language.toUpperCase()}</span>
                 </button>
               </div>

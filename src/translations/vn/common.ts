@@ -691,4 +691,9 @@ export default {
 				"JdK RS-Ratio: Trục X = RS Ratio (so với chỉ số tham chiếu). Trục Y = RS Momentum (tốc độ thay đổi RS). Tâm (100, 100) = ngang bằng chỉ số.",
 		},
 	},
+	settingsPopover: {
+		bars: "Số nến",
+		chartSettings: "Cài Đặt Biểu Đồ",
+		language: "Ngôn Ngữ",
+	},
 };
