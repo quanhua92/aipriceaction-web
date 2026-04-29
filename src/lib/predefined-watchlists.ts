@@ -3,6 +3,8 @@
  * These appear between "ALL" and custom watchlists in the UI
  */
 
+import { INDEX_TICKERS, MARKET_INDICES } from './constants'
+
 export interface PredefinedWatchlist {
   name: string
   tickers: string[]
@@ -57,6 +59,11 @@ const MASAN_TICKERS = [
 ]
 
 /**
+ * INDEX - Vietnamese market indices
+ */
+const ALL_INDEX_TICKERS = [...MARKET_INDICES, ...INDEX_TICKERS]
+
+/**
  * All predefined watchlists
  */
 export const PREDEFINED_WATCHLISTS: PredefinedWatchlist[] = [
@@ -79,6 +86,16 @@ export const PREDEFINED_WATCHLISTS: PredefinedWatchlist[] = [
     name: 'MASAN',
     tickers: MASAN_TICKERS,
     description: 'Masan Group companies'
+  },
+  {
+    name: 'INDEX',
+    tickers: ALL_INDEX_TICKERS,
+    description: 'Vietnamese market indices'
+  },
+  {
+    name: 'CROSS',
+    tickers: ['VNINDEX', '^GSPC', 'GC=F', 'SJC-GOLD', 'KC=F', 'BZ=F', 'BTCUSDT'],
+    description: 'Cross-market instruments'
   }
 ]
 
