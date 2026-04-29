@@ -71,7 +71,7 @@ export function RecentAlertsWidget({ className = '', onFullscreenClick }: Recent
               onClick={() => onFullscreenClick?.(alert.ticker)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-background hover:bg-muted/50 transition-colors text-sm"
             >
-              <span className="text-green-600 dark:text-green-500 shrink-0">✓</span>
+              <Bell className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-400 shrink-0" />
               <span className="font-mono font-semibold">{alert.ticker}</span>
               <span className="text-muted-foreground">
                 {formatPrice(alert.target_price, lastBar || { mode: 'vn' })}

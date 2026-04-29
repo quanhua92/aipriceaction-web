@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Edit, RotateCcw, Trash2, Search } from 'lucide-react'
+import { Edit, RotateCcw, Trash2, Search, Bell, CircleDot } from 'lucide-react'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -126,9 +126,9 @@ export function BasicAlertWidget({
   // Get status indicator
   const getStatusIndicator = (triggered: boolean) => {
     if (triggered) {
-      return <span className="text-green-600 dark:text-green-500">✓</span>
+      return <Bell className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
     }
-    return <span className="text-blue-600 dark:text-blue-500">🔔</span>
+    return <CircleDot className="h-4 w-4 text-muted-foreground" />
   }
 
   const handleDelete = (id: string) => {

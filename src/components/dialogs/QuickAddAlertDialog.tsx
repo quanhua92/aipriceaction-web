@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Bell, Download, Pencil, RotateCcw, Upload } from 'lucide-react'
+import { Bell, Download, Pencil, RotateCcw, Upload, CircleDot } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -57,6 +57,7 @@ export function QuickAddAlertDialog({
   const [note, setNote] = React.useState('')
   const [error, setError] = React.useState('')
   const [settingsStatus, setSettingsStatus] = React.useState<{ message: string; isError: boolean } | null>(null)
+  const [resetConfirmId, setResetConfirmId] = React.useState<string | null>(null)
   const settingsStatusTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const showSettingsStatus = (message: string, isError: boolean) => {
@@ -165,6 +166,11 @@ export function QuickAddAlertDialog({
       e.preventDefault()
       handleSave()
     }
+  }
+
+  const handleReset = (id: string) => {
+    resetAlert(id)
+    setResetConfirmId(null)
   }
 
   // Export alerts to JSON file
@@ -406,9 +412,9 @@ export function QuickAddAlertDialog({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {alert.triggered ? (
-                            <span className="text-green-600 dark:text-green-500">✓</span>
+                            <Bell className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
                           ) : (
-                            <span className="text-blue-600 dark:text-blue-500">🔔</span>
+                            <CircleDot className="h-4 w-4 text-muted-foreground" />
                           )}
                           <span className="font-semibold">
                             {formatPrice(alert.target_price, tickerData || { mode: 'vn' })}
@@ -426,7 +432,9 @@ export function QuickAddAlertDialog({
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="text-xs text-muted-foreground">
-                            {alert.triggered ? t('dialogs.quickAddAlert.existingAlerts.triggered') : t('dialogs.quickAddAlert.existingAlerts.active')}
+                            <span className={alert.triggered ? 'text-yellow-500 dark:text-yellow-400' : ''}>
+                              {alert.triggered ? t('dialogs.quickAddAlert.existingAlerts.triggered') : t('dialogs.quickAddAlert.existingAlerts.active')}
+                            </span>
                           </div>
                           <EditAlertDialog alert={alert}>
                             <Button
@@ -455,15 +463,37 @@ export function QuickAddAlertDialog({
                         </div>
                       )}
                       {alert.triggered && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => resetAlert(alert.id)}
-                          className="h-6 w-full text-xs text-muted-foreground hover:text-foreground"
-                        >
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          {t('common.alerts.resetAlert')}
-                        </Button>
+                        resetConfirmId === alert.id ? (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 h-6 px-2 text-xs"
+                              onClick={() => setResetConfirmId(null)}
+                            >
+                              {t('common.cancel')}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="flex-1 h-6 px-2 text-xs"
+                              onClick={() => handleReset(alert.id)}
+                            >
+                              <RotateCcw className="h-3 w-3 mr-1" />
+                              {t('common.alerts.resetAlert')}
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setResetConfirmId(alert.id)}
+                            className="h-6 w-full text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            <RotateCcw className="h-3 w-3 mr-1" />
+                            {t('common.alerts.resetAlert')}
+                          </Button>
+                        )
                       )}
                     </div>
                   )
