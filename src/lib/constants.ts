@@ -1,9 +1,16 @@
 /**
- * Market indices
+ * Market indices (pinned to top of lists)
  */
 export const MARKET_INDICES = ['VNINDEX', 'VN30', 'VN30F1M'] as const
 
 export type MarketIndex = typeof MARKET_INDICES[number]
+
+/**
+ * Additional Vietnamese index tickers (displayed as regular stocks, not pinned)
+ */
+export const INDEX_TICKERS = ['VN100', 'VNMIDCAP', 'VNSMALLCAP', 'VNALLSHARE', 'VNFIN', 'HNX30', 'VNREAL', 'VNENE'] as const
+
+export type IndexTicker = typeof INDEX_TICKERS[number]
 
 /**
  * Major cryptocurrencies (shown at top like market indices)

@@ -1,4 +1,4 @@
-import { INTEGER_FORMAT_SYMBOLS, MARKET_INDICES } from './constants'
+import { INDEX_TICKERS, INTEGER_FORMAT_SYMBOLS, MARKET_INDICES } from './constants'
 
 /**
  * Parse UTC ISO string to Date object
@@ -248,6 +248,7 @@ export function formatPrice(
   const mode = useDecimalsOrData?.mode
   const symbol = useDecimalsOrData?.symbol
   const isMarketIndex = symbol ? MARKET_INDICES.includes(symbol as typeof MARKET_INDICES[number]) : false
+  const isIndexTicker = symbol ? INDEX_TICKERS.includes(symbol as typeof INDEX_TICKERS[number]) : false
   const isIntegerFormatSymbol = symbol ? INTEGER_FORMAT_SYMBOLS.includes(symbol as typeof INTEGER_FORMAT_SYMBOLS[number]) : false
 
   // Force integer format for specific symbols (e.g. SJC-GOLD)
@@ -258,7 +259,7 @@ export function formatPrice(
     }).format(Math.round(safePrice))
   }
 
-  if (mode === 'vn' && !isMarketIndex) {
+  if (mode === 'vn' && !isMarketIndex && !isIndexTicker) {
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
