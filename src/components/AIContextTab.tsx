@@ -1,4 +1,4 @@
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy, Globe, Loader2 } from "lucide-react";
 import * as React from "react";
 import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useAPI } from "@/contexts/APIContext";
 import { useRefresh } from "@/contexts/RefreshContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { StockData, TickerGroups } from "@/integrations/aipriceaction/src";
 import { AI_CONTEXT_REFERENCE_STORAGE_KEY } from "@/lib/constants";
@@ -508,6 +509,7 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 		ema,
 	} = useAPI();
 	const { lastRefresh } = useRefresh();
+	const { setLanguage } = useSiteSettings();
 
 	const [interval, setInterval] = React.useState("1D");
 	const [limit, setLimit] = React.useState(60);
@@ -880,6 +882,32 @@ export function AIContextTab({ ticker, endDate }: AIContextTabProps) {
 							<SelectItem value="200">200</SelectItem>
 						</SelectContent>
 					</Select>
+				</div>
+
+				<div className="flex items-center gap-1.5">
+					<Globe className="h-3.5 w-3.5 text-muted-foreground" />
+					<div className="flex bg-muted rounded-md">
+						<button
+							onClick={() => setLanguage("en")}
+							className={`h-8 px-2.5 text-xs font-medium rounded-md transition-colors ${
+								language === "en"
+									? "bg-primary text-primary-foreground"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							{language === "en" ? "English" : "Tiếng Anh"}
+						</button>
+						<button
+							onClick={() => setLanguage("vn")}
+							className={`h-8 px-2.5 text-xs font-medium rounded-md transition-colors ${
+								language === "vn"
+									? "bg-primary text-primary-foreground"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							{language === "en" ? "Vietnamese" : "Tiếng Việt"}
+						</button>
+					</div>
 				</div>
 
 				{isFetching && (

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Copy, Loader2, Plus, Trash2, X } from "lucide-react";
+import { Check, Copy, Globe, Loader2, Plus, Trash2, X } from "lucide-react";
 import * as React from "react";
 import { AIDescription } from "@/components/ai/AIDescription";
 import { SelectTickerDialog } from "@/components/dialogs/SelectTickerDialog";
@@ -23,6 +23,7 @@ import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { useAPI } from "@/contexts/APIContext";
 import { useChartSettings } from "@/contexts/ChartSettingsContext";
 import { useRefresh } from "@/contexts/RefreshContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { buildAIContext, type TickerInfo } from "@/lib/ai-context-builder";
 import { AI_SELECTED_TICKERS_STORAGE_KEY } from "@/lib/constants";
@@ -54,6 +55,7 @@ function AIContextPage() {
 		ema,
 	} = useAPI();
 	const { lastRefresh } = useRefresh();
+	const { setLanguage } = useSiteSettings();
 	const { endDate } = useChartSettings();
 	const [copied, setCopied] = React.useState(false);
 	const [copiedTemplate, setCopiedTemplate] = React.useState<number | null>(
@@ -392,6 +394,32 @@ function AIContextPage() {
 										<SelectItem value="1M">1M</SelectItem>
 									</SelectContent>
 								</Select>
+							</div>
+
+							<div className="flex items-center gap-1.5">
+								<Globe className="h-3.5 w-3.5 text-muted-foreground" />
+								<div className="flex bg-muted rounded-md">
+									<button
+										onClick={() => setLanguage("en")}
+										className={`h-8 px-2.5 text-xs font-medium rounded-md transition-colors ${
+											language === "en"
+												? "bg-primary text-primary-foreground"
+												: "text-muted-foreground hover:text-foreground"
+										}`}
+									>
+										{language === "en" ? "English" : "Tiếng Anh"}
+									</button>
+									<button
+										onClick={() => setLanguage("vn")}
+										className={`h-8 px-2.5 text-xs font-medium rounded-md transition-colors ${
+											language === "vn"
+												? "bg-primary text-primary-foreground"
+												: "text-muted-foreground hover:text-foreground"
+										}`}
+									>
+										{language === "en" ? "Vietnamese" : "Tiếng Việt"}
+									</button>
+								</div>
 							</div>
 						</div>
 
