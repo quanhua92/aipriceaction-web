@@ -128,7 +128,8 @@ export const GLOBAL_WATCHLIST_NAME = 'GLOBAL'
  * Tickers to exclude from the treemap, keyed by watchlist name.
  */
 export const TREEMAP_EXCLUDE_TICKERS: Record<string, string[]> = {
-  [GLOBAL_WATCHLIST_NAME]: ['^VIX', '^GSPC', '^NDX', '^DJI'],
+  [ALL_WATCHLIST_NAME]: [...MARKET_INDICES, ...INDEX_TICKERS],
+  [GLOBAL_WATCHLIST_NAME]: ['^VIX', '^GSPC', '^NDX', '^DJI', '^N225', '^FTSE', '^HSI'],
 }
 
 /**
