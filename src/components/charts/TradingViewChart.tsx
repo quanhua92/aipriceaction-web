@@ -179,6 +179,7 @@ function TradingViewChartContent({
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(
 		null,
 	);
+	const [fullscreenDefaultTab, setFullscreenDefaultTab] = React.useState<"chart" | "compare" | "trendSignal" | "aiContext">("chart");
 
 	// Use global settings as defaults, override with props if provided
 	const currentInterval = interval ?? globalSettings.interval;
@@ -188,6 +189,12 @@ function TradingViewChartContent({
 
 	// Fullscreen handlers
 	const handleFullscreenClick = () => {
+		setFullscreenDefaultTab("chart");
+		setFullscreenTicker(selectedTicker);
+	};
+
+	const handleAIClick = () => {
+		setFullscreenDefaultTab("aiContext");
 		setFullscreenTicker(selectedTicker);
 	};
 
@@ -314,6 +321,7 @@ function TradingViewChartContent({
 						}}
 						showTickerSelect={true}
 						onFullscreenClick={hideFullscreenButton ? undefined : handleFullscreenClick}
+						onAIClick={handleAIClick}
 						visibleIntervals={visibleIntervals}
 						mobileVisibleIntervals={mobileVisibleIntervals}
 						disabledIntervals={disabledIntervals}
@@ -345,6 +353,7 @@ function TradingViewChartContent({
 				onClose={handleCloseFullscreen}
 				tickerList={navigationTickers}
 				currentIndex={fullscreenTickerIndex}
+				defaultTab={fullscreenDefaultTab}
 			/>
 		</>
 	);

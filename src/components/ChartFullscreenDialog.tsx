@@ -60,6 +60,13 @@ export function ChartFullscreenDialog({
 		"chart" | "compare" | "trendSignal" | "aiContext"
 	>(defaultTab);
 
+	// Reset activeTab when dialog opens (ticker changes from null to non-null)
+	React.useEffect(() => {
+		if (ticker !== null) {
+			setActiveTab(defaultTab);
+		}
+	}, [ticker, defaultTab]);
+
 	// Internal state for navigation when tickerList is provided
 	const [internalIndex, setInternalIndex] = React.useState(currentIndex);
 	const [internalTicker, setInternalTicker] = React.useState<string | null>(

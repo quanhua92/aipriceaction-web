@@ -13,7 +13,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Maximize2, Star, Bell, Ruler, PenLine } from 'lucide-react'
+import { MoreVertical, Maximize2, Star, Bell, Ruler, PenLine, Sparkles } from 'lucide-react'
 
 interface ChartControlBarProps {
 	// Required controlled props
@@ -29,6 +29,7 @@ interface ChartControlBarProps {
 	disabledIntervals?: Interval[] // Intervals to disable (greyed out, non-clickable)
 	className?: string
 	onFullscreenClick?: () => void
+	onAIClick?: () => void
 }
 
 const DEFAULT_VISIBLE_INTERVALS: Interval[] = [
@@ -68,6 +69,7 @@ export function ChartControlBar({
 	disabledIntervals = [],
 	className = '',
 	onFullscreenClick,
+	onAIClick,
 }: ChartControlBarProps) {
 	const { chartData } = useTicker()
 	const chartEndDate = chartData[chartData.length - 1]?.time?.split('T')[0]
@@ -277,6 +279,19 @@ export function ChartControlBar({
 				>
 					<Ruler className="h-4 w-4" />
 				</Button>
+
+				{/* AI Context Button */}
+				{onAIClick && (
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-7 w-7 p-0 bg-green-600/10 text-green-600 hover:bg-green-600/20 hover:text-green-700 dark:text-green-400 dark:hover:bg-green-600/20 dark:hover:text-green-300"
+						onClick={onAIClick}
+						title="AI Context"
+					>
+						<Sparkles className="h-4 w-4" />
+					</Button>
+				)}
 
 				{/* Settings Button - Top Right (hidden for now) */}
 				{/* <ChartSettingsDialog>
