@@ -152,28 +152,6 @@ export function DateControlWidget({ className }: DateControlWidgetProps) {
 		handleDateChange(randomDate)
 	}, [generateRandomDate, handleDateChange])
 
-	// Snap to nearest trading day after trading days are loaded
-	React.useEffect(() => {
-		if (tradingDays.length === 0) return
-
-		// If endDate is undefined, set to the last trading day
-		if (!endDate) {
-			setEndDate(tradingDays[tradingDays.length - 1])
-			return
-		}
-
-		// Check if current endDate is already a trading day
-		if (tradingDays.includes(endDate)) return
-
-		// Find nearest trading day
-		const nearestIndex = tradingDays.findIndex((d) => d >= endDate)
-		if (nearestIndex !== -1) {
-			setEndDate(tradingDays[nearestIndex])
-		} else {
-			// If date is after all trading days, use the last one
-			setEndDate(tradingDays[tradingDays.length - 1])
-		}
-	}, [tradingDays, setEndDate]) // Only run when tradingDays changes, not endDate
 
 	// Compute navigation constraints
 	// Only disable forward when at today or future (not at array boundary)
