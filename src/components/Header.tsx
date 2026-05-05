@@ -49,7 +49,7 @@ export default function Header() {
           </h1>
 
           {/* Desktop: Horizontal Navigation */}
-          <nav className="hidden md:flex md:items-center md:gap-1">
+          <nav className="hidden lg:flex lg:items-center lg:gap-1">
             <Link
               to="/"
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors"
@@ -200,7 +200,7 @@ export default function Header() {
             </PopoverContent>
           </Popover>
 
-          <div className="max-md:hidden">
+          <div className="max-lg:hidden">
             <LanguageToggle />
           </div>
         </div>
