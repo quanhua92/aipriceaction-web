@@ -504,8 +504,8 @@ export function TradingTreemap({
 
   return (
     <div className={className}>
-      <div className="flex flex-col gap-2 mb-2 shrink-0 px-3">
-        <h3 className="text-lg font-semibold">{t("common.heatmap")}</h3>
+      <div className="flex items-center justify-between px-3 py-2 md:px-4 border-t border-b bg-background/50">
+        <h3 className="text-sm font-semibold">{t("common.heatmap")}</h3>
         <TickerGroupSelector
           value={selectedWatchlist}
           onValueChange={setSelectedWatchlist}
