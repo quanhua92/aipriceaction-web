@@ -131,7 +131,7 @@ export function ChartSettingsProvider({ children }: { children: React.ReactNode 
 	const [macdHeight, setMacdHeight] = React.useState<MacdHeight>(
 		() => {
 			const saved = persisted.current.macdHeight
-			return saved && MACD_HEIGHT_OPTIONS.includes(saved) ? saved : 60
+			return saved && MACD_HEIGHT_OPTIONS.includes(saved) ? saved : 40
 		}
 	)
 	const [startDate, setStartDate] = React.useState<string | undefined>(undefined)
