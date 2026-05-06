@@ -17,12 +17,14 @@ export interface BasicAlertWidgetProps {
   maxHeight?: string
   className?: string
   onSelectAlert?: (alert: Alert) => void
+  onAlertsChange?: (alerts: Alert[]) => void
 }
 
 export function BasicAlertWidget({
   maxHeight = '600px',
   className = '',
   onSelectAlert,
+  onAlertsChange,
 }: BasicAlertWidgetProps) {
   const { t } = useTranslation()
   const { alerts, deleteAlert, resetAlert, refreshAlerts } = useAlert()
@@ -113,6 +115,16 @@ export function BasicAlertWidget({
       }
     })
   }, [filteredAlerts, sortBy])
+
+  // Expose sorted alerts to parent via ref + callback
+  const sortedAlertsRef = React.useRef(sortedAlerts)
+  sortedAlertsRef.current = sortedAlerts
+
+  React.useEffect(() => {
+    if (onAlertsChange) {
+      onAlertsChange(sortedAlertsRef.current)
+    }
+  }, [sortedAlerts, onAlertsChange])
 
   // Get distance color
   const getDistanceColor = (absPercent: number | null) => {

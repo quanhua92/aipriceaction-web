@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import * as React from 'react'
-import { Download, Upload, AlertTriangle } from 'lucide-react'
+import { Download, Upload, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAlert } from '@/contexts/AlertContext'
 import { useAPI } from '@/contexts/APIContext'
 import { useLogs } from '@/contexts/LogsContext'
@@ -27,6 +27,41 @@ function AlertPage() {
 
   // State for selected ticker (from clicking alert row)
   const [selectedTicker, setSelectedTicker] = React.useState<string>('VNINDEX')
+
+  // Navigation state for stepping through filtered alerts
+  const [filteredAlerts, setFilteredAlerts] = React.useState<Alert[]>([])
+  const [navIndex, setNavIndex] = React.useState(0)
+
+  // Sync navIndex when selectedTicker changes or filteredAlerts change
+  React.useEffect(() => {
+    if (filteredAlerts.length === 0) {
+      setNavIndex(0)
+      return
+    }
+    const idx = filteredAlerts.findIndex((a) => a.ticker === selectedTicker)
+    if (idx !== -1) {
+      setNavIndex(idx)
+    } else {
+      // Current ticker not in filtered list (e.g. tab changed) — select first alert
+      setNavIndex(0)
+      setSelectedTicker(filteredAlerts[0].ticker)
+    }
+  }, [selectedTicker, filteredAlerts])
+
+  // Navigation handlers
+  const handleAlertNavPrev = () => {
+    if (filteredAlerts.length === 0) return
+    const newIdx = navIndex === 0 ? filteredAlerts.length - 1 : navIndex - 1
+    setNavIndex(newIdx)
+    setSelectedTicker(filteredAlerts[newIdx].ticker)
+  }
+
+  const handleAlertNavNext = () => {
+    if (filteredAlerts.length === 0) return
+    const newIdx = (navIndex + 1) % filteredAlerts.length
+    setNavIndex(newIdx)
+    setSelectedTicker(filteredAlerts[newIdx].ticker)
+  }
 
   // Responsive chart height: 600px desktop (lg+), 400px mobile
   const [chartHeight, setChartHeight] = React.useState<number>(
@@ -292,6 +327,7 @@ function AlertPage() {
                 maxHeight="600px"
                 className="lg:h-full"
                 onSelectAlert={(alert) => setSelectedTicker(alert.ticker)}
+                onAlertsChange={setFilteredAlerts}
               />
             </div>
           </div>
@@ -308,6 +344,32 @@ function AlertPage() {
               showControls={true}
               height={chartHeight}
             />
+            {/* Navigation through filtered alerts */}
+            {filteredAlerts.length > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAlertNavPrev}
+                  className="h-10 sm:h-8 px-6 sm:px-4"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">{t('common.previous')}</span>
+                </Button>
+                <div className="px-6 py-3 sm:px-4 sm:py-2 text-sm font-medium bg-muted rounded-md min-w-[90px] text-center">
+                  {navIndex + 1} / {filteredAlerts.length}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAlertNavNext}
+                  className="h-10 sm:h-8 px-6 sm:px-4"
+                >
+                  <span className="hidden sm:inline">{t('common.next')}</span>
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
