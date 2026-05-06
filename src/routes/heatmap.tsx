@@ -18,8 +18,13 @@ function HeatmapPage() {
 	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
 	const [treemapTicker, setTreemapTicker] = React.useState<string | null>(null);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
+	const [alertTickerSymbols, setAlertTickerSymbols] = React.useState<string[]>([]);
+	const [isAlertFullscreen, setIsAlertFullscreen] = React.useState(false);
 
-	const tickerSymbols = React.useMemo(() => sortedTickers.map((t) => t.symbol), [sortedTickers]);
+	const tickerSymbols = React.useMemo(() => {
+		if (isAlertFullscreen && alertTickerSymbols.length > 0) return alertTickerSymbols;
+		return sortedTickers.map((t) => t.symbol);
+	}, [isAlertFullscreen, alertTickerSymbols, sortedTickers]);
 
 	const fullscreenTickerIndex = React.useMemo(() => {
 		if (!fullscreenTicker) return 0;
@@ -28,8 +33,18 @@ function HeatmapPage() {
 	}, [fullscreenTicker, tickerSymbols]);
 
 	const handleSelectTicker = (symbol: string) => {
+		setIsAlertFullscreen(false);
 		setFullscreenTicker(symbol);
 	};
+
+	const handleAlertFullscreenClick = (ticker: string) => {
+		setIsAlertFullscreen(true);
+		setFullscreenTicker(ticker);
+	};
+
+	const handleAlertTickersChange = React.useCallback((tickers: string[]) => {
+		setAlertTickerSymbols(tickers);
+	}, []);
 
 	const handleTreemapSelect = (symbol: string) => {
 		setTreemapTicker(symbol);
@@ -49,7 +64,10 @@ function HeatmapPage() {
 			<div className="space-y-6">
 			{/* Section: Recent Alerts */}
 			<div className="p-3 md:p-4">
-				<RecentAlertsWidget onFullscreenClick={setFullscreenTicker} />
+				<RecentAlertsWidget
+					onFullscreenClick={handleAlertFullscreenClick}
+					onAlertTickersChange={handleAlertTickersChange}
+				/>
 			</div>
 
 			{/* Section: Date Control */}

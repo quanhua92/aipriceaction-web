@@ -12,15 +12,16 @@ const MAX_ALERTS = 5
 export interface RecentAlertsWidgetProps {
   className?: string
   onFullscreenClick?: (ticker: string) => void
+  onAlertTickersChange?: (tickers: string[]) => void
 }
 
-export function RecentAlertsWidget({ className = '', onFullscreenClick }: RecentAlertsWidgetProps) {
+export function RecentAlertsWidget({ className = '', onFullscreenClick, onAlertTickersChange }: RecentAlertsWidgetProps) {
   const { t } = useTranslation()
   const { triggeredAlerts } = useAlert()
   const { allTickersLastData } = useAPI()
 
   // Filter to alerts triggered in the last 7 days, sort by most recent
-  const { recentAlerts, totalRecent } = React.useMemo(() => {
+  const { recentAlerts, totalRecent, allRecentTickers } = React.useMemo(() => {
     const now = Date.now()
     const filtered = triggeredAlerts
       .filter((alert) => {
@@ -33,8 +34,13 @@ export function RecentAlertsWidget({ className = '', onFullscreenClick }: Recent
         const timeB = b.triggered_at ? parseUTCISOString(b.triggered_at).getTime() : 0
         return timeB - timeA
       })
-    return { recentAlerts: filtered.slice(0, MAX_ALERTS), totalRecent: filtered.length }
+    return { recentAlerts: filtered.slice(0, MAX_ALERTS), totalRecent: filtered.length, allRecentTickers: filtered.map(a => a.ticker) }
   }, [triggeredAlerts])
+
+  // Notify parent of current recent alert ticker symbols
+  React.useEffect(() => {
+    onAlertTickersChange?.(allRecentTickers)
+  }, [allRecentTickers, onAlertTickersChange])
 
   // Format relative time
   const getRelativeTime = (dateString: string) => {

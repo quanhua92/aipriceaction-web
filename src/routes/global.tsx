@@ -47,12 +47,15 @@ function GlobalPage() {
 	const [treemapTicker, setTreemapTicker] = React.useState<string | null>(null);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
 	const [treemapTickerSymbols, setTreemapTickerSymbols] = React.useState<string[]>([]);
+	const [alertTickerSymbols, setAlertTickerSymbols] = React.useState<string[]>([]);
+	const [isAlertFullscreen, setIsAlertFullscreen] = React.useState(false);
 
 	// Get ticker symbols array for navigation in fullscreen dialog
 	const tickerSymbols = React.useMemo(() => {
+		if (isAlertFullscreen && alertTickerSymbols.length > 0) return alertTickerSymbols;
 		if (treemapTickerSymbols.length > 0) return treemapTickerSymbols;
 		return sortedTickers.map(t => t.symbol);
-	}, [treemapTickerSymbols, sortedTickers]);
+	}, [isAlertFullscreen, alertTickerSymbols, treemapTickerSymbols, sortedTickers]);
 
 	// Get current index for fullscreen dialog
 	const fullscreenTickerIndex = React.useMemo(() => {
@@ -62,9 +65,19 @@ function GlobalPage() {
 	}, [fullscreenTicker, tickerSymbols]);
 
 	const handleSelectTicker = (symbol: string) => {
+		setIsAlertFullscreen(false);
 		setTreemapTickerSymbols([]);
 		setFullscreenTicker(symbol);
 	};
+
+	const handleAlertFullscreenClick = (ticker: string) => {
+		setIsAlertFullscreen(true);
+		setFullscreenTicker(ticker);
+	};
+
+	const handleAlertTickersChange = React.useCallback((tickers: string[]) => {
+		setAlertTickerSymbols(tickers);
+	}, []);
 
 	const handleCloseFullscreen = () => {
 		setFullscreenTicker(null);
@@ -111,7 +124,10 @@ function GlobalPage() {
 			</div>
 
 			{/* Section: Recent Triggered Alerts */}
-			<RecentAlertsWidget onFullscreenClick={setFullscreenTicker} />
+			<RecentAlertsWidget
+				onFullscreenClick={handleAlertFullscreenClick}
+				onAlertTickersChange={handleAlertTickersChange}
+			/>
 
 			{/* Section: Ticker Info + Volume Profile */}
 			<div className="p-4 md:p-6">
