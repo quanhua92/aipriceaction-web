@@ -57,14 +57,6 @@ function HeatmapPage() {
 				<DateControlWidget />
 			</div>
 
-			{/* Section: Market Treemap */}
-			<div className="p-3 md:p-4">
-				<TradingTreemap
-					defaultWatchlist={ALL_WATCHLIST_NAME}
-					onSelectTicker={handleTreemapSelect}
-				/>
-			</div>
-
 			{/* Section: Ticker Chart */}
 			<TreemapChartBar
 				defaultTicker="VNINDEX"
@@ -72,6 +64,14 @@ function HeatmapPage() {
 				onTickerChange={handleTreemapSelect}
 				storageKeyPrefix="heatmap"
 			/>
+
+			{/* Section: Market Treemap */}
+			<div className="p-3 md:p-4">
+				<TradingTreemap
+					defaultWatchlist={ALL_WATCHLIST_NAME}
+					onSelectTicker={handleTreemapSelect}
+				/>
+			</div>
 
 			{/* Section: Watchlist */}
 			<div className="p-2 md:p-6 border-t">

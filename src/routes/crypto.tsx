@@ -154,18 +154,18 @@ function CryptoPage() {
 				</div>
 			</div>
 
-			{/* Section 2.5: Market Treemap */}
-			<div className="p-3 md:p-4 border-t">
-				<TradingTreemap defaultWatchlist={CRYPTO_WATCHLIST_NAME} onSelectTicker={handleTreemapSelect} />
-			</div>
-
-			{/* Section 2.5.1: Treemap Ticker Chart */}
+			{/* Section 2.5: Treemap Ticker Chart */}
 			<TreemapChartBar
 				defaultTicker="BTCUSDT"
 				selectedTicker={treemapTicker}
 				onTickerChange={handleTreemapSelect}
 				storageKeyPrefix="crypto"
 			/>
+
+			{/* Section 2.5.1: Market Treemap */}
+			<div className="p-3 md:p-4 border-t">
+				<TradingTreemap defaultWatchlist={CRYPTO_WATCHLIST_NAME} onSelectTicker={handleTreemapSelect} />
+			</div>
 
 			{/* Section 2.6: Relative Rotation Graph */}
 			<div className="p-3 md:p-4 border-t">
