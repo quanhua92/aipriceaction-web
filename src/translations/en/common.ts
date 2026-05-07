@@ -198,6 +198,7 @@ export default {
 		vertical: "Stacked",
 		swap: "Swap",
 		height: "Height",
+		swapPosition: "Swap chart/treemap position",
 	},
 	watchlist: {
 		title: "Watchlist",

@@ -197,6 +197,7 @@ export default {
 		vertical: "Xếp chồng",
 		swap: "Đổi chỗ",
 		height: "Chiều cao",
+		swapPosition: "Đổi chỗ biểu đồ/bản đồ nhiệt",
 	},
 	watchlist: {
 		title: "Danh Sách Theo Dõi",

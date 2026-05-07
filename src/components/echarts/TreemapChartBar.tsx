@@ -1,25 +1,26 @@
+import { ArrowLeftRight, ArrowUpDown, Columns2, Rows2 } from "lucide-react";
 import * as React from "react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { TradingViewChart } from "@/components/charts/TradingViewChart";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
-	SelectTrigger,
 	SelectContent,
 	SelectItem,
+	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { SafeLocalStorage } from "@/lib/localStorage";
+import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "@/hooks/useTranslation";
-import { TradingViewChart } from "@/components/charts/TradingViewChart";
-import { ArrowLeftRight, Columns2, Rows2 } from "lucide-react";
+import { SafeLocalStorage } from "@/lib/localStorage";
 
 interface TreemapControlBarProps {
 	defaultTicker: string;
 	selectedTicker: string | null;
 	onTickerChange?: (ticker: string) => void;
 	storageKeyPrefix: string;
+	onSwapClicked?: () => void;
 }
 
 interface TreemapControlState {
@@ -57,9 +58,10 @@ function loadState(prefix: string, defaultTicker: string): TreemapControlState {
 					parsed.layout === "horizontal" || parsed.layout === "vertical"
 						? parsed.layout
 						: defaults.layout,
-				swapped: typeof parsed.swapped === "boolean"
-					? parsed.swapped
-					: defaults.swapped,
+				swapped:
+					typeof parsed.swapped === "boolean"
+						? parsed.swapped
+						: defaults.swapped,
 				chartHeight: VALID_HEIGHTS.includes(parsed.chartHeight)
 					? parsed.chartHeight
 					: defaults.chartHeight,
@@ -80,6 +82,7 @@ export function TreemapChartBar({
 	selectedTicker,
 	onTickerChange,
 	storageKeyPrefix,
+	onSwapClicked,
 }: TreemapControlBarProps) {
 	const { t } = useTranslation();
 
@@ -135,9 +138,7 @@ export function TreemapChartBar({
 						<Separator orientation="vertical" className="h-4" />
 						<div className="flex items-center gap-1">
 							<Button
-								variant={
-									state.layout === "horizontal" ? "default" : "outline"
-								}
+								variant={state.layout === "horizontal" ? "default" : "outline"}
 								size="icon-sm"
 								onClick={() => updateState({ layout: "horizontal" })}
 								title={t("common.treemapControl.horizontal")}
@@ -145,9 +146,7 @@ export function TreemapChartBar({
 								<Columns2 className="size-3.5" />
 							</Button>
 							<Button
-								variant={
-									state.layout === "vertical" ? "default" : "outline"
-								}
+								variant={state.layout === "vertical" ? "default" : "outline"}
 								size="icon-sm"
 								onClick={() => updateState({ layout: "vertical" })}
 								title={t("common.treemapControl.vertical")}
@@ -188,6 +187,19 @@ export function TreemapChartBar({
 						</SelectContent>
 					</Select>
 				</div>
+				{/* Swap chart/treemap position */}
+				{onSwapClicked && (
+					<div className="ml-auto">
+						<Button
+							variant="outline"
+							size="icon-sm"
+							onClick={onSwapClicked}
+							title={t("common.treemapControl.swapPosition")}
+						>
+							<ArrowUpDown className="size-3.5" />
+						</Button>
+					</div>
+				)}
 			</div>
 
 			{/* Charts Area */}
@@ -199,14 +211,18 @@ export function TreemapChartBar({
 							height={state.chartHeight}
 							showControls={true}
 							hideFullscreenButton={false}
-							onTickerChange={(ticker) => updateState({ referenceTicker: ticker })}
+							onTickerChange={(ticker) =>
+								updateState({ referenceTicker: ticker })
+							}
 						/>
 						<TradingViewChart
 							ticker={state.swapped ? selectedTicker : state.referenceTicker}
 							height={state.chartHeight}
 							showControls={true}
 							hideFullscreenButton={false}
-							onTickerChange={(ticker) => updateState({ referenceTicker: ticker })}
+							onTickerChange={(ticker) =>
+								updateState({ referenceTicker: ticker })
+							}
 						/>
 					</div>
 				) : (

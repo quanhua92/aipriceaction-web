@@ -1,28 +1,49 @@
 import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
+import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
 import { TradingTreemap } from "@/components/echarts/TradingTreemap";
 import { TreemapChartBar } from "@/components/echarts/TreemapChartBar";
 import { BasicWatchList } from "@/components/lists/BasicWatchList";
-import { ChartFullscreenDialog } from "@/components/ChartFullscreenDialog";
+import type { Ticker } from "@/components/lists/SortableTickerList";
+import { TickerSearchBar } from "@/components/TickerSearchBar";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
-import { TickerSearchBar } from "@/components/TickerSearchBar";
-import type { Ticker } from "@/components/lists/SortableTickerList";
+import { SafeLocalStorage } from "@/lib/localStorage";
 
 export const Route = createFileRoute("/heatmap")({
 	component: HeatmapPage,
 });
 
 function HeatmapPage() {
-	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(null);
+	const [fullscreenTicker, setFullscreenTicker] = React.useState<string | null>(
+		null,
+	);
 	const [treemapTicker, setTreemapTicker] = React.useState<string | null>(null);
 	const [sortedTickers, setSortedTickers] = React.useState<Ticker[]>([]);
-	const [alertTickerSymbols, setAlertTickerSymbols] = React.useState<string[]>([]);
+	const [alertTickerSymbols, setAlertTickerSymbols] = React.useState<string[]>(
+		[],
+	);
 	const [isAlertFullscreen, setIsAlertFullscreen] = React.useState(false);
 
+	// Swap chart/treemap position
+	const [treemapOrder, setTreemapOrder] = React.useState<
+		"chart-first" | "treemap-first"
+	>(() => {
+		const stored = SafeLocalStorage.getItem("heatmap-treemap-order");
+		return stored === "treemap-first" ? "treemap-first" : "chart-first";
+	});
+	const handleSwapTreemapPosition = React.useCallback(() => {
+		setTreemapOrder((prev) => {
+			const next = prev === "chart-first" ? "treemap-first" : "chart-first";
+			SafeLocalStorage.setItem("heatmap-treemap-order", next);
+			return next;
+		});
+	}, []);
+
 	const tickerSymbols = React.useMemo(() => {
-		if (isAlertFullscreen && alertTickerSymbols.length > 0) return alertTickerSymbols;
+		if (isAlertFullscreen && alertTickerSymbols.length > 0)
+			return alertTickerSymbols;
 		return sortedTickers.map((t) => t.symbol);
 	}, [isAlertFullscreen, alertTickerSymbols, sortedTickers]);
 
@@ -62,55 +83,60 @@ function HeatmapPage() {
 			</div>
 
 			<div className="space-y-6">
-			{/* Section: Recent Alerts */}
-			<div className="p-3 md:p-4">
-				<RecentAlertsWidget
-					onFullscreenClick={handleAlertFullscreenClick}
-					onAlertTickersChange={handleAlertTickersChange}
+				{/* Section: Recent Alerts */}
+				<div className="p-3 md:p-4">
+					<RecentAlertsWidget
+						onFullscreenClick={handleAlertFullscreenClick}
+						onAlertTickersChange={handleAlertTickersChange}
+					/>
+				</div>
+
+				{/* Section: Date Control */}
+				<div className="p-3 md:p-4">
+					<DateControlWidget />
+				</div>
+
+				{/* Section: Ticker Chart + Market Treemap */}
+				<div className="flex flex-col">
+					<div>
+						<TreemapChartBar
+							defaultTicker="VNINDEX"
+							selectedTicker={treemapTicker}
+							onTickerChange={handleTreemapSelect}
+							storageKeyPrefix="heatmap"
+							onSwapClicked={handleSwapTreemapPosition}
+						/>
+					</div>
+					<div
+						className={`p-3 md:p-4 ${treemapOrder === "treemap-first" ? "order-first" : ""}`}
+					>
+						<TradingTreemap
+							defaultWatchlist={ALL_WATCHLIST_NAME}
+							onSelectTicker={handleTreemapSelect}
+						/>
+					</div>
+				</div>
+
+				{/* Section: Watchlist */}
+				<div className="p-2 md:p-6 border-t">
+					<BasicWatchList
+						defaultGroup={ALL_WATCHLIST_NAME}
+						maxHeight="800px"
+						showMarketIndices={true}
+						showControls={false}
+						onSelectTicker={handleSelectTicker}
+						onSortedTickersChange={setSortedTickers}
+					/>
+				</div>
+
+				{/* Fullscreen Dialog */}
+				<ChartFullscreenDialog
+					ticker={fullscreenTicker}
+					onClose={handleCloseFullscreen}
+					tickerList={tickerSymbols}
+					currentIndex={fullscreenTickerIndex}
 				/>
 			</div>
-
-			{/* Section: Date Control */}
-			<div className="p-3 md:p-4">
-				<DateControlWidget />
-			</div>
-
-			{/* Section: Ticker Chart */}
-			<TreemapChartBar
-				defaultTicker="VNINDEX"
-				selectedTicker={treemapTicker}
-				onTickerChange={handleTreemapSelect}
-				storageKeyPrefix="heatmap"
-			/>
-
-			{/* Section: Market Treemap */}
-			<div className="p-3 md:p-4">
-				<TradingTreemap
-					defaultWatchlist={ALL_WATCHLIST_NAME}
-					onSelectTicker={handleTreemapSelect}
-				/>
-			</div>
-
-			{/* Section: Watchlist */}
-			<div className="p-2 md:p-6 border-t">
-				<BasicWatchList
-					defaultGroup={ALL_WATCHLIST_NAME}
-					maxHeight="800px"
-					showMarketIndices={true}
-					showControls={false}
-					onSelectTicker={handleSelectTicker}
-					onSortedTickersChange={setSortedTickers}
-				/>
-			</div>
-
-			{/* Fullscreen Dialog */}
-			<ChartFullscreenDialog
-				ticker={fullscreenTicker}
-				onClose={handleCloseFullscreen}
-				tickerList={tickerSymbols}
-				currentIndex={fullscreenTickerIndex}
-			/>
-		</div>
 		</>
 	);
 }
