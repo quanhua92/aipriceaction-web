@@ -8,6 +8,7 @@ import type { Ticker } from "@/components/lists/SortableTickerList";
 import { TickerSearchBar } from "@/components/TickerSearchBar";
 import { DateControlWidget } from "@/components/widgets/DateControlWidget";
 import { RecentAlertsWidget } from "@/components/widgets/RecentAlertsWidget";
+import { VolumeProfileWidget } from "@/components/widgets/VolumeProfileWidget";
 import { ALL_WATCHLIST_NAME } from "@/lib/constants";
 import { SafeLocalStorage } from "@/lib/localStorage";
 
@@ -115,6 +116,14 @@ function HeatmapPage() {
 							onSelectTicker={handleTreemapSelect}
 						/>
 					</div>
+				</div>
+
+				{/* Section: Volume Profile */}
+				<div className="p-3 md:p-4 border-t">
+					<VolumeProfileWidget
+						ticker={treemapTicker ?? "VNINDEX"}
+						onTickerChange={handleTreemapSelect}
+					/>
 				</div>
 
 				{/* Section: Watchlist */}
