@@ -1,0 +1,7 @@
+packages: []
+
+# Wait 1 week before installing newly published versions
+minimumReleaseAge: 10080
+
+# Block transitive dependencies from git repos or tarball URLs
+blockExoticSubdeps: true
