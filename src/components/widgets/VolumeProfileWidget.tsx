@@ -272,6 +272,14 @@ export function VolumeProfileWidget({
     onDateChange?.(newDate)
   }
 
+  const handleRangePreset = (days: number) => {
+    const end = new Date(selectedEndDate)
+    end.setDate(end.getDate() - days)
+    const newStart = end.toISOString().split('T')[0]
+    setSelectedStartDate(newStart)
+    onStartDateChange?.(newStart)
+  }
+
   // Loading state
   if (loading) {
     return (
@@ -498,6 +506,23 @@ export function VolumeProfileWidget({
           </button>
         </div>
       </div>
+
+      {/* Range Preset Buttons */}
+      {isRangeMode && (
+        <div className="flex items-center justify-center gap-1 mb-2">
+          {[7, 30, 60].map((days) => (
+            <Button
+              key={days}
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => handleRangePreset(days)}
+            >
+              {days}D
+            </Button>
+          ))}
+        </div>
+      )}
 
       {/* Date Navigation Row */}
       <div className="flex items-center justify-center gap-1 mb-4">
