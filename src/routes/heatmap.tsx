@@ -56,6 +56,7 @@ function HeatmapPage() {
 
 	const handleSelectTicker = (symbol: string) => {
 		setIsAlertFullscreen(false);
+		setTreemapTicker(symbol);
 		setFullscreenTicker(symbol);
 	};
 
@@ -78,11 +79,6 @@ function HeatmapPage() {
 
 	return (
 		<>
-			{/* Ticker Search Bar */}
-			<div className="container mx-auto px-4 md:px-8 pt-4">
-				<TickerSearchBar onSelectTicker={handleSelectTicker} />
-			</div>
-
 			<div className="space-y-6">
 				{/* Section: Recent Alerts */}
 				<div className="p-3 md:p-4">
@@ -95,6 +91,11 @@ function HeatmapPage() {
 				{/* Section: Date Control */}
 				<div className="p-3 md:p-4">
 					<DateControlWidget />
+				</div>
+
+				{/* Ticker Search Bar */}
+				<div className="container mx-auto px-4 md:px-8">
+					<TickerSearchBar onSelectTicker={handleSelectTicker} />
 				</div>
 
 				{/* Section: Ticker Chart + Market Treemap */}
