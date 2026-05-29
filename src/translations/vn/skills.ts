@@ -139,7 +139,7 @@ export default {
 			them: "Tóm tắt thị trường",
 		},
 		volumeProfile: {
-			feature: "Phân tích khối lượng giá",
+			feature: "Volume Profile",
 			us: "Có (POC, Value Area, nhiều ngày)",
 			them: "Không",
 		},
