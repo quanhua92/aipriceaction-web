@@ -166,9 +166,17 @@ function InstallationSection() {
 							</CardHeader>
 							<CardContent className="space-y-4">
 								<div className="relative">
-									<code className="block bg-muted rounded-lg p-4 font-mono text-sm overflow-x-auto">
+									<code className="block bg-muted rounded-lg p-4 pr-10 font-mono text-sm overflow-x-auto">
 										npx skills add quanhua92/aipriceaction
 									</code>
+									<button
+										type="button"
+										onClick={() => navigator.clipboard.writeText("npx skills add quanhua92/aipriceaction")}
+										className="absolute top-2 right-2 p-1.5 rounded hover:bg-muted-foreground/20 transition-colors text-muted-foreground hover:text-foreground"
+										title="Copy"
+									>
+										<Copy className="h-3.5 w-3.5" />
+									</button>
 								</div>
 								<ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
 									<li>{t("skills.install.method1Step1")}</li>
