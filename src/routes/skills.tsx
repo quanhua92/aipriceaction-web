@@ -328,6 +328,7 @@ function SkillsSection() {
 				t("skills.skillsData.data.prompt1"),
 				t("skills.skillsData.data.prompt2"),
 				t("skills.skillsData.data.prompt3"),
+				t("skills.skillsData.data.prompt4"),
 			],
 		},
 		{
@@ -340,6 +341,7 @@ function SkillsSection() {
 				t("skills.skillsData.analyze.prompt1"),
 				t("skills.skillsData.analyze.prompt2"),
 				t("skills.skillsData.analyze.prompt3"),
+				t("skills.skillsData.analyze.prompt4"),
 			],
 		},
 		{
@@ -709,6 +711,7 @@ function ExamplePromptsSection() {
 							t("skills.prompts.analyzePrompts.2"),
 							t("skills.prompts.analyzePrompts.3"),
 							t("skills.prompts.analyzePrompts.4"),
+							t("skills.prompts.analyzePrompts.5"),
 						]}
 					/>
 					<PromptCard

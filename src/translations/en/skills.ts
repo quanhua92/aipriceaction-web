@@ -58,15 +58,17 @@ export default {
 			prompt1: "Get VCB price data for the last 50 candles",
 			prompt2: "Top 10 stocks with highest trading value",
 			prompt3: "Volume profile for BTCUSDT",
+			prompt4: "Volume profile for VNINDEX — POC and value area",
 		},
 		analyze: {
 			heading: "AI-Powered Technical Analysis",
 			description:
-				"Analyze single or multiple stocks with Wyckoff, VPA, Smart Money, MA Momentum. Single ticker, multi-ticker comparison, custom questions.",
+				"Analyze single or multiple stocks with Wyckoff, VPA, Smart Money, Volume Profile, MA Momentum. Single ticker, multi-ticker comparison, custom questions.",
 			tag: "AI-powered",
 			prompt1: "Analyze VCB, TCB, MBB — which bank has the strongest trend?",
 			prompt2: "Wyckoff analysis for HPG",
 			prompt3: "Analyze BTCUSDT on 4h timeframe",
+			prompt4: "Analyze VCB with Volume Profile — support/resistance levels",
 		},
 		research: {
 			heading: "Comprehensive Market Research",
@@ -182,6 +184,7 @@ export default {
 			"Analyze BTCUSDT on 4h timeframe",
 			"Detect stocks with unusual volatility and find the cause",
 			"Compare FPT, VNM, VIC with MA Momentum analysis",
+			"Analyze FPT with volume profile — value area and key levels",
 		],
 		researchPrompts: [
 			"Deep research banking sector: top 10 banks, trends, VPA signals",

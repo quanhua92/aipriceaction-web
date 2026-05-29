@@ -42,7 +42,7 @@ export default {
 			"Cổ phiếu Việt Nam, tiền điện tử (BTC, ETH, SOL...), chứng khoán quốc tế (AAPL, NVDA...), và vàng SJC — tất cả trong một CLI.",
 		feature3Title: "Phân tích chuyên sâu",
 		feature3Desc:
-			"Wyckoff, Phân tích khối lượng giá (VPA), Smart Money, Phân tích theo khối lượng, MA Momentum — không chỉ số liệu, mà là insight thực sự.",
+			"Wyckoff, Phân tích khối lượng giá (VPA), Smart Money, Volume Profile, MA Momentum — không chỉ số liệu, mà là insight thực sự.",
 		feature4Title: "Nghiên cứu chuyên sâu tự động",
 		feature4Desc:
 			"Supervisor → Workers song song → Tổng hợp → Kiểm tra — phân tích toàn ngành trong 1 câu lệnh, bao gồm cả bước kiểm tra chất lượng.",
@@ -52,20 +52,22 @@ export default {
 		data: {
 			heading: "Dữ liệu thị trường thời gian thực",
 			description:
-				"Nến OHLCV, phân tích khối lượng giá, cổ phiếu nổi bật, dữ liệu trực tiếp, danh sách theo dõi — tất cả dữ liệu thô, không cần AI, không cần API Key.",
+				"Nến OHLCV, Volume Profile, cổ phiếu nổi bật, dữ liệu trực tiếp, danh sách theo dõi — tất cả dữ liệu thô, không cần AI, không cần API Key.",
 			tag: "Không cần API Key",
 			prompt1: "Lấy dữ liệu giá VCB 50 nến gần nhất",
 			prompt2: "Top 10 cổ phiếu có giá trị giao dịch cao nhất",
-			prompt3: "Phân tích khối lượng giá cho BTCUSDT",
+			prompt3: "Volume profile cho BTCUSDT",
+			prompt4: "Volume profile cho VNINDEX — POC và vùng giá trị",
 		},
 		analyze: {
 			heading: "Phân tích kỹ thuật bằng AI",
 			description:
-				"Phân tích một hoặc nhiều cổ phiếu cùng lúc với Wyckoff, VPA, Smart Money, MA Momentum. Hỗ trợ phân tích đơn mã, so sánh nhiều mã, và câu hỏi tùy ý.",
+				"Phân tích một hoặc nhiều cổ phiếu cùng lúc với Wyckoff, VPA, Smart Money, Volume Profile, MA Momentum. Hỗ trợ phân tích đơn mã, so sánh nhiều mã, và câu hỏi tùy ý.",
 			tag: "Hỗ trợ AI",
 			prompt1: "Phân tích VCB, TCB, MBB — ngân hàng nào có xu hướng mạnh nhất?",
 			prompt2: "Phân tích Wyckoff cho HPG",
 			prompt3: "Phân tích BTCUSDT khung 4h",
+			prompt4: "Phân tích VCB bằng Volume Profile — các mức hỗ trợ/kháng cự",
 		},
 		research: {
 			heading: "Nghiên cứu thị trường toàn diện",
@@ -164,7 +166,7 @@ export default {
 			"Giá VCB hôm nay là bao nhiêu?",
 			"Top 10 cổ phiếu có giá trị giao dịch cao nhất",
 			"So sánh giá vàng SJC với vàng quốc tế GC=F",
-			"Phân tích khối lượng giá cho BTCUSDT — POC ở đâu?",
+			"Volume profile cho BTCUSDT — POC ở đâu?",
 			"Liệt kê các cổ phiếu ngành ngân hàng",
 		],
 		analyzePrompts: [
@@ -173,6 +175,7 @@ export default {
 			"Phân tích BTCUSDT khung 4h",
 			"Phát hiện cổ phiếu có biến động bất thường và tìm nguyên nhân",
 			"So sánh FPT, VNM, VIC với phân tích MA Momentum",
+			"Phân tích FPT với volume profile — vùng giá trị và các mức giá quan trọng",
 		],
 		researchPrompts: [
 			"Nghiên cứu sâu ngành ngân hàng: top 10 ngân hàng, xu hướng, tín hiệu VPA",
@@ -189,7 +192,7 @@ export default {
 		},
 		q2: {
 			q: "Tại sao không cần API Key cho dữ liệu?",
-			a: "Dữ liệu OHLCV được cung cấp qua kho lưu trữ S3 công khai — truy cập bằng HTTP đơn giản, không cần xác thực. Phân tích khối lượng giá, cổ phiếu nổi bật, dữ liệu trực tiếp đều hoạt động mà không cần thông tin đăng nhập.",
+			a: 			"Dữ liệu OHLCV được cung cấp qua kho lưu trữ S3 công khai — truy cập bằng HTTP đơn giản, không cần xác thực. Volume Profile, cổ phiếu nổi bật, dữ liệu trực tiếp đều hoạt động mà không cần thông tin đăng nhập.",
 		},
 		q3: {
 			q: "Tôi có cần cài đặt Python không?",
@@ -205,7 +208,7 @@ export default {
 		},
 		q6: {
 			q: "Sự khác biệt giữa 3 skills là gì?",
-			a: "aipa-data: Dữ liệu thô — nến OHLCV, phân tích khối lượng giá, cổ phiếu nổi bật, dữ liệu trực tiếp. Không cần AI, không cần API Key.\naipa-analyze: Phân tích bằng AI — phân tích một hoặc nhiều mã với Wyckoff, VPA, Smart Money. Khi dùng với trợ lý AI, trợ lý tự đọc dữ liệu và phân tích, không cần API Key.\naipa-research: Nghiên cứu chuyên sâu — quy trình nhiều agent phân tích toàn ngành. Chế độ qua trợ lý AI (khuyến nghị) không cần API Key.",
+			a: "aipa-data: Dữ liệu thô — nến OHLCV, Volume Profile, cổ phiếu nổi bật, dữ liệu trực tiếp. Không cần AI, không cần API Key.\naipa-analyze: Phân tích bằng AI — phân tích một hoặc nhiều mã với Wyckoff, VPA, Smart Money, Volume Profile. Khi dùng với trợ lý AI, trợ lý tự đọc dữ liệu và phân tích, không cần API Key.\naipa-research: Nghiên cứu chuyên sâu — quy trình nhiều agent phân tích toàn ngành. Chế độ qua trợ lý AI (khuyến nghị) không cần API Key.",
 		},
 		q7: {
 			q: "Dữ liệu có chính xác không?",
