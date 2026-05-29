@@ -1,163 +1,187 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from "@tanstack/react-router";
 import {
-  Home,
-  Menu,
-  Brain,
-  Eye,
-  Bell,
-  Coins,
-  Globe,
-  Dices,
-  LayoutGrid,
-} from 'lucide-react'
+	Bell,
+	Brain,
+	Coins,
+	Dices,
+	Eye,
+	Globe,
+	Home,
+	LayoutGrid,
+	Menu,
+	Sparkles,
+} from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import { PWAInstallButton } from './PWAInstallButton'
-import { LanguageToggle } from './LanguageToggle'
+	Sheet,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from "@/components/ui/sheet";
+import { LanguageToggle } from "./LanguageToggle";
+import { PWAInstallButton } from "./PWAInstallButton";
 
 interface MobileNavigationProps {
-  isOpen: boolean
-  setIsOpen: (open: boolean) => void
+	isOpen: boolean;
+	setIsOpen: (open: boolean) => void;
 }
 
 export function MobileNavigation({ isOpen, setIsOpen }: MobileNavigationProps) {
-  return (
-    <div className="lg:hidden">
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <button
-            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu size={24} />
-          </button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-80 bg-gray-900 text-white border-gray-700">
-          <SheetHeader className="border-b border-gray-700 pb-4">
-            <SheetTitle className="text-xl font-bold text-white">Navigation</SheetTitle>
-          </SheetHeader>
+	return (
+		<div className="lg:hidden">
+			<Sheet open={isOpen} onOpenChange={setIsOpen}>
+				<SheetTrigger asChild>
+					<button
+						className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+						aria-label="Open menu"
+					>
+						<Menu size={24} />
+					</button>
+				</SheetTrigger>
+				<SheetContent
+					side="left"
+					className="w-80 bg-gray-900 text-white border-gray-700"
+				>
+					<SheetHeader className="border-b border-gray-700 pb-4">
+						<SheetTitle className="text-xl font-bold text-white">
+							Navigation
+						</SheetTitle>
+					</SheetHeader>
 
-          <nav className="flex-1 mt-4 overflow-y-auto">
-            <Link
-              to="/"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Home size={20} />
-              <span className="font-medium">Home</span>
-            </Link>
+					<nav className="flex-1 mt-4 overflow-y-auto">
+						<Link
+							to="/"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<Home size={20} />
+							<span className="font-medium">Home</span>
+						</Link>
 
-            <Link
-              to="/crypto"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Coins size={20} />
-              <span className="font-medium">Crypto Market</span>
-            </Link>
+						<Link
+							to="/crypto"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<Coins size={20} />
+							<span className="font-medium">Crypto Market</span>
+						</Link>
 
-            <Link
-              to="/global"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Globe size={20} />
-              <span className="font-medium">Global Market</span>
-            </Link>
+						<Link
+							to="/global"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<Globe size={20} />
+							<span className="font-medium">Global Market</span>
+						</Link>
 
-            <Link
-              to="/ai"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Brain size={20} />
-              <span className="font-medium">AI Context</span>
-            </Link>
+						<Link
+							to="/skills"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<Sparkles size={20} />
+							<span className="font-medium">AI Agent Skills</span>
+						</Link>
 
-            <Link
-              to="/alert"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Bell size={20} />
-              <span className="font-medium">Alerts</span>
-            </Link>
+						<Link
+							to="/ai"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<Brain size={20} />
+							<span className="font-medium">AI Context</span>
+						</Link>
 
-            <Link
-              to="/backtesting"
-              search={{ ticker: undefined, endDate: undefined, interval: undefined, limit: undefined }}
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Dices size={20} />
-              <span className="font-medium">Backtesting</span>
-            </Link>
+						<Link
+							to="/alert"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<Bell size={20} />
+							<span className="font-medium">Alerts</span>
+						</Link>
 
-            <Link
-              to="/watch"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <Eye size={20} />
-              <span className="font-medium">Watchlist</span>
-            </Link>
+						<Link
+							to="/backtesting"
+							search={{
+								ticker: undefined,
+								endDate: undefined,
+								interval: undefined,
+								limit: undefined,
+							}}
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<Dices size={20} />
+							<span className="font-medium">Backtesting</span>
+						</Link>
 
-            <Link
-              to="/heatmap"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-              activeProps={{
-                className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2',
-              }}
-            >
-              <LayoutGrid size={20} />
-              <span className="font-medium">Heatmap</span>
-            </Link>
+						<Link
+							to="/watch"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<Eye size={20} />
+							<span className="font-medium">Watchlist</span>
+						</Link>
 
-            {/* Mobile PWA Install Button */}
-            <div className="pt-4 mt-4 border-t border-gray-700">
-              <PWAInstallButton mobileStyle />
-              <div className="mt-3 flex">
-                <LanguageToggle className="w-full" />
-              </div>
-            </div>
-          </nav>
-        </SheetContent>
-      </Sheet>
-    </div>
-  )
+						<Link
+							to="/heatmap"
+							onClick={() => setIsOpen(false)}
+							className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+							activeProps={{
+								className:
+									"flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 transition-colors mb-2",
+							}}
+						>
+							<LayoutGrid size={20} />
+							<span className="font-medium">Heatmap</span>
+						</Link>
+
+						{/* Mobile PWA Install Button */}
+						<div className="pt-4 mt-4 border-t border-gray-700">
+							<PWAInstallButton mobileStyle />
+							<div className="mt-3 flex">
+								<LanguageToggle className="w-full" />
+							</div>
+						</div>
+					</nav>
+				</SheetContent>
+			</Sheet>
+		</div>
+	);
 }

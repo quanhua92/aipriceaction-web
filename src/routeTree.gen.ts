@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchRouteImport } from './routes/watch'
 import { Route as VolumeProfileRouteImport } from './routes/volume-profile'
 import { Route as SyncRouteImport } from './routes/sync'
+import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as SignalsRouteImport } from './routes/signals'
 import { Route as MatrixRouteImport } from './routes/matrix'
 import { Route as HeatmapRouteImport } from './routes/heatmap'
@@ -40,6 +41,11 @@ const VolumeProfileRoute = VolumeProfileRouteImport.update({
 const SyncRoute = SyncRouteImport.update({
   id: '/sync',
   path: '/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkillsRoute = SkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignalsRoute = SignalsRouteImport.update({
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
+  '/skills': typeof SkillsRoute
   '/sync': typeof SyncRoute
   '/volume-profile': typeof VolumeProfileRoute
   '/watch': typeof WatchRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
+  '/skills': typeof SkillsRoute
   '/sync': typeof SyncRoute
   '/volume-profile': typeof VolumeProfileRoute
   '/watch': typeof WatchRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/heatmap': typeof HeatmapRoute
   '/matrix': typeof MatrixRoute
   '/signals': typeof SignalsRoute
+  '/skills': typeof SkillsRoute
   '/sync': typeof SyncRoute
   '/volume-profile': typeof VolumeProfileRoute
   '/watch': typeof WatchRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/matrix'
     | '/signals'
+    | '/skills'
     | '/sync'
     | '/volume-profile'
     | '/watch'
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/matrix'
     | '/signals'
+    | '/skills'
     | '/sync'
     | '/volume-profile'
     | '/watch'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/heatmap'
     | '/matrix'
     | '/signals'
+    | '/skills'
     | '/sync'
     | '/volume-profile'
     | '/watch'
@@ -242,6 +254,7 @@ export interface RootRouteChildren {
   HeatmapRoute: typeof HeatmapRoute
   MatrixRoute: typeof MatrixRoute
   SignalsRoute: typeof SignalsRoute
+  SkillsRoute: typeof SkillsRoute
   SyncRoute: typeof SyncRoute
   VolumeProfileRoute: typeof VolumeProfileRoute
   WatchRoute: typeof WatchRoute
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       path: '/sync'
       fullPath: '/sync'
       preLoaderRoute: typeof SyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skills': {
+      id: '/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof SkillsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signals': {
@@ -386,6 +406,7 @@ const rootRouteChildren: RootRouteChildren = {
   HeatmapRoute: HeatmapRoute,
   MatrixRoute: MatrixRoute,
   SignalsRoute: SignalsRoute,
+  SkillsRoute: SkillsRoute,
   SyncRoute: SyncRoute,
   VolumeProfileRoute: VolumeProfileRoute,
   WatchRoute: WatchRoute,
