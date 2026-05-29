@@ -730,7 +730,7 @@ function ExamplePromptsSection() {
 function FAQSection() {
 	const { t } = useTranslation();
 
-	const faqKeys = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8"] as const;
+	const faqKeys = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"] as const;
 
 	return (
 		<section className="border-b">
