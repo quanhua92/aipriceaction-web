@@ -48,8 +48,8 @@ export default {
 		feature4Desc:
 			"Supervisor → Parallel Workers → Aggregator → Reviewer — analyze entire sectors in one command, including quality checks.",
 	},
-	skills: {
-		sectionTitle: "3 Skills for every analysis need",
+	skillsSectionTitle: "3 Skills for every analysis need",
+	skillsData: {
 		data: {
 			heading: "Real-time Market Data",
 			description:
@@ -76,6 +76,11 @@ export default {
 			prompt1: "Deep research the banking sector",
 			prompt2: "Comprehensive analysis of the Vietnamese stock market",
 			prompt3: "Research crypto: Layer 1 vs DeFi vs AI tokens",
+			pipelineStep1: "Supervisor → Decomposes into 3-5 subtasks",
+			pipelineStep2: "Parallel Workers → Each analyzes one sector",
+			pipelineStep3: "Aggregator → Synthesizes findings",
+			pipelineStep4: "Reviewer → Quality check",
+			pipelineStep5: "Final Report",
 		},
 	},
 	markets: {

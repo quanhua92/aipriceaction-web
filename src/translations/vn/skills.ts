@@ -47,8 +47,8 @@ export default {
 		feature4Desc:
 			"Supervisor → Parallel Workers → Aggregator → Reviewer — phân tích toàn ngành trong 1 câu lệnh, bao gồm cả kiểm tra chất lượng.",
 	},
-	skills: {
-		sectionTitle: "3 Skills cho mọi nhu cầu phân tích",
+	skillsSectionTitle: "3 Skills cho mọi nhu cầu phân tích",
+	skillsData: {
 		data: {
 			heading: "Dữ liệu thị trường thời gian thực",
 			description:
@@ -75,6 +75,11 @@ export default {
 			prompt1: "Deep research ngành ngân hàng",
 			prompt2: "Phân tích toàn diện thị trường chứng khoán Việt Nam",
 			prompt3: "Nghiên cứu crypto: Layer 1, DeFi, AI tokens",
+			pipelineStep1: "Supervisor → Phân tách thành 3-5 công việc",
+			pipelineStep2: "Parallel Workers → Phân tích song song từng ngành",
+			pipelineStep3: "Aggregator → Tổng hợp kết quả",
+			pipelineStep4: "Reviewer → Kiểm tra chất lượng",
+			pipelineStep5: "Báo cáo cuối cùng",
 		},
 	},
 	markets: {

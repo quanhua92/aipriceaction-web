@@ -230,7 +230,7 @@ function InstallationSection() {
 									)
 								</li>
 								<li>
-									<strong>{t("skills.prereq2NoApiKey")}</strong>
+									<strong>{t("skills.install.prereq2NoApiKey")}</strong>
 								</li>
 								<li>
 									<code className="text-xs bg-muted px-1.5 py-0.5 rounded">
@@ -312,38 +312,38 @@ function SkillsSection() {
 	const skillsData = [
 		{
 			name: "aipa-data",
-			heading: t("skills.skills.data.heading"),
-			description: t("skills.skills.data.description"),
-			tag: t("skills.skills.data.tag"),
+			heading: t("skills.skillsData.data.heading"),
+			description: t("skills.skillsData.data.description"),
+			tag: t("skills.skillsData.data.tag"),
 			tagColor: "bg-green-500 text-white border-green-500",
 			samplePrompts: [
-				t("skills.skills.data.prompt1"),
-				t("skills.skills.data.prompt2"),
-				t("skills.skills.data.prompt3"),
+				t("skills.skillsData.data.prompt1"),
+				t("skills.skillsData.data.prompt2"),
+				t("skills.skillsData.data.prompt3"),
 			],
 		},
 		{
 			name: "aipa-analyze",
-			heading: t("skills.skills.analyze.heading"),
-			description: t("skills.skills.analyze.description"),
-			tag: t("skills.skills.analyze.tag"),
+			heading: t("skills.skillsData.analyze.heading"),
+			description: t("skills.skillsData.analyze.description"),
+			tag: t("skills.skillsData.analyze.tag"),
 			tagColor: "bg-blue-500 text-white border-blue-500",
 			samplePrompts: [
-				t("skills.skills.analyze.prompt1"),
-				t("skills.skills.analyze.prompt2"),
-				t("skills.skills.analyze.prompt3"),
+				t("skills.skillsData.analyze.prompt1"),
+				t("skills.skillsData.analyze.prompt2"),
+				t("skills.skillsData.analyze.prompt3"),
 			],
 		},
 		{
 			name: "aipa-research",
-			heading: t("skills.skills.research.heading"),
-			description: t("skills.skills.research.description"),
-			tag: t("skills.skills.research.tag"),
+			heading: t("skills.skillsData.research.heading"),
+			description: t("skills.skillsData.research.description"),
+			tag: t("skills.skillsData.research.tag"),
 			tagColor: "bg-purple-500 text-white border-purple-500",
 			samplePrompts: [
-				t("skills.skills.research.prompt1"),
-				t("skills.skills.research.prompt2"),
-				t("skills.skills.research.prompt3"),
+				t("skills.skillsData.research.prompt1"),
+				t("skills.skillsData.research.prompt2"),
+				t("skills.skillsData.research.prompt3"),
 			],
 			pipelineDiagram: true,
 		},
@@ -353,7 +353,7 @@ function SkillsSection() {
 		<section className="border-b">
 			<div className="container mx-auto px-4 py-10 md:py-16">
 				<h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
-					{t("skills.skills.sectionTitle")}
+					{t("skills.skillsSectionTitle")}
 				</h2>
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
 					{skillsData.map((skill) => (
@@ -378,6 +378,7 @@ function SkillCard({
 		pipelineDiagram?: boolean;
 	};
 }) {
+	const { t } = useTranslation();
 	const [copiedPrompt, setCopiedPrompt] = React.useState<string | null>(null);
 
 	const handleCopyPrompt = async (prompt: string) => {
@@ -420,18 +421,26 @@ function SkillCard({
 				</div>
 
 				{skill.pipelineDiagram && (
-					<div className="bg-muted/50 rounded-lg p-3">
-						<pre className="text-xs font-mono text-center leading-relaxed whitespace-pre">
-							{`Supervisor → Decomposes into 3-5 subtasks
-     ↓
-Parallel Workers → Each analyzes one sector
-     ↓
-Aggregator → Synthesizes cross-sector findings
-     ↓
-Reviewer → Quality check (data, MA scores)
-     ↓
-Final Report`}
-						</pre>
+					<div className="bg-muted/50 rounded-lg p-3 space-y-1">
+						<p className="text-xs font-mono text-center">
+							{t("skills.skillsData.research.pipelineStep1")}
+						</p>
+						<p className="text-xs text-center text-muted-foreground">↓</p>
+						<p className="text-xs font-mono text-center">
+							{t("skills.skillsData.research.pipelineStep2")}
+						</p>
+						<p className="text-xs text-center text-muted-foreground">↓</p>
+						<p className="text-xs font-mono text-center">
+							{t("skills.skillsData.research.pipelineStep3")}
+						</p>
+						<p className="text-xs text-center text-muted-foreground">↓</p>
+						<p className="text-xs font-mono text-center">
+							{t("skills.skillsData.research.pipelineStep4")}
+						</p>
+						<p className="text-xs text-center text-muted-foreground">↓</p>
+						<p className="text-xs font-mono text-center font-semibold">
+							{t("skills.skillsData.research.pipelineStep5")}
+						</p>
 					</div>
 				)}
 			</CardContent>
