@@ -42,7 +42,7 @@ export default {
 			"Cổ phiếu Việt Nam, tiền điện tử (BTC, ETH, SOL...), chứng khoán quốc tế (AAPL, NVDA...), và vàng SJC — tất cả trong một CLI.",
 		feature3Title: "Phân tích chuyên sâu",
 		feature3Desc:
-			"Wyckoff, Phân tích khối lượng giá (VPA), Smart Money, Volume Profile, MA Momentum — không chỉ số liệu, mà là insight thực sự.",
+			"Wyckoff, Volume Price Action (VPA), Smart Money, Volume Profile, MA Momentum — không chỉ số liệu, mà là insight thực sự.",
 		feature4Title: "Nghiên cứu chuyên sâu tự động",
 		feature4Desc:
 			"Supervisor → Workers song song → Tổng hợp → Kiểm tra — phân tích toàn ngành trong 1 câu lệnh, bao gồm cả bước kiểm tra chất lượng.",
