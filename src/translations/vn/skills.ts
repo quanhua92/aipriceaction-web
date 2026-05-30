@@ -50,9 +50,9 @@ export default {
 	skillsSectionTitle: "3 Skills cho mọi nhu cầu phân tích",
 	skillsData: {
 		data: {
-			heading: "Dữ liệu thị trường thời gian thực",
+			heading: "Dữ liệu thị trường mới nhất",
 			description:
-				"Nến OHLCV, Volume Profile, cổ phiếu nổi bật, dữ liệu trực tiếp, danh sách theo dõi — tất cả dữ liệu thô, không cần AI, không cần API Key.",
+				"Nến OHLCV, Volume Profile, cổ phiếu nổi bật, dữ liệu gần thời gian thực (độ trễ dưới 5 phút), danh sách theo dõi — tất cả dữ liệu thô, không cần AI, không cần API Key.",
 			tag: "Không cần API Key",
 			prompt1: "Lấy dữ liệu giá VCB 50 nến gần nhất",
 			prompt2: "Top 10 cổ phiếu có giá trị giao dịch cao nhất",

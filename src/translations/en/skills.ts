@@ -6,7 +6,7 @@ export default {
 		headline2: "Which stocks are strongest?",
 		subtitle: "Ask AI — get answers instantly.",
 		description:
-			"AIPriceAction AI Agent Skills connects your AI agent with real-time market data. No signup, no API Key, no brokerage account needed. Install once — use everywhere.",
+			"AIPriceAction AI Agent Skills connects your AI agent with live market data. No signup, no API Key, no brokerage account needed. Install once — use everywhere.",
 		cta: "Install Now",
 	},
 	install: {
@@ -51,9 +51,9 @@ export default {
 	skillsSectionTitle: "3 Skills for every analysis need",
 	skillsData: {
 		data: {
-			heading: "Real-time Market Data",
+			heading: "Live Market Data",
 			description:
-				"OHLCV candles, volume profile, top performers, live data, watchlists — all raw data, no AI, no API Key needed.",
+				"OHLCV candles, volume profile, top performers, live data (under 5 min delay), watchlists — all raw data, no AI, no API Key needed.",
 			tag: "No API Key needed",
 			prompt1: "Get VCB price data for the last 50 candles",
 			prompt2: "Top 10 stocks with highest trading value",
