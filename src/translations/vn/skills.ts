@@ -52,17 +52,20 @@ export default {
 		data: {
 			heading: "Dữ liệu thị trường mới nhất",
 			description:
-				"Nến OHLCV, Volume Profile, cổ phiếu nổi bật, dữ liệu gần thời gian thực (độ trễ dưới 5 phút), danh sách theo dõi — tất cả dữ liệu thô, không cần AI, không cần API Key.",
+				"Nến OHLCV, Volume Profile, cổ phiếu nổi bật, dữ liệu gần thời gian thực (độ trễ dưới 5 phút), danh sách theo dõi, dữ liệu cơ bản (PE, ROE, NPL, CAR, screening/ranking) — tất cả dữ liệu thô, không cần AI, không cần API Key.",
 			tag: "Không cần API Key",
 			prompt1: "Lấy dữ liệu giá VCB 50 nến gần nhất",
 			prompt2: "Top 10 cổ phiếu có giá trị giao dịch cao nhất",
 			prompt3: "Volume profile cho BTCUSDT",
 			prompt4: "Volume profile cho VNINDEX — POC và vùng giá trị",
+			prompt5: "PE của VCB là bao nhiêu?",
+			prompt6: "Ranking ngân hàng theo ROE",
+			prompt7: "Screen cổ phiếu PE thấp + ROE cao",
 		},
 		analyze: {
 			heading: "Phân tích kỹ thuật bằng AI",
 			description:
-				"Phân tích một hoặc nhiều cổ phiếu cùng lúc với Wyckoff, VPA, Smart Money, Volume Profile, MA Momentum. Hỗ trợ phân tích đơn mã, so sánh nhiều mã, và câu hỏi tùy ý.",
+				"Phân tích một hoặc nhiều cổ phiếu cùng lúc với Wyckoff, VPA, Smart Money, Volume Profile, MA Momentum. Có thể kết hợp dữ liệu cơ bản (PE, PB, ROE, NPL, CAR) để làm phong phú phân tích kỹ thuật.",
 			tag: "Hỗ trợ AI",
 			prompt1: "Phân tích VCB, TCB, MBB — ngân hàng nào có xu hướng mạnh nhất?",
 			prompt2: "Phân tích Wyckoff cho HPG",
@@ -138,6 +141,11 @@ export default {
 			us: "Wyckoff, VPA, Smart Money, Bob Volman",
 			them: "Tóm tắt thị trường",
 		},
+		fundamentals: {
+			feature: "Dữ liệu cơ bản",
+			us: "Có (PE, PB, ROE, NPL, CAR, screening/ranking)",
+			them: "Hạn chế hoặc không có screening/ranking",
+		},
 		volumeProfile: {
 			feature: "Volume Profile",
 			us: "Có (POC, Value Area, nhiều ngày)",
@@ -168,6 +176,9 @@ export default {
 			"So sánh giá vàng SJC với vàng quốc tế GC=F",
 			"Volume profile cho BTCUSDT — POC ở đâu?",
 			"Liệt kê các cổ phiếu ngành ngân hàng",
+			"PE của VCB là bao nhiêu?",
+			"Ranking ngân hàng theo ROE",
+			"Screen cổ phiếu PE thấp + ROE cao",
 		],
 		analyzePrompts: [
 			"Phân tích VCB, TCB, MBB, CTG — ngân hàng nào có xu hướng mạnh nhất?",
@@ -176,6 +187,7 @@ export default {
 			"Phát hiện cổ phiếu có biến động bất thường và tìm nguyên nhân",
 			"So sánh FPT, VNM, VIC với phân tích MA Momentum",
 			"Phân tích FPT với volume profile — vùng giá trị và các mức giá quan trọng",
+			"So sánh NPL và CAR các ngân hàng kết hợp phân tích kỹ thuật",
 		],
 		researchPrompts: [
 			"Nghiên cứu sâu ngành ngân hàng: top 10 ngân hàng, xu hướng, tín hiệu VPA",
@@ -208,7 +220,7 @@ export default {
 		},
 		q6: {
 			q: "Sự khác biệt giữa 3 skills là gì?",
-			a: "aipa-data: Dữ liệu thô — nến OHLCV, Volume Profile, cổ phiếu nổi bật, dữ liệu trực tiếp. Không cần AI, không cần API Key.\naipa-analyze: Phân tích bằng AI — phân tích một hoặc nhiều mã với Wyckoff, VPA, Smart Money, Volume Profile. Khi dùng với trợ lý AI, trợ lý tự đọc dữ liệu và phân tích, không cần API Key.\naipa-research: Nghiên cứu chuyên sâu — quy trình nhiều agent phân tích toàn ngành. Chế độ qua trợ lý AI (khuyến nghị) không cần API Key.",
+			a: "aipa-data: Dữ liệu thô — nến OHLCV, Volume Profile, cổ phiếu nổi bật, dữ liệu trực tiếp, dữ liệu cơ bản (PE, ROE, NPL, CAR, thông tin công ty). Không cần AI, không cần API Key.\naipa-analyze: Phân tích bằng AI — phân tích một hoặc nhiều mã với Wyckoff, VPA, Smart Money + dữ liệu cơ bản khi yêu cầu. Khi dùng với trợ lý AI, trợ lý tự đọc dữ liệu và phân tích, không cần API Key.\naipa-research: Nghiên cứu chuyên sâu — quy trình nhiều agent phân tích toàn ngành, có thể kết hợp screening cơ bản. Chế độ qua trợ lý AI (khuyến nghị) không cần API Key.",
 		},
 		q7: {
 			q: "Dữ liệu có chính xác không?",

@@ -329,6 +329,9 @@ function SkillsSection() {
 				t("skills.skillsData.data.prompt2"),
 				t("skills.skillsData.data.prompt3"),
 				t("skills.skillsData.data.prompt4"),
+				t("skills.skillsData.data.prompt5"),
+				t("skills.skillsData.data.prompt6"),
+				t("skills.skillsData.data.prompt7"),
 			],
 		},
 		{
@@ -608,6 +611,7 @@ function ComparisonSection() {
 		"intlStocks",
 		"sjcGold",
 		"technicalAnalysis",
+		"fundamentals",
 		"volumeProfile",
 		"deepResearch",
 		"agentsSupported",

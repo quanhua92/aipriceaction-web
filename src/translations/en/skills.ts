@@ -53,17 +53,20 @@ export default {
 		data: {
 			heading: "Live Market Data",
 			description:
-				"OHLCV candles, volume profile, top performers, live data (under 5 min delay), watchlists — all raw data, no AI, no API Key needed.",
+				"OHLCV candles, volume profile, top performers, live data (under 5 min delay), watchlists, fundamental data (PE, ROE, NPL, CAR, screening/ranking) — all raw data, no AI, no API Key needed.",
 			tag: "No API Key needed",
 			prompt1: "Get VCB price data for the last 50 candles",
 			prompt2: "Top 10 stocks with highest trading value",
 			prompt3: "Volume profile for BTCUSDT",
 			prompt4: "Volume profile for VNINDEX — POC and value area",
+			prompt5: "What is VCB's PE ratio?",
+			prompt6: "Rank all banks by ROE",
+			prompt7: "Screen for low PE stocks with high ROE",
 		},
 		analyze: {
 			heading: "AI-Powered Technical Analysis",
 			description:
-				"Analyze single or multiple stocks with Wyckoff, VPA, Smart Money, Volume Profile, MA Momentum. Single ticker, multi-ticker comparison, custom questions.",
+				"Analyze single or multiple stocks with Wyckoff, VPA, Smart Money, Volume Profile, MA Momentum. Can also incorporate fundamental data (PE, PB, ROE, NPL, CAR) to enrich technical analysis.",
 			tag: "AI-powered",
 			prompt1: "Analyze VCB, TCB, MBB — which bank has the strongest trend?",
 			prompt2: "Wyckoff analysis for HPG",
@@ -143,6 +146,11 @@ export default {
 			us: "Wyckoff, VPA, Smart Money, Bob Volman",
 			them: "Market summary",
 		},
+		fundamentals: {
+			feature: "Fundamental Data",
+			us: "Yes (PE, PB, ROE, NPL, CAR, screening/ranking)",
+			them: "Limited or no screening/ranking",
+		},
 		volumeProfile: {
 			feature: "Volume Profile",
 			us: "Yes (POC, Value Area, multi-day)",
@@ -177,6 +185,9 @@ export default {
 			"Compare SJC gold price with international gold GC=F",
 			"Volume profile for BTCUSDT — where is the POC?",
 			"List all banking sector stocks",
+			"What is VCB's PE ratio?",
+			"Rank all banks by ROE",
+			"Screen for low PE stocks with high ROE",
 		],
 		analyzePrompts: [
 			"Analyze VCB, TCB, MBB, CTG — which bank has the strongest trend?",
@@ -185,6 +196,7 @@ export default {
 			"Detect stocks with unusual volatility and find the cause",
 			"Compare FPT, VNM, VIC with MA Momentum analysis",
 			"Analyze FPT with volume profile — value area and key levels",
+			"Compare bank NPL and CAR with technical analysis",
 		],
 		researchPrompts: [
 			"Deep research banking sector: top 10 banks, trends, VPA signals",
@@ -217,7 +229,7 @@ export default {
 		},
 		q6: {
 			q: "What's the difference between the 3 skills?",
-			a: "aipa-data: Raw data — OHLCV candles, volume profile, performers, live data. No AI, no API Key needed.\naipa-analyze: AI-powered analysis — single/multi-ticker with Wyckoff, VPA, Smart Money. When used with an AI agent (Claude Code, Gemini CLI...), the agent reads data and analyzes, no API Key needed.\naipa-research: In-depth research — multi-agent pipeline for sector-wide analysis. Agent-driven mode (recommended) needs no API Key.",
+			a: "aipa-data: Raw data — OHLCV candles, volume profile, performers, live data, fundamental data (PE, ROE, NPL, CAR, company info). No AI, no API Key needed.\naipa-analyze: AI-powered analysis — single/multi-ticker with Wyckoff, VPA, Smart Money + optional fundamental context. When used with an AI agent (Claude Code, Gemini CLI...), the agent reads data and analyzes, no API Key needed.\naipa-research: In-depth research — multi-agent pipeline for sector-wide analysis with optional fundamental screening. Agent-driven mode (recommended) needs no API Key.",
 		},
 		q7: {
 			q: "Is the data accurate?",
