@@ -71,6 +71,9 @@ export default {
 			prompt2: "Phân tích Wyckoff cho HPG",
 			prompt3: "Phân tích BTCUSDT khung 4h",
 			prompt4: "Phân tích VCB bằng Volume Profile — các mức hỗ trợ/kháng cự",
+			prompt5: "So sánh NPL và CAR các ngân hàng kết hợp phân tích kỹ thuật",
+			prompt6: "Phân tích cơ bản FPT — đang định giá cao không?",
+			prompt7: "Ngân hàng nào có chất lượng tài sản tốt nhất? Kết hợp cơ bản + kỹ thuật",
 		},
 		research: {
 			heading: "Nghiên cứu thị trường toàn diện",

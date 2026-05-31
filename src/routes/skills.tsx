@@ -345,6 +345,9 @@ function SkillsSection() {
 				t("skills.skillsData.analyze.prompt2"),
 				t("skills.skillsData.analyze.prompt3"),
 				t("skills.skillsData.analyze.prompt4"),
+				t("skills.skillsData.analyze.prompt5"),
+				t("skills.skillsData.analyze.prompt6"),
+				t("skills.skillsData.analyze.prompt7"),
 			],
 		},
 		{
