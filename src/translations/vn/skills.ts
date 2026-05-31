@@ -59,8 +59,8 @@ export default {
 			prompt3: "Volume profile cho BTCUSDT",
 			prompt4: "Volume profile cho VNINDEX — POC và vùng giá trị",
 			prompt5: "PE của VCB là bao nhiêu?",
-			prompt6: "Ranking ngân hàng theo ROE",
-			prompt7: "Screen cổ phiếu PE thấp + ROE cao",
+			prompt6: "Xếp hạng các ngân hàng theo ROE",
+			prompt7: "Lọc cổ phiếu PE thấp + ROE cao",
 		},
 		analyze: {
 			heading: "Phân tích kỹ thuật bằng AI",
