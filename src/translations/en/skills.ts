@@ -72,9 +72,9 @@ export default {
 			prompt2: "Wyckoff analysis for HPG",
 			prompt3: "Analyze BTCUSDT on 4h timeframe",
 			prompt4: "Analyze VCB with Volume Profile — support/resistance levels",
-			prompt5: "Compare bank NPL and CAR with technical analysis",
-			prompt6: "Analyze FPT fundamentals — is it overvalued?",
-			prompt7: "Which banks have the best asset quality? Combine fundamentals + technicals",
+			prompt5: "Analyze Vingroup ecosystem: VIC, VHM, VRE — accumulation or distribution?",
+			prompt6: "Which sector is strongest? Analyze banking vs real estate vs securities",
+			prompt7: "Compare bank NPL and CAR with technical analysis",
 		},
 		research: {
 			heading: "Comprehensive Market Research",
