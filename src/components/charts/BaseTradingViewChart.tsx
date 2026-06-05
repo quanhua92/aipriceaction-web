@@ -438,8 +438,8 @@ export function BaseTradingViewChart({
 			const ma10Data = cd.ma10.find((d) => d.time === paramTime);
 			const ma20Data = cd.ma20.find((d) => d.time === paramTime);
 			const ma50Data = cd.ma50.find((d) => d.time === paramTime);
-			const ma100Data = chartData.ma100.find((d) => d.time === paramTime);
-			const ma200Data = chartData.ma200.find((d) => d.time === paramTime);
+			const ma100Data = cd.ma100.find((d) => d.time === paramTime);
+			const ma200Data = cd.ma200.find((d) => d.time === paramTime);
 
 			if (!candleData) return null;
 
