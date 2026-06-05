@@ -296,6 +296,22 @@ export function BasicTickerWidget({ initialTicker = 'VNINDEX', ticker, onTickerC
                 </span>
               </div>
             </div>
+
+            {/* MA200 */}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{maPrefix}200</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">
+                  {data.ma200 !== null && data.ma200 !== undefined ? formatPrice(data.ma200, data) : '-'}
+                </p>
+                <span className="text-xs text-muted-foreground/70">
+                  {t('common.ticker.score')}:{' '}
+                  <span className={`font-medium ${data.ma200_score !== null && data.ma200_score !== undefined ? getPriceChangeColor(data.ma200_score) : ''}`}>
+                    {data.ma200_score !== null && data.ma200_score !== undefined ? formatPercent(data.ma200_score) : '-'}
+                  </span>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
