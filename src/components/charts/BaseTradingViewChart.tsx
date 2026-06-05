@@ -546,7 +546,8 @@ export function BaseTradingViewChart({
 					currentDataPoint?.ma200_score !== undefined
 				) {
 					const ma200Color = getMAColor(currentDataPoint.ma200_score);
-					html += `<div style="grid-column: 1 / -1;"><span style="color: #71717a; display: inline-block; width: 40px;">${ema ? 'EMA200' : 'MA200'}</span> ${formatPrice(ma200Data.value, currentDataPoint)} <span style="color: #71717a;">Score</span> <span style="color: ${ma200Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma200_score)}</span></div>`;
+					html += `<div><span style="color: #71717a; display: inline-block; width: 40px;">${ema ? 'EMA200' : 'MA200'}</span> ${formatPrice(ma200Data.value, currentDataPoint)}</div>`;
+					html += `<div><span style="color: #71717a; display: inline-block; width: 40px;">Score</span> <span style="color: ${ma200Color}; font-size: 9px;">${formatPercent(currentDataPoint.ma200_score)}</span></div>`;
 				}
 			}
 
