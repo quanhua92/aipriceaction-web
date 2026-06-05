@@ -304,7 +304,7 @@ export const TOOLTIP_MARGIN = 30
  * Tooltip dimensions in pixels
  */
 export const TOOLTIP_WIDTH = 200
-export const TOOLTIP_HEIGHT = 90
+export const TOOLTIP_HEIGHT = 120
 
 /**
  * LocalStorage key for BasicTopPerformers view mode preference
